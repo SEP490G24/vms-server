@@ -1,0 +1,71 @@
+edu:
+  fpt:
+    capstone:
+      permitAll: /v3/api-docs/**,/swagger-ui/**,/actuator/**,/favicon.ico,/error,/api/v1/user/filter-available-users
+      oauth2:
+        provider: keycloak
+        keycloak:
+          realm:
+          issuer-uri:
+          jwk-set-uri:
+          client-id: iam-api
+          principal-attribute: preferred_username
+          admin-client: admin-cli
+          admin-username: admin
+          admin-password: admin
+
+management:
+  endpoint:
+    shutdown:
+      enabled: true
+    health:
+      show-details: always
+  endpoints:
+    web:
+      cors:
+        allowed-origins: http://localhost:9000
+      exposure:
+        include: health,info,metrics,prometheus,bindings,beans,env,loggers,streamsbindings
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+server:
+  port: 8003
+
+spring:
+  application:
+    name: iam-service
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://localhost:3306/iam?useLegacyDatetimeCode=false&serverTimezone=UTC
+    username: root
+    password: 123456
+  jpa:
+    database: mysql
+    database-platform: org.hibernate.dialect.MariaDBDialect
+  liquibase:
+    change-log: classpath:db/changelog-master.yml
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${edu.fpt.capstone.oauth2.keycloak.issuer-uri}
+          jwk-set-uri: ${edu.fpt.capstone.oauth2.keycloak.jwk-set-uri}
+
+springdoc:
+  cache:
+    disabled: true
+  swagger-ui:
+    use-root-path: true
+  api-docs:
+    enabled: true
+
+logging:
+  level:
+    org.springframework.security: TRACE
+    org.springframework.security.web.FilterChainProxy: TRACE
+    root: info
+    web: info
+  file:
+    name: ./logs/iam.log
