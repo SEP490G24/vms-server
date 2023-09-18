@@ -1,0 +1,22 @@
+services:
+  app:
+    container_name: application-service
+    image: app:latest
+    ports:
+      - 8000:8000
+    environment:
+      - SERVER_PORT=8000
+      - KEYCLOAK_HOST=localhost:7443
+      - REDIS_HOST=localhost
+      - REDIS_PORT=6379
+      - PROGRES_HOST=localhost:3306
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DATABASE=VMS
+    networks:
+      - vms
+
+networks:
+  vms:
+    name: vms-network
+    driver: bridge

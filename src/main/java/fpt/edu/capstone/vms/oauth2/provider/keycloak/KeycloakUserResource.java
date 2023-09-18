@@ -31,7 +31,7 @@ public class KeycloakUserResource implements IUserResource {
 
     public KeycloakUserResource(
             Keycloak keycloak,
-            @Value("${edu.fpt.capstone.oauth2.keycloak.realm}") String realm
+            @Value("${edu.fpt.capstone.vms.oauth2.keycloak.realm}") String realm
     ) {
         this.keycloak = keycloak;
         this.REALM = realm;
@@ -87,42 +87,25 @@ public class KeycloakUserResource implements IUserResource {
         modifiedUser.setEmail(userDto.getEmail());
         modifiedUser.setEnabled(userDto.isEnable());
         userResource.update(modifiedUser);
-        
+
         return true;
     }
 
     @Override
-    public List<RoleDto> roles() {
-        return keycloak.realm(REALM).roles().list()
-                .stream().map(r -> new RoleDto(r.getName()))
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public void activeUser(String userId) {
+    public void changeState(String userId, boolean stateEnable) {
         RealmResource realmResource = keycloak.realm(REALM);
 
         UserRepresentation modifiedUser = realmResource.users().get(userId).toRepresentation();
-        modifiedUser.setEnabled(true);
+        modifiedUser.setEnabled(stateEnable);
 
         realmResource.users().get(userId).update(modifiedUser);
     }
 
-    @Override
-    public void disableUser(String userId) {
-        RealmResource realmResource = keycloak.realm(REALM);
-
-        UserRepresentation modifiedUser = realmResource.users().get(userId).toRepresentation();
-        modifiedUser.setEnabled(false);
-
-        realmResource.users().get(userId).update(modifiedUser);
-    }
 
     @Override
-    public void deleteUser(String userId) {
+    public void delete(String userId) {
         UserResource user = keycloak.realm(REALM).users().get(userId);
         user.remove();
-
     }
 
     @Override

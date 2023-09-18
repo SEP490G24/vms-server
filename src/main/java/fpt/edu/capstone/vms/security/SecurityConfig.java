@@ -1,7 +1,7 @@
-package fpt.edu.capstone.vms.config.security;
+package fpt.edu.capstone.vms.security;
 
 
-import fpt.edu.capstone.vms.security.KeycloakJwtAuthenticationConverter;
+import fpt.edu.capstone.vms.security.converter.JwtAuthenticationConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -19,29 +19,26 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
-/**
- * https://reflectoring.io/spring-cors/
- */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-@ComponentScan(basePackages = {"fpt.edu.capstone.vms.security"})
+@ComponentScan(basePackages = {"fpt.edu.capstone.vms.security.converter"})
 public class SecurityConfig {
 
-    private final KeycloakJwtAuthenticationConverter keycloakJwtAuthenticationConverter;
+    private final JwtAuthenticationConverter jwtAuthenticationConverter;
     private final String jwkSetUri;
 
     public SecurityConfig(
-            KeycloakJwtAuthenticationConverter keycloakJwtAuthenticationConverter,
+            JwtAuthenticationConverter jwtAuthenticationConverter,
             @Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}") String jwkSetUri) {
-        this.keycloakJwtAuthenticationConverter = keycloakJwtAuthenticationConverter;
+        this.jwtAuthenticationConverter = jwtAuthenticationConverter;
         this.jwkSetUri = jwkSetUri;
     }
 
     @Bean
     SecurityFilterChain filterChain(
             HttpSecurity httpSecurity,
-            @Value("${edu.fpt.capstone.permitAll}") String[] permitAll
+            @Value("${edu.fpt.capstone.vms.permitAll}") String[] permitAll
     ) throws Exception {
 
         // Enable and configure CORS
@@ -52,7 +49,7 @@ public class SecurityConfig {
         httpSecurity
                 .oauth2ResourceServer(customizer -> customizer
                         .jwt(jwt -> jwt
-                                .jwtAuthenticationConverter(keycloakJwtAuthenticationConverter)
+                                .jwtAuthenticationConverter(jwtAuthenticationConverter)
                                 .jwkSetUri(jwkSetUri)));
 
         httpSecurity

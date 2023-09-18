@@ -2,12 +2,12 @@
 # set locale UTF8
 LC_CTYPE=en_US.UTF-8
 # Application
-APP_NAME="iam_service"
-APP_LONG_NAME="Capstone IAM Service"
+APP_NAME="api-server"
+APP_LONG_NAME="API Server"
 
 # Wrapper
 WRAPPER_CMD="nohup"
-WRAPPER_MAINCLASS="lc-iam-service-1.0.jar"
+WRAPPER_MAINCLASS="app.jar"
 WRAPPER_EXEC="java -jar "
 WRAPPER_PARAMS="--spring.config.location=file:./application.yml"
 WRAPPER_CONF="$WRAPPER_EXEC $WRAPPER_MAINCLASS -Xms4096m -Xmx10240m $WRAPPER_PARAMS"

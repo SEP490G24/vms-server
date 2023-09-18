@@ -1,0 +1,19 @@
+version: '3.8'
+services:
+  redisinsight:
+    image: redislabs/redisinsight:latest
+    container_name: redisinsight
+    restart: always
+    depends_on:
+      - redis
+    ports:
+      - "8001:8001"
+    networks:
+      - vms
+    volumes:
+      - ./volume/redisinsight/db:/db
+
+networks:
+  vms:
+    name: vms-network
+    driver: bridge

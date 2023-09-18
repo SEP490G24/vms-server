@@ -1,4 +1,4 @@
-package fpt.edu.capstone.vms.security;
+package fpt.edu.capstone.vms.security.converter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.core.convert.converter.Converter;
@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 @Component
 @ConditionalOnExpression(value = "'${edu.fpt.capstone.oauth2.provider}'.equals('keycloak')")
-public class KeycloakJwtGrantedAuthoritiesConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
+public class JwtGrantedAuthoritiesConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
     /**
      * Prefix used for realm level roles.
      */
@@ -37,7 +37,7 @@ public class KeycloakJwtGrantedAuthoritiesConverter implements Converter<Jwt, Co
      */
     private static final String CLAIM_ROLES = "roles";
 
-    @Value("${edu.fpt.capstone.oauth2.keycloak.client-id}")
+    @Value("${edu.fpt.capstone.vms.oauth2.keycloak.client-id}")
     private String resourceId;
 
     /**

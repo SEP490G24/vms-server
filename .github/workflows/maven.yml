@@ -3,27 +3,30 @@
 
 name: Java CI with Maven
 
-on: #xảy ra sự kiện để kích hoặc việc build
+on: 
   push: 
-    branches: [ master ]  # Khi code được push bên branch master
+    branches: [ master ]  # Event push to branch master
 
-jobs: # Những công việc sẽ được làm
+jobs: # Command when trigger active
   build:
     name: Build and Test
-    runs-on: ubuntu-latest   # Đây là môi trường, có thể chạy trên container này luôn hoặc docker
+    runs-on: ubuntu-latest   # Setup môi trường
 
     steps:
     - name: Build and Test
       uses: actions/checkout@v3
+
     - name: Set up JDK 17
       uses: actions/setup-java@v3
       with:
         java-version: '17'
         distribution: 'temurin'
         cache: maven
-    - name: Build with Maven  # Chạy lệnh build and verify test unit
+
+    - name: Build with Maven  # Step run command build and verify test unit
       run: mvn --batch-mode --update-snapshots verify
-    - name: Copy file jar to artifact stage    
+      
+    - name: Copy file jar to artifact stage # Step copy file jar to staging and push to stage repositoy
       run: mkdir staging && cp target/*.jar staging
     - name: Push to artifact stage repository 
       uses: actions/upload-artifact@v3

@@ -1,0 +1,23 @@
+name: server
+services:
+  postgresql:
+    extends:
+      file: ./postgres.yml
+      service: postgres
+  keycloak:
+    extends:
+      file: ./keycloak.yml
+      service: keycloak
+  sonarqube:
+    extends:
+      file: ./sonar.yml
+      service: sonar
+  redis:
+    extends:
+      file: ./redis.yml
+      service: redis
+  redis-insight:
+    extends:
+      file: ./redis.yml
+      service: redis-insight
+

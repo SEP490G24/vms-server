@@ -1,4 +1,4 @@
-package fpt.edu.capstone.vms.security;
+package fpt.edu.capstone.vms.security.converter;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,21 +14,21 @@ import org.springframework.stereotype.Component;
 import java.util.Collection;
 
 @Component
-@ConditionalOnExpression(value = "'${edu.fpt.capstone.oauth2.provider}'.equals('keycloak')")
-public class KeycloakJwtAuthenticationConverter implements Converter<Jwt, AbstractAuthenticationToken> {
+@ConditionalOnExpression(value = "'${edu.fpt.capstone.vms.oauth2.provider}'.equals('keycloak')")
+public class JwtAuthenticationConverter implements Converter<Jwt, AbstractAuthenticationToken> {
 
     private final String principalAttribute;
-    private final KeycloakJwtGrantedAuthoritiesConverter keycloakJwtGrantedAuthoritiesConverter;
-    public KeycloakJwtAuthenticationConverter(
-            @Value("${edu.fpt.capstone.oauth2.keycloak.principal-attribute}") String principalAttribute,
-            KeycloakJwtGrantedAuthoritiesConverter keycloakJwtGrantedAuthoritiesConverter) {
+    private final JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter;
+    public JwtAuthenticationConverter(
+            @Value("${edu.fpt.capstone.vms.oauth2.keycloak.principal-attribute}") String principalAttribute,
+            JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter) {
         this.principalAttribute = principalAttribute;
-        this.keycloakJwtGrantedAuthoritiesConverter = keycloakJwtGrantedAuthoritiesConverter;
+        this.jwtGrantedAuthoritiesConverter = jwtGrantedAuthoritiesConverter;
     }
 
     @Override
     public AbstractAuthenticationToken convert(Jwt jwt) {
-        final Collection<GrantedAuthority> authorities = keycloakJwtGrantedAuthoritiesConverter.convert(jwt);
+        final Collection<GrantedAuthority> authorities = jwtGrantedAuthoritiesConverter.convert(jwt);
         return new JwtAuthenticationToken(
                 jwt,
                 authorities,

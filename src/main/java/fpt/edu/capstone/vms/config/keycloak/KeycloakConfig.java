@@ -9,19 +9,19 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class KeycloakConfig {
-    @Value("${edu.fpt.capstone.oauth2.keycloak.issuer-uri}")
+    @Value("${edu.fpt.capstone.vms.oauth2.keycloak.issuer-uri}")
     private String issuerUri;
 
-    @Value("${edu.fpt.capstone.oauth2.keycloak.realm}")
+    @Value("${edu.fpt.capstone.vms.oauth2.keycloak.realm}")
     private String realm;
 
-    @Value("${edu.fpt.capstone.oauth2.keycloak.admin-username}")
+    @Value("${edu.fpt.capstone.vms.oauth2.keycloak.admin-username}")
     private String adminUsername;
 
-    @Value("${edu.fpt.capstone.oauth2.keycloak.admin-password}")
+    @Value("${edu.fpt.capstone.vms.oauth2.keycloak.admin-password}")
     private String adminPassword;
 
-    @Value("${edu.fpt.capstone.oauth2.keycloak.admin-client}")
+    @Value("${edu.fpt.capstone.vms.oauth2.keycloak.admin-client}")
     private String adminClient;
 
     @Bean

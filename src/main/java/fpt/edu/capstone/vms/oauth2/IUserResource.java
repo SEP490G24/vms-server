@@ -10,10 +10,8 @@ import java.util.List;
 public interface IUserResource {
     String create(UserDto account);
     boolean update(UserDto account);
-    List<RoleDto> roles();
-    void activeUser(String userId);
-    void disableUser(String userId);
-    void deleteUser(String userId);
+    void changeState(String userId, boolean stateEnable);
+    void delete(String userId);
 
     List<UserDto> users();
 
