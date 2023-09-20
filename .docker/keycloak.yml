@@ -5,10 +5,9 @@ services:
     image: quay.io/keycloak/keycloak:21.1.2
     command: ['start-dev --import-realm']
     volumes:
-      - ./keycloak/data/import:/opt/keycloak/data/import
-      - ./keycloak/keycloak-health-check.sh:/opt/keycloak/health-check.sh
-      - ./keycloak/keystore.p12:/opt/keycloak/cers/keystore.p12
-      - ./keycloak/keycloak/providers:/opt/keycloak/providers
+      - ./volume/keycloak/data/import:/opt/keycloak/data/import
+      - ./volume/keycloak/keycloak-health-check.sh:/opt/keycloak/health-check.sh
+      - ./volume/keycloak/providers:/opt/keycloak/providers
     networks:
       - vms
     environment:
@@ -18,10 +17,6 @@ services:
       - KC_FEATURES=scripts
       - KC_HTTP_PORT=9080
       - KC_HTTPS_PORT=9443
-      - KC_HTTPS_PROTOCOLS=TLSv1.3,TLSv1.2
-      - KC_HTTPS_KEY_STORE_TYPE=PKCS12
-      - KC_HTTPS_KEY_STORE_FILE=/opt/keycloak/cers/keystore.p12
-      - KC_HTTPS_KEY_STORE_PASSWORD=
       - KC_HEALTH_ENABLED=true
     ports:
       - "9080:9080"

@@ -1,4 +1,4 @@
-name: server
+name: services
 services:
   postgresql:
     extends:

@@ -1,9 +1,10 @@
+version: '3'
 services:
-  app:
-    container_name: application-service
-    image: app:latest
+  api-server:
+    build: .
     ports:
       - 8000:8000
+    container_name: api-server
     environment:
       - SERVER_PORT=8000
       - KEYCLOAK_HOST=localhost:7443
@@ -12,7 +13,7 @@ services:
       - PROGRES_HOST=localhost:3306
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=admin
-      - POSTGRES_DATABASE=VMS
+      - POSTGRES_DATABASE=vms
     networks:
       - vms
 

@@ -64,7 +64,7 @@ public class UserServiceImpl implements IUserService {
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             if (null != kcUserId) {
-                userResource.deleteUser(kcUserId);
+                userResource.delete(kcUserId);
             }
         }
         return userEntity;

@@ -1,0 +1,27 @@
+version: '3'
+name: server
+services:
+  app:
+    extends:
+      file: ./app.yml
+      service: api-server
+  postgresql:
+    extends:
+      file: ./.docker/services.yml
+      service: postgresql
+  keycloak:
+    extends:
+      file: ./.docker/services.yml
+      service: keycloak
+  sonarqube:
+    extends:
+      file: ./.docker/services.yml
+      service: sonarqube
+  redis:
+    extends:
+      file: ./.docker/services.yml
+      service: redis
+  redis-insight:
+    extends:
+      file: ./.docker/services.yml
+      service: redis-insight

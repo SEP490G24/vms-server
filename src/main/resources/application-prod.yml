@@ -24,7 +24,7 @@ management:
   endpoints:
     web:
       cors:
-        allowed-origins: http://localhost:9000
+        allowed-origins: http://localhost:3000
       exposure:
         include: health,info,metrics,prometheus,bindings,beans,env,loggers,streamsbindings
   metrics:
@@ -32,7 +32,7 @@ management:
       application: ${spring.application.name}
 
 server:
-  port: ${SERVER_PORT:8003}
+  port: ${SERVER_PORT:8000}
 
 spring:
   application:

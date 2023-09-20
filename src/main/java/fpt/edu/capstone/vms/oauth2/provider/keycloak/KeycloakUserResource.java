@@ -10,6 +10,7 @@ import org.keycloak.admin.client.resource.*;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
@@ -23,19 +24,20 @@ import java.util.stream.Collectors;
 public class KeycloakUserResource implements IUserResource {
 
     private final Keycloak keycloak;
+    private final ModelMapper mapper;
     private final String REALM;
-    private RealmResource realmResource;
-    private UsersResource usersResource;
-    private RolesResource rolesResource;
+    private final UsersResource usersResource;
+    private final RolesResource rolesResource;
 
 
     public KeycloakUserResource(
-            Keycloak keycloak,
-            @Value("${edu.fpt.capstone.vms.oauth2.keycloak.realm}") String realm
+        Keycloak keycloak,
+        ModelMapper mapper, @Value("${edu.fpt.capstone.vms.oauth2.keycloak.realm}") String realm
     ) {
         this.keycloak = keycloak;
+        this.mapper = mapper;
         this.REALM = realm;
-        this.realmResource = keycloak.realm(REALM);
+        RealmResource realmResource = keycloak.realm(REALM);
         this.usersResource = realmResource.users();
         this.rolesResource = realmResource.roles();
     }
@@ -43,7 +45,7 @@ public class KeycloakUserResource implements IUserResource {
     @Override
     public String create(UserDto userDto) {
 
-        // Define password credential
+        /* Define password credential */
         var passwordCred = new CredentialRepresentation();
         passwordCred.setTemporary(false);
         passwordCred.setType(CredentialRepresentation.PASSWORD);
@@ -114,27 +116,22 @@ public class KeycloakUserResource implements IUserResource {
 
 
         return usersResource.list()
-                .stream()
-                .map(u -> {
-                    Constants.UserRole userRole = null;
-                    RoleScopeResource roleScopeResource = usersResource.get(u.getId()).roles().realmLevel();
-                    List<RoleRepresentation> roles = roleScopeResource.listAll();
-                    for (RoleRepresentation role : roles) {
-                        try {
-                            userRole = Constants.UserRole.valueOf(role.getName());
-                            break;
-                        } catch (Exception e) {
-                        }
+            .stream()
+            .map(u -> {
+                Constants.UserRole userRole = null;
+                RoleScopeResource roleScopeResource = usersResource.get(u.getId()).roles().realmLevel();
+                List<RoleRepresentation> roles = roleScopeResource.listAll();
+                for (RoleRepresentation role : roles) {
+                    try {
+                        userRole = Constants.UserRole.valueOf(role.getName());
+                        break;
+                    } catch (Exception e) {
                     }
+                }
 
-                    return new UserDto()
-                            .setUsername(u.getUsername())
-                            .setFirstName(u.getFirstName())
-                            .setLastName(u.getLastName())
-                            .setEmail(u.getEmail())
-                            .setOpenid(u.getId())
-                            .setRole(userRole);
-                })
-                .collect(Collectors.toList());
+                return mapper.map(u, UserDto.class)
+                    .setRole(userRole);
+            })
+            .collect(Collectors.toList());
     }
 }
