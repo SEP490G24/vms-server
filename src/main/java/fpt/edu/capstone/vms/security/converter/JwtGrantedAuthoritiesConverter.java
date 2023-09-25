@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
-@ConditionalOnExpression(value = "'${edu.fpt.capstone.oauth2.provider}'.equals('keycloak')")
+@ConditionalOnExpression(value = "'${edu.fpt.capstone.vms.oauth2.provider}'.equals('keycloak')")
 public class JwtGrantedAuthoritiesConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
     /**
      * Prefix used for realm level roles.

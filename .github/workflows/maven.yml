@@ -3,9 +3,9 @@
 
 name: Java CI with Maven
 
-on: 
-  push: 
-    branches: [ master ]  # Event push to branch master
+on:
+  push:
+    branches: [ main ]  # Event push to branch master
 
 jobs: # Command when trigger active
   build:
@@ -16,7 +16,7 @@ jobs: # Command when trigger active
     - name: Build and Test
       uses: actions/checkout@v3
 
-    - name: Set up JDK 17
+    - name: Set up JDK 19
       uses: actions/setup-java@v3
       with:
         java-version: '17'
@@ -25,10 +25,10 @@ jobs: # Command when trigger active
 
     - name: Build with Maven  # Step run command build and verify test unit
       run: mvn --batch-mode --update-snapshots verify
-      
+
     - name: Copy file jar to artifact stage # Step copy file jar to staging and push to stage repositoy
       run: mkdir staging && cp target/*.jar staging
-    - name: Push to artifact stage repository 
+    - name: Push to artifact stage repository
       uses: actions/upload-artifact@v3
       with:
         name: Package

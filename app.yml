@@ -7,13 +7,13 @@ services:
     container_name: api-server
     environment:
       - SERVER_PORT=8000
-      - KEYCLOAK_HOST=localhost:7443
+      - KEYCLOAK_HOST=localhost:9080
       - REDIS_HOST=localhost
       - REDIS_PORT=6379
-      - PROGRES_HOST=localhost:3306
+      - POSTGRES_HOST=localhost:5432
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=admin
-      - POSTGRES_DATABASE=vms
+      - POSTGRES_DATABASE=vms-db
     networks:
       - vms
 

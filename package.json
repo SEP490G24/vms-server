@@ -6,7 +6,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "app:start": "./mvnw",
-    "app:up": "docker compose .docker/app.yml up --wait",
+    "app:up": "docker compose -f app.yml up --wait",
     "backend:build-cache": "./mvnw dependency:go-offline",
     "backend:debug": "./mvnw -Dspring-boot.run.jvmArguments=\"-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000\"",
     "backend:doc:test": "./mvnw -ntp javadoc:javadoc --batch-mode",

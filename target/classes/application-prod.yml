@@ -24,7 +24,7 @@ management:
   endpoints:
     web:
       cors:
-        allowed-origins: http://localhost:9000
+        allowed-origins: http://localhost:3000
       exposure:
         include: health,info,metrics,prometheus,bindings,beans,env,loggers,streamsbindings
   metrics:
@@ -32,19 +32,27 @@ management:
       application: ${spring.application.name}
 
 server:
-  port: ${SERVER_PORT:8003}
+  port: ${SERVER_PORT:8000}
 
 spring:
   application:
-    name: api-server
-#  datasource:
-#    driver-class-name: org.mariadb.jdbc.Driver
-#    url: jdbc:mariadb://${MARIADB_HOST}/${MARIADB_DATABASE}?useLegacyDatetimeCode=false&serverTimezone=UTC
-#    username: ${MARIADB_USERNAME}
-#    password: ${MARIADB_PASSWORD}
-#  jpa:
-#    database: mysql
-#    database-platform: org.hibernate.dialect.MariaDBDialect
+    name: vms-service
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${POSTGRES_HOST}/${POSTGRES_DATABASE}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+  jpa:
+    database: POSTGRESQL
+    hibernate:
+      ddl-auto: update
+    generate-ddl: true
+    properties:
+      javax:
+        persistence:
+          create-database-schemas: true
+
+
 #  liquibase:
 #    change-log: classpath:db/changelog-master.yml
   data:

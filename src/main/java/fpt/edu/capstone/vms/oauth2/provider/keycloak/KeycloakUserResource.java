@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Component
-@ConditionalOnExpression(value = "'${edu.fpt.capstone.oauth2.provider}'.equals('keycloak')")
+@ConditionalOnExpression(value = "'${edu.fpt.capstone.vms.oauth2.provider}'.equals('keycloak')")
 public class KeycloakUserResource implements IUserResource {
 
     private final Keycloak keycloak;

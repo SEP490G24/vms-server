@@ -8,7 +8,7 @@ WORKDIR /out
 ARG JAR_FILE=target/*.jar
 # copy p12 and cer into respective places.
 COPY ./cert/tls/vms.p12 /etc/ssl/certs/vms.p12
-COPY ./creds/tls/cert.cer $JAVA_HOME/lib/security
+COPY ./cert/tls/cert.cer $JAVA_HOME/lib/security
 # command to export cer from p12.
 # import cer into java cacerts
 RUN cd $JAVA_HOME/lib/security \

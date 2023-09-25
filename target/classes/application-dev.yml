@@ -24,7 +24,7 @@ management:
   endpoints:
     web:
       cors:
-        allowed-origins: http://localhost:9000
+        allowed-origins: http://localhost:3000
       exposure:
         include: health,info,metrics,prometheus,bindings,beans,env,loggers,streamsbindings
   metrics:
@@ -32,20 +32,27 @@ management:
       application: ${spring.application.name}
 
 server:
-  port: 8003
+  port: 8000
 
 spring:
   application:
-    name: iam-service
-#  datasource:
-#    driver-class-name: org.mariadb.jdbc.Driver
-#    url: jdbc:mariadb://localhost:3306/iam?useLegacyDatetimeCode=false&serverTimezone=UTC
-#    username: root
-#    password: 123456
-#  jpa:
-#    database: mysql
-#    database-platform: org.hibernate.dialect.MariaDBDialect
-#  liquibase:
+    name: vms-service
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5431/vms-db
+    username: admin
+    password: admin
+  jpa:
+    database: POSTGRESQL
+    hibernate:
+      ddl-auto: update
+    generate-ddl: true
+    properties:
+      javax:
+        persistence:
+          create-database-schemas: true
+
+  #  liquibase:
 #    change-log: classpath:db/changelog-master.yml
   data:
     redis:

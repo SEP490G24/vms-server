@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-@Table(name = "user")
+@Table(schema = "vms", name = "user")
 @EqualsAndHashCode(callSuper = true)
 public class User extends AbstractBaseEntity {
 
