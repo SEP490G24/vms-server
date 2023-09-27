@@ -28,10 +28,11 @@ import java.util.UUID;
 @Accessors(chain = true)
 @Table(schema = "vms", name = "site")
 @EqualsAndHashCode(callSuper = true)
-public class Site extends AbstractBaseEntity{
+public class Site extends AbstractBaseEntity implements ModelBaseInterface<String> {
 
     @Id
-    private UUID id;
+    @Column(name = "id", length = 64)
+    private String id;
 
     @Column(name = "name")
     private String name;
@@ -40,7 +41,7 @@ public class Site extends AbstractBaseEntity{
     private String code;
 
     @Column(name = "organization_id")
-    private UUID organizationId;
+    private String organizationId;
 
     @ManyToOne
     @JoinColumn(name = "organization_id", referencedColumnName = "id", insertable = false, updatable = false)
@@ -85,4 +86,14 @@ public class Site extends AbstractBaseEntity{
     @OneToMany(mappedBy = "siteEntity", cascade = CascadeType.ALL)
     @MapKey(name = "siteDepartmentMapPk.siteId")
     private Map<String, SiteDepartmentMap> siteDepartmentMaps;
+
+    @Override
+    public String getId() {
+        return id;
+    }
+
+    @Override
+    public void setId(String id) {
+        this.id = id;
+    }
 }

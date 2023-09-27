@@ -17,7 +17,7 @@ import lombok.experimental.Accessors;
 @AllArgsConstructor
 @Accessors(chain = true)
 @Table(schema = "vms", name = "site_department_map")
-public class SiteDepartmentMap {
+public class SiteDepartmentMap implements ModelBaseInterface<SiteDepartmentMapPk>{
     @EmbeddedId
     private SiteDepartmentMapPk siteDepartmentMapPk;
 
@@ -31,10 +31,12 @@ public class SiteDepartmentMap {
     @JsonIgnore
     private Site siteEntity;
 
+    @Override
     public void setId(SiteDepartmentMapPk id) {
         this.siteDepartmentMapPk = id;
     }
 
+    @Override
     public SiteDepartmentMapPk getId() {
         return this.siteDepartmentMapPk;
     }

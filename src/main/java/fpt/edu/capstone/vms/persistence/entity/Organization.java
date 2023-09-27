@@ -2,7 +2,6 @@ package fpt.edu.capstone.vms.persistence.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -20,10 +19,11 @@ import java.util.UUID;
 @Accessors(chain = true)
 @Table(schema = "vms", name = "organization")
 @EqualsAndHashCode(callSuper = true)
-public class Organization extends AbstractBaseEntity{
+public class Organization extends AbstractBaseEntity implements ModelBaseInterface<String> {
 
     @Id
-    private UUID id;
+    @Column(name = "id", length = 64)
+    private String id;
 
     @Column(name = "name")
     private String name;
@@ -40,4 +40,13 @@ public class Organization extends AbstractBaseEntity{
     @Column(name = "enable")
     private Boolean enable;
 
+    @Override
+    public String getId() {
+        return id;
+    }
+
+    @Override
+    public void setId(String id) {
+        this.id = id;
+    }
 }

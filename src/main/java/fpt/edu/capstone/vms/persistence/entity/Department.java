@@ -1,17 +1,12 @@
 package fpt.edu.capstone.vms.persistence.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKey;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -28,10 +23,11 @@ import java.util.UUID;
 @Accessors(chain = true)
 @Table(schema = "vms", name = "department")
 @EqualsAndHashCode(callSuper = true)
-public class Department extends AbstractBaseEntity{
+public class Department extends AbstractBaseEntity implements ModelBaseInterface<String>{
 
     @Id
-    private UUID id;
+    @Column(name = "id", length = 64)
+    private String id;
 
     @Column(name = "name")
     private String name;
@@ -49,4 +45,13 @@ public class Department extends AbstractBaseEntity{
     @MapKey(name = "siteDepartmentMapPk.departmentId")
     private Map<String, SiteDepartmentMap> siteDepartmentMaps;
 
+    @Override
+    public String getId() {
+        return id;
+    }
+
+    @Override
+    public void setId(String id) {
+        this.id = id;
+    }
 }
