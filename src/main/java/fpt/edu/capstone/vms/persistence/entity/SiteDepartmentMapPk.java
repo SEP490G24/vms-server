@@ -16,8 +16,8 @@ import java.util.UUID;
 public class SiteDepartmentMapPk implements Serializable {
 
     @Column(name = "department_id")
-    private String departmentId;
+    private UUID departmentId;
 
     @Column(name = "site_id")
-    private String siteId;
+    private UUID siteId;
 }

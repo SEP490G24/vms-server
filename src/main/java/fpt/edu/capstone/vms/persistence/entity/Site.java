@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -12,14 +13,17 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import lombok.experimental.FieldDefaults;
 
 import java.util.Map;
 import java.util.UUID;
+
 
 @Data
 @Entity
@@ -28,11 +32,12 @@ import java.util.UUID;
 @Accessors(chain = true)
 @Table(schema = "vms", name = "site")
 @EqualsAndHashCode(callSuper = true)
-public class Site extends AbstractBaseEntity implements ModelBaseInterface<String> {
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class Site extends AbstractBaseEntity<UUID> {
 
     @Id
     @Column(name = "id", length = 64)
-    private String id;
+    private UUID id;
 
     @Column(name = "name")
     private String name;
@@ -41,7 +46,7 @@ public class Site extends AbstractBaseEntity implements ModelBaseInterface<Strin
     private String code;
 
     @Column(name = "organization_id")
-    private String organizationId;
+    private UUID organizationId;
 
     @ManyToOne
     @JoinColumn(name = "organization_id", referencedColumnName = "id", insertable = false, updatable = false)
@@ -83,17 +88,17 @@ public class Site extends AbstractBaseEntity implements ModelBaseInterface<Strin
     @Column(name = "enable")
     private Boolean enable;
 
-    @OneToMany(mappedBy = "siteEntity", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "siteEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     @MapKey(name = "siteDepartmentMapPk.siteId")
-    private Map<String, SiteDepartmentMap> siteDepartmentMaps;
+    private Map<UUID, SiteDepartmentMap> siteDepartmentMaps;
 
     @Override
-    public String getId() {
+    public UUID getId() {
         return id;
     }
 
     @Override
-    public void setId(String id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 }

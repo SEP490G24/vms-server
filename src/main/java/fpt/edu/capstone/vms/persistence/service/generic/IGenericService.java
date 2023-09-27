@@ -1,8 +1,7 @@
-package fpt.edu.capstone.vms.persistence.service;
+package fpt.edu.capstone.vms.persistence.service.generic;
 
-import fpt.edu.capstone.vms.persistence.entity.ModelBaseInterface;
+import fpt.edu.capstone.vms.persistence.entity.generic.ModelBaseInterface;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
 import java.util.List;

@@ -1,6 +1,7 @@
 package fpt.edu.capstone.vms.persistence.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import fpt.edu.capstone.vms.persistence.entity.generic.ModelBaseInterface;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -17,7 +18,7 @@ import lombok.experimental.Accessors;
 @AllArgsConstructor
 @Accessors(chain = true)
 @Table(schema = "vms", name = "site_department_map")
-public class SiteDepartmentMap implements ModelBaseInterface<SiteDepartmentMapPk>{
+public class SiteDepartmentMap implements ModelBaseInterface<SiteDepartmentMapPk> {
     @EmbeddedId
     private SiteDepartmentMapPk siteDepartmentMapPk;
 

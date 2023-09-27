@@ -6,7 +6,9 @@ import fpt.edu.capstone.vms.persistence.service.IOrganizationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.EmptyStackException;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class OrganizationServiceImpl implements IOrganizationService {
@@ -23,22 +25,22 @@ public class OrganizationServiceImpl implements IOrganizationService {
     }
 
     @Override
-    public Organization findById(String id) {
-        return null;
+    public Organization findById(UUID id) {
+        return organizationRepository.findById(id).orElseThrow(() -> new EmptyStackException());
     }
 
     @Override
     public Organization save(Organization entity) {
+        return organizationRepository.save(entity);
+    }
+
+    @Override
+    public Organization update(Organization entity, UUID id) {
         return null;
     }
 
     @Override
-    public Organization update(Organization entity, String id) {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<Organization> delete(String id) {
+    public ResponseEntity<Organization> delete(UUID id) {
         return null;
     }
 }

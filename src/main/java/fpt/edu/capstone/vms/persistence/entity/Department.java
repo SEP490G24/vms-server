@@ -3,6 +3,8 @@ package fpt.edu.capstone.vms.persistence.entity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.MapKey;
 import jakarta.persistence.OneToMany;
@@ -23,11 +25,12 @@ import java.util.UUID;
 @Accessors(chain = true)
 @Table(schema = "vms", name = "department")
 @EqualsAndHashCode(callSuper = true)
-public class Department extends AbstractBaseEntity implements ModelBaseInterface<String>{
+public class Department extends AbstractBaseEntity<UUID>{
 
     @Id
     @Column(name = "id", length = 64)
-    private String id;
+    @GeneratedValue
+    private UUID id;
 
     @Column(name = "name")
     private String name;
@@ -41,17 +44,17 @@ public class Department extends AbstractBaseEntity implements ModelBaseInterface
     @Column(name = "enable")
     private Boolean enable;
 
-    @OneToMany(mappedBy = "departmentEntity", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "departmentEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     @MapKey(name = "siteDepartmentMapPk.departmentId")
-    private Map<String, SiteDepartmentMap> siteDepartmentMaps;
+    private Map<UUID, SiteDepartmentMap> siteDepartmentMaps;
 
     @Override
-    public String getId() {
+    public UUID getId() {
         return id;
     }
 
     @Override
-    public void setId(String id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 }

@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 @Accessors(chain = true)
 @Table(schema = "vms", name = "user")
 @EqualsAndHashCode(callSuper = true)
-public class User extends AbstractBaseEntity {
+public class User extends AbstractBaseEntity<String> {
 
     @Id
     @Column(name = "username", nullable = false, unique = true)
@@ -77,4 +77,13 @@ public class User extends AbstractBaseEntity {
         return this;
     }
 
+    @Override
+    public void setId(String id) {
+        username = id;
+    }
+
+    @Override
+    public String getId() {
+        return username;
+    }
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import fpt.edu.capstone.vms.constants.Constants;
+import fpt.edu.capstone.vms.persistence.entity.generic.ModelBaseInterface;
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;
@@ -17,7 +18,7 @@ import java.time.LocalDateTime;
 
 @Data
 @MappedSuperclass
-public abstract class AbstractBaseEntity implements Serializable {
+public abstract class AbstractBaseEntity<T> implements Serializable, ModelBaseInterface<T> {
 
     @Column(name = "created_by")
     private String createdBy;

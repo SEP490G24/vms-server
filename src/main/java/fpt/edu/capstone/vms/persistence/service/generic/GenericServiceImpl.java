@@ -1,8 +1,7 @@
-package fpt.edu.capstone.vms.persistence.service.impl;
+package fpt.edu.capstone.vms.persistence.service.generic;
 
-import fpt.edu.capstone.vms.persistence.entity.ModelBaseInterface;
+import fpt.edu.capstone.vms.persistence.entity.generic.ModelBaseInterface;
 import fpt.edu.capstone.vms.persistence.repository.GenericRepository;
-import fpt.edu.capstone.vms.persistence.service.IGenericService;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
