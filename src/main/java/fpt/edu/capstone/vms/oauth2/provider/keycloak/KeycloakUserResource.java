@@ -15,7 +15,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -45,6 +47,9 @@ public class KeycloakUserResource implements IUserResource {
     @Override
     public String create(UserDto userDto) {
 
+        Map<String, List<String>> attributes = new HashMap<>();
+        attributes.put(Constants.Claims.OrgId, List.of(userDto.getOrgId()));
+
         /* Define password credential */
         var passwordCred = new CredentialRepresentation();
         passwordCred.setTemporary(false);
@@ -56,7 +61,7 @@ public class KeycloakUserResource implements IUserResource {
         user.setFirstName(userDto.getFirstName());
         user.setLastName(userDto.getLastName());
         user.setEmail(userDto.getEmail());
-        user.setEnabled(userDto.isEnable());
+        user.setEnabled(userDto.getIsEnable());
         user.setEmailVerified(false);
         user.setCredentials(List.of(passwordCred));
 
@@ -87,7 +92,7 @@ public class KeycloakUserResource implements IUserResource {
         }
 
         modifiedUser.setEmail(userDto.getEmail());
-        modifiedUser.setEnabled(userDto.isEnable());
+        if (userDto.getIsEnable() != null) modifiedUser.setEnabled(userDto.getIsEnable());
         userResource.update(modifiedUser);
 
         return true;

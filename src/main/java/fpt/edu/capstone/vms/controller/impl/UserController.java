@@ -7,6 +7,7 @@ import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
 import fpt.edu.capstone.vms.persistence.entity.User;
 import fpt.edu.capstone.vms.persistence.service.IUserService;
+import fpt.edu.capstone.vms.util.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -45,31 +46,23 @@ public class UserController implements IUserController {
     }
 
     @Override
-    public ResponseEntity<?> allAvailableUsers() {
-        return ResponseEntity.ok(userService.availableUsers());
-    }
-
-    @Override
-    public ResponseEntity<?> filterAvailableUsersByUsernames(List<String> usernames) {
-        return ResponseEntity.ok(userService.filterAvailableUsers(usernames));
-    }
-
-    @Override
-    public ResponseEntity<?> createAgent(CreateUserInfo userInfo) {
+    public ResponseEntity<?> create(CreateUserInfo userInfo) {
         User userEntity = userService.createUser(mapper.map(userInfo, IUserResource.UserDto.class)
                 .setRole(Constants.UserRole.AGENT_ACCOUNT));
         return ResponseEntity.ok(mapper.map(userEntity, IUserResource.UserDto.class));
     }
 
     @Override
-    public ResponseEntity<?> updateAgent(@Valid UpdateUserInfo userInfo) throws NotFoundException {
-        User userEntity = userService.updateUser(mapper.map(userInfo, IUserResource.UserDto.class));
+    public ResponseEntity<?> update(String username, @Valid UpdateUserInfo userInfo) throws NotFoundException {
+        User userEntity = userService.updateUser(
+            mapper.map(userInfo, IUserResource.UserDto.class)
+                .setUsername(username));
         return ResponseEntity.ok(mapper.map(userEntity, IUserResource.UserDto.class));
     }
 
     @Override
     public ResponseEntity<?> updateProfile(CreateUserInfo userInfo) throws NotFoundException {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        String username = SecurityUtils.loginUsername();
         userInfo.setUsername(username);
         User userEntity = userService.updateUser(mapper.map(userInfo, IUserResource.UserDto.class));
         return ResponseEntity.ok(mapper.map(userEntity, IUserResource.UserDto.class));
@@ -77,7 +70,7 @@ public class UserController implements IUserController {
 
     @Override
     public ResponseEntity<?> updateState(Constants.UserState state) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        String username = SecurityUtils.loginUsername();
         if (userService.updateState(state, username) > 0) {
             return ResponseEntity.ok().build();
         } else {
@@ -87,14 +80,14 @@ public class UserController implements IUserController {
 
     @Override
     public ResponseEntity<?> handleAuthSuccess() {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        String username = SecurityUtils.loginUsername();
         userService.handleAuthSuccess(username);
         return ResponseEntity.ok().build();
     }
 
     @Override
     public ResponseEntity<?> viewMyProfile() {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        String username = SecurityUtils.loginUsername();
         return ResponseEntity.ok(userService.findByUsername(username));
     }
 

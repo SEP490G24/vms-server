@@ -36,6 +36,10 @@ public class JwtGrantedAuthoritiesConverter implements Converter<Jwt, Collection
      * Name of the claim containing roles. (Applicable to realm and resource level.)
      */
     private static final String CLAIM_ROLES = "roles";
+    /**
+     * Name of role realm admin
+     */
+    public static final String REALM_ADMIN = "REALM_ADMIN";
 
     @Value("${edu.fpt.capstone.vms.oauth2.keycloak.client-id}")
     private String resourceId;

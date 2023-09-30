@@ -55,27 +55,7 @@ public interface IUserController {
     })
     ResponseEntity<?> filter(@RequestBody UserFilter usernames);
 
-    @GetMapping("/all-available-users")
-    @Operation(summary = "Get available users")
-    @PreAuthorize("hasRole('r:user:find')")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Ok", content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE)}),
-            @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
-    ResponseEntity<?> allAvailableUsers();
-
-    @PostMapping("/filter-available-users")
-    @Operation(summary = "Filter available users in a given list")
-//    @PreAuthorize("hasRole('r:user:find')")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Ok", content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE)}),
-            @ApiResponse(responseCode = "401", description = "Unauthorized"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
-    ResponseEntity<?> filterAvailableUsersByUsernames(@RequestBody List<String> usernames);
-
-    @PostMapping("/create-agent")
+    @PostMapping("")
     @Operation(summary = "Create new agent")
     @PreAuthorize("hasRole('r:user:create')")
     @ApiResponses({
@@ -83,9 +63,9 @@ public interface IUserController {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    ResponseEntity<?> createAgent(@RequestBody @Valid CreateUserInfo userInfo);
+    ResponseEntity<?> create(@RequestBody @Valid CreateUserInfo userInfo);
 
-    @PutMapping("/update-agent")
+    @PutMapping("/{username}")
     @Operation(summary = "Update agent")
     @PreAuthorize("hasRole('r:user:update')")
     @ApiResponses({
@@ -93,9 +73,9 @@ public interface IUserController {
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    ResponseEntity<?> updateAgent(@RequestBody @Valid UpdateUserInfo userInfo) throws NotFoundException;
+    ResponseEntity<?> update(@PathVariable("username") String username, @RequestBody @Valid UpdateUserInfo userInfo) throws NotFoundException;
 
-    @PutMapping("/my-profile")
+    @PutMapping("/profile")
     @Operation(summary = "Update my profile")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Ok", content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE)}),
@@ -122,7 +102,7 @@ public interface IUserController {
     })
     ResponseEntity<?> handleAuthSuccess();
 
-    @GetMapping("/my-profile")
+    @GetMapping("/profile")
     @Operation(summary = "View my profile")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Ok", content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE)}),
@@ -161,8 +141,6 @@ public interface IUserController {
 
     @Data
     class UpdateUserInfo {
-        @NotNull
-        String username;
         String password;
         @NotNull
         String phoneNumber;
