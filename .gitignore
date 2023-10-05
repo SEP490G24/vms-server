@@ -25,4 +25,4 @@ replay_pid*
 
 # Data postgresql
 
-.docker/volume/postgresql/data
+.docker/volume/postgresql/data/
