@@ -18,7 +18,7 @@ import lombok.experimental.Accessors;
 @AllArgsConstructor
 @Accessors(chain = true)
 @Table(schema = "vms", name = "site_department_map")
-public class SiteDepartmentMap implements ModelBaseInterface<SiteDepartmentMapPk> {
+public class SiteDepartmentMap extends AbstractBaseEntity<SiteDepartmentMapPk> {
     @EmbeddedId
     private SiteDepartmentMapPk siteDepartmentMapPk;
 

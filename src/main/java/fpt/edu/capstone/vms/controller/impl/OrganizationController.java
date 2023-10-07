@@ -1,11 +1,8 @@
 package fpt.edu.capstone.vms.controller.impl;
 
-import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.IOrganizationController;
-import fpt.edu.capstone.vms.oauth2.IUserResource;
 import fpt.edu.capstone.vms.persistence.entity.Organization;
-import fpt.edu.capstone.vms.persistence.entity.User;
-import fpt.edu.capstone.vms.persistence.service.IOrganizationService;
+import fpt.edu.capstone.vms.persistence.service.impl.OrganizationServiceImpl;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +14,7 @@ import java.util.UUID;
 @RestController
 @AllArgsConstructor
 public class OrganizationController implements IOrganizationController {
-    private final IOrganizationService organizationService;
+    private final OrganizationServiceImpl organizationService;
     private final ModelMapper mapper;
 
     @Override
