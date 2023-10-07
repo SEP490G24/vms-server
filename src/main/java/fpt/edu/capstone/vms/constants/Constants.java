@@ -30,4 +30,9 @@ public class Constants {
         AGENT_ACCOUNT
     }
 
+    public enum StatusTicket {
+        DRAFT,
+        DONE,
+        PENDING
+    }
 }

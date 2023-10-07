@@ -13,6 +13,10 @@ import java.util.List;
 public class GenericServiceImpl<T extends ModelBaseInterface<I>, I extends Serializable> implements IGenericService<T , I> {
     public GenericRepository<T, I> repository;
 
+    public void init(GenericRepository genericRepository) {
+        this.repository = genericRepository;
+    }
+
     public List<T> findAll() {
         return repository.findAll();
     }
