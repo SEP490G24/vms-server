@@ -26,3 +26,8 @@ replay_pid*
 # Data postgresql
 
 /.docker/volume/postgresql/data/
+/.docker/volume/keycloak/data/
+/.docker/volume/redis/data/
+/.idea/
+/target/
+/logs/

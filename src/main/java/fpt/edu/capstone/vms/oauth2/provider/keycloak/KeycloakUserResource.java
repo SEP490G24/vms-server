@@ -2,6 +2,7 @@ package fpt.edu.capstone.vms.oauth2.provider.keycloak;
 
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
+import fpt.edu.capstone.vms.util.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.keycloak.admin.client.CreatedResponseUtil;
@@ -48,7 +49,7 @@ public class KeycloakUserResource implements IUserResource {
     public String create(UserDto userDto) {
 
         Map<String, List<String>> attributes = new HashMap<>();
-        attributes.put(Constants.Claims.OrgId, List.of(userDto.getOrgId()));
+        attributes.put(Constants.Claims.OrgId, List.of(SecurityUtils.getOrgId()));
 
         /* Define password credential */
         var passwordCred = new CredentialRepresentation();

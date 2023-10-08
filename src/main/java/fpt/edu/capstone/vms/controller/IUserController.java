@@ -57,7 +57,7 @@ public interface IUserController {
 
     @PostMapping("")
     @Operation(summary = "Create new agent")
-    @PreAuthorize("hasRole('r:user:create')")
+    //@PreAuthorize("hasRole('r:user:create')")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Ok", content = {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE)}),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
@@ -120,6 +120,8 @@ public interface IUserController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     ResponseEntity<?> sync();
+
+
 
     @Data
     class CreateUserInfo {
