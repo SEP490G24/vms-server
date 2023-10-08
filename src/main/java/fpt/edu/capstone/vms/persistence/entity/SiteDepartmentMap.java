@@ -1,7 +1,6 @@
 package fpt.edu.capstone.vms.persistence.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import fpt.edu.capstone.vms.persistence.entity.generic.ModelBaseInterface;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
