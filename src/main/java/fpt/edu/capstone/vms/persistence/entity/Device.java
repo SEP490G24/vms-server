@@ -1,13 +1,12 @@
 package fpt.edu.capstone.vms.persistence.entity;
 
-import jakarta.persistence.CascadeType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.MapKey;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,7 +14,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
-import java.util.Map;
 import java.util.UUID;
 
 @Data
@@ -23,9 +21,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-@Table(schema = "vms", name = "department")
+@Table(schema = "vms", name = "device")
 @EqualsAndHashCode(callSuper = true)
-public class Department extends AbstractBaseEntity<UUID>{
+public class Device extends AbstractBaseEntity<UUID> {
 
     @Id
     @Column(name = "id", length = 64)
@@ -41,16 +39,16 @@ public class Department extends AbstractBaseEntity<UUID>{
     @Column(name = "description")
     private String description;
 
-    @Column(name = "enable")
-    private Boolean enable;
+    @Column(name = "ip")
+    private String ip;
 
-    @OneToMany(mappedBy = "departmentEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
-    @MapKey(name = "siteDepartmentMapPk.departmentId")
-    private Map<UUID, SiteDepartmentMap> siteDepartmentMaps;
+    @Column(name = "check_in_point_id")
+    private UUID checkInPointId;
 
-    @OneToMany(mappedBy = "departmentEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
-    @MapKey(name = "departmentUserMapPk.departmentId")
-    private Map<UUID, DepartmentUserMap> departmentUserMaps;
+    @ManyToOne
+    @JoinColumn(name = "check_in_point_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JsonIgnore
+    private CheckInPoint checkInPoint;
 
     @Override
     public UUID getId() {

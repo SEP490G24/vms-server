@@ -23,9 +23,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-@Table(schema = "vms", name = "department")
+@Table(schema = "vms", name = "template")
 @EqualsAndHashCode(callSuper = true)
-public class Department extends AbstractBaseEntity<UUID>{
+public class Template extends AbstractBaseEntity<UUID> {
 
     @Id
     @Column(name = "id", length = 64)
@@ -41,16 +41,12 @@ public class Department extends AbstractBaseEntity<UUID>{
     @Column(name = "description")
     private String description;
 
-    @Column(name = "enable")
-    private Boolean enable;
+    @Column(name = "body")
+    private String body;
 
-    @OneToMany(mappedBy = "departmentEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
-    @MapKey(name = "siteDepartmentMapPk.departmentId")
-    private Map<UUID, SiteDepartmentMap> siteDepartmentMaps;
-
-    @OneToMany(mappedBy = "departmentEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
-    @MapKey(name = "departmentUserMapPk.departmentId")
-    private Map<UUID, DepartmentUserMap> departmentUserMaps;
+    @OneToMany(mappedBy = "templateEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @MapKey(name = "templateSiteMapPk.templateId")
+    private Map<UUID, TemplateSiteMap> templateSiteMaps;
 
     @Override
     public UUID getId() {

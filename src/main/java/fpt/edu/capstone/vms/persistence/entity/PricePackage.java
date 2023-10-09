@@ -23,9 +23,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-@Table(schema = "vms", name = "department")
+@Table(schema = "vms", name = "price_package")
 @EqualsAndHashCode(callSuper = true)
-public class Department extends AbstractBaseEntity<UUID>{
+public class PricePackage extends AbstractBaseEntity<UUID> {
 
     @Id
     @Column(name = "id", length = 64)
@@ -41,16 +41,27 @@ public class Department extends AbstractBaseEntity<UUID>{
     @Column(name = "description")
     private String description;
 
-    @Column(name = "enable")
-    private Boolean enable;
+    @Column(name = "number_user")
+    private String numberUser;
 
-    @OneToMany(mappedBy = "departmentEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
-    @MapKey(name = "siteDepartmentMapPk.departmentId")
-    private Map<UUID, SiteDepartmentMap> siteDepartmentMaps;
+    @Column(name = "number_ticket")
+    private String numberTicket;
 
-    @OneToMany(mappedBy = "departmentEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
-    @MapKey(name = "departmentUserMapPk.departmentId")
-    private Map<UUID, DepartmentUserMap> departmentUserMaps;
+    @Column(name = "price")
+    private Double price;
+
+    @Column(name = "duration")
+    private String duration;
+
+    @Column(name = "status")
+    private Boolean status;
+
+    @Column(name = "type_card")
+    private Boolean typeCard;
+
+    @OneToMany(mappedBy = "pricePackageEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @MapKey(name = "pricePackageSiteMapPk.pricePackageId")
+    private Map<UUID, PricePackageSiteMap> pricePackageSiteMaps;
 
     @Override
     public UUID getId() {
