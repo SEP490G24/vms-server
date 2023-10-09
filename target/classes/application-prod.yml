@@ -9,9 +9,9 @@ edu:
             realm: vms
             issuer-uri: http://localhost:9080/realms/${edu.fpt.capstone.vms.oauth2.keycloak.realm}
             jwk-set-uri: ${edu.fpt.capstone.vms.oauth2.keycloak.issuer-uri}/protocol/openid-connect/certs
-            client-id: api-resource
+            client-id: vms-api
             principal-attribute: preferred_username
-            credentials-secret: ZaH89hLWKhWU7YiVC21DM6OemcamLuGA
+            credentials-secret: uq9MroK6qI2gs77wEIKG6ZroKCnzgZMt
             admin-username: admin
             admin-password: admin
             ignore-default-roles: default-roles-${com.saltlux.livechat.oauth2.keycloak.realm},offline_access,uma_authorization
