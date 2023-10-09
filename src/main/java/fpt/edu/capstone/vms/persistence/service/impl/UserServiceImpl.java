@@ -2,6 +2,7 @@ package fpt.edu.capstone.vms.persistence.service.impl;
 
 
 import fpt.edu.capstone.vms.constants.Constants;
+import fpt.edu.capstone.vms.controller.IUserController;
 import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
 import fpt.edu.capstone.vms.persistence.entity.User;
@@ -11,8 +12,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -122,5 +126,47 @@ public class UserServiceImpl implements IUserService {
                 }
             }
         }
+    }
+    @Override
+    public ByteArrayResource export(IUserController.UserFilter userFilter) {
+        /*Pageable pageable = PageRequest.of(0, 1000000);
+        Page<User> listData = filter(pageable.getPageNumber(),);
+        List<CatWarrantyStationDTO> listDto = ObjectMapperUtils.mapAll(listData.getContent(), CatWarrantyStationDTO.class);
+        for (CatWarrantyStationDTO e : listDto) {
+            if (e.getTypeStation() != null) {
+                String typeStationName = 1 == e.getTypeStation() ? "Trạm độc quyền" :
+                    2 == e.getTypeStation() ? "Trạm ủy quyền" :
+                        "Trạm trực thuộc";
+                e.setTypeStationName(typeStationName);
+            }
+        }
+
+        try {
+            JasperReport jasperReport = JasperCompileManager.compileReport(getClass().getResourceAsStream(PATH_FILE));
+
+            JRBeanCollectionDataSource listDataSource = new JRBeanCollectionDataSource(
+                listDto.size() == 0 ? Collections.singletonList(new CatWarrantyStationDTO()) : listDto);
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("tableDataset", listDataSource);
+            JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, new JREmptyDataSource());
+
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            JRXlsxExporter exporter = new JRXlsxExporter();
+            exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
+            exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(byteArrayOutputStream));
+            exporter.exportReport();
+
+            byte[] excelBytes = byteArrayOutputStream.toByteArray();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            headers.setContentDispositionFormData("attachment", "danh_sach_tram_bao_hanh_uy_quyen.xlsx");
+            return ResponseEntity
+                .status(HttpStatus.OK)
+                .headers(headers)
+                .body(new ByteArrayResource(excelBytes));
+        } catch (Exception e){
+            return ResponseUtils.getResponseEntityStatus(ErrorApp.INTERNAL_SERVER,null);
+        }*/
+        return null;
     }
 }

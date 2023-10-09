@@ -27,8 +27,8 @@ public class Constants {
     }
 
     public enum UserRole {
-        BUSINESS_ACCOUNT,
-        AGENT_ACCOUNT
+        ORG_ADMIN,
+        STAFF
     }
 
     public enum StatusTicket {

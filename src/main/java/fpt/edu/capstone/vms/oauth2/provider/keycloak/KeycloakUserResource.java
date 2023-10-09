@@ -62,7 +62,7 @@ public class KeycloakUserResource implements IUserResource {
         user.setFirstName(userDto.getFirstName());
         user.setLastName(userDto.getLastName());
         user.setEmail(userDto.getEmail());
-        user.setEnabled(userDto.getIsEnable());
+        user.setEnabled(userDto.getEnable());
         user.setEmailVerified(false);
         user.setCredentials(List.of(passwordCred));
 
@@ -93,7 +93,7 @@ public class KeycloakUserResource implements IUserResource {
         }
 
         modifiedUser.setEmail(userDto.getEmail());
-        if (userDto.getIsEnable() != null) modifiedUser.setEnabled(userDto.getIsEnable());
+        if (userDto.getEnable() != null) modifiedUser.setEnabled(userDto.getEnable());
         userResource.update(modifiedUser);
 
         return true;
