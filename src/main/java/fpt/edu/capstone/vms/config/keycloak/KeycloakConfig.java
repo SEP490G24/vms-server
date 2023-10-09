@@ -21,19 +21,23 @@ public class KeycloakConfig {
     @Value("${edu.fpt.capstone.vms.oauth2.keycloak.admin-password}")
     private String adminPassword;
 
-    @Value("${edu.fpt.capstone.vms.oauth2.keycloak.admin-client}")
-    private String adminClient;
+    @Value("${edu.fpt.capstone.vms.oauth2.keycloak.client-id}")
+    private String clientId;
+
+    @Value("${edu.fpt.capstone.vms.oauth2.keycloak.credentials-secret}")
+    private String credentialsSecret;
 
     @Bean
     public Keycloak keycloak() {
         String authServerUrl = issuerUri.substring(0, issuerUri.indexOf("/realms/"));
         return KeycloakBuilder.builder()
-                .serverUrl(authServerUrl)
-                .realm(realm)
-                .clientId(adminClient)
-                .grantType(OAuth2Constants.PASSWORD)
-                .username(adminUsername)
-                .password(adminPassword)
-                .build();
+            .serverUrl(authServerUrl)
+            .realm(realm)
+            .clientId(clientId)
+            .clientSecret(credentialsSecret)
+            .grantType(OAuth2Constants.PASSWORD)
+            .username(adminUsername)
+            .password(adminPassword)
+            .build();
     }
 }

@@ -3,9 +3,7 @@ services:
   keycloak:
     container_name: keycloak
     image: quay.io/keycloak/keycloak:21.1.2
-    command: ['start-dev --import-realm']
     volumes:
-      - ./volume/keycloak/data/import:/opt/keycloak/data/import
       - ./volume/keycloak/keycloak-health-check.sh:/opt/keycloak/health-check.sh
       - ./volume/keycloak/providers:/opt/keycloak/providers
     networks:
