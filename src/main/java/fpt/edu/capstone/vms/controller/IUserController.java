@@ -65,6 +65,10 @@ public interface IUserController {
 
 
 
+    @GetMapping("/export")
+    @Operation(summary = "Export list of user to excel")
+    ResponseEntity<?> export(@RequestBody UserFilter userFilter);
+
     @Data
     class CreateUserInfo {
         @NotNull
@@ -80,7 +84,7 @@ public interface IUserController {
         @NotNull
         String email;
         @NotNull
-        boolean isEnable;
+        boolean enable = true;
     }
 
     @Data

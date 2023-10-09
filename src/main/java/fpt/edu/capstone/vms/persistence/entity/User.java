@@ -55,7 +55,7 @@ public class User extends AbstractBaseEntity<String> {
     @Column(name = "phone_number")
     private String phoneNumber;
 
-     @Column(name = "enable")
+    @Column(name = "enable")
     private boolean enable;
 
     @Column(name = "last_login_time")
