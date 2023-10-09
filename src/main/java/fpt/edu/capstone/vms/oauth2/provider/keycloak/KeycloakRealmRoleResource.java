@@ -17,6 +17,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import static fpt.edu.capstone.vms.constants.Constants.IGNORE_CLIENT_ID_KEYCLOAK;
+import static fpt.edu.capstone.vms.constants.Constants.IGNORE_ROLE_REALM_KEYCLOAK;
+
 
 @Slf4j
 @Component
@@ -25,9 +28,8 @@ public class KeycloakRealmRoleResource implements IRoleResource {
     private final RolesResource rolesResource;
     private final ModelMapper mapper;
 
-    @Value("${edu.fpt.capstone.vms.oauth2.keycloak.ignore-default-roles}")
-    private String[] ignoreDefaultRoles;
-
+//    @Value("${edu.fpt.capstone.vms.oauth2.keycloak.ignore-default-roles}")
+//    private String[] ignoreDefaultRoles;
 
     public KeycloakRealmRoleResource(
             Keycloak keycloak,
@@ -42,7 +44,7 @@ public class KeycloakRealmRoleResource implements IRoleResource {
     public List<RoleDto> findAll() {
         /* fetch all role */
         var roles = this.rolesResource.list().stream()
-                .filter(roleRepresentation -> !Arrays.asList(ignoreDefaultRoles).contains(roleRepresentation.getName()))
+                .filter(roleRepresentation -> !Arrays.asList(IGNORE_ROLE_REALM_KEYCLOAK).contains(roleRepresentation.getName()))
                 .toList();
         var results = (List<RoleDto>) mapper.map(roles, new TypeToken<List<RoleDto>>() {}.getType());
 

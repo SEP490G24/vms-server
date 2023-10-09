@@ -55,5 +55,4 @@ replay_pid*
 ### Volumn Docker Data ###
 /.docker/volume/postgresql/data/
 /.docker/volume/redis/data/
-/.idea/
 
