@@ -34,7 +34,7 @@ public interface IUserController {
 
     @PostMapping("")
     @Operation(summary = "Create new agent")
-//    @PreAuthorize("hasRole('r:user:create')")
+    //@PreAuthorize("hasRole('r:user:create')")
     ResponseEntity<?> create(@RequestBody @Valid CreateUserInfo userInfo);
 
     @PutMapping("/{username}")
@@ -62,6 +62,8 @@ public interface IUserController {
     @Operation(summary = "Sync account between keycloak & database")
 //    @PreAuthorize("hasRole('r:user:sync')")
     ResponseEntity<?> sync();
+
+
 
     @Data
     class CreateUserInfo {
