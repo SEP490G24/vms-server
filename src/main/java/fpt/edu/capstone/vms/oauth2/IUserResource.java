@@ -5,7 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
+import java.rmi.server.UID;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 public interface IUserResource {
     String create(UserDto account);
@@ -26,8 +29,11 @@ public interface IUserResource {
         private String email;
         private String password;
         private String phone;
+        private LocalDate dateOfBirth;
         private Boolean enable = true;
+        private Constants.Gender gender;
         private Constants.UserRole role;
+        private String departmentId;
     }
 
     @Data

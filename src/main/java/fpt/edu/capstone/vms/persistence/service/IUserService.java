@@ -20,17 +20,14 @@ public interface IUserService {
                       List<Constants.UserRole> roles,
                       LocalDateTime createdOnStart,
                       LocalDateTime createdOnEnd,
-                      Constants.UserState state);
-
-    List<User> availableUsers();
-
-    List<User> filterAvailableUsers(List<String> usernames);
+                      Boolean enable,
+                      String keyword);
 
     User createUser(IUserResource.UserDto userDto);
 
     User updateUser(IUserResource.UserDto userDto) throws NotFoundException;
 
-    int updateState(Constants.UserState state, String username);
+    int updateState(boolean isEnable, String username);
 
     void handleAuthSuccess(String username);
 
