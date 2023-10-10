@@ -45,13 +45,14 @@ public class UserController implements IUserController {
                         filter.getRoles(),
                         filter.getCreatedOnStart(),
                         filter.getCreatedOnEnd(),
-                        filter.getState()));
+                        filter.getEnable(),
+                        filter.getKeyword()));
     }
 
     @Override
     public ResponseEntity<?> create(CreateUserInfo userInfo) {
         User userEntity = userService.createUser(mapper.map(userInfo, IUserResource.UserDto.class)
-                .setRole(Constants.UserRole.STAFF));
+                .setRole(Constants.UserRole.STAFF).setEnable(true));
         return ResponseEntity.ok(mapper.map(userEntity, IUserResource.UserDto.class));
     }
 
@@ -72,9 +73,8 @@ public class UserController implements IUserController {
     }
 
     @Override
-    public ResponseEntity<?> updateState(Constants.UserState state) {
-        String username = SecurityUtils.loginUsername();
-        if (userService.updateState(state, username) > 0) {
+    public ResponseEntity<?> updateState(UpdateState updateState) {
+        if (userService.updateState(updateState.getEnable(), updateState.getUsername()) > 0) {
             return ResponseEntity.ok().build();
         } else {
             return ResponseEntity.notFound().build();

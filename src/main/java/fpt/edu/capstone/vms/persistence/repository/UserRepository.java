@@ -24,27 +24,25 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     @Transactional
     @Modifying
-    @Query("update User u set u.state = ?1 where u.username = ?2")
-    int updateStateByUsername(@NonNull Constants.UserState state, @NonNull String username);
+    @Query("update User u set u.enable = ?1 where u.username = ?2")
+    int updateStateByUsername(@NonNull boolean isEnable, @NonNull String username);
 
     @Query("select u from User u where u.username = :username")
     Optional<User> findByUsername(@Param("username") @NonNull String username);
 
     @Query(value = "select u from User u " +
-            "where ((coalesce(:usernames) is null) or (u.username in :usernames)) " +
-            "and ((coalesce(:roles) is null) or (u.role in :roles)) " +
-            "and ((:createdOnStart is null or :createdOnEnd is null) or (u.createdOn between :createdOnStart and :createdOnEnd))" +
-            "and ((:state is null) or (u.state = :state))")
+        "where ((coalesce(:usernames) is null) or (u.username in :usernames)) " +
+        "and ((coalesce(:roles) is null) or (u.role in :roles)) " +
+        "and (((cast(:createdOnStart as date) is null ) or (cast(:createdOnEnd as date) is null )) or (u.createdOn between :createdOnStart and :createdOnEnd))" +
+        "and ((:enable is null) or (u.enable = :enable))" +
+        "and ((:keyword is null) or (u.username LIKE %:keyword% or u.firstName LIKE %:keyword% or u.lastName LIKE %:keyword% or u.email LIKE %:keyword% or u.phoneNumber LIKE %:keyword% ))")
     Page<User> filter(Pageable pageable,
                       @Param("usernames") @Nullable Collection<String> usernames,
                       @Param("roles") @Nullable Collection<Constants.UserRole> roles,
                       @Param("createdOnStart") @Nullable LocalDateTime createdOnStart,
                       @Param("createdOnEnd") @Nullable LocalDateTime createdOnEnd,
-                      @Param("state") @Nullable Constants.UserState state);
-
-    List<User> findByState(Constants.UserState userState);
-
-    List<User> findByStateAndUsernameIn(Constants.UserState userState, List<String> usernames);
+                      @Param("enable") @Nullable Boolean isEnable,
+                      @Param("keyword") @Nullable String keyword);
 
     User findFirstByUsername(String username);
 }
