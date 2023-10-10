@@ -6,14 +6,14 @@ edu:
         oauth2:
           provider: keycloak
           keycloak:
-            realm: vms
-            issuer-uri: http://localhost:9080/realms/${edu.fpt.capstone.vms.oauth2.keycloak.realm}
+            realm: ${KEYCLOAK_REALM}
+            issuer-uri: http://${KEYCLOAK_HOST}/realms/${edu.fpt.capstone.vms.oauth2.keycloak.realm}
             jwk-set-uri: ${edu.fpt.capstone.vms.oauth2.keycloak.issuer-uri}/protocol/openid-connect/certs
             client-id: vms-api
             principal-attribute: preferred_username
-            credentials-secret: uq9MroK6qI2gs77wEIKG6ZroKCnzgZMt
-            admin-username: admin
-            admin-password: admin
+            credentials-secret: ${KEYCLOAK_CREDENTIALS}
+            admin-username: ${KEYCLOAK_REALM_ADMIN_USER}
+            admin-password: ${KEYCLOAK_REALM_ADMIN_PASS}
             ignore-default-roles: default-roles-${com.saltlux.livechat.oauth2.keycloak.realm},offline_access,uma_authorization
 
 management:
@@ -40,7 +40,7 @@ spring:
     name: vms-service
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://${POSTGRES_HOST}/${POSTGRES_DATABASE}
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
   jpa:

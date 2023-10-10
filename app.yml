@@ -8,12 +8,17 @@ services:
     environment:
       - SERVER_PORT=8000
       - KEYCLOAK_HOST=localhost:9080
+      - KEYCLOAK_REALM=vms
+      - KEYCLOAK_REALM_ADMIN_PASS=admin
+      - KEYCLOAK_REALM_ADMIN_USER=admin
+      - KEYCLOAK_CREDENTIALS=uq9MroK6qI2gs77wEIKG6ZroKCnzgZMt
+      - POSTGRES_HOST=vmsdbserver.postgres.database.azure.com
+      - POSTGRES_PORT=5432
+      - POSTGRES_DATABASE=vms-db
+      - POSTGRES_USER=vms
+      - POSTGRES_PASSWORD=Password123
       - REDIS_HOST=localhost
       - REDIS_PORT=6379
-      - POSTGRES_HOST=localhost:5432
-      - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=admin
-      - POSTGRES_DATABASE=vms-db
     networks:
       - vms
 
