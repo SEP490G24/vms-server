@@ -80,6 +80,8 @@ public class User extends AbstractBaseEntity<String> {
         if (userEntity.email != null) this.email = userEntity.email;
         if (userEntity.phoneNumber != null) this.phoneNumber = userEntity.phoneNumber;
         if (userEntity.lastLoginTime != null) this.lastLoginTime = userEntity.lastLoginTime;
+        if (userEntity.getCreatedBy() != null) this.setCreatedBy(userEntity.getCreatedBy());
+        if (userEntity.getCreatedOn() != null) this.setCreatedOn(userEntity.getCreatedOn());
         return this;
     }
 

@@ -1,12 +1,15 @@
 package fpt.edu.capstone.vms.controller.impl;
 
 import fpt.edu.capstone.vms.controller.IDepartmentController;
+import fpt.edu.capstone.vms.controller.ISiteController;
 import fpt.edu.capstone.vms.persistence.entity.Department;
+import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.service.impl.DepartmentServiceImpl;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
 import java.util.UUID;
@@ -34,7 +37,21 @@ public class DepartmentController implements IDepartmentController {
 
     @Override
     public ResponseEntity<?> createDepartment(createDepartmentInfo departmentInfo) {
-        var department = departmentService.save(mapper.map(departmentInfo, Department.class));
-        return ResponseEntity.ok(department);
+        try {
+            var department = departmentService.createDepartment(departmentInfo);
+            return ResponseEntity.ok(department);
+        } catch (HttpClientErrorException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(e.getMessage());
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> updateDepartment(updateDepartmentInfo updateInfo, UUID id) {
+        try {
+            var site = departmentService.update(mapper.map(updateInfo, Department.class), id);
+            return ResponseEntity.ok(site);
+        } catch (HttpClientErrorException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(e.getMessage());
+        }
     }
 }

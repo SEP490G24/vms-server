@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
 import java.util.UUID;
@@ -34,7 +35,22 @@ public class SiteController implements ISiteController {
 
     @Override
     public ResponseEntity<?> createSite(createSiteInfo siteInfo) {
-        var site = siteService.save(mapper.map(siteInfo, Site.class));
-        return ResponseEntity.ok(site);
+        try {
+            var site = siteService.save(mapper.map(siteInfo, Site.class));
+            return ResponseEntity.ok(site);
+        } catch (HttpClientErrorException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(e.getMessage());
+        }
+
+    }
+
+    @Override
+    public ResponseEntity<?> updateSite(updateSiteInfo updateSiteInfo, UUID id) {
+        try {
+            var site = siteService.updateSite(updateSiteInfo, id);
+            return ResponseEntity.ok(site);
+        } catch (HttpClientErrorException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(e.getMessage());
+        }
     }
 }

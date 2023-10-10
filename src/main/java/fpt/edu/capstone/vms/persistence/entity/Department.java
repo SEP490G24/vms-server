@@ -52,6 +52,16 @@ public class Department extends AbstractBaseEntity<UUID>{
     @MapKey(name = "departmentUserMapPk.departmentId")
     private Map<UUID, DepartmentUserMap> departmentUserMaps;
 
+    public Department update(Department department) {
+        if (department.name != null) this.name = department.name;
+        if (department.code != null) this.code = department.code;
+        if (department.description != null) this.description = department.description;
+        if (department.enable != null) this.enable = department.enable;
+        if (department.getCreatedBy() != null) this.setCreatedBy(department.getCreatedBy());
+        if (department.getCreatedOn() != null) this.setCreatedOn(department.getCreatedOn());
+        return this;
+    }
+
     @Override
     public UUID getId() {
         return id;

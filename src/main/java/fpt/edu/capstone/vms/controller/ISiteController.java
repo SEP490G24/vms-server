@@ -3,6 +3,7 @@ package fpt.edu.capstone.vms.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,11 +35,40 @@ public interface ISiteController {
 //    @PreAuthorize("hasRole('r:user:create')")
     ResponseEntity<?> createSite(@RequestBody @Valid createSiteInfo siteInfo);
 
+    @PatchMapping("/{id}")
+    @Operation(summary = "Update site")
+    ResponseEntity<?> updateSite(@RequestBody updateSiteInfo updateSiteInfo, @PathVariable UUID id);
+
     @Data
     class createSiteInfo {
+        @NotNull
         private String name;
-        private String code;
+        @NotNull
         private UUID organizationId;
+        @NotNull
+        private Boolean mandatoryHealth;
+        @NotNull
+        private Boolean mandatoryTripCode;
+        @NotNull
+        private Boolean nucleicAcidTestReport;
+        @NotNull
+        private String phoneNumber;
+        @NotNull
+        private String province;
+        @NotNull
+        private String district;
+        @NotNull
+        private String ward;
+        @NotNull
+        private String address;
+        @NotNull
+        private String taxCode;
+        private String description;
+    }
+
+    @Data
+    class updateSiteInfo {
+        private String name;
         private Boolean mandatoryHealth;
         private Boolean mandatoryTripCode;
         private Boolean nucleicAcidTestReport;
@@ -49,6 +79,6 @@ public interface ISiteController {
         private String address;
         private String taxCode;
         private String description;
-        private Boolean enable;
+        private String departmentId;
     }
 }
