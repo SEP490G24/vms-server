@@ -10,7 +10,10 @@ import fpt.edu.capstone.vms.persistence.service.IUserService;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.apache.http.HttpStatus;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RestController;
@@ -48,7 +51,7 @@ public class UserController implements IUserController {
     @Override
     public ResponseEntity<?> create(CreateUserInfo userInfo) {
         User userEntity = userService.createUser(mapper.map(userInfo, IUserResource.UserDto.class)
-                .setRole(Constants.UserRole.AGENT_ACCOUNT));
+                .setRole(Constants.UserRole.STAFF));
         return ResponseEntity.ok(mapper.map(userEntity, IUserResource.UserDto.class));
     }
 
@@ -95,5 +98,12 @@ public class UserController implements IUserController {
     public ResponseEntity<?> sync() {
         userService.synAccountFromKeycloak();
         return ResponseEntity.ok().build();
+    }
+    @Override
+    public ResponseEntity<?> export(UserFilter userFilter) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.setContentDispositionFormData("attachment", "danh_sach_tram_bao_hanh_uy_quyen.xlsx");
+        return ResponseEntity.status(HttpStatus.SC_OK).headers(headers).body(userService.export(userFilter));
     }
 }

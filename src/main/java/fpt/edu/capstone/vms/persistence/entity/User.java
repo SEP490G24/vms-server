@@ -12,6 +12,8 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.UUID;
 
 @Data
 @Entity
@@ -55,13 +57,17 @@ public class User extends AbstractBaseEntity<String> {
     @Column(name = "phone_number")
     private String phoneNumber;
 
-     @Column(name = "enable")
+    @Column(name = "enable")
     private boolean enable;
 
     @Column(name = "last_login_time")
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
     private LocalDateTime lastLoginTime;
+
+    @OneToMany(mappedBy = "userEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @MapKey(name = "departmentUserMapPk.username")
+    private Map<String, DepartmentUserMap> departmentUserMaps;
 
     public User update(User userEntity) {
         if (userEntity.username != null) this.username = userEntity.username;

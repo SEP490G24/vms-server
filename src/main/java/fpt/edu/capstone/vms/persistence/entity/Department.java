@@ -48,6 +48,10 @@ public class Department extends AbstractBaseEntity<UUID>{
     @MapKey(name = "siteDepartmentMapPk.departmentId")
     private Map<UUID, SiteDepartmentMap> siteDepartmentMaps;
 
+    @OneToMany(mappedBy = "departmentEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @MapKey(name = "departmentUserMapPk.departmentId")
+    private Map<UUID, DepartmentUserMap> departmentUserMaps;
+
     @Override
     public UUID getId() {
         return id;

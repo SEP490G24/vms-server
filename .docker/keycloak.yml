@@ -5,8 +5,6 @@ services:
     image: quay.io/keycloak/keycloak:21.1.2
     command: ['start-dev --import-realm']
     volumes:
-      - ./volume/keycloak/data/import:/opt/keycloak/data/import
-      - ./volume/keycloak/keycloak-health-check.sh:/opt/keycloak/health-check.sh
       - ./volume/keycloak/providers:/opt/keycloak/providers
     networks:
       - vms
@@ -21,12 +19,7 @@ services:
     ports:
       - "9080:9080"
       - "9443:9443"
-    healthcheck:
-      test: 'bash /opt/keycloak/health-check.sh'
-      interval: 5s
-      timeout: 5s
-      retries: 20
-      start_period: 10s
+
 
 
 networks:

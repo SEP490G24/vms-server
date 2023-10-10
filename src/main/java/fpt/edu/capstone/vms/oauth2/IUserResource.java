@@ -26,7 +26,7 @@ public interface IUserResource {
         private String email;
         private String password;
         private String phone;
-        private Boolean isEnable;
+        private Boolean enable = true;
         private Constants.UserRole role;
     }
 

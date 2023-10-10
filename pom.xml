@@ -10,7 +10,7 @@
     </parent>
     <groupId>fpt.edu.capstone</groupId>
     <artifactId>vms</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>vms</name>
     <description>Visitors Management System</description>
 
@@ -94,10 +94,10 @@
             <artifactId>keycloak-admin-client</artifactId>
             <version>${keycloak.version}</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.liquibase</groupId>-->
-<!--            <artifactId>liquibase-core</artifactId>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.liquibase</groupId>-->
+        <!--            <artifactId>liquibase-core</artifactId>-->
+        <!--        </dependency>-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -107,6 +107,11 @@
                     <artifactId>spring-expression</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>32.1.2-jre</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -164,11 +169,11 @@
 
     <dependencyManagement>
         <dependencies>
-<!--            <dependency>-->
-<!--                <groupId>org.liquibase</groupId>-->
-<!--                <artifactId>liquibase-core</artifactId>-->
-<!--                <version>4.23.0</version>-->
-<!--            </dependency>-->
+            <!--            <dependency>-->
+            <!--                <groupId>org.liquibase</groupId>-->
+            <!--                <artifactId>liquibase-core</artifactId>-->
+            <!--                <version>4.23.0</version>-->
+            <!--            </dependency>-->
             <dependency>
                 <groupId>org.springdoc</groupId>
                 <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
@@ -183,207 +188,22 @@
     </dependencyManagement>
 
     <build>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-				<configuration>
-					<excludes>
-						<exclude>
-							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok</artifactId>
-						</exclude>
-					</excludes>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
-<!--    <build>-->
-<!--        <defaultGoal>spring-boot:run</defaultGoal>-->
-<!--        <plugins>-->
-<!--            <plugin>-->
-<!--                <groupId>org.apache.maven.plugins</groupId>-->
-<!--                <artifactId>maven-checkstyle-plugin</artifactId>-->
-<!--            </plugin>-->
-<!--            <plugin>-->
-<!--                <groupId>org.apache.maven.plugins</groupId>-->
-<!--                <artifactId>maven-compiler-plugin</artifactId>-->
-<!--            </plugin>-->
-<!--            <plugin>-->
-<!--                <groupId>org.apache.maven.plugins</groupId>-->
-<!--                <artifactId>maven-javadoc-plugin</artifactId>-->
-<!--            </plugin>-->
-<!--            <plugin>-->
-<!--                <groupId>org.apache.maven.plugins</groupId>-->
-<!--                <artifactId>maven-resources-plugin</artifactId>-->
-<!--            </plugin>-->
-<!--            <plugin>-->
-<!--                <groupId>org.jacoco</groupId>-->
-<!--                <artifactId>jacoco-maven-plugin</artifactId>-->
-<!--            </plugin>-->
-<!--            <plugin>-->
-<!--                <groupId>org.sonarsource.scanner.maven</groupId>-->
-<!--                <artifactId>sonar-maven-plugin</artifactId>-->
-<!--            </plugin>-->
-<!--        </plugins>-->
-<!--        <pluginManagement>-->
-<!--            <plugins>-->
-<!--                <plugin>-->
-<!--                    <groupId>org.springdoc</groupId>-->
-<!--                    <artifactId>springdoc-openapi-maven-plugin</artifactId>-->
-<!--                </plugin>-->
-<!--                <plugin>-->
-<!--                    <groupId>org.springframework.boot</groupId>-->
-<!--                    <artifactId>spring-boot-maven-plugin</artifactId>-->
-<!--                    <configuration>-->
-<!--                        <excludes>-->
-<!--                            <exclude>-->
-<!--                                <groupId>org.projectlombok</groupId>-->
-<!--                                <artifactId>lombok</artifactId>-->
-<!--                            </exclude>-->
-<!--                        </excludes>-->
-<!--                    </configuration>-->
-<!--                </plugin>-->
-<!--                <plugin>-->
-<!--                    <groupId>io.github.git-commit-id</groupId>-->
-<!--                    <artifactId>git-commit-id-maven-plugin</artifactId>-->
-<!--                    <version>${git-commit-id-maven-plugin.version}</version>-->
-<!--                    <executions>-->
-<!--                        <execution>-->
-<!--                            <goals>-->
-<!--                                <goal>revision</goal>-->
-<!--                            </goals>-->
-<!--                        </execution>-->
-<!--                    </executions>-->
-<!--                    <configuration>-->
-<!--                        <failOnNoGitDirectory>false</failOnNoGitDirectory>-->
-<!--                        <failOnUnableToExtractRepoInfo>false</failOnUnableToExtractRepoInfo>-->
-<!--                        <generateGitPropertiesFile>true</generateGitPropertiesFile>-->
-<!--                        <includeOnlyProperties>-->
-<!--                            <includeOnlyProperty>^git.commit.id.abbrev$</includeOnlyProperty>-->
-<!--                            <includeOnlyProperty>^git.commit.id.describe$</includeOnlyProperty>-->
-<!--                            <includeOnlyProperty>^git.branch$</includeOnlyProperty>-->
-<!--                        </includeOnlyProperties>-->
-<!--                    </configuration>-->
-<!--                </plugin>-->
-<!--                <plugin>-->
-<!--                    <groupId>org.apache.maven.plugins</groupId>-->
-<!--                    <artifactId>maven-checkstyle-plugin</artifactId>-->
-<!--                    <version>${maven-checkstyle-plugin.version}</version>-->
-<!--                    <dependencies>-->
-<!--                        <dependency>-->
-<!--                            <groupId>com.puppycrawl.tools</groupId>-->
-<!--                            <artifactId>checkstyle</artifactId>-->
-<!--                            <version>${checkstyle.version}</version>-->
-<!--                        </dependency>-->
-<!--                        <dependency>-->
-<!--                            <groupId>io.spring.nohttp</groupId>-->
-<!--                            <artifactId>nohttp-checkstyle</artifactId>-->
-<!--                            <version>${nohttp-checkstyle.version}</version>-->
-<!--                        </dependency>-->
-<!--                    </dependencies>-->
-<!--                    <configuration>-->
-<!--                        <configLocation>checkstyle.xml</configLocation>-->
-<!--                        <includes>pom.xml,README.md</includes>-->
-<!--                        <excludes>.git/**/*,target/**/*,node_modules/**/*,node/**/*</excludes>-->
-<!--                        <sourceDirectories>./</sourceDirectories>-->
-<!--                    </configuration>-->
-<!--                    <executions>-->
-<!--                        <execution>-->
-<!--                            <goals>-->
-<!--                                <goal>check</goal>-->
-<!--                            </goals>-->
-<!--                        </execution>-->
-<!--                    </executions>-->
-<!--                </plugin>-->
-<!--                <plugin>-->
-<!--                    <groupId>org.apache.maven.plugins</groupId>-->
-<!--                    <artifactId>maven-clean-plugin</artifactId>-->
-<!--                    <version>${maven-clean-plugin.version}</version>-->
-<!--                </plugin>-->
-<!--                <plugin>-->
-<!--                    <groupId>org.apache.maven.plugins</groupId>-->
-<!--                    <artifactId>maven-failsafe-plugin</artifactId>-->
-<!--                    <version>${maven-failsafe-plugin.version}</version>-->
-<!--                    <configuration>-->
-<!--                        &lt;!&ndash; Due to spring-boot repackage, without adding this property test classes are not found-->
-<!--                             See https://github.com/spring-projects/spring-boot/issues/6254 &ndash;&gt;-->
-<!--                        &lt;!&ndash; Force alphabetical order to have a reproducible build &ndash;&gt;-->
-<!--                        &lt;!&ndash; Fix tests at java 13+ https://github.com/reactor/BlockHound/issues/33 &ndash;&gt;-->
-<!--                        <classesDirectory>${project.build.outputDirectory}</classesDirectory>-->
-<!--                        <runOrder>alphabetical</runOrder>-->
-<!--                        <includes>-->
-<!--                            <include>**/*IT*</include>-->
-<!--                            <include>**/*IntTest*</include>-->
-<!--                        </includes>-->
-<!--                        <argLine>@{argLine} -XX:+AllowRedefinitionToAddDeleteMethods-->
-<!--                            -Dspring.profiles.active=${profile.test}-->
-<!--                        </argLine>-->
-<!--                    </configuration>-->
-<!--                    <executions>-->
-<!--                        <execution>-->
-<!--                            <id>integration-test</id>-->
-<!--                            <goals>-->
-<!--                                <goal>integration-test</goal>-->
-<!--                            </goals>-->
-<!--                        </execution>-->
-<!--                        <execution>-->
-<!--                            <id>verify</id>-->
-<!--                            <goals>-->
-<!--                                <goal>verify</goal>-->
-<!--                            </goals>-->
-<!--                        </execution>-->
-<!--                    </executions>-->
-<!--                </plugin>-->
-<!--                <plugin>-->
-<!--                    <groupId>org.apache.maven.plugins</groupId>-->
-<!--                    <artifactId>maven-jar-plugin</artifactId>-->
-<!--                    <version>${maven-jar-plugin.version}</version>-->
-<!--                </plugin>-->
-<!--                <plugin>-->
-<!--                    <groupId>org.jacoco</groupId>-->
-<!--                    <artifactId>jacoco-maven-plugin</artifactId>-->
-<!--                    <version>${jacoco-maven-plugin.version}</version>-->
-<!--                    <executions>-->
-<!--                        <execution>-->
-<!--                            <id>pre-unit-tests</id>-->
-<!--                            <goals>-->
-<!--                                <goal>prepare-agent</goal>-->
-<!--                            </goals>-->
-<!--                        </execution>-->
-<!--                        <execution>-->
-<!--                            &lt;!&ndash; Ensures that the code coverage report for unit tests is created after unit tests have been run &ndash;&gt;-->
-<!--                            <id>post-unit-test</id>-->
-<!--                            <phase>test</phase>-->
-<!--                            <goals>-->
-<!--                                <goal>report</goal>-->
-<!--                            </goals>-->
-<!--                        </execution>-->
-<!--                        <execution>-->
-<!--                            <id>pre-integration-tests</id>-->
-<!--                            <goals>-->
-<!--                                <goal>prepare-agent-integration</goal>-->
-<!--                            </goals>-->
-<!--                        </execution>-->
-<!--                        <execution>-->
-<!--                            &lt;!&ndash; Ensures that the code coverage report for integration tests is created after integration tests have been run &ndash;&gt;-->
-<!--                            <id>post-integration-tests</id>-->
-<!--                            <phase>post-integration-test</phase>-->
-<!--                            <goals>-->
-<!--                                <goal>report-integration</goal>-->
-<!--                            </goals>-->
-<!--                        </execution>-->
-<!--                    </executions>-->
-<!--                </plugin>-->
-<!--                <plugin>-->
-<!--                    <groupId>org.sonarsource.scanner.maven</groupId>-->
-<!--                    <artifactId>sonar-maven-plugin</artifactId>-->
-<!--                    <version>${sonar-maven-plugin.version}</version>-->
-<!--                </plugin>-->
-<!--            </plugins>-->
-<!--        </pluginManagement>-->
-<!--    </build>-->
     <repositories>
         <repository>
             <id>spring-milestones</id>

@@ -5,7 +5,6 @@ import fpt.edu.capstone.vms.oauth2.IPermissionResource;
 import fpt.edu.capstone.vms.oauth2.IRoleResource;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.admin.client.Keycloak;
-import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.RolesResource;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.modelmapper.ModelMapper;
@@ -18,6 +17,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import static fpt.edu.capstone.vms.constants.Constants.IGNORE_CLIENT_ID_KEYCLOAK;
 import static fpt.edu.capstone.vms.constants.Constants.IGNORE_ROLE_REALM_KEYCLOAK;
 
 
@@ -27,6 +27,9 @@ public class KeycloakRealmRoleResource implements IRoleResource {
 
     private final RolesResource rolesResource;
     private final ModelMapper mapper;
+
+//    @Value("${edu.fpt.capstone.vms.oauth2.keycloak.ignore-default-roles}")
+//    private String[] ignoreDefaultRoles;
 
     public KeycloakRealmRoleResource(
             Keycloak keycloak,

@@ -98,6 +98,14 @@ public class Ticket extends AbstractBaseEntity<UUID> {
     @JsonIgnore
     private User user;
 
+    @Column(name = "room_id")
+    private UUID roomId;
+
+    @ManyToOne
+    @JoinColumn(name = "room_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JsonIgnore
+    private RoomSite roomSite;
+
     @Override
     public UUID getId() {
         return id;

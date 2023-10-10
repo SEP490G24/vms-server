@@ -11,10 +11,11 @@ public class Constants {
         public static String Email = "email";
     }
 
-    public static final String[] IGNORE_CLIENT_ID_KEYCLOAK = new String[] {"account", "account-console", "admin-cli", "broker",
-            "realm-management", "realm-management", "security-admin-console" };
+    public static final String[] IGNORE_CLIENT_ID_KEYCLOAK = new String[]{"account", "account-console", "admin-cli", "broker",
+        "realm-management", "realm-management", "security-admin-console"};
 
-    public static final String[] IGNORE_ROLE_REALM_KEYCLOAK = new String[] {"default-roles-cep", "offline_access", "uma_authorization" };
+    public static final String[] IGNORE_ROLE_REALM_KEYCLOAK = new String[]{"default-roles-cep", "offline_access", "uma_authorization"};
+
 
     public static final String DATE_PATTERN = "yyyy-MM-dd";
     public static final String DATETIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
@@ -26,8 +27,8 @@ public class Constants {
     }
 
     public enum UserRole {
-        BUSINESS_ACCOUNT,
-        AGENT_ACCOUNT
+        ORG_ADMIN,
+        STAFF
     }
 
     public enum StatusTicket {
