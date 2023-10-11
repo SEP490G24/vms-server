@@ -42,7 +42,7 @@ public class DepartmentController implements IDepartmentController {
             var department = departmentService.createDepartment(departmentInfo);
             return ResponseEntity.ok(department);
         } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getStatusCode(), e.getMessage()));
+            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
         }
     }
 
@@ -52,7 +52,7 @@ public class DepartmentController implements IDepartmentController {
             var site = departmentService.update(mapper.map(updateInfo, Department.class), id);
             return ResponseEntity.ok(site);
         } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getStatusCode(), e.getMessage()));
+            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
         }
     }
 

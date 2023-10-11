@@ -29,7 +29,7 @@ public class SiteController implements ISiteController {
         try {
             return siteService.delete(id);
         } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getStatusCode(), e.getMessage()));
+            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
         }
     }
 
@@ -44,7 +44,7 @@ public class SiteController implements ISiteController {
             var site = siteService.save(mapper.map(siteInfo, Site.class));
             return ResponseEntity.ok(site);
         } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getStatusCode(), e.getMessage()));
+            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
         }
 
     }
@@ -55,7 +55,7 @@ public class SiteController implements ISiteController {
             var site = siteService.updateSite(updateSiteInfo, id);
             return ResponseEntity.ok(site);
         } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getStatusCode(), e.getMessage()));
+            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
         }
     }
 
