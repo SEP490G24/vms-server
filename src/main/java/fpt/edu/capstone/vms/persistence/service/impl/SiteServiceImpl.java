@@ -56,12 +56,12 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
         var siteEntity = siteRepository.findById(id).orElse(null);
         var update = mapper.map(updateSite, Site.class);
         if (ObjectUtils.isEmpty(siteEntity))
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't found site");
+            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't found site by id: " + id);
         if (!UUID.fromString(SecurityUtils.getOrgId()).equals(siteEntity.getOrganizationId())) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in organization");
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in organization with organizationId = " +siteEntity.getOrganization());
         }
         siteRepository.save(siteEntity.update(update));
-        if (!updateSite.getDepartmentId().isEmpty()) {
+        if (updateSite.getDepartmentId() != null) {
             SiteDepartmentMap siteDepartmentMap = new SiteDepartmentMap();
             SiteDepartmentMapPk pk = new SiteDepartmentMapPk(UUID.fromString(updateSite.getDepartmentId()), siteEntity.getId());
             siteDepartmentMap.setId(pk);
