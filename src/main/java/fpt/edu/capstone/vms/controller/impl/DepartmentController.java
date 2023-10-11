@@ -5,6 +5,7 @@ import fpt.edu.capstone.vms.controller.ISiteController;
 import fpt.edu.capstone.vms.exception.HttpClientResponse;
 import fpt.edu.capstone.vms.persistence.entity.Department;
 import fpt.edu.capstone.vms.persistence.entity.Site;
+import fpt.edu.capstone.vms.persistence.service.IDepartmentService;
 import fpt.edu.capstone.vms.persistence.service.impl.DepartmentServiceImpl;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -18,7 +19,7 @@ import java.util.UUID;
 @RestController
 @AllArgsConstructor
 public class DepartmentController implements IDepartmentController {
-    private final DepartmentServiceImpl departmentService;
+    private final IDepartmentService departmentService;
     private final ModelMapper mapper;
 
     @Override

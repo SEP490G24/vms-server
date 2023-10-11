@@ -13,7 +13,7 @@ import java.util.UUID;
 
 public interface ISiteService extends IGenericService<Site, UUID> {
 
-    Site updateSite(ISiteController.UpdateSiteInfo updateSite, UUID id) throws NotFoundException;
+    Site updateSite(ISiteController.UpdateSiteInfo updateSite, UUID id);
 
     Page<Site> filter(int pageNumber,
                       List<String> names,
@@ -23,4 +23,6 @@ public interface ISiteService extends IGenericService<Site, UUID> {
                       String lastUpdatedBy,
                       Boolean enable,
                       String keyword);
+
+    List<Site> findAllByOrganizationId(String organizationId);
 }

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 @Repository
@@ -42,4 +43,5 @@ public interface SiteRepository extends GenericRepository<Site, UUID> {
                       @Param("enable") @Nullable Boolean isEnable,
                       @Param("keyword") @Nullable String keyword);
 
+    List<Site> findAllByOrganizationId(UUID organizationId);
 }
