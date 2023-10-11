@@ -5,7 +5,10 @@ import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.IUserController;
 import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
+import fpt.edu.capstone.vms.persistence.entity.DepartmentUserMap;
+import fpt.edu.capstone.vms.persistence.entity.DepartmentUserMapPk;
 import fpt.edu.capstone.vms.persistence.entity.User;
+import fpt.edu.capstone.vms.persistence.repository.DepartmentUserMapRepository;
 import fpt.edu.capstone.vms.persistence.repository.UserRepository;
 import fpt.edu.capstone.vms.persistence.service.IUserService;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -28,30 +32,23 @@ import java.util.List;
 public class UserServiceImpl implements IUserService {
 
     private final UserRepository userRepository;
+    private final DepartmentUserMapRepository departmentUserMapRepository;
     private final IUserResource userResource;
     private final ModelMapper mapper;
 
 
     @Override
-    public Page<User> filter(int pageNumber, List<String> usernames, List<Constants.UserRole> roles, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, Constants.UserState state) {
+    public Page<User> filter(int pageNumber, List<String> usernames, List<Constants.UserRole> roles, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, Boolean enable,String keyword) {
         return userRepository.filter(
                 PageRequest.of(pageNumber, Constants.PAGE_SIZE),
                 usernames,
                 roles,
                 createdOnStart,
                 createdOnEnd,
-                state);
+                enable,
+                keyword);
     }
 
-    @Override
-    public List<User> availableUsers() {
-        return userRepository.findByState(Constants.UserState.AVAILABLE);
-    }
-
-    @Override
-    public List<User> filterAvailableUsers(List<String> usernames) {
-        return userRepository.findByStateAndUsernameIn(Constants.UserState.AVAILABLE, usernames);
-    }
 
     @Override
     public User createUser(IUserResource.UserDto userDto) {
@@ -64,6 +61,10 @@ public class UserServiceImpl implements IUserService {
             if (!StringUtils.isEmpty(kcUserId)) {
                 userEntity = mapper.map(userDto, User.class).setOpenid(kcUserId);
                 userRepository.save(userEntity);
+                DepartmentUserMapPk departmentUserMapPk = new DepartmentUserMapPk();
+                departmentUserMapPk.setDepartmentId(UUID.fromString(userDto.getDepartmentId()));
+                departmentUserMapPk.setUsername(userDto.getUsername());
+                departmentUserMapRepository.save(new DepartmentUserMap().setDepartmentUserMapPk(departmentUserMapPk));
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -87,8 +88,8 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public int updateState(Constants.UserState state, String username) {
-        return userRepository.updateStateByUsername(state, username);
+    public int updateState(boolean isEnable, String username) {
+        return userRepository.updateStateByUsername(isEnable, username);
     }
 
     @Override
@@ -96,7 +97,6 @@ public class UserServiceImpl implements IUserService {
         var userOptional = userRepository.findByUsername(username);
         if (userOptional.isPresent()) {
             var userEntity = userOptional.get();
-            userEntity.setState(Constants.UserState.AVAILABLE);
             userEntity.setLastLoginTime(LocalDateTime.now());
             userRepository.save(userEntity);
         }

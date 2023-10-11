@@ -7,11 +7,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.QueryParam;
 import lombok.Data;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -33,12 +33,12 @@ public interface IUserController {
     ResponseEntity<?> filter(@RequestBody UserFilter usernames);
 
     @PostMapping("")
-    @Operation(summary = "Create new agent")
+    @Operation(summary = "Create new user")
     //@PreAuthorize("hasRole('r:user:create')")
     ResponseEntity<?> create(@RequestBody @Valid CreateUserInfo userInfo);
 
     @PutMapping("/{username}")
-    @Operation(summary = "Update agent")
+    @Operation(summary = "Update user")
 //    @PreAuthorize("hasRole('r:user:update')")
     ResponseEntity<?> update(@PathVariable("username") String username, @RequestBody @Valid UpdateUserInfo userInfo) throws NotFoundException;
 
@@ -48,7 +48,7 @@ public interface IUserController {
 
     @PutMapping("/update-state")
     @Operation(summary = "Update my state")
-    ResponseEntity<?> updateState(@QueryParam("state") Constants.UserState state);
+    ResponseEntity<?> updateState(@RequestBody @Valid UpdateState updateState);
 
     @GetMapping("/handle-auth-success")
     @Operation(summary = "Handle event login success")
@@ -82,7 +82,12 @@ public interface IUserController {
         @NotNull
         String email;
         @NotNull
-        boolean enable = true;
+        String departmentId;
+        LocalDate dateOfBirth;
+        @NotNull
+        Constants.Gender gender;
+        @NotNull
+        Boolean enable = true;
     }
 
     @Data
@@ -93,16 +98,25 @@ public interface IUserController {
         @NotNull
         String email;
         @NotNull
-        boolean isEnable;
+        Boolean enable;
     }
 
     @Data
     class UserFilter {
-        int pageNumber = 0;
+        int pageNumber;
         List<Constants.UserRole> roles;
         List<String> usernames;
         LocalDateTime createdOnStart;
         LocalDateTime createdOnEnd;
-        Constants.UserState state;
+        Boolean enable;
+        String keyword;
+    }
+
+    @Data
+    class UpdateState {
+        @NotNull
+        String username;
+        @NotNull
+        Boolean enable;
     }
 }
