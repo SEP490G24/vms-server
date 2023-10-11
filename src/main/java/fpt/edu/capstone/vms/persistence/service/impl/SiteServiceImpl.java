@@ -1,6 +1,8 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
+import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ISiteController;
+import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.entity.SiteDepartmentMap;
 import fpt.edu.capstone.vms.persistence.entity.SiteDepartmentMapPk;
@@ -11,11 +13,15 @@ import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -46,7 +52,7 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
     }
 
     @Override
-    public Site updateSite(ISiteController.updateSiteInfo updateSite, UUID id) {
+    public Site updateSite(ISiteController.UpdateSiteInfo updateSite, UUID id) {
         var siteEntity = siteRepository.findById(id).orElse(null);
         var update = mapper.map(updateSite, Site.class);
         if (ObjectUtils.isEmpty(siteEntity))
@@ -63,4 +69,17 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
         }
         return siteEntity;
     }
+
+    @Override
+    public Page<Site> filter(int pageNumber, List<String> names, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, String createBy, Boolean enable, String keyword) {
+        return siteRepository.filter(
+            PageRequest.of(pageNumber, Constants.PAGE_SIZE),
+            names,
+            createdOnStart,
+            createdOnEnd,
+            createBy,
+            enable,
+            keyword);
+    }
+
 }

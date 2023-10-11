@@ -1,6 +1,8 @@
 package fpt.edu.capstone.vms.controller.impl;
 
 import fpt.edu.capstone.vms.controller.ISiteController;
+import fpt.edu.capstone.vms.controller.IUserController;
+import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.service.impl.SiteServiceImpl;
 import lombok.AllArgsConstructor;
@@ -34,7 +36,7 @@ public class SiteController implements ISiteController {
     }
 
     @Override
-    public ResponseEntity<?> createSite(createSiteInfo siteInfo) {
+    public ResponseEntity<?> createSite(CreateSiteInfo siteInfo) {
         try {
             var site = siteService.save(mapper.map(siteInfo, Site.class));
             return ResponseEntity.ok(site);
@@ -45,12 +47,25 @@ public class SiteController implements ISiteController {
     }
 
     @Override
-    public ResponseEntity<?> updateSite(updateSiteInfo updateSiteInfo, UUID id) {
+    public ResponseEntity<?> updateSite(UpdateSiteInfo updateSiteInfo, UUID id) {
         try {
             var site = siteService.updateSite(updateSiteInfo, id);
             return ResponseEntity.ok(site);
         } catch (HttpClientErrorException e) {
             return ResponseEntity.status(e.getStatusCode()).body(e.getMessage());
         }
+    }
+
+    @Override
+    public ResponseEntity<?> filter(SiteFilter filter) {
+        return ResponseEntity.ok(
+            siteService.filter(
+                filter.getPageNumber(),
+                filter.getNames(),
+                filter.getCreatedOnStart(),
+                filter.getCreatedOnEnd(),
+                filter.getCreateBy(),
+                filter.getEnable(),
+                filter.getKeyword()));
     }
 }

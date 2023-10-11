@@ -1,5 +1,6 @@
 package fpt.edu.capstone.vms.controller;
 
+import fpt.edu.capstone.vms.constants.Constants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -8,6 +9,7 @@ import lombok.Data;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,14 +35,19 @@ public interface ISiteController {
     @PostMapping()
     @Operation(summary = "Create new agent")
 //    @PreAuthorize("hasRole('r:user:create')")
-    ResponseEntity<?> createSite(@RequestBody @Valid createSiteInfo siteInfo);
+    ResponseEntity<?> createSite(@RequestBody @Valid CreateSiteInfo siteInfo);
 
     @PatchMapping("/{id}")
     @Operation(summary = "Update site")
-    ResponseEntity<?> updateSite(@RequestBody updateSiteInfo updateSiteInfo, @PathVariable UUID id);
+    ResponseEntity<?> updateSite(@RequestBody UpdateSiteInfo updateSiteInfo, @PathVariable UUID id);
+
+    @PostMapping("/filter")
+    @Operation(summary = "Filter")
+//    @PreAuthorize("hasRole('r:user:find')")
+    ResponseEntity<?> filter(@RequestBody SiteFilter siteFilter);
 
     @Data
-    class createSiteInfo {
+    class CreateSiteInfo {
         @NotNull
         private String name;
         @NotNull
@@ -67,7 +74,7 @@ public interface ISiteController {
     }
 
     @Data
-    class updateSiteInfo {
+    class UpdateSiteInfo {
         private String name;
         private Boolean mandatoryHealth;
         private Boolean mandatoryTripCode;
@@ -80,5 +87,16 @@ public interface ISiteController {
         private String taxCode;
         private String description;
         private String departmentId;
+    }
+
+    @Data
+    class SiteFilter {
+        int pageNumber = 0;
+        List<String> names;
+        LocalDateTime createdOnStart;
+        LocalDateTime createdOnEnd;
+        String createBy;
+        Boolean enable;
+        String keyword;
     }
 }
