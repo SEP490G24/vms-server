@@ -83,4 +83,9 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
             keyword);
     }
 
+    @Override
+    public List<Site> findAllByOrganizationId(String organizationId) {
+        return siteRepository.findAllByOrganizationId(UUID.fromString(organizationId));
+    }
+
 }

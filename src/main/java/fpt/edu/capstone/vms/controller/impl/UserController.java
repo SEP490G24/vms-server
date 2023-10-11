@@ -3,8 +3,10 @@ package fpt.edu.capstone.vms.controller.impl;
 
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.IUserController;
+import fpt.edu.capstone.vms.exception.HttpClientResponse;
 import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
+import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.entity.User;
 import fpt.edu.capstone.vms.persistence.service.IUserService;
 import fpt.edu.capstone.vms.util.SecurityUtils;
@@ -17,6 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
 
@@ -51,9 +54,14 @@ public class UserController implements IUserController {
 
     @Override
     public ResponseEntity<?> create(CreateUserInfo userInfo) {
-        User userEntity = userService.createUser(mapper.map(userInfo, IUserResource.UserDto.class)
+        try {
+            User userEntity = userService.createUser(mapper.map(userInfo, IUserResource.UserDto.class)
                 .setRole(Constants.UserRole.STAFF).setEnable(true));
-        return ResponseEntity.ok(mapper.map(userEntity, IUserResource.UserDto.class));
+            return ResponseEntity.ok(mapper.map(userEntity, IUserResource.UserDto.class));
+        } catch (HttpClientErrorException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
+        }
+
     }
 
     @Override
@@ -105,5 +113,15 @@ public class UserController implements IUserController {
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
         headers.setContentDispositionFormData("attachment", "danh_sach_tram_bao_hanh_uy_quyen.xlsx");
         return ResponseEntity.status(HttpStatus.SC_OK).headers(headers).body(userService.export(userFilter));
+    }
+
+    @Override
+    public ResponseEntity<?> changePassword(ChangePasswordUserDto changePasswordUserDto) {
+        try {
+            userService.changePasswordUser(changePasswordUserDto);
+            return ResponseEntity.ok().build();
+        } catch (HttpClientErrorException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
+        }
     }
 }

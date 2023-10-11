@@ -3,6 +3,7 @@ package fpt.edu.capstone.vms.controller.impl;
 import fpt.edu.capstone.vms.controller.ISiteController;
 import fpt.edu.capstone.vms.exception.HttpClientResponse;
 import fpt.edu.capstone.vms.persistence.entity.Site;
+import fpt.edu.capstone.vms.persistence.service.ISiteService;
 import fpt.edu.capstone.vms.persistence.service.impl.SiteServiceImpl;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -16,7 +17,7 @@ import java.util.UUID;
 @RestController
 @AllArgsConstructor
 public class SiteController implements ISiteController {
-    private final SiteServiceImpl siteService;
+    private final ISiteService siteService;
     private final ModelMapper mapper;
 
     @Override
@@ -46,7 +47,6 @@ public class SiteController implements ISiteController {
         } catch (HttpClientErrorException e) {
             return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
         }
-
     }
 
     @Override
@@ -71,5 +71,10 @@ public class SiteController implements ISiteController {
                 filter.getLastUpdatedBy(),
                 filter.getEnable(),
                 filter.getKeyword()));
+    }
+
+    @Override
+    public ResponseEntity<List<?>> findAllByOrganizationId(String organizationId) {
+        return ResponseEntity.ok(siteService.findAllByOrganizationId(organizationId));
     }
 }

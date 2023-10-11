@@ -67,6 +67,11 @@ public interface IUserController {
     @Operation(summary = "Export list of user to excel")
     ResponseEntity<?> export(@RequestBody UserFilter userFilter);
 
+    @PostMapping("/changePassword")
+    @Operation(summary = "Change Password")
+//    @PreAuthorize("hasRole('r:user:find')")
+    ResponseEntity<?> changePassword(@RequestBody ChangePasswordUserDto changePasswordUserDto);
+
     @Data
     class CreateUserInfo {
         @NotNull
@@ -82,7 +87,12 @@ public interface IUserController {
         @NotNull
         String email;
         @NotNull
+        String countryCode;
+        @NotNull
         String departmentId;
+        @NotNull
+        String siteId;
+        @NotNull
         LocalDate dateOfBirth;
         @NotNull
         Constants.Gender gender;
@@ -118,5 +128,13 @@ public interface IUserController {
         String username;
         @NotNull
         Boolean enable;
+    }
+
+    @Data
+    class ChangePasswordUserDto {
+        @NotNull
+        String oldPassword;
+        @NotNull
+        String newPassword;
     }
 }

@@ -1,6 +1,7 @@
 package fpt.edu.capstone.vms.persistence.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import fpt.edu.capstone.vms.constants.Constants;
@@ -10,9 +11,12 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -48,6 +52,9 @@ public class User extends AbstractBaseEntity<String> {
     @Column(name = "email")
     private String email;
 
+    @Column(name = "password")
+    private String password;
+
     @Column(name = "phone_number")
     private String phoneNumber;
 
@@ -66,9 +73,19 @@ public class User extends AbstractBaseEntity<String> {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
     private LocalDateTime lastLoginTime;
 
-    @OneToMany(mappedBy = "userEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
-    @MapKey(name = "departmentUserMapPk.username")
-    private Map<String, DepartmentUserMap> departmentUserMaps;
+    @Column(name = "department_id")
+    private String departmentId;
+
+    @Column(name = "country_code")
+    private String countryCode;
+
+    @Column(name = "site_id")
+    private UUID siteId;
+
+    @ManyToOne
+    @JoinColumn(name = "site_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JsonIgnore
+    private Site site;
 
     public User update(User userEntity) {
         if (userEntity.username != null) this.username = userEntity.username;
@@ -81,6 +98,10 @@ public class User extends AbstractBaseEntity<String> {
         if (userEntity.lastLoginTime != null) this.lastLoginTime = userEntity.lastLoginTime;
         if (userEntity.gender != null) this.gender = userEntity.gender;
         if (userEntity.dateOfBirth != null) this.dateOfBirth = userEntity.dateOfBirth;
+        if (userEntity.password != null) this.password = encodePassword(userEntity.password);
+        if (userEntity.siteId != null) this.siteId = userEntity.siteId;
+        if (userEntity.countryCode != null) this.countryCode = userEntity.countryCode;
+        if (userEntity.departmentId != null) this.departmentId = userEntity.departmentId;
         if (userEntity.getCreatedBy() != null) this.setCreatedBy(userEntity.getCreatedBy());
         if (userEntity.getCreatedOn() != null) this.setCreatedOn(userEntity.getCreatedOn());
         return this;
@@ -94,5 +115,14 @@ public class User extends AbstractBaseEntity<String> {
     @Override
     public String getId() {
         return username;
+    }
+
+    public static String encodePassword(String plainPassword) {
+        String salt = BCrypt.gensalt(12);
+        return BCrypt.hashpw(plainPassword, salt);
+    }
+
+    public static boolean checkPassword(String plainPassword, String hashedPassword) {
+        return BCrypt.checkpw(plainPassword, hashedPassword);
     }
 }

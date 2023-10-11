@@ -45,6 +45,9 @@ public interface ISiteController {
 //    @PreAuthorize("hasRole('r:user:find')")
     ResponseEntity<?> filter(@RequestBody SiteFilter siteFilter);
 
+    @GetMapping("/organization/{organizationId}")
+    @Operation(summary = "Get all site by organizationId")
+    ResponseEntity<List<?>> findAllByOrganizationId(@PathVariable String organizationId);
     @Data
     class CreateSiteInfo {
         @NotNull
