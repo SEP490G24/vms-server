@@ -8,6 +8,7 @@ import lombok.Data;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -39,6 +40,11 @@ public interface IDepartmentController {
     @Operation(summary = "Update department")
     ResponseEntity<?> updateDepartment(@RequestBody updateDepartmentInfo updateInfo, @PathVariable UUID id);
 
+    @PostMapping("/filter")
+    @Operation(summary = "Filter")
+//    @PreAuthorize("hasRole('r:user:find')")
+    ResponseEntity<?> filter(@RequestBody DepartmentFilter siteFilter);
+
     @Data
     class createDepartmentInfo {
         @NotNull
@@ -54,6 +60,19 @@ public interface IDepartmentController {
     class updateDepartmentInfo {
         private String name;
         private String code;
+        private String enable;
         private String description;
+    }
+
+    @Data
+    class DepartmentFilter {
+        int pageNumber = 0;
+        List<String> names;
+        LocalDateTime createdOnStart;
+        LocalDateTime createdOnEnd;
+        String createBy;
+        String lastUpdatedBy;
+        Boolean enable;
+        String keyword;
     }
 }

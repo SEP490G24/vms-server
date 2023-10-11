@@ -1,8 +1,6 @@
 package fpt.edu.capstone.vms.controller.impl;
 
 import fpt.edu.capstone.vms.controller.ISiteController;
-import fpt.edu.capstone.vms.controller.IUserController;
-import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.service.impl.SiteServiceImpl;
 import lombok.AllArgsConstructor;
@@ -65,6 +63,7 @@ public class SiteController implements ISiteController {
                 filter.getCreatedOnStart(),
                 filter.getCreatedOnEnd(),
                 filter.getCreateBy(),
+                filter.getLastUpdatedBy(),
                 filter.getEnable(),
                 filter.getKeyword()));
     }

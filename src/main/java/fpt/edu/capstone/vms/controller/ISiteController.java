@@ -1,6 +1,5 @@
 package fpt.edu.capstone.vms.controller;
 
-import fpt.edu.capstone.vms.constants.Constants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -86,6 +85,7 @@ public interface ISiteController {
         private String address;
         private String taxCode;
         private String description;
+        private String enable;
         private String departmentId;
     }
 
@@ -96,6 +96,7 @@ public interface ISiteController {
         LocalDateTime createdOnStart;
         LocalDateTime createdOnEnd;
         String createBy;
+        String lastUpdatedBy;
         Boolean enable;
         String keyword;
     }

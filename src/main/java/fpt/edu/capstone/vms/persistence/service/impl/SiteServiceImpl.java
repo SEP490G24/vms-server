@@ -71,13 +71,14 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
     }
 
     @Override
-    public Page<Site> filter(int pageNumber, List<String> names, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, String createBy, Boolean enable, String keyword) {
+    public Page<Site> filter(int pageNumber, List<String> names, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, String createBy, String lastUpdatedBy, Boolean enable, String keyword) {
         return siteRepository.filter(
             PageRequest.of(pageNumber, Constants.PAGE_SIZE),
             names,
             createdOnStart,
             createdOnEnd,
             createBy,
+            lastUpdatedBy,
             enable,
             keyword);
     }

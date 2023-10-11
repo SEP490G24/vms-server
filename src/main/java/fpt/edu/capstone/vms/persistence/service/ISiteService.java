@@ -1,10 +1,8 @@
 package fpt.edu.capstone.vms.persistence.service;
 
-import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ISiteController;
 import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.persistence.entity.Site;
-import fpt.edu.capstone.vms.persistence.entity.User;
 import fpt.edu.capstone.vms.persistence.service.generic.IGenericService;
 import org.springframework.data.domain.Page;
 
@@ -22,6 +20,7 @@ public interface ISiteService extends IGenericService<Site, UUID> {
                       LocalDateTime createdOnStart,
                       LocalDateTime createdOnEnd,
                       String createBy,
+                      String lastUpdatedBy,
                       Boolean enable,
                       String keyword);
 }

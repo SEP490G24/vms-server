@@ -54,4 +54,18 @@ public class DepartmentController implements IDepartmentController {
             return ResponseEntity.status(e.getStatusCode()).body(e.getMessage());
         }
     }
+
+    @Override
+    public ResponseEntity<?> filter(DepartmentFilter filter) {
+        return ResponseEntity.ok(
+            departmentService.filter(
+                filter.getPageNumber(),
+                filter.getNames(),
+                filter.getCreatedOnStart(),
+                filter.getCreatedOnEnd(),
+                filter.getCreateBy(),
+                filter.getLastUpdatedBy(),
+                filter.getEnable(),
+                filter.getKeyword()));
+    }
 }

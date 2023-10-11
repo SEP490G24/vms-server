@@ -1,5 +1,6 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
+import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.IDepartmentController;
 import fpt.edu.capstone.vms.persistence.entity.Department;
 import fpt.edu.capstone.vms.persistence.entity.SiteDepartmentMap;
@@ -11,11 +12,15 @@ import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -50,11 +55,25 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
         if (StringUtils.isEmpty(departmentInfo.getSiteId()))
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "SiteId is null");
         var department = mapper.map(departmentInfo, Department.class);
+        department.setEnable(true);
         departmentRepository.save(department);
         SiteDepartmentMap siteDepartmentMap = new SiteDepartmentMap();
         SiteDepartmentMapPk pk = new SiteDepartmentMapPk(department.getId(), UUID.fromString(departmentInfo.getSiteId()));
         siteDepartmentMap.setId(pk);
         siteDepartmentMapRepository.save(siteDepartmentMap);
         return department;
+    }
+
+    @Override
+    public Page<Department> filter(int pageNumber, List<String> names, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, String createBy, String lastUpdatedBy, Boolean enable, String keyword) {
+        return departmentRepository.filter(
+            PageRequest.of(pageNumber, Constants.PAGE_SIZE),
+            names,
+            createdOnStart,
+            createdOnEnd,
+            createBy,
+            lastUpdatedBy,
+            enable,
+            keyword);
     }
 }
