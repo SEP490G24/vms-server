@@ -5,26 +5,31 @@ import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.IUserController;
 import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
-import fpt.edu.capstone.vms.persistence.entity.DepartmentUserMap;
-import fpt.edu.capstone.vms.persistence.entity.DepartmentUserMapPk;
+import fpt.edu.capstone.vms.oauth2.provider.keycloak.KeycloakUserResource;
 import fpt.edu.capstone.vms.persistence.entity.User;
-import fpt.edu.capstone.vms.persistence.repository.DepartmentUserMapRepository;
 import fpt.edu.capstone.vms.persistence.repository.UserRepository;
 import fpt.edu.capstone.vms.persistence.service.IUserService;
+import fpt.edu.capstone.vms.util.SecurityUtils;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.keycloak.admin.client.resource.UsersResource;
+import org.keycloak.representations.idm.UserRepresentation;
 import org.modelmapper.ModelMapper;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+
+import static fpt.edu.capstone.vms.persistence.entity.User.checkPassword;
+import static fpt.edu.capstone.vms.persistence.entity.User.encodePassword;
 
 @Slf4j
 @Service
@@ -32,7 +37,6 @@ import java.util.UUID;
 public class UserServiceImpl implements IUserService {
 
     private final UserRepository userRepository;
-    private final DepartmentUserMapRepository departmentUserMapRepository;
     private final IUserResource userResource;
     private final ModelMapper mapper;
 
@@ -60,11 +64,10 @@ public class UserServiceImpl implements IUserService {
         try {
             if (!StringUtils.isEmpty(kcUserId)) {
                 userEntity = mapper.map(userDto, User.class).setOpenid(kcUserId);
+                userEntity.setSiteId(UUID.fromString(userDto.getSiteId()));
+                userEntity.setPassword(encodePassword(userEntity.getPassword()));
+                if (userEntity.getSiteId() == null) throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SiteId not null");
                 userRepository.save(userEntity);
-                DepartmentUserMapPk departmentUserMapPk = new DepartmentUserMapPk();
-                departmentUserMapPk.setDepartmentId(UUID.fromString(userDto.getDepartmentId()));
-                departmentUserMapPk.setUsername(userDto.getUsername());
-                departmentUserMapRepository.save(new DepartmentUserMap().setDepartmentUserMapPk(departmentUserMapPk));
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -86,6 +89,26 @@ public class UserServiceImpl implements IUserService {
         }
         return userEntity;
     }
+
+    @Override
+    @Transactional
+    public void changePasswordUser(IUserController.ChangePasswordUserDto userDto) {
+        String username = SecurityUtils.loginUsername();
+        var userEntity = userRepository.findByUsername(username).orElse(null);
+        if (userEntity == null) throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can not found user");
+
+        if (userDto.getNewPassword().isEmpty()) throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Can not null for new password");
+        if (checkPassword(userDto.getNewPassword(), userEntity.getPassword())) throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Can not be user old password to update new");
+
+        if (checkPassword(userDto.getOldPassword(), userEntity.getPassword())) {
+            userEntity.setPassword(encodePassword(userDto.getNewPassword()));
+            userResource.changePassword(userEntity.getOpenid(), userDto.getNewPassword());
+            userRepository.save(userEntity);
+        } else {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The old password not match in database");
+        }
+    }
+
 
     @Override
     public int updateState(boolean isEnable, String username) {

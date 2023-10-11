@@ -16,6 +16,7 @@ public interface IUserResource {
     void changeState(String userId, boolean stateEnable);
     void delete(String userId);
 
+    void changePassword(String openId, String newPassword);
     List<UserDto> users();
 
     @Data
@@ -29,6 +30,8 @@ public interface IUserResource {
         private String email;
         private String password;
         private String phone;
+        private String siteId;
+        private String countryCode;
         private LocalDate dateOfBirth;
         private Boolean enable = true;
         private Constants.Gender gender;
