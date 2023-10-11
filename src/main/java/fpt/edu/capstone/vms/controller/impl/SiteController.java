@@ -1,6 +1,7 @@
 package fpt.edu.capstone.vms.controller.impl;
 
 import fpt.edu.capstone.vms.controller.ISiteController;
+import fpt.edu.capstone.vms.exception.HttpClientResponse;
 import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.service.impl.SiteServiceImpl;
 import lombok.AllArgsConstructor;
@@ -24,8 +25,12 @@ public class SiteController implements ISiteController {
     }
 
     @Override
-    public ResponseEntity<Site> delete(UUID id) {
-        return siteService.delete(id);
+    public ResponseEntity<?> delete(UUID id) {
+        try {
+            return siteService.delete(id);
+        } catch (HttpClientErrorException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
+        }
     }
 
     @Override
@@ -39,7 +44,7 @@ public class SiteController implements ISiteController {
             var site = siteService.save(mapper.map(siteInfo, Site.class));
             return ResponseEntity.ok(site);
         } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(e.getMessage());
+            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
         }
 
     }
@@ -50,7 +55,7 @@ public class SiteController implements ISiteController {
             var site = siteService.updateSite(updateSiteInfo, id);
             return ResponseEntity.ok(site);
         } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(e.getMessage());
+            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
         }
     }
 

@@ -2,6 +2,7 @@ package fpt.edu.capstone.vms.controller.impl;
 
 import fpt.edu.capstone.vms.controller.IDepartmentController;
 import fpt.edu.capstone.vms.controller.ISiteController;
+import fpt.edu.capstone.vms.exception.HttpClientResponse;
 import fpt.edu.capstone.vms.persistence.entity.Department;
 import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.service.impl.DepartmentServiceImpl;
@@ -41,7 +42,7 @@ public class DepartmentController implements IDepartmentController {
             var department = departmentService.createDepartment(departmentInfo);
             return ResponseEntity.ok(department);
         } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(e.getMessage());
+            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
         }
     }
 
@@ -51,7 +52,7 @@ public class DepartmentController implements IDepartmentController {
             var site = departmentService.update(mapper.map(updateInfo, Department.class), id);
             return ResponseEntity.ok(site);
         } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(e.getMessage());
+            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
         }
     }
 
