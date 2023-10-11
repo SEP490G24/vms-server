@@ -81,6 +81,8 @@ public class User extends AbstractBaseEntity<String> {
         if (userEntity.lastLoginTime != null) this.lastLoginTime = userEntity.lastLoginTime;
         if (userEntity.gender != null) this.gender = userEntity.gender;
         if (userEntity.dateOfBirth != null) this.dateOfBirth = userEntity.dateOfBirth;
+        if (userEntity.getCreatedBy() != null) this.setCreatedBy(userEntity.getCreatedBy());
+        if (userEntity.getCreatedOn() != null) this.setCreatedOn(userEntity.getCreatedOn());
         return this;
     }
 

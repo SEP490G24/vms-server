@@ -17,8 +17,6 @@ import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConve
 
 public class SecurityUtils {
 
-
-
     public static UserDetails getUserDetails() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         var jwt = (Jwt) authentication.getPrincipal();

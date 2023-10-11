@@ -3,10 +3,12 @@ package fpt.edu.capstone.vms.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,13 +34,47 @@ public interface ISiteController {
     @PostMapping()
     @Operation(summary = "Create new agent")
 //    @PreAuthorize("hasRole('r:user:create')")
-    ResponseEntity<?> createSite(@RequestBody @Valid createSiteInfo siteInfo);
+    ResponseEntity<?> createSite(@RequestBody @Valid CreateSiteInfo siteInfo);
+
+    @PatchMapping("/{id}")
+    @Operation(summary = "Update site")
+    ResponseEntity<?> updateSite(@RequestBody UpdateSiteInfo updateSiteInfo, @PathVariable UUID id);
+
+    @PostMapping("/filter")
+    @Operation(summary = "Filter")
+//    @PreAuthorize("hasRole('r:user:find')")
+    ResponseEntity<?> filter(@RequestBody SiteFilter siteFilter);
 
     @Data
-    class createSiteInfo {
+    class CreateSiteInfo {
+        @NotNull
         private String name;
-        private String code;
+        @NotNull
         private UUID organizationId;
+        @NotNull
+        private Boolean mandatoryHealth;
+        @NotNull
+        private Boolean mandatoryTripCode;
+        @NotNull
+        private Boolean nucleicAcidTestReport;
+        @NotNull
+        private String phoneNumber;
+        @NotNull
+        private String province;
+        @NotNull
+        private String district;
+        @NotNull
+        private String ward;
+        @NotNull
+        private String address;
+        @NotNull
+        private String taxCode;
+        private String description;
+    }
+
+    @Data
+    class UpdateSiteInfo {
+        private String name;
         private Boolean mandatoryHealth;
         private Boolean mandatoryTripCode;
         private Boolean nucleicAcidTestReport;
@@ -49,6 +85,19 @@ public interface ISiteController {
         private String address;
         private String taxCode;
         private String description;
-        private Boolean enable;
+        private String enable;
+        private String departmentId;
+    }
+
+    @Data
+    class SiteFilter {
+        int pageNumber = 0;
+        List<String> names;
+        LocalDateTime createdOnStart;
+        LocalDateTime createdOnEnd;
+        String createBy;
+        String lastUpdatedBy;
+        Boolean enable;
+        String keyword;
     }
 }
