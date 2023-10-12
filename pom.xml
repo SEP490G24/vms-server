@@ -53,11 +53,11 @@
 
 
     <properties>
-        <java.version>19</java.version>
+        <java.version>17</java.version>
         <spring-boot.version>3.1.2</spring-boot.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>19</maven.compiler.source>
-        <maven.compiler.target>19</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <keycloak.version>22.0.0</keycloak.version>
         <checkstyle.version>10.12.1</checkstyle.version>
         <nohttp-checkstyle.version>0.0.11</nohttp-checkstyle.version>
