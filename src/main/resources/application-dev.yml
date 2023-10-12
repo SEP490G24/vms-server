@@ -86,6 +86,7 @@ logging:
     web: info
   file:
     name: ./logs/info.log
+
 images:
   folder: C:\image
 
