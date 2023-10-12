@@ -5,10 +5,12 @@ import fpt.edu.capstone.vms.persistence.entity.File;
 import fpt.edu.capstone.vms.persistence.repository.FileRepository;
 import fpt.edu.capstone.vms.persistence.service.IFileService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
+import fpt.edu.capstone.vms.util.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.HttpClientErrorException;
@@ -79,6 +81,7 @@ public class FileServiceImpl extends GenericServiceImpl<File, UUID> implements I
             image.setDescription("Set avatar");
             image.setFileExtension(extension);
             image.setName(relativeFileName);
+            image.setStatus(true);
             image.setUrl(filePath.toString());
             image.setType(Constants.FileType.IMAGE);
             fileRepository.save(image);
@@ -87,5 +90,23 @@ public class FileServiceImpl extends GenericServiceImpl<File, UUID> implements I
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public void deleteImage(String name) {
+        var file = fileRepository.findByName(name);
+        String filePath = imagesFolder + "/" + name;
+        try {
+            if (ObjectUtils.isEmpty(file)) throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Not found file");
+
+            Path rawFile = Paths.get(filePath, name);
+            Files.deleteIfExists(rawFile);
+
+            fileRepository.delete(file);
+        }
+        catch (IOException e){
+            throw new RuntimeException();
+        }
+    }
+
 
 }

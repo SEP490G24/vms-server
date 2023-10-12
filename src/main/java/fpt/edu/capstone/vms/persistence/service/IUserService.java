@@ -40,4 +40,6 @@ public interface IUserService {
     void synAccountFromKeycloak();
 
     ByteArrayResource export(IUserController.UserFilter userFilter);
+
+    void deleteAvatar(String name, String username);
 }

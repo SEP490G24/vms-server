@@ -55,9 +55,6 @@ public class FileController implements IFileController {
     }
 
     public ResponseEntity<?> downloadImage(@RequestParam(required = true) String url) {
-        // Logic to retrieve the image file based on relative URL
-        // For example, if images are stored in a local directory:
-
 
         try {
             var file = fileService.downloadImage(url);

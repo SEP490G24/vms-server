@@ -15,9 +15,6 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @Data
@@ -73,19 +70,16 @@ public class User extends AbstractBaseEntity<String> {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
     private LocalDateTime lastLoginTime;
 
-    @Column(name = "department_id")
-    private String departmentId;
-
     @Column(name = "country_code")
     private String countryCode;
 
-    @Column(name = "site_id")
-    private UUID siteId;
+    @Column(name = "department_id")
+    private UUID departmentId;
 
     @ManyToOne
-    @JoinColumn(name = "site_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JoinColumn(name = "department_id", referencedColumnName = "id", insertable = false, updatable = false)
     @JsonIgnore
-    private Site site;
+    private Department department;
 
     public User update(User userEntity) {
         if (userEntity.username != null) this.username = userEntity.username;
@@ -99,7 +93,6 @@ public class User extends AbstractBaseEntity<String> {
         if (userEntity.gender != null) this.gender = userEntity.gender;
         if (userEntity.dateOfBirth != null) this.dateOfBirth = userEntity.dateOfBirth;
         if (userEntity.password != null) this.password = encodePassword(userEntity.password);
-        if (userEntity.siteId != null) this.siteId = userEntity.siteId;
         if (userEntity.countryCode != null) this.countryCode = userEntity.countryCode;
         if (userEntity.departmentId != null) this.departmentId = userEntity.departmentId;
         if (userEntity.getCreatedBy() != null) this.setCreatedBy(userEntity.getCreatedBy());

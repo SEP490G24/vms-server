@@ -89,7 +89,6 @@ public interface ISiteController {
         private String taxCode;
         private String description;
         private String enable;
-        private String departmentId;
     }
 
     @Data

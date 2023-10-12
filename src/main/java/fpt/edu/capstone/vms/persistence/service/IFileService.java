@@ -12,4 +12,5 @@ public interface IFileService extends IGenericService<File, UUID> {
 
     File downloadImage(String url);
     File uploadImage(MultipartFile file);
+    void deleteImage(String name);
 }

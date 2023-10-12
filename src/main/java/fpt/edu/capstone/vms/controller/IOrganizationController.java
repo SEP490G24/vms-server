@@ -2,6 +2,7 @@ package fpt.edu.capstone.vms.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.persistence.Column;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -56,6 +57,12 @@ public interface IOrganizationController {
         String website;
         @NotNull
         String representative;
+        @NotNull
+        String logo;
+        @NotNull
+        String contactInfo;
+        @NotNull
+        String contactPhoneNumber;
     }
 
     @Data
@@ -64,7 +71,9 @@ public interface IOrganizationController {
         String code;
         String website;
         String representative;
-        Boolean enable;
+        String logo;
+        String contactInfo;
+        String contactPhoneNumber;
     }
 
     @Data

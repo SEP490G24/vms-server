@@ -7,7 +7,9 @@ import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
 import fpt.edu.capstone.vms.oauth2.provider.keycloak.KeycloakUserResource;
 import fpt.edu.capstone.vms.persistence.entity.User;
+import fpt.edu.capstone.vms.persistence.repository.FileRepository;
 import fpt.edu.capstone.vms.persistence.repository.UserRepository;
+import fpt.edu.capstone.vms.persistence.service.IFileService;
 import fpt.edu.capstone.vms.persistence.service.IUserService;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import jakarta.transaction.Transactional;
@@ -17,13 +19,19 @@ import org.apache.commons.lang3.StringUtils;
 import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -36,7 +44,11 @@ import static fpt.edu.capstone.vms.persistence.entity.User.encodePassword;
 @RequiredArgsConstructor
 public class UserServiceImpl implements IUserService {
 
+    @Value("${images.folder}")
+    private String imagesFolder;
+
     private final UserRepository userRepository;
+    private final FileRepository fileRepository;
     private final IUserResource userResource;
     private final ModelMapper mapper;
 
@@ -64,9 +76,9 @@ public class UserServiceImpl implements IUserService {
         try {
             if (!StringUtils.isEmpty(kcUserId)) {
                 userEntity = mapper.map(userDto, User.class).setOpenid(kcUserId);
-                userEntity.setSiteId(UUID.fromString(userDto.getSiteId()));
+                userEntity.setDepartmentId(UUID.fromString(userDto.getDepartmentId()));
                 userEntity.setPassword(encodePassword(userEntity.getPassword()));
-                if (userEntity.getSiteId() == null) throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SiteId not null");
+                if (userEntity.getDepartmentId() == null) throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SiteId not null");
                 userRepository.save(userEntity);
             }
         } catch (Exception e) {
@@ -79,11 +91,15 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
+    @Transactional
     public User updateUser(IUserResource.UserDto userDto) throws NotFoundException {
         var userEntity = userRepository.findByUsername(userDto.getUsername()).orElse(null);
         if (userEntity == null) throw new NotFoundException();
         if (userResource.update(userDto.setOpenid(userEntity.getOpenid()))) {
             var value = mapper.map(userDto, User.class);
+            if (value.getAvatar() != null) {
+                deleteAvatar(value.getAvatar(), userDto.getUsername());
+            }
             userEntity = userEntity.update(value);
             userRepository.save(userEntity);
         }
@@ -150,6 +166,28 @@ public class UserServiceImpl implements IUserService {
             }
         }
     }
+
+    @Override
+    public void deleteAvatar(String name, String username) {
+        var file = fileRepository.findByName(name);
+        String filePath = imagesFolder + "/" + name;
+        try {
+            if (!SecurityUtils.loginUsername().equals(username)) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User is not true");
+            }
+
+            if (ObjectUtils.isEmpty(file)) throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Not found file");
+
+            Path rawFile = Paths.get(filePath, name);
+            Files.deleteIfExists(rawFile);
+
+            fileRepository.delete(file);
+        }
+        catch (IOException e){
+            throw new RuntimeException();
+        }
+    }
+
     @Override
     public ByteArrayResource export(IUserController.UserFilter userFilter) {
         /*Pageable pageable = PageRequest.of(0, 1000000);

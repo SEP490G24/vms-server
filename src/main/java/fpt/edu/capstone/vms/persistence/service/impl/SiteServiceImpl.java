@@ -2,11 +2,7 @@ package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ISiteController;
-import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.persistence.entity.Site;
-import fpt.edu.capstone.vms.persistence.entity.SiteDepartmentMap;
-import fpt.edu.capstone.vms.persistence.entity.SiteDepartmentMapPk;
-import fpt.edu.capstone.vms.persistence.repository.SiteDepartmentMapRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.service.ISiteService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
@@ -28,12 +24,10 @@ import java.util.UUID;
 public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements ISiteService {
 
     private final SiteRepository siteRepository;
-    private final SiteDepartmentMapRepository siteDepartmentMapRepository;
     private final ModelMapper mapper;
 
-    public SiteServiceImpl(SiteRepository siteRepository, SiteDepartmentMapRepository siteDepartmentMapRepository, ModelMapper mapper) {
+    public SiteServiceImpl(SiteRepository siteRepository, ModelMapper mapper) {
         this.siteRepository = siteRepository;
-        this.siteDepartmentMapRepository = siteDepartmentMapRepository;
         this.mapper = mapper;
         this.init(siteRepository);
     }
@@ -61,12 +55,6 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in organization with organizationId = " +siteEntity.getOrganization());
         }
         siteRepository.save(siteEntity.update(update));
-        if (updateSite.getDepartmentId() != null) {
-            SiteDepartmentMap siteDepartmentMap = new SiteDepartmentMap();
-            SiteDepartmentMapPk pk = new SiteDepartmentMapPk(UUID.fromString(updateSite.getDepartmentId()), siteEntity.getId());
-            siteDepartmentMap.setId(pk);
-            siteDepartmentMapRepository.save(siteDepartmentMap);
-        }
         return siteEntity;
     }
 
