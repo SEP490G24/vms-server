@@ -1,16 +1,15 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.constants.Constants;
-import fpt.edu.capstone.vms.persistence.entity.Department;
 import fpt.edu.capstone.vms.persistence.entity.Organization;
 import fpt.edu.capstone.vms.persistence.repository.OrganizationRepository;
+import fpt.edu.capstone.vms.persistence.service.IFileService;
 import fpt.edu.capstone.vms.persistence.service.IOrganizationService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.HttpClientErrorException;
@@ -23,9 +22,11 @@ import java.util.UUID;
 public class OrganizationServiceImpl extends GenericServiceImpl<Organization, UUID> implements IOrganizationService {
 
     private final OrganizationRepository organizationRepository;
+    private final IFileService iFileService;
 
-    public OrganizationServiceImpl(OrganizationRepository organizationRepository) {
+    public OrganizationServiceImpl(OrganizationRepository organizationRepository, IFileService iFileService) {
         this.organizationRepository = organizationRepository;
+        this.iFileService = iFileService;
         this.init(organizationRepository);
     }
 
@@ -36,6 +37,10 @@ public class OrganizationServiceImpl extends GenericServiceImpl<Organization, UU
         }
         if (ObjectUtils.isEmpty(entity)) throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Object is empty");
         var organizationEntity = organizationRepository.findById(id).orElse(null);
+
+        if (entity.getLogo() != null) {
+            iFileService.deleteImage(entity.getLogo());
+        }
         if (ObjectUtils.isEmpty(organizationEntity))
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't found organization by id: " + id);
         return organizationRepository.save(organizationEntity.update(entity));

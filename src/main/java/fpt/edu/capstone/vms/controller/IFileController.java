@@ -20,7 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 @PreAuthorize("isAuthenticated()")
 public interface IFileController {
 
-    @PostMapping("/uploadAvatar")
+    @PostMapping("/uploadImage")
     @Operation(summary = "Upload Image")
     ResponseEntity<?> uploadImage(@RequestBody MultipartFile file);
 

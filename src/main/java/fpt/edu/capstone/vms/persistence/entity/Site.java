@@ -91,10 +91,6 @@ public class Site extends AbstractBaseEntity<UUID> {
     private Boolean enable;
 
     @OneToMany(mappedBy = "siteEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
-    @MapKey(name = "siteDepartmentMapPk.siteId")
-    private Map<UUID, SiteDepartmentMap> siteDepartmentMaps;
-
-    @OneToMany(mappedBy = "siteEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     @MapKey(name = "templateSiteMapPk.siteId")
     private Map<UUID, TemplateSiteMap> templateSiteMaps;
 

@@ -3,10 +3,7 @@ package fpt.edu.capstone.vms.persistence.service.impl;
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.IDepartmentController;
 import fpt.edu.capstone.vms.persistence.entity.Department;
-import fpt.edu.capstone.vms.persistence.entity.SiteDepartmentMap;
-import fpt.edu.capstone.vms.persistence.entity.SiteDepartmentMapPk;
 import fpt.edu.capstone.vms.persistence.repository.DepartmentRepository;
-import fpt.edu.capstone.vms.persistence.repository.SiteDepartmentMapRepository;
 import fpt.edu.capstone.vms.persistence.service.IDepartmentService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import jakarta.transaction.Transactional;
@@ -27,13 +24,11 @@ import java.util.UUID;
 public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> implements IDepartmentService {
 
     private final DepartmentRepository departmentRepository;
-    private final SiteDepartmentMapRepository siteDepartmentMapRepository;
     private final ModelMapper mapper;
 
 
-    public DepartmentServiceImpl(DepartmentRepository departmentRepository, SiteDepartmentMapRepository siteDepartmentMapRepository, ModelMapper mapper) {
+    public DepartmentServiceImpl(DepartmentRepository departmentRepository, ModelMapper mapper) {
         this.departmentRepository = departmentRepository;
-        this.siteDepartmentMapRepository = siteDepartmentMapRepository;
         this.mapper = mapper;
         this.init(departmentRepository);
     }
@@ -57,10 +52,6 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
         var department = mapper.map(departmentInfo, Department.class);
         department.setEnable(true);
         departmentRepository.save(department);
-        SiteDepartmentMap siteDepartmentMap = new SiteDepartmentMap();
-        SiteDepartmentMapPk pk = new SiteDepartmentMapPk(department.getId(), UUID.fromString(departmentInfo.getSiteId()));
-        siteDepartmentMap.setId(pk);
-        siteDepartmentMapRepository.save(siteDepartmentMap);
         return department;
     }
 

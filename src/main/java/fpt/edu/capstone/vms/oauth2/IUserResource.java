@@ -30,7 +30,7 @@ public interface IUserResource {
         private String email;
         private String password;
         private String phone;
-        private String siteId;
+        private String avatar;
         private String countryCode;
         private LocalDate dateOfBirth;
         private Boolean enable = true;

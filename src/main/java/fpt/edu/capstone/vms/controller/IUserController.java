@@ -85,13 +85,13 @@ public interface IUserController {
         @NotNull
         String phoneNumber;
         @NotNull
+        String avatar;
+        @NotNull
         String email;
         @NotNull
         String countryCode;
         @NotNull
         String departmentId;
-        @NotNull
-        String siteId;
         @NotNull
         LocalDate dateOfBirth;
         @NotNull
