@@ -45,4 +45,11 @@ public class Constants {
         MALE,
         OTHER
     }
+
+    public enum FileType {
+        PDF,
+        IMAGE,
+        EXCEL,
+        WORD
+    }
 }
