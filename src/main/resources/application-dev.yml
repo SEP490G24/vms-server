@@ -65,6 +65,10 @@ spring:
         jwt:
           issuer-uri: ${edu.fpt.capstone.vms.oauth2.keycloak.issuer-uri}
           jwk-set-uri: ${edu.fpt.capstone.vms.oauth2.keycloak.jwk-set-uri}
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
 
 springdoc:
   cache:
@@ -82,3 +86,6 @@ logging:
     web: info
   file:
     name: ./logs/info.log
+images:
+  folder: C:\image
+
