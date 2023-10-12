@@ -52,6 +52,8 @@ spring:
       javax:
         persistence:
           create-database-schemas: true
+  jackson:
+    default-property-inclusion: NON_NULL
 
   #  liquibase:
 #    change-log: classpath:db/changelog-master.yml

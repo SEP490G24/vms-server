@@ -19,9 +19,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @AllArgsConstructor
@@ -54,14 +56,9 @@ public class UserController implements IUserController {
 
     @Override
     public ResponseEntity<?> create(CreateUserInfo userInfo) {
-        try {
-            User userEntity = userService.createUser(mapper.map(userInfo, IUserResource.UserDto.class)
-                .setRole(Constants.UserRole.STAFF).setEnable(true));
-            return ResponseEntity.ok(mapper.map(userEntity, IUserResource.UserDto.class));
-        } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
-        }
-
+        User userEntity = userService.createUser(mapper.map(userInfo, IUserResource.UserDto.class)
+                .setRole(Constants.UserRole.STAFF));
+        return ResponseEntity.ok(mapper.map(userEntity, IUserResource.UserDto.class));
     }
 
     @Override
@@ -124,4 +121,10 @@ public class UserController implements IUserController {
             return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
         }
     }
+
+    @Override
+    public ResponseEntity<Objects> importUser(MultipartFile file) {
+       return userService.importUser(file);
+    }
+
 }

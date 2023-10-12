@@ -9,9 +9,11 @@ import fpt.edu.capstone.vms.persistence.entity.User;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 public interface IUserService {
 
@@ -42,4 +44,6 @@ public interface IUserService {
     ByteArrayResource export(IUserController.UserFilter userFilter);
 
     void deleteAvatar(String name, String username);
+
+    ResponseEntity<Objects> importUser(MultipartFile file);
 }

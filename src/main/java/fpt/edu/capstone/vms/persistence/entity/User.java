@@ -50,13 +50,14 @@ public class User extends AbstractBaseEntity<String> {
     private String email;
 
     @Column(name = "password")
+    @JsonIgnore
     private String password;
 
     @Column(name = "phone_number")
     private String phoneNumber;
 
     @Column(name = "enable")
-    private boolean enable;
+    private Boolean enable;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "gender")
@@ -95,6 +96,7 @@ public class User extends AbstractBaseEntity<String> {
         if (userEntity.password != null) this.password = encodePassword(userEntity.password);
         if (userEntity.countryCode != null) this.countryCode = userEntity.countryCode;
         if (userEntity.departmentId != null) this.departmentId = userEntity.departmentId;
+        if (userEntity.enable != null) this.enable = userEntity.enable;
         if (userEntity.getCreatedBy() != null) this.setCreatedBy(userEntity.getCreatedBy());
         if (userEntity.getCreatedOn() != null) this.setCreatedOn(userEntity.getCreatedOn());
         return this;

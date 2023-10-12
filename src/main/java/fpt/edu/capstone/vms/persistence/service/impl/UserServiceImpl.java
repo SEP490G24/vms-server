@@ -5,35 +5,41 @@ import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.IUserController;
 import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
-import fpt.edu.capstone.vms.oauth2.provider.keycloak.KeycloakUserResource;
 import fpt.edu.capstone.vms.persistence.entity.User;
 import fpt.edu.capstone.vms.persistence.repository.FileRepository;
 import fpt.edu.capstone.vms.persistence.repository.UserRepository;
-import fpt.edu.capstone.vms.persistence.service.IFileService;
 import fpt.edu.capstone.vms.persistence.service.IUserService;
+import fpt.edu.capstone.vms.persistence.service.excel.ImportUser;
+import fpt.edu.capstone.vms.util.FileUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.keycloak.admin.client.resource.UsersResource;
-import org.keycloak.representations.idm.UserRepresentation;
+import org.apache.poi.openxml4j.util.ZipSecureFile;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import static fpt.edu.capstone.vms.persistence.entity.User.checkPassword;
@@ -51,6 +57,7 @@ public class UserServiceImpl implements IUserService {
     private final FileRepository fileRepository;
     private final IUserResource userResource;
     private final ModelMapper mapper;
+    private final ImportUser importUser;
 
 
     @Override
@@ -76,7 +83,6 @@ public class UserServiceImpl implements IUserService {
         try {
             if (!StringUtils.isEmpty(kcUserId)) {
                 userEntity = mapper.map(userDto, User.class).setOpenid(kcUserId);
-                userEntity.setDepartmentId(UUID.fromString(userDto.getDepartmentId()));
                 userEntity.setPassword(encodePassword(userEntity.getPassword()));
                 if (userEntity.getDepartmentId() == null) throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SiteId not null");
                 userRepository.save(userEntity);
@@ -232,5 +238,44 @@ public class UserServiceImpl implements IUserService {
             return ResponseUtils.getResponseEntityStatus(ErrorApp.INTERNAL_SERVER,null);
         }*/
         return null;
+    }
+
+    @Override
+    public ResponseEntity<Objects> importUser(MultipartFile file) {
+        /*if (!FileUtils.isValidFileUpload(file, "xls", "xlsx", "XLS", "XLSX")) {
+            //throw new CustomException(ErrorApp.FILE_NOT_FORMAT);
+        }
+        if (file.isEmpty()) {
+            //throw new CustomException(ErrorApp.FILE_EMPTY);
+        }
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            Workbook workbook = importUser.importExcel(file);
+            if (workbook == null) {
+                //return ResponseUtils.getResponseEntityStatus(ErrorApp.SUCCESS, null);
+            }
+
+            workbook.write(outputStream);
+
+            // Create a ByteArrayResource for the Excel bytes
+            byte[] excelBytes = outputStream.toByteArray();
+
+            ZipSecureFile.setMinInflateRatio(0);
+            ByteArrayResource byteData = new ByteArrayResource(excelBytes);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            headers.setContentDispositionFormData("attachment", "Thong-tin-loi-danh-sach-tram-bao-hanh-uy-quyen.xlsx");
+            return ResponseEntity
+                .status(HttpStatus.OK)
+                .headers(headers)
+                .body(byteData);
+
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntityStatus(e.getErrorApp(), null);
+        } catch (Exception e) {
+            log.error("Lỗi xảy ra trong quá trình import", e);
+            return ResponseUtils.getResponseEntityStatus(ErrorApp.INTERNAL_SERVER, null);
+        }*/
+        return  null;
     }
 }

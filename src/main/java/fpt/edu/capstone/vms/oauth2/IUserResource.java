@@ -1,5 +1,6 @@
 package fpt.edu.capstone.vms.oauth2;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import fpt.edu.capstone.vms.constants.Constants;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -28,15 +29,16 @@ public interface IUserResource {
         private String firstName;
         private String lastName;
         private String email;
+        @JsonIgnore
         private String password;
         private String phone;
         private String avatar;
         private String countryCode;
         private LocalDate dateOfBirth;
-        private Boolean enable = true;
+        private Boolean enable;
         private Constants.Gender gender;
         private Constants.UserRole role;
-        private String departmentId;
+        private UUID departmentId;
     }
 
     @Data

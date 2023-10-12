@@ -45,4 +45,6 @@ public interface UserRepository extends JpaRepository<User, String> {
                       @Param("keyword") @Nullable String keyword);
 
     User findFirstByUsername(String username);
+
+    List<User> findAllByEnableIsTrue();
 }

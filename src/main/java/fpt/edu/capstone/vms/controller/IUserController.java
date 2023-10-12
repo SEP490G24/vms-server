@@ -8,12 +8,16 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 @RestController
 @Tag(name = "Account Service")
@@ -23,7 +27,7 @@ import java.util.List;
 public interface IUserController {
 
     @PostMapping("/info/{username}")
-    @Operation(summary = "Filter")
+    @Operation(summary = "Find by username")
 //    @PreAuthorize("hasRole('r:user:find')")
     ResponseEntity<?> info(@PathVariable String username) throws NotFoundException;
 
@@ -67,7 +71,11 @@ public interface IUserController {
     @Operation(summary = "Export list of user to excel")
     ResponseEntity<?> export(@RequestBody UserFilter userFilter);
 
-    @PostMapping("/changePassword")
+    @PostMapping("/import")
+    @Operation(summary = "Import list of user use excel")
+    ResponseEntity<Objects> importUser(@RequestBody MultipartFile file);
+
+    @PostMapping("/change-password")
     @Operation(summary = "Change Password")
 //    @PreAuthorize("hasRole('r:user:find')")
     ResponseEntity<?> changePassword(@RequestBody ChangePasswordUserDto changePasswordUserDto);
@@ -91,22 +99,35 @@ public interface IUserController {
         @NotNull
         String countryCode;
         @NotNull
-        String departmentId;
+        UUID departmentId;
         @NotNull
         LocalDate dateOfBirth;
         @NotNull
         Constants.Gender gender;
         @NotNull
-        Boolean enable = true;
+        Boolean enable;
     }
 
     @Data
     class UpdateUserInfo {
-        String password;
+        @NotNull
+        String firstName;
+        @NotNull
+        String lastName;
         @NotNull
         String phoneNumber;
         @NotNull
+        String avatar;
+        @NotNull
         String email;
+        @NotNull
+        String countryCode;
+        @NotNull
+        UUID departmentId;
+        @NotNull
+        LocalDate dateOfBirth;
+        @NotNull
+        Constants.Gender gender;
         @NotNull
         Boolean enable;
     }
@@ -136,5 +157,28 @@ public interface IUserController {
         String oldPassword;
         @NotNull
         String newPassword;
+    }
+
+    @Data
+    class ImportUserInfo {
+        @NotNull
+        String username;
+        @NotNull
+        String password;
+        @NotNull
+        String firstName;
+        @NotNull
+        String lastName;
+        @NotNull
+        String phoneNumber;
+        @NotNull
+        String email;
+        @NotNull
+        String departmentCode;
+        LocalDate dateOfBirth;
+        @NotNull
+        Constants.Gender gender;
+        @NotNull
+        Boolean enable;
     }
 }
