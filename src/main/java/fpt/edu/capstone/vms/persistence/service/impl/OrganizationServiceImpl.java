@@ -7,6 +7,7 @@ import fpt.edu.capstone.vms.persistence.service.IFileService;
 import fpt.edu.capstone.vms.persistence.service.IOrganizationService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import fpt.edu.capstone.vms.util.SecurityUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -38,11 +39,14 @@ public class OrganizationServiceImpl extends GenericServiceImpl<Organization, UU
         if (ObjectUtils.isEmpty(entity)) throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Object is empty");
         var organizationEntity = organizationRepository.findById(id).orElse(null);
 
-        if (entity.getLogo() != null) {
-            iFileService.deleteImage(entity.getLogo());
-        }
         if (ObjectUtils.isEmpty(organizationEntity))
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't found organization by id: " + id);
+
+        if (entity.getLogo() != null && !entity.getLogo().equals(organizationEntity.getLogo())) {
+            if (!StringUtils.isEmpty(organizationEntity.getLogo())) {
+                iFileService.deleteImage(organizationEntity.getLogo());
+            }
+        }
         return organizationRepository.save(organizationEntity.update(entity));
     }
 

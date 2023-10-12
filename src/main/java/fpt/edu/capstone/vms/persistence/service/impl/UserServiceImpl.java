@@ -97,8 +97,10 @@ public class UserServiceImpl implements IUserService {
         if (userEntity == null) throw new NotFoundException();
         if (userResource.update(userDto.setOpenid(userEntity.getOpenid()))) {
             var value = mapper.map(userDto, User.class);
-            if (value.getAvatar() != null) {
-                deleteAvatar(value.getAvatar(), userDto.getUsername());
+            if (value.getAvatar() != null && !value.getAvatar().equals(userEntity.getAvatar())) {
+                if (!StringUtils.isEmpty(userEntity.getAvatar())) {
+                    deleteAvatar(userEntity.getAvatar(), userDto.getUsername());
+                }
             }
             userEntity = userEntity.update(value);
             userRepository.save(userEntity);
@@ -170,18 +172,19 @@ public class UserServiceImpl implements IUserService {
     @Override
     public void deleteAvatar(String name, String username) {
         var file = fileRepository.findByName(name);
-        String filePath = imagesFolder + "/" + name;
+        String filePath = imagesFolder + "/";
         try {
             if (!SecurityUtils.loginUsername().equals(username)) {
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User is not true");
             }
 
-            if (ObjectUtils.isEmpty(file)) throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Not found file");
+            if (ObjectUtils.isEmpty(file)) {
 
-            Path rawFile = Paths.get(filePath, name);
-            Files.deleteIfExists(rawFile);
+                Path rawFile = Paths.get(filePath, name);
+                Files.deleteIfExists(rawFile);
 
-            fileRepository.delete(file);
+                fileRepository.delete(file);
+            }
         }
         catch (IOException e){
             throw new RuntimeException();

@@ -94,14 +94,13 @@ public class FileServiceImpl extends GenericServiceImpl<File, UUID> implements I
     @Override
     public void deleteImage(String name) {
         var file = fileRepository.findByName(name);
-        String filePath = imagesFolder + "/" + name;
+        String filePath = imagesFolder + "/";
         try {
-            if (ObjectUtils.isEmpty(file)) throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Not found file");
-
-            Path rawFile = Paths.get(filePath, name);
-            Files.deleteIfExists(rawFile);
-
-            fileRepository.delete(file);
+            if (!ObjectUtils.isEmpty(file)) {
+                Path rawFile = Paths.get(filePath, name);
+                Files.deleteIfExists(rawFile);
+                fileRepository.delete(file);
+            }
         }
         catch (IOException e){
             throw new RuntimeException();

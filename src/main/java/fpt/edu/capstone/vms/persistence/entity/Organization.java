@@ -61,9 +61,9 @@ public class Organization extends AbstractBaseEntity<UUID> {
         if (organizationEntity.representative != null) this.representative = organizationEntity.representative;
         if (organizationEntity.website != null) this.website = organizationEntity.website;
         if (organizationEntity.description != null) this.description = organizationEntity.description;
-        if (organizationEntity.logo != null) this.logo = organizationEntity.logo;
         if (organizationEntity.contactInfo != null) this.contactInfo = organizationEntity.contactInfo;
         if (organizationEntity.contactPhoneNumber != null) this.contactPhoneNumber = organizationEntity.contactPhoneNumber;
+        if (organizationEntity.logo != null) this.logo = organizationEntity.logo;
         if (organizationEntity.enable != null) this.enable = organizationEntity.enable;
         if (organizationEntity.getCreatedBy() != null) this.setCreatedBy(organizationEntity.getCreatedBy());
         if (organizationEntity.getCreatedOn() != null) this.setCreatedOn(organizationEntity.getCreatedOn());

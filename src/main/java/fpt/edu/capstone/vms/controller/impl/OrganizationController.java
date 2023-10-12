@@ -50,8 +50,8 @@ public class OrganizationController implements IOrganizationController {
     @Override
     public ResponseEntity<?> updateOrganization(UpdateOrganizationInfo updateOrganizationInfo, UUID id) {
         try {
-            var site = organizationService.update(mapper.map(updateOrganizationInfo, Organization.class), id);
-            return ResponseEntity.ok(site);
+            var organization = organizationService.update(mapper.map(updateOrganizationInfo, Organization.class), id);
+            return ResponseEntity.ok(organization);
         } catch (HttpClientErrorException e) {
             return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
         }
