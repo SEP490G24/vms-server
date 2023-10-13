@@ -43,7 +43,7 @@ public interface IUserService {
 
     ByteArrayResource export(IUserController.UserFilter userFilter);
 
-    void deleteAvatar(String name, String username);
+    Boolean deleteAvatar(String name, String newImage, String username);
 
     ResponseEntity<Objects> importUser(MultipartFile file);
 }

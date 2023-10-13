@@ -87,7 +87,6 @@ public class User extends AbstractBaseEntity<String> {
         if (userEntity.openid != null) this.openid = userEntity.openid;
         if (userEntity.firstName != null) this.firstName = userEntity.firstName;
         if (userEntity.lastName != null) this.lastName = userEntity.lastName;
-        if (userEntity.avatar != null) this.avatar = userEntity.avatar;
         if (userEntity.email != null) this.email = userEntity.email;
         if (userEntity.phoneNumber != null) this.phoneNumber = userEntity.phoneNumber;
         if (userEntity.lastLoginTime != null) this.lastLoginTime = userEntity.lastLoginTime;

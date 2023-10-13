@@ -8,6 +8,7 @@ import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -92,15 +93,19 @@ public class FileServiceImpl extends GenericServiceImpl<File, UUID> implements I
     }
 
     @Override
-    public void deleteImage(String name) {
-        var file = fileRepository.findByName(name);
+    public Boolean deleteImage(String oldImage, String newImage) {
+        var oldFile = fileRepository.findByName(oldImage);
+        var newFile = fileRepository.findByName(newImage);
         String filePath = imagesFolder + "/";
         try {
-            if (!ObjectUtils.isEmpty(file)) {
-                Path rawFile = Paths.get(filePath, name);
-                Files.deleteIfExists(rawFile);
-                fileRepository.delete(file);
+            if (ObjectUtils.isEmpty(newFile)) throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can not found image in file");
+            Path rawFile = Paths.get(filePath, oldImage);
+            Files.deleteIfExists(rawFile);
+            if (!ObjectUtils.isEmpty(oldFile)) {
+                fileRepository.delete(oldFile);
+                return true;
             }
+            return true;
         }
         catch (IOException e){
             throw new RuntimeException();

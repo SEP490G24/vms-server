@@ -61,15 +61,15 @@ public class UserServiceImpl implements IUserService {
 
 
     @Override
-    public Page<User> filter(int pageNumber, List<String> usernames, List<Constants.UserRole> roles, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, Boolean enable,String keyword) {
+    public Page<User> filter(int pageNumber, List<String> usernames, List<Constants.UserRole> roles, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, Boolean enable, String keyword) {
         return userRepository.filter(
-                PageRequest.of(pageNumber, Constants.PAGE_SIZE),
-                usernames,
-                roles,
-                createdOnStart,
-                createdOnEnd,
-                enable,
-                keyword);
+            PageRequest.of(pageNumber, Constants.PAGE_SIZE),
+            usernames,
+            roles,
+            createdOnStart,
+            createdOnEnd,
+            enable,
+            keyword);
     }
 
 
@@ -84,7 +84,8 @@ public class UserServiceImpl implements IUserService {
             if (!StringUtils.isEmpty(kcUserId)) {
                 userEntity = mapper.map(userDto, User.class).setOpenid(kcUserId);
                 userEntity.setPassword(encodePassword(userEntity.getPassword()));
-                if (userEntity.getDepartmentId() == null) throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SiteId not null");
+                if (userEntity.getDepartmentId() == null)
+                    throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SiteId not null");
                 userRepository.save(userEntity);
             }
         } catch (Exception e) {
@@ -104,8 +105,8 @@ public class UserServiceImpl implements IUserService {
         if (userResource.update(userDto.setOpenid(userEntity.getOpenid()))) {
             var value = mapper.map(userDto, User.class);
             if (value.getAvatar() != null && !value.getAvatar().equals(userEntity.getAvatar())) {
-                if (!StringUtils.isEmpty(userEntity.getAvatar())) {
-                    deleteAvatar(userEntity.getAvatar(), userDto.getUsername());
+                if (deleteAvatar(userEntity.getAvatar(), userDto.getAvatar(), userDto.getUsername())) {
+                    userEntity.setAvatar(value.getAvatar());
                 }
             }
             userEntity = userEntity.update(value);
@@ -121,8 +122,10 @@ public class UserServiceImpl implements IUserService {
         var userEntity = userRepository.findByUsername(username).orElse(null);
         if (userEntity == null) throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can not found user");
 
-        if (userDto.getNewPassword().isEmpty()) throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Can not null for new password");
-        if (checkPassword(userDto.getNewPassword(), userEntity.getPassword())) throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Can not be user old password to update new");
+        if (userDto.getNewPassword().isEmpty())
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Can not null for new password");
+        if (checkPassword(userDto.getNewPassword(), userEntity.getPassword()))
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Can not be user old password to update new");
 
         if (checkPassword(userDto.getOldPassword(), userEntity.getPassword())) {
             userEntity.setPassword(encodePassword(userDto.getNewPassword()));
@@ -176,23 +179,23 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public void deleteAvatar(String name, String username) {
-        var file = fileRepository.findByName(name);
+    public Boolean deleteAvatar(String oldImage, String newImage, String username) {
+        var oldFile = fileRepository.findByName(oldImage);
+        var newFile = fileRepository.findByName(newImage);
         String filePath = imagesFolder + "/";
         try {
+            if (ObjectUtils.isEmpty(newFile)) throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can not found image in file");
             if (!SecurityUtils.loginUsername().equals(username)) {
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User is not true");
             }
-
-            if (ObjectUtils.isEmpty(file)) {
-
-                Path rawFile = Paths.get(filePath, name);
-                Files.deleteIfExists(rawFile);
-
-                fileRepository.delete(file);
+            Path rawFile = Paths.get(filePath, oldImage);
+            Files.deleteIfExists(rawFile);
+            if (!ObjectUtils.isEmpty(oldFile)) {
+                fileRepository.delete(oldFile);
+                return true;
             }
-        }
-        catch (IOException e){
+            return true;
+        } catch (IOException e) {
             throw new RuntimeException();
         }
     }
@@ -276,6 +279,6 @@ public class UserServiceImpl implements IUserService {
             log.error("Lỗi xảy ra trong quá trình import", e);
             return ResponseUtils.getResponseEntityStatus(ErrorApp.INTERNAL_SERVER, null);
         }*/
-        return  null;
+        return null;
     }
 }

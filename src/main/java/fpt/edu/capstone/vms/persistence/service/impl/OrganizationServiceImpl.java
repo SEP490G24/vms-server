@@ -43,9 +43,9 @@ public class OrganizationServiceImpl extends GenericServiceImpl<Organization, UU
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't found organization by id: " + id);
 
         if (entity.getLogo() != null && !entity.getLogo().equals(organizationEntity.getLogo())) {
-            if (!StringUtils.isEmpty(organizationEntity.getLogo())) {
-                iFileService.deleteImage(organizationEntity.getLogo());
-            }
+               if(iFileService.deleteImage(organizationEntity.getLogo(), entity.getLogo())) {
+                    organizationEntity.setLogo(entity.getLogo());
+               }
         }
         return organizationRepository.save(organizationEntity.update(entity));
     }
