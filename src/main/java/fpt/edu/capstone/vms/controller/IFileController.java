@@ -24,7 +24,4 @@ public interface IFileController {
     @Operation(summary = "Upload Image")
     ResponseEntity<?> uploadImage(@RequestBody MultipartFile file);
 
-    @GetMapping("/downloadAvatar")
-    @Operation(summary = "Download Image")
-    ResponseEntity<?> downloadImage(@RequestParam(required = true) String url);
 }

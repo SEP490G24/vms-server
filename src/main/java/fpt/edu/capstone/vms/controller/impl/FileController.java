@@ -54,28 +54,4 @@ public class FileController implements IFileController {
         }
     }
 
-    public ResponseEntity<?> downloadImage(@RequestParam(required = true) String url) {
-
-        try {
-            var file = fileService.downloadImage(url);
-            String filePath = imagesFolder + "/" + file.getName();
-            // Set the Content-Type and Content-Disposition headers based on file format
-            HttpHeaders headers = new HttpHeaders();
-            if ("jpg".equalsIgnoreCase(file.getFileExtension()) || "jpeg".equalsIgnoreCase(file.getFileExtension())) {
-                headers.add(HttpHeaders.CONTENT_TYPE, MediaType.IMAGE_JPEG_VALUE);
-            } else if ("png".equalsIgnoreCase(file.getFileExtension())) {
-                headers.add(HttpHeaders.CONTENT_TYPE, MediaType.IMAGE_PNG_VALUE);
-            }
-            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + url);
-            Resource resource = new FileSystemResource(filePath);
-            // Return the image file as a response with appropriate headers
-
-            return ResponseEntity.ok()
-                .headers(headers)
-                .contentLength(resource.contentLength())
-                .body(resource);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
 }
