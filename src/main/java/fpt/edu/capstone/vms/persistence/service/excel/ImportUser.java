@@ -1,11 +1,11 @@
 package fpt.edu.capstone.vms.persistence.service.excel;
 
 import com.monitorjbl.xlsx.StreamingReader;
+import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.IUserController;
 import fpt.edu.capstone.vms.persistence.entity.Department;
 import fpt.edu.capstone.vms.persistence.entity.User;
 import fpt.edu.capstone.vms.persistence.repository.DepartmentRepository;
-import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.repository.UserRepository;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import jakarta.transaction.Transactional;
@@ -17,13 +17,17 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.poi.ss.usermodel.*;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 
 @Service
@@ -32,9 +36,9 @@ import java.util.*;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Transactional
 public class ImportUser {
- /*   final DepartmentRepository departmentRepository;
-    final SiteRepository siteRepository;
+    final DepartmentRepository departmentRepository;
     final UserRepository userRepository;
+    final ModelMapper mapper;
 
 
     Integer currentRowIndex;
@@ -47,8 +51,9 @@ public class ImportUser {
         PHONE_NUMBER(4),
         EMAIL(5),
         GENDER(6),
-        DEPARTMENT_CODE(7),
-        ENABLE(8);
+        DATA_OF_BIRTH(7),
+        DEPARTMENT_CODE(8),
+        ENABLE(9);
         final int value;
 
         UserIndexColumn(int value) {
@@ -61,33 +66,19 @@ public class ImportUser {
     }
 
 
-    static final Integer LAST_COLUMN_INDEX = 8;
+    static final Integer LAST_COLUMN_INDEX = 9;
     static final Map<Integer, String> HEADER_EXCEL_FILE = new HashMap<>();
 
-    public static final String STATION_CODE_ALREADY_EXISTS_MESSAGE = "Mã trạm BHUQ đã tồn tại";
+    public static final String STATION_CODE_ALREADY_EXISTS_MESSAGE = "Username đã tồn tại";
     public static final String INVALID_STATION_CODE_FORMAT_MESSAGE = "Mã trạm BHUQ không được chứa ký tự đặc biệt và tiếng việt có dấu";
-
-    public static final String DISTRICT_NOT_BELONG_TO_PROVINCE_MESSAGE = "Quận/huyện không thuộc tỉnh/thành phố";
-    public static final String WARD_NOT_BELONG_TO_DISTRICT_MESSAGE = "Phường/xã không thuộc không thuộc quận/huyện";
-    public static final String DISTRICT_CODE_NOT_FOUND_MESSAGE = "Mã quận/huyện không tồn tại";
-    public static final String WARD_CODE_NOT_FOUND_MESSAGE = "Mã phường/xã không tồn tại";
-    public static final String INDUSTRY_CODE_NOT_FOUND_MESSAGE = "Mã ngành hàng không tồn tại";
     public static final String INVALID_PHONE_NUMBER_FORMAT_MESSAGE = "Số điện thoại không đúng định dạng";
     public static final String INVALID_EMAIL_FORMAT_MESSAGE = "Email không đúng định dạng";
-    public static final String INVALID_TAX_RATE_FORMAT_MESSAGE = "Thuế suất không đúng định dạng";
-    public static final String INVALID_TAX_RATE_MESSAGE = "Thuế suất không được lớn hơn 100";
-    public static final String INVALID_INDUSTRY_CODES_FORMAT_MESSAGE = "Mã ngành hàng được nhập cách nhau bởi dấu phẩy";
-    public static final String DUPLICATE_INDUSTRY_CODE_MESSAGE = "Mã ngành hàng trong cùng một dòng không được trùng nhau";
-    public static final String INVALID_SHIPPING_DAYS_FORMAT_MESSAGE = "Số ngày vận chuyển phải là số nguyên dương";
-    public static final String EXCLUSIVE_STATION = "Trạm độc quyền";
-    public static final String AUTHORIZED_STATION = "Trạm ủy quyền";
-    public static final String DEPENDENT_STATION = "Trạm trực thuộc";
+    public static final String MALE = "MALE";
+    public static final String FEMALE = "FEMALE";
+    public static final String OTHER = "OTHER";
 
     public static final String PHONE_NUMBER_REGEX = "^(0[2356789]\\d{8})$";
     public static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@(.+)$";
-    public static final String TAX_RATE_REGEX = "^\\d+(\\.\\d{1,2})?$";
-    public static final String INDUSTRY_CODES_REGEX = "^[^,]+(,[^,]+)*$";
-    public static final String POSITIVE_INTEGER_REGEX = "^[1-9][0-9]*$";
     public static final String SPECIAL_CHARACTERS_REGEX = "^[a-zA-Z0-9]*$";
 
     Map<Integer, List<String>> mapError;
@@ -100,33 +91,16 @@ public class ImportUser {
         HEADER_EXCEL_FILE.put(4, "PhoneNumber");
         HEADER_EXCEL_FILE.put(5, "Email");
         HEADER_EXCEL_FILE.put(6, "Gender");
-        HEADER_EXCEL_FILE.put(7, "DepartmentCode");
-        HEADER_EXCEL_FILE.put(8, "Enable");
+        HEADER_EXCEL_FILE.put(7, "DateOfBirth");
+        HEADER_EXCEL_FILE.put(8, "DepartmentCode");
+        HEADER_EXCEL_FILE.put(9, "Enable");
     }
 
     @Transactional
     public User saveImportExcel(IUserController.CreateUserInfo dto) {
         try {
-            CatWarrantyStationEntity warrantyStationEntity = ObjectMapperUtils.map(dto, CatWarrantyStationEntity.class);
-            warrantyStationEntity.setIsDelete(false);
-            warrantyStationEntity = warrantyStationAuthorizationRepository.save(warrantyStationEntity);
-
-            List<Integer> industries = dto.getIndustryIds();
-            for (Integer industryId : industries) {
-                WarrantyStationIndustryEntity warrantyStationIndustryEntity = new WarrantyStationIndustryEntity();
-                warrantyStationIndustryEntity.setWarrantyStationId(warrantyStationEntity.getWarrantyStationId());
-                warrantyStationIndustryEntity.setIndustryId(industryId);
-                warrantyStationIndustryRepositoryJAP.save(warrantyStationIndustryEntity);
-            }
-
-            List<Integer> districtHanLingWarranties = dto.getDistrictHanLingWarrantyIds();
-            for (Integer regionId : districtHanLingWarranties) {
-                DistrictHanLingWarrantyEntity districtHanLingWarrantyEntity = new DistrictHanLingWarrantyEntity();
-                districtHanLingWarrantyEntity.setWarrantyStationId(warrantyStationEntity.getWarrantyStationId());
-                districtHanLingWarrantyEntity.setRegionId(regionId);
-                districtHanLingWarrantyRepositoryJAP.save(districtHanLingWarrantyEntity);
-            }
-            return warrantyStationEntity;
+            User user = mapper.map(dto, User.class);
+            return userRepository.save(user);
         } catch (Exception e) {
             log.error("Lỗi khi import trạm bảo hành ủy quyền:{} \nERROR: {}", dto, e);
             throw e;
@@ -142,7 +116,7 @@ public class ImportUser {
             Workbook workbookRead = StreamingReader.builder().rowCacheSize(100).bufferSize(4096).open(inputStreamRead);
             Sheet currentSheetRead = workbookRead.getSheetAt(0);
             Map<Integer, Map<Integer, String>> listRowExcel = new HashMap<>(); //rowIndex - map<cellIndex-value>
-            List<String> listWarrantyStationCodeValid = new ArrayList<>();
+            List<String> listUsernameValid = new ArrayList<>();
             boolean isAllRowBlank = true;
             for (Row row : currentSheetRead) {
                 //validate header
@@ -182,11 +156,11 @@ public class ImportUser {
                 //throw new CustomException(ErrorApp.FILE_EMPTY);
             }
 
+
             //get list combobox
             List<User> users = userRepository.findAllByEnableIsTrue();
             String username = SecurityUtils.getUserDetails().getName();
-            List<Department> departments = departmentRepository.getAllBySite();
-            List<CatIndustryEntity> industryEntities = catIndustryRepositoryJPA.findByIsActiveTrueAndIsDeleteFalse();
+            List<Department> departments = departmentRepository.findAllByEnableIsTrue();
 
             for (Map.Entry<Integer, Map<Integer, String>> entryRow : listRowExcel.entrySet()) {
                 this.currentRowIndex = entryRow.getKey();
@@ -196,20 +170,20 @@ public class ImportUser {
                     continue;
                 }
 
-                CatWarrantyStationDTO dto = new CatWarrantyStationDTO();
+                IUserController.CreateUserInfo dto = new IUserController.CreateUserInfo();
 
                 for (Map.Entry<Integer, String> entry : dataRowCurrent.entrySet()) {
                     int cellIndex = entry.getKey();
                     String cellValue = entry.getValue();
 
-                    //Mã trạm
-                    if (cellIndex == WarrantyStationAuthorizationIndexColumn.CODE.getValue()) {
-                        if (validateMaxLength(HEADER_EXCEL_FILE.get(0), cellValue, 15) && validateEmptyCell(HEADER_EXCEL_FILE.get(0), cellValue) && checkRegex(cellValue, SPECIAL_CHARACTERS_REGEX, INVALID_STATION_CODE_FORMAT_MESSAGE, true)) {
-                            Optional<CatWarrantyStationEntity> result = warrantyStationEntities.stream()
-                                .filter(x -> cellValue.equals(x.getCode()))
+                    //Username
+                    if (cellIndex == UserIndexColumn.USERNAME.getValue()) {
+                        if (validateMaxLength(HEADER_EXCEL_FILE.get(1), cellValue, 15) && validateEmptyCell(HEADER_EXCEL_FILE.get(1), cellValue) && checkRegex(cellValue, SPECIAL_CHARACTERS_REGEX, INVALID_STATION_CODE_FORMAT_MESSAGE, true)) {
+                            Optional<User> user = users.stream()
+                                .filter(x -> cellValue.equalsIgnoreCase(x.getUsername()))
                                 .findFirst();
-                            if (result.isEmpty() && !listWarrantyStationCodeValid.contains(cellValue)) {
-                                dto.setCode(cellValue);
+                            if (user.isEmpty() && !listUsernameValid.contains(cellValue)) {
+                                dto.setUsername(cellValue);
                             } else {
                                 setCommentAndColorError(STATION_CODE_ALREADY_EXISTS_MESSAGE);
                             }
@@ -217,264 +191,86 @@ public class ImportUser {
                         continue;
                     }
 
-                    //Tên trạm
-                    if (cellIndex == WarrantyStationAuthorizationIndexColumn.NAME.getValue()) {
-                        if (validateMaxLength(HEADER_EXCEL_FILE.get(1), cellValue, 100) && validateEmptyCell(HEADER_EXCEL_FILE.get(1), cellValue)) {
-                            dto.setName(cellValue);
+                    //First Name
+                    if (cellIndex == UserIndexColumn.FIRST_NAME.getValue()) {
+                        if (validateMaxLength(HEADER_EXCEL_FILE.get(2), cellValue, 100) && validateEmptyCell(HEADER_EXCEL_FILE.get(2), cellValue)) {
+                            dto.setFirstName(cellValue);
                         }
                         continue;
                     }
 
-
-                    //Loại trạm
-                    if (cellIndex == WarrantyStationAuthorizationIndexColumn.TYPE_STATION.getValue()) {
-                        Integer typeStation = switch (cellValue) {
-                            case EXCLUSIVE_STATION -> 1;
-                            case AUTHORIZED_STATION -> 2;
-                            case DEPENDENT_STATION -> 3;
-                            default -> null;
-                        };
-                        dto.setTypeStation(typeStation);
-                        continue;
-                    }
-
-
-                    //Mã Khu vực
-                    if (cellIndex == WarrantyStationAuthorizationIndexColumn.REGION_CODE.getValue()) {
-                        if (validateMaxLength(HEADER_EXCEL_FILE.get(3), cellValue, 50) && validateEmptyCell(HEADER_EXCEL_FILE.get(3), cellValue)) {
-                            Optional<CatRegionEntity> region = regionEntities.stream()
-                                .filter(x -> cellValue.equals(x.getCode()))
-                                .findFirst();
-                            if (region.isPresent()) {
-                                CatRegionEntity entity = region.get();
-                                dto.setRegionId(entity.getRegionId());
-                            } else {
-                                setErrorNotExist(HEADER_EXCEL_FILE.get(3));
-                            }
+                    //Last Name
+                    if (cellIndex == UserIndexColumn.LAST_NAME.getValue()) {
+                        if (validateMaxLength(HEADER_EXCEL_FILE.get(3), cellValue, 100) && validateEmptyCell(HEADER_EXCEL_FILE.get(3), cellValue)) {
+                            dto.setLastName(cellValue);
                         }
                         continue;
                     }
 
-                    //Mã tỉnh thành phố
-                    if (cellIndex == WarrantyStationAuthorizationIndexColumn.PROVINCE_CODE.getValue()) {
-                        if (validateMaxLength(HEADER_EXCEL_FILE.get(4), cellValue, 50) && validateEmptyCell(HEADER_EXCEL_FILE.get(4), cellValue)) {
-                            Optional<CatRegionEntity> province = regionEntities.stream()
-                                .filter(x -> cellValue.equals(x.getCode()))
-                                .findFirst();
-                            if (province.isPresent()) {
-                                CatRegionEntity entity = province.get();
-                                dto.setProvince(entity.getRegionId());
-                            } else {
-                                setErrorNotExist(HEADER_EXCEL_FILE.get(4));
-                            }
-                        }
-                        continue;
-                    }
-
-                    //Mã quận huyện
-                    if (cellIndex == WarrantyStationAuthorizationIndexColumn.DISTRICTS_CODE.getValue()) {
-                        if (validateMaxLength(HEADER_EXCEL_FILE.get(5), cellValue, 50) && validateEmptyCell(HEADER_EXCEL_FILE.get(5), cellValue)) {
-                            if (dto.getProvince() != null) {
-                                CatRegionEntity district = validateRegion(cellValue, dto.getProvince(), DISTRICT_NOT_BELONG_TO_PROVINCE_MESSAGE, regionEntities);
-                                if (district != null) {
-                                    dto.setDistrict(district.getRegionId());
-                                }
-                            }
-                            foundRegion(cellValue, DISTRICT_CODE_NOT_FOUND_MESSAGE, regionEntities);
-                        }
-                        continue;
-                    }
-
-                    //Mã phường/xã
-                    if (cellIndex == WarrantyStationAuthorizationIndexColumn.WARD_CODE.getValue()) {
-                        if (validateMaxLength(HEADER_EXCEL_FILE.get(6), cellValue, 50) && validateEmptyCell(HEADER_EXCEL_FILE.get(6), cellValue)) {
-                            if (dto.getDistrict() != null) {
-                                CatRegionEntity ward = validateRegion(cellValue, dto.getDistrict(), WARD_NOT_BELONG_TO_DISTRICT_MESSAGE, regionEntities);
-                                if (ward != null) {
-                                    dto.setWard(ward.getRegionId());
-                                }
-                            }
-                            foundRegion(cellValue, WARD_CODE_NOT_FOUND_MESSAGE, regionEntities);
-                        }
-                        continue;
-                    }
-
-
-                    //Địa chỉ
-                    if (cellIndex == WarrantyStationAuthorizationIndexColumn.ADDRESS.getValue()) {
-                        if (validateMaxLength(HEADER_EXCEL_FILE.get(7), cellValue, 255) && validateEmptyCell(HEADER_EXCEL_FILE.get(7), cellValue)) {
-                            dto.setAddress(cellValue);
-                        }
-                        continue;
-                    }
-
-                    //Người đại diện
-                    if (cellIndex == WarrantyStationAuthorizationIndexColumn.REPRESENTATIVE.getValue()) {
-                        if (validateMaxLength(HEADER_EXCEL_FILE.get(8), cellValue, 100)) {
-                            dto.setRepresentative(cellValue);
-                        }
-                        continue;
-                    }
-
-                    //Số tài khoản ngân hàng
-                    if (cellIndex == WarrantyStationAuthorizationIndexColumn.BANK_ACCOUNT_NUMBER.getValue()) {
-                        if (validateMaxLength(HEADER_EXCEL_FILE.get(9), cellValue, 15) && validateNumber(cellValue, false, HEADER_EXCEL_FILE.get(9))) {
-                            dto.setBankAccountNumber(cellValue);
-                        }
-                        continue;
-                    }
-
-                    //Ngân hàng chi nhánh
-                    if (cellIndex == WarrantyStationAuthorizationIndexColumn.BANK_FAMILY.getValue()) {
-                        if (validateMaxLength(HEADER_EXCEL_FILE.get(10), cellValue, 100)) {
-                            dto.setBankFamily(cellValue);
-                        }
-                        continue;
-                    }
-
-                    //SDT cố định
-                    if (cellIndex == WarrantyStationAuthorizationIndexColumn.LANDLINE_NUMBER.getValue()) {
-                        if (validateMaxLength(HEADER_EXCEL_FILE.get(11), cellValue, 10) && checkRegex(cellValue, PHONE_NUMBER_REGEX, INVALID_PHONE_NUMBER_FORMAT_MESSAGE, false)) {
-                            dto.setLandlineNumber(cellValue);
-                        }
-                        continue;
-                    }
-
-                    //SDT di động
-                    if (cellIndex == WarrantyStationAuthorizationIndexColumn.PHONE.getValue()) {
-                        if (validateMaxLength(HEADER_EXCEL_FILE.get(12), cellValue, 10) && checkRegex(cellValue, PHONE_NUMBER_REGEX, INVALID_PHONE_NUMBER_FORMAT_MESSAGE, false)) {
-                            dto.setPhone(cellValue);
-                        }
-                        continue;
-                    }
-
-                    //Mã số thuế
-                    if (cellIndex == WarrantyStationAuthorizationIndexColumn.TAX_CODE.getValue()) {
-                        if (validateMaxLength(HEADER_EXCEL_FILE.get(13), cellValue, 15) && validateNumber(cellValue, false, HEADER_EXCEL_FILE.get(13))) {
-                            dto.setTaxCode(cellValue);
+                    //Phone Number
+                    if (cellIndex == UserIndexColumn.PHONE_NUMBER.getValue()) {
+                        if (validateMaxLength(HEADER_EXCEL_FILE.get(4), cellValue, 10) && validateEmptyCell(HEADER_EXCEL_FILE.get(4), cellValue) && checkRegex(cellValue, PHONE_NUMBER_REGEX, INVALID_PHONE_NUMBER_FORMAT_MESSAGE, false)) {
+                            dto.setPhoneNumber(cellValue);
                         }
                         continue;
                     }
 
                     //Email
-                    if (cellIndex == WarrantyStationAuthorizationIndexColumn.EMAIL.getValue()) {
-                        if (validateEmptyCell(HEADER_EXCEL_FILE.get(14), cellValue) && checkRegex(cellValue, EMAIL_REGEX, INVALID_EMAIL_FORMAT_MESSAGE, true)) {
+                    if (cellIndex == UserIndexColumn.EMAIL.getValue()) {
+                        if (validateEmptyCell(HEADER_EXCEL_FILE.get(5), cellValue) && validateEmptyCell(HEADER_EXCEL_FILE.get(5), cellValue) && checkRegex(cellValue, EMAIL_REGEX, INVALID_EMAIL_FORMAT_MESSAGE, true)) {
                             dto.setEmail(cellValue);
                         }
                         continue;
                     }
 
-                    //Mã ngành hàng
-                    if (cellIndex == WarrantyStationAuthorizationIndexColumn.INDUSTRY_CODE.getValue()) {
-                        if (validateEmptyCell(HEADER_EXCEL_FILE.get(15), cellValue) && checkRegex(cellValue, INDUSTRY_CODES_REGEX, INVALID_INDUSTRY_CODES_FORMAT_MESSAGE, true)) {
-                            List<String> industryCodes = splitStringByComma(cellValue);
-                            List<Integer> industryIds = new ArrayList<>();
-                            Set<String> uniqueCodes = new HashSet<>();
-                            for (String code : industryCodes) {
-                                if (isIndustryCodeValid(code, industryEntities)) {
-                                    Optional<CatIndustryEntity> entity = industryEntities.stream()
-                                        .filter(x -> code.equals(x.getCode()))
-                                        .findFirst();
-                                    entity.ifPresent(catIndustryEntity -> {
-                                        // Kiểm tra xem mã đã tồn tại trong danh sách chưa
-                                        if (uniqueCodes.contains(code)) {
-                                            setCommentAndColorError(DUPLICATE_INDUSTRY_CODE_MESSAGE + ":" + code);
-                                        } else {
-                                            uniqueCodes.add(code); // Thêm mã mới vào danh sách
-                                            industryIds.add(catIndustryEntity.getIndustryId());
-                                        }
-                                    });
-                                } else {
-                                    setCommentAndColorError(INDUSTRY_CODE_NOT_FOUND_MESSAGE + ":" + code);
-                                }
-                            }
-                            dto.setIndustryIds(industryIds);
+                    //gender
+                    if (cellIndex == UserIndexColumn.GENDER.getValue() && validateEmptyCell(HEADER_EXCEL_FILE.get(5), cellValue)) {
+                        Constants.Gender gender = switch (cellValue) {
+                            case MALE -> Constants.Gender.MALE;
+                            case FEMALE -> Constants.Gender.FEMALE;
+                            case OTHER -> Constants.Gender.OTHER;
+                            default -> null;
+                        };
+                        dto.setGender(gender);
+                        continue;
+                    }
+
+                    //dateOfBirth
+                    if (cellIndex == UserIndexColumn.DATA_OF_BIRTH.getValue()) {
+                        if (validateEmptyCell(HEADER_EXCEL_FILE.get(7), cellValue) && validateEmptyCell(HEADER_EXCEL_FILE.get(7), cellValue) && validateBeforeCurrentDate(cellValue, HEADER_EXCEL_FILE.get(20))) {
+                            dto.setDateOfBirth(formatDate(cellValue));
                         }
                         continue;
                     }
 
-                    //Mã tỉnh thành phố xử lý ca bảo hành
-                    if (cellIndex == WarrantyStationAuthorizationIndexColumn.PROVINCE_HAN_LING_WARRANTY_CODE.getValue()) {
-                        if (validateMaxLength(HEADER_EXCEL_FILE.get(16), cellValue, 50) && validateEmptyCell(HEADER_EXCEL_FILE.get(16), cellValue)) {
-                            Optional<CatRegionEntity> provinceHandlingWarranty = regionEntities.stream()
-                                .filter(x -> cellValue.equals(x.getCode()))
+
+                    //Department code
+                    if (cellIndex == UserIndexColumn.DEPARTMENT_CODE.getValue()) {
+                        if (validateMaxLength(HEADER_EXCEL_FILE.get(8), cellValue, 50) && validateEmptyCell(HEADER_EXCEL_FILE.get(8), cellValue)) {
+                            Optional<Department> department = departments.stream()
+                                .filter(x -> cellValue.equalsIgnoreCase(x.getCode()))
                                 .findFirst();
-                            if (provinceHandlingWarranty.isPresent()) {
-                                CatRegionEntity entity = provinceHandlingWarranty.get();
-                                dto.setProvinceHanLingWarranty(entity.getRegionId());
+                            if (department.isPresent()) {
+                                dto.setDepartmentId(department.get().getId());
                             } else {
-                                setErrorNotExist(HEADER_EXCEL_FILE.get(16));
+                                setErrorNotExist(HEADER_EXCEL_FILE.get(8));
                             }
                         }
                         continue;
                     }
 
-                    //Mã quận huyện xử lý ca bảo hành
-                    if (cellIndex == WarrantyStationAuthorizationIndexColumn.DISTRICT_HAN_LING_WARRANTY_CODE.getValue()) {
-                        if (validateMaxLength(HEADER_EXCEL_FILE.get(17), cellValue, 50) && validateEmptyCell(HEADER_EXCEL_FILE.get(17), cellValue)) {
-                            List<String> districtHandlingWarrantyCodes = splitStringByComma(cellValue);
-                            List<Integer> districtHandlingWarrantyIds = new ArrayList<>();
-                            for (String code : districtHandlingWarrantyCodes) {
-                                if (dto.getProvinceHanLingWarranty() != null) {
-                                    CatRegionEntity districtHandlingWarranty = validateRegion(code, dto.getProvinceHanLingWarranty(), DISTRICT_NOT_BELONG_TO_PROVINCE_MESSAGE + ":" + code, regionEntities);
-                                    if (districtHandlingWarranty != null) {
-                                        districtHandlingWarrantyIds.add(districtHandlingWarranty.getRegionId());
-                                    }
-                                }
-                                foundRegion(code, DISTRICT_CODE_NOT_FOUND_MESSAGE + ":" + code, regionEntities);
-                            }
-                            dto.setDistrictHanLingWarrantyIds(districtHandlingWarrantyIds);
-                        }
-                        continue;
-                    }
-
-                    //Số ngày vận chuyển
-                    if (cellIndex == WarrantyStationAuthorizationIndexColumn.SHIPPING_DAYS.getValue()) {
-                        if (validateEmptyCell(HEADER_EXCEL_FILE.get(18), cellValue) && validateMaxLength(HEADER_EXCEL_FILE.get(18), cellValue, 9) && checkRegex(cellValue, POSITIVE_INTEGER_REGEX, INVALID_SHIPPING_DAYS_FORMAT_MESSAGE, true)) {
-                            dto.setShippingDays(Integer.parseInt(cellValue));
-                        }
-                        continue;
-                    }
-
-                    //Thuế suất
-                    if (cellIndex == WarrantyStationAuthorizationIndexColumn.TAX_RATE.getValue()) {
-                        if (validateMaxLength(HEADER_EXCEL_FILE.get(19), cellValue, 10) && validateEmptyCell(HEADER_EXCEL_FILE.get(19), cellValue) && checkRegex(cellValue, TAX_RATE_REGEX, INVALID_TAX_RATE_FORMAT_MESSAGE, true)) {
-                            if (Float.parseFloat(cellValue) > 100) {
-                                setCommentAndColorError(INVALID_TAX_RATE_MESSAGE);
-                            }
-                            dto.setTaxRate(Float.parseFloat(cellValue));
-                        }
-                        continue;
-                    }
-
-                    //Hiệu lực thuế suất từ ngày
-                    if (cellIndex == WarrantyStationAuthorizationIndexColumn.TAX_EFFECT_FROM.getValue()) {
-                        if (validateEmptyCell(HEADER_EXCEL_FILE.get(20), cellValue) && validateEmptyCell(HEADER_EXCEL_FILE.get(20), cellValue) && validateBeforeCurrentDate(cellValue, HEADER_EXCEL_FILE.get(20))) {
-                            dto.setTaxEffectFrom(formatDate(cellValue));
-                        }
-                        continue;
-                    }
-
-                    //Phí cố định
-                    if (cellIndex == WarrantyStationAuthorizationIndexColumn.FIXED_FEES.getValue()) {
-                        if (validateEmptyCell(HEADER_EXCEL_FILE.get(21), cellValue) && validateMaxLength(HEADER_EXCEL_FILE.get(21), cellValue, 10) && validateNumber(cellValue, true, HEADER_EXCEL_FILE.get(21))) {
-                            dto.setFixedFees(Float.parseFloat(cellValue));
-                        }
-                        continue;
-                    }
-
-                    //Trạng thái
-                    if (cellIndex == WarrantyStationAuthorizationIndexColumn.IS_ACTIVE.getValue()) {
-                        if (validateEmptyCell(HEADER_EXCEL_FILE.get(22), cellValue)) {
-                            dto.setIsActive(BooleanUtils.toBoolean(Integer.parseInt(cellValue)));
+                    //Enable
+                    if (cellIndex == UserIndexColumn.ENABLE.getValue()) {
+                        if (validateEmptyCell(HEADER_EXCEL_FILE.get(9), cellValue)) {
+                            dto.setEnable(BooleanUtils.toBoolean(Integer.parseInt(cellValue)));
                         }
                     }
                 }
 
                 //check error by current row
                 if (mapError.get(this.currentRowIndex) == null) {
-                    CatWarrantyStationEntity entity = saveImportExcel(dto);
-                    listWarrantyStationCodeValid.add(entity.getCode());
+                    User entity = saveImportExcel(dto);
+                    listUsernameValid.add(entity.getUsername());
                     //delete message error if exist
                     if (!CollectionUtils.isEmpty(this.mapError.get(currentRowIndex))) {
                         mapError.remove(currentRowIndex);
@@ -570,32 +366,20 @@ public class ImportUser {
         return true;
     }
 
-    private boolean validateNumber(String value, Boolean isRequired, String cellName) {
-        if (!isRequired && StringUtils.isBlank(value)) {
-            return true;
-        }
-        if (NumberUtils.isParsable(value)) {
-            return true;
-        } else {
-            setCommentAndColorError(cellName + " phải là số");
-            return false;
-        }
-    }
-
     private void setErrorNotExist(String cellName) {
         setCommentAndColorError(cellName + " không tồn tại");
     }
 
     private Boolean validateBeforeCurrentDate(String dateRequest, String cellName) {
-        Date date = formatDate(dateRequest);
+        Date date = Date.from(Objects.requireNonNull(formatDate(dateRequest)).atStartOfDay(ZoneId.systemDefault()).toInstant());
         if (date == null) {
-            setCommentAndColorError(cellName + " không đúng định dạng dd/MM/yyyy");
+            setCommentAndColorError(cellName + " không đúng định dạng yyyy-MM-dd");
             return false;
         }
-        if (!date.before(formatDate2(new Date()))) {
+        if (date.before(formatDate2(new Date()))) {
             return true;
         } else {
-            setCommentAndColorError(cellName + " phải lớn hơn hoặc bằng ngày hiện tại");
+            setCommentAndColorError(cellName + " phải nhỏ hơn hoặc bằng ngày hiện tại");
             return false;
         }
     }
@@ -605,14 +389,15 @@ public class ImportUser {
         mapError.get(currentRowIndex).add(messageIsError);
     }
 
-    private Date formatDate(String strDate) {
+    private static LocalDate formatDate(String strDate) {
         if ("".equals(strDate.trim())) {
             return null;
         } else {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
             dateFormat.setLenient(false);
             try {
-                return dateFormat.parse(strDate);
+                Date date = dateFormat.parse(strDate);
+                return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
             } catch (ParseException e) {
                 return null;
             }
@@ -632,27 +417,6 @@ public class ImportUser {
         }
     }
 
-    CatRegionEntity validateRegion(String cellValue, Integer regionParentId, String messageError, List<CatRegionEntity> regionEntities) {
-        Optional<CatRegionEntity> result = regionEntities.stream()
-            .filter(region -> regionParentId.equals(region.getRegionParentId()))
-            .filter(region -> cellValue.equals(region.getCode()))
-            .findFirst();
-        if (result.isEmpty()) {
-            setCommentAndColorError(messageError);
-            return null;
-        }
-        return result.get();
-    }
-
-    void foundRegion(String cellValue, String messageError, List<CatRegionEntity> regionEntities) {
-        Optional<CatRegionEntity> result = regionEntities.stream()
-            .filter(region -> cellValue.equals(region.getCode()))
-            .findFirst();
-        if (result.isEmpty()) {
-            setCommentAndColorError(messageError);
-        }
-    }
-
     boolean checkRegex(String value, String regex, String messageIsError, boolean isRequired) {
         if (!isRequired && StringUtils.isBlank(value)) {
             return true;
@@ -664,26 +428,4 @@ public class ImportUser {
             return false;
         }
     }
-
-    public static List<String> splitStringByComma(String input) {
-        List<String> result = new ArrayList<>();
-
-        if (input != null && !input.isEmpty()) {
-            String[] parts = input.split(",");
-            for (String part : parts) {
-                result.add(part.trim());
-            }
-        }
-        return result;
-    }
-
-
-    boolean isIndustryCodeValid(String code, List<CatIndustryEntity> industryEntities) {
-        for (CatIndustryEntity industry : industryEntities) {
-            if (industry.getCode().equals(code)) {
-                return true;
-            }
-        }
-        return false;
-    }*/
 }

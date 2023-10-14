@@ -14,6 +14,9 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.apache.http.HttpStatus;
 import org.modelmapper.ModelMapper;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
@@ -42,16 +46,17 @@ public class UserController implements IUserController {
     }
 
     @Override
-    public ResponseEntity<?> filter(UserFilter filter) {
+    public ResponseEntity<?> filter(UserFilter filter,Pageable pageable) {
         return ResponseEntity.ok(
                 userService.filter(
-                        filter.getPageNumber(),
+                        pageable,
                         filter.getUsernames(),
                         filter.getRoles(),
                         filter.getCreatedOnStart(),
                         filter.getCreatedOnEnd(),
                         filter.getEnable(),
-                        filter.getKeyword()));
+                        filter.getKeyword(),
+                        filter.getDepartmentId()));
     }
 
     @Override
@@ -108,8 +113,13 @@ public class UserController implements IUserController {
     public ResponseEntity<?> export(UserFilter userFilter) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        headers.setContentDispositionFormData("attachment", "danh_sach_tram_bao_hanh_uy_quyen.xlsx");
+        headers.setContentDispositionFormData("attachment", "danh_sach_nguoi_dung.xlsx");
         return ResponseEntity.status(HttpStatus.SC_OK).headers(headers).body(userService.export(userFilter));
+    }
+
+    @Override
+    public ResponseEntity<ByteArrayResource> downloadExcel() throws IOException {
+        return userService.downloadExcel();
     }
 
     @Override
@@ -123,7 +133,7 @@ public class UserController implements IUserController {
     }
 
     @Override
-    public ResponseEntity<Objects> importUser(MultipartFile file) {
+    public ResponseEntity<Object> importUser(MultipartFile file) {
        return userService.importUser(file);
     }
 

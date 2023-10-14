@@ -37,4 +37,5 @@ public interface DepartmentRepository extends GenericRepository<Department, UUID
                       @Param("enable") @Nullable Boolean isEnable,
                       @Param("keyword") @Nullable String keyword);
 
+    List<Department> findAllByEnableIsTrue();
 }

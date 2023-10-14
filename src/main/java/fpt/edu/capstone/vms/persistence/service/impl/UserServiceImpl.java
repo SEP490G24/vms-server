@@ -8,6 +8,7 @@ import fpt.edu.capstone.vms.oauth2.IUserResource;
 import fpt.edu.capstone.vms.persistence.entity.User;
 import fpt.edu.capstone.vms.persistence.repository.FileRepository;
 import fpt.edu.capstone.vms.persistence.repository.UserRepository;
+import fpt.edu.capstone.vms.persistence.repository.UserRepositoryCustom;
 import fpt.edu.capstone.vms.persistence.service.IUserService;
 import fpt.edu.capstone.vms.persistence.service.excel.ImportUser;
 import fpt.edu.capstone.vms.util.FileUtils;
@@ -15,14 +16,21 @@ import fpt.edu.capstone.vms.util.SecurityUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.sf.jasperreports.engine.*;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
+import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
+import net.sf.jasperreports.export.SimpleExporterInput;
+import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.openxml4j.util.ZipSecureFile;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -38,9 +46,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 import static fpt.edu.capstone.vms.persistence.entity.User.checkPassword;
 import static fpt.edu.capstone.vms.persistence.entity.User.encodePassword;
@@ -49,6 +55,8 @@ import static fpt.edu.capstone.vms.persistence.entity.User.encodePassword;
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements IUserService {
+
+    static final String PATH_FILE = "/jasper/users.jrxml";
 
     @Value("${images.folder}")
     private String imagesFolder;
@@ -61,15 +69,17 @@ public class UserServiceImpl implements IUserService {
 
 
     @Override
-    public Page<User> filter(int pageNumber, List<String> usernames, List<Constants.UserRole> roles, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, Boolean enable, String keyword) {
+    public Page<IUserController.UserFilter> filter(Pageable pageable, List<String> usernames, List<Constants.UserRole> roles, LocalDateTime createdOnStart,
+                                                   LocalDateTime createdOnEnd, Boolean enable, String keyword, String departmentId) {
         return userRepository.filter(
-            PageRequest.of(pageNumber, Constants.PAGE_SIZE),
+            pageable,
             usernames,
             roles,
             createdOnStart,
             createdOnEnd,
             enable,
-            keyword);
+            keyword,
+            departmentId);
     }
 
 
@@ -184,7 +194,8 @@ public class UserServiceImpl implements IUserService {
         var newFile = fileRepository.findByName(newImage);
         String filePath = imagesFolder + "/";
         try {
-            if (ObjectUtils.isEmpty(newFile)) throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can not found image in file");
+            if (ObjectUtils.isEmpty(newFile))
+                throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can not found image in file");
             if (!SecurityUtils.loginUsername().equals(username)) {
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User is not true");
             }
@@ -202,23 +213,13 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public ByteArrayResource export(IUserController.UserFilter userFilter) {
-        /*Pageable pageable = PageRequest.of(0, 1000000);
-        Page<User> listData = filter(pageable.getPageNumber(),);
-        List<CatWarrantyStationDTO> listDto = ObjectMapperUtils.mapAll(listData.getContent(), CatWarrantyStationDTO.class);
-        for (CatWarrantyStationDTO e : listDto) {
-            if (e.getTypeStation() != null) {
-                String typeStationName = 1 == e.getTypeStation() ? "Trạm độc quyền" :
-                    2 == e.getTypeStation() ? "Trạm ủy quyền" :
-                        "Trạm trực thuộc";
-                e.setTypeStationName(typeStationName);
-            }
-        }
-
+        Pageable pageable = PageRequest.of(0, 1000000);
+        Page<IUserController.UserFilter> listData = filter(pageable, userFilter.getUsernames(), userFilter.getRoles(), userFilter.getCreatedOnStart(), userFilter.getCreatedOnEnd(), userFilter.getEnable(), userFilter.getKeyword(), userFilter.getDepartmentId());
         try {
             JasperReport jasperReport = JasperCompileManager.compileReport(getClass().getResourceAsStream(PATH_FILE));
 
             JRBeanCollectionDataSource listDataSource = new JRBeanCollectionDataSource(
-                listDto.size() == 0 ? Collections.singletonList(new CatWarrantyStationDTO()) : listDto);
+                listData.getContent().size() == 0 ? Collections.singletonList(new User()) : listData.getContent());
             Map<String, Object> parameters = new HashMap<>();
             parameters.put("tableDataset", listDataSource);
             JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, new JREmptyDataSource());
@@ -232,20 +233,16 @@ public class UserServiceImpl implements IUserService {
             byte[] excelBytes = byteArrayOutputStream.toByteArray();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-            headers.setContentDispositionFormData("attachment", "danh_sach_tram_bao_hanh_uy_quyen.xlsx");
-            return ResponseEntity
-                .status(HttpStatus.OK)
-                .headers(headers)
-                .body(new ByteArrayResource(excelBytes));
-        } catch (Exception e){
-            return ResponseUtils.getResponseEntityStatus(ErrorApp.INTERNAL_SERVER,null);
-        }*/
-        return null;
+            headers.setContentDispositionFormData("attachment", "danh_sach_nguoi-dung.xlsx");
+            return new ByteArrayResource(excelBytes);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     @Override
-    public ResponseEntity<Objects> importUser(MultipartFile file) {
-        /*if (!FileUtils.isValidFileUpload(file, "xls", "xlsx", "XLS", "XLSX")) {
+    public ResponseEntity<Object> importUser(MultipartFile file) {
+        if (!FileUtils.isValidFileUpload(file, "xls", "xlsx", "XLS", "XLSX")) {
             //throw new CustomException(ErrorApp.FILE_NOT_FORMAT);
         }
         if (file.isEmpty()) {
@@ -267,18 +264,31 @@ public class UserServiceImpl implements IUserService {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-            headers.setContentDispositionFormData("attachment", "Thong-tin-loi-danh-sach-tram-bao-hanh-uy-quyen.xlsx");
+            headers.setContentDispositionFormData("attachment", "Thong-tin-loi-danh-sach-nguoi-dung.xlsx");
+            return ResponseEntity.status(HttpStatus.OK).headers(headers).body(byteData);
+
+        } catch (Exception e) {
+            log.error("Lỗi xảy ra trong quá trình import", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    @Override
+    public ResponseEntity<ByteArrayResource> downloadExcel() throws IOException {
+        try {
+            ClassPathResource resource = new ClassPathResource("template/Mau-danh-sach-nguoi-dung.xlsx");
+            byte[] bytes = Files.readAllBytes(resource.getFile().toPath());
+            ByteArrayResource byteArrayResource = new ByteArrayResource(bytes);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            headers.setContentDispositionFormData("attachment", "Mau-danh-sach-nguoi-dung.xlsx");
             return ResponseEntity
                 .status(HttpStatus.OK)
                 .headers(headers)
-                .body(byteData);
-
-        } catch (CustomException e) {
-            return ResponseUtils.getResponseEntityStatus(e.getErrorApp(), null);
+                .body(byteArrayResource);
         } catch (Exception e) {
-            log.error("Lỗi xảy ra trong quá trình import", e);
-            return ResponseUtils.getResponseEntityStatus(ErrorApp.INTERNAL_SERVER, null);
-        }*/
-        return null;
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+
     }
 }

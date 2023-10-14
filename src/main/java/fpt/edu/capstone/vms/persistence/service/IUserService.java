@@ -8,22 +8,26 @@ import fpt.edu.capstone.vms.oauth2.IUserResource;
 import fpt.edu.capstone.vms.persistence.entity.User;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.core.io.ByteArrayResource;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
 public interface IUserService {
 
-    Page<User> filter(int pageNumber,
-                      List<String> usernames,
-                      List<Constants.UserRole> roles,
-                      LocalDateTime createdOnStart,
-                      LocalDateTime createdOnEnd,
-                      Boolean enable,
-                      String keyword);
+    Page<IUserController.UserFilter> filter(Pageable pageable,
+                                            List<String> usernames,
+                                            List<Constants.UserRole> roles,
+                                            LocalDateTime createdOnStart,
+                                            LocalDateTime createdOnEnd,
+                                            Boolean enable,
+                                            String keyword,
+                                            String department);
 
     User createUser(IUserResource.UserDto userDto);
 
@@ -45,5 +49,7 @@ public interface IUserService {
 
     Boolean deleteAvatar(String name, String newImage, String username);
 
-    ResponseEntity<Objects> importUser(MultipartFile file);
+    ResponseEntity<Object> importUser(MultipartFile file);
+
+    ResponseEntity<ByteArrayResource> downloadExcel() throws IOException;
 }

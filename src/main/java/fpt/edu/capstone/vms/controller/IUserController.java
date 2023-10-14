@@ -8,13 +8,18 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -31,10 +36,10 @@ public interface IUserController {
 //    @PreAuthorize("hasRole('r:user:find')")
     ResponseEntity<?> info(@PathVariable String username) throws NotFoundException;
 
-    @PostMapping("/filter")
+    @GetMapping("/filter")
     @Operation(summary = "Filter")
 //    @PreAuthorize("hasRole('r:user:find')")
-    ResponseEntity<?> filter(@RequestBody UserFilter usernames);
+    ResponseEntity<?> filter(UserFilter usernames, Pageable pageable);
 
     @PostMapping("")
     @Operation(summary = "Create new user")
@@ -69,11 +74,15 @@ public interface IUserController {
 
     @GetMapping("/export")
     @Operation(summary = "Export list of user to excel")
-    ResponseEntity<?> export(@RequestBody UserFilter userFilter);
+    ResponseEntity<?> export(UserFilter userFilter);
+
+    @GetMapping("/import")
+    @Operation(summary = "download template import user")
+    ResponseEntity<ByteArrayResource> downloadExcel() throws IOException;
 
     @PostMapping("/import")
     @Operation(summary = "Import list of user use excel")
-    ResponseEntity<Objects> importUser(@RequestBody MultipartFile file);
+    ResponseEntity<Object> importUser(@RequestBody MultipartFile file);
 
     @PostMapping("/change-password")
     @Operation(summary = "Change Password")
@@ -106,6 +115,7 @@ public interface IUserController {
         Constants.Gender gender;
         @NotNull
         Boolean enable;
+        String departmentName;
     }
 
     @Data
@@ -134,13 +144,25 @@ public interface IUserController {
 
     @Data
     class UserFilter {
-        int pageNumber;
         List<Constants.UserRole> roles;
         List<String> usernames;
         LocalDateTime createdOnStart;
         LocalDateTime createdOnEnd;
         Boolean enable;
         String keyword;
+        String departmentId;
+
+        String username;
+        String firstName;
+        String lastName;
+        String phoneNumber;
+        String avatar;
+        String email;
+        String countryCode;
+        String departmentName;
+        Date dateOfBirth;
+        String gender;
+        String roleName;
     }
 
     @Data
