@@ -21,9 +21,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.UUID;
 
 @Service
@@ -48,27 +45,22 @@ public class FileServiceImpl extends GenericServiceImpl<File, UUID> implements I
 
     @Override
     public Boolean deleteImage(String oldImage, String newImage) {
-//        var oldFile = fileRepository.findByName(oldImage);
-//        var newFile = fileRepository.findByName(newImage);
-//
-//        try {
-//            if (ObjectUtils.isEmpty(newFile)) throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can not found image in file");
-////            Path rawFile = Paths.get(filePath, oldImage);
-////            Files.deleteIfExists(rawFile);
-//            if (!ObjectUtils.isEmpty(oldFile)) {
-//                fileRepository.delete(oldFile);
-//                return true;
-//            }
-//            return true;
-//        }
-//        catch (IOException e){
-//            throw new RuntimeException();
-//        }
-        return null;
+        var oldFile = fileRepository.findByName(oldImage);
+        var newFile = fileRepository.findByName(newImage);
+
+        if (ObjectUtils.isEmpty(newFile))
+            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can not found image in file");
+        BlobClient blobClient = getBlobClient(oldImage);
+        blobClient.deleteIfExists();
+        if (!ObjectUtils.isEmpty(oldFile)) {
+            fileRepository.delete(oldFile);
+            return true;
+        }
+        return true;
     }
 
     @Override
-    public File uploadImage(MultipartFile file){
+    public File uploadImage(MultipartFile file) {
         if (file.isEmpty()) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "File empty");
         }
@@ -76,7 +68,7 @@ public class FileServiceImpl extends GenericServiceImpl<File, UUID> implements I
         // Get original file name
         String originalFilename = file.getOriginalFilename();
         // Get name extension
-        String extension = originalFilename.substring(originalFilename.lastIndexOf(".")  + 1);
+        String extension = originalFilename.substring(originalFilename.lastIndexOf(".") + 1);
 
         // generate url for image
         String relativeFileName = UUID.randomUUID().toString() + "." + extension;
@@ -95,16 +87,9 @@ public class FileServiceImpl extends GenericServiceImpl<File, UUID> implements I
                     .toOutputStream(thumbnailOutputStream);
             }
 
-            StorageSharedKeyCredential storageCredentials =
-                new StorageSharedKeyCredential(accountName, accountKey);
-
             String blobEndpoint = String.format("https://%s.blob.core.windows.net", accountName);
             String blobUri = String.format("%s/%s/%s", blobEndpoint, containerName, relativeFileName);
-            // Create the BlobServiceClient
-            BlobServiceClient blobServiceClient = new BlobServiceClientBuilder().endpoint(blobEndpoint).credential(storageCredentials).buildClient();
-
-            BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerName);
-            BlobClient blobClient = containerClient.getBlobClient(relativeFileName);
+            BlobClient blobClient = getBlobClient(relativeFileName);
             try (InputStream thumbnailImageStream = new ByteArrayInputStream(thumbnailOutputStream.toByteArray())) {
                 blobClient.upload(thumbnailImageStream, thumbnailOutputStream.size());
             }
@@ -123,5 +108,16 @@ public class FileServiceImpl extends GenericServiceImpl<File, UUID> implements I
             e.printStackTrace();
             throw new RuntimeException();
         }
+    }
+
+    public BlobClient getBlobClient(String fileName) {
+        StorageSharedKeyCredential storageCredentials =
+            new StorageSharedKeyCredential(accountName, accountKey);
+        String blobEndpoint = String.format("https://%s.blob.core.windows.net", accountName);
+        // Create the BlobServiceClient
+        BlobServiceClient blobServiceClient = new BlobServiceClientBuilder().endpoint(blobEndpoint).credential(storageCredentials).buildClient();
+
+        BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerName);
+        return containerClient.getBlobClient(fileName);
     }
 }
