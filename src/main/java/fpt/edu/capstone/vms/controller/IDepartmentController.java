@@ -4,7 +4,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.QueryParam;
 import lombok.Data;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,7 +45,7 @@ public interface IDepartmentController {
     @PostMapping("/filter")
     @Operation(summary = "Filter")
 //    @PreAuthorize("hasRole('r:user:find')")
-    ResponseEntity<?> filter(@RequestBody DepartmentFilter siteFilter);
+    ResponseEntity<?> filter(@RequestBody @Valid DepartmentFilter siteFilter, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
     @Data
     class createDepartmentInfo {
@@ -66,7 +68,6 @@ public interface IDepartmentController {
 
     @Data
     class DepartmentFilter {
-        int pageNumber = 0;
         List<String> names;
         LocalDateTime createdOnStart;
         LocalDateTime createdOnEnd;
@@ -74,5 +75,6 @@ public interface IDepartmentController {
         String lastUpdatedBy;
         Boolean enable;
         String keyword;
+        UUID siteId;
     }
 }

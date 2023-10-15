@@ -4,7 +4,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.QueryParam;
 import lombok.Data;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,7 +45,7 @@ public interface ISiteController {
     @PostMapping("/filter")
     @Operation(summary = "Filter")
 //    @PreAuthorize("hasRole('r:user:find')")
-    ResponseEntity<?> filter(@RequestBody SiteFilter siteFilter);
+    ResponseEntity<?> filter(@RequestBody @Valid SiteFilter siteFilter, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
     @GetMapping("/organization/{organizationId}")
     @Operation(summary = "Get all site by organizationId")
@@ -82,7 +84,6 @@ public interface ISiteController {
 
     @Data
     class SiteFilter {
-        int pageNumber = 0;
         List<String> names;
         LocalDateTime createdOnStart;
         LocalDateTime createdOnEnd;
@@ -90,5 +91,6 @@ public interface ISiteController {
         String lastUpdatedBy;
         Boolean enable;
         String keyword;
+        UUID organizationId;
     }
 }

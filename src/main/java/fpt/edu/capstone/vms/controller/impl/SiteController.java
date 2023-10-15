@@ -7,6 +7,7 @@ import fpt.edu.capstone.vms.persistence.service.ISiteService;
 import fpt.edu.capstone.vms.persistence.service.impl.SiteServiceImpl;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
@@ -60,17 +61,27 @@ public class SiteController implements ISiteController {
     }
 
     @Override
-    public ResponseEntity<?> filter(SiteFilter filter) {
-        return ResponseEntity.ok(
+    public ResponseEntity<?> filter(SiteFilter filter, boolean isPageable, Pageable pageable) {
+        return isPageable ? ResponseEntity.ok(
             siteService.filter(
-                filter.getPageNumber(),
+                pageable,
                 filter.getNames(),
+                filter.getOrganizationId(),
                 filter.getCreatedOnStart(),
                 filter.getCreatedOnEnd(),
                 filter.getCreateBy(),
                 filter.getLastUpdatedBy(),
                 filter.getEnable(),
-                filter.getKeyword()));
+                filter.getKeyword())) : ResponseEntity.ok(
+            siteService.filter(
+                filter.getNames(),
+                filter.getOrganizationId(),
+                filter.getCreatedOnStart(),
+                filter.getCreatedOnEnd(),
+                filter.getCreateBy(),
+                filter.getLastUpdatedBy(),
+                filter.getEnable(),
+                filter.getKeyword())) ;
     }
 
     @Override
