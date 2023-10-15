@@ -56,3 +56,4 @@ replay_pid*
 /.docker/volume/postgresql/data/
 /.docker/volume/redis/data/
 /.idea/
+/target/
