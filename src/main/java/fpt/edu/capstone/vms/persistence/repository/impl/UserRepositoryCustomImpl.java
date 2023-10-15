@@ -36,7 +36,6 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
         String sqlCountAll = "SELECT COUNT(1) ";
         String sqlGetData = "SELECT u.username, u.first_name as firstName, u.last_name as lastName, u.email, u.gender, u.phone_number as phoneNumber," +
             "u.dob as dateOfBirth, u.enable, u.role as roleName, d.name as departmentName ";
-        String sqlOrderBy = "";
         StringBuilder sqlConditional = new StringBuilder();
         sqlConditional.append("FROM \"user\" u ");
         sqlConditional.append("LEFT JOIN department d ON u.department_id = d.id ");
@@ -88,10 +87,68 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
             userFilter.setDepartmentName((String) object[9]);
             listData.add(userFilter);
         }
-
         Query queryCountAll = entityManager.createNativeQuery(sqlCountAll + sqlConditional);
         queryParams.forEach(queryCountAll::setParameter);
         int countAll = ((Number) queryCountAll.getSingleResult()).intValue();
         return new PageImpl<>(listData, pageable, countAll);
+    }
+
+
+    @Override
+    public List<IUserController.UserFilter> filter(Collection<String> usernames, Collection<Constants.UserRole> roles, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, Boolean enable, String keyword, String departmentId) {
+        Map<String, Object> queryParams = new HashMap<>();
+        String orderByClause = "";
+        String sqlGetData = "SELECT u.username, u.first_name as firstName, u.last_name as lastName, u.email, u.gender, u.phone_number as phoneNumber," +
+            "u.dob as dateOfBirth, u.enable, u.role as roleName, d.name as departmentName ";
+        StringBuilder sqlConditional = new StringBuilder();
+        sqlConditional.append("FROM \"user\" u ");
+        sqlConditional.append("LEFT JOIN department d ON u.department_id = d.id ");
+        sqlConditional.append("WHERE 1=1 ");
+        if (usernames != null && !usernames.isEmpty() && usernames.size() > 0 ) {
+            sqlConditional.append("AND u.username = :usernames ");
+            queryParams.put("usernames",usernames);
+        }
+        if (roles != null && !roles.isEmpty() && roles.size() > 0 ) {
+            sqlConditional.append("AND u.role = :roles ");
+            queryParams.put("roles",roles);
+        }
+        if (createdOnStart != null && createdOnEnd != null) {
+            sqlConditional.append("AND u.created_on between :createdOnStart and :createdOnEnd ");
+            queryParams.put("createdOnStart", createdOnStart);
+            queryParams.put("createdOnEnd", createdOnEnd);
+        }
+        if (!StringUtils.isBlank(keyword)) {
+            sqlConditional.append("AND ( u.username LIKE :keyword OR u.first_name LIKE :keyword OR u.last_name LIKE :keyword  OR u.email LIKE :keyword  OR u.phone_number LIKE :keyword  ) ");
+            queryParams.put("keyword", "%" + keyword + "%");
+        }
+
+        if (!StringUtils.isBlank(departmentId)) {
+            sqlConditional.append("AND d.id = :departmentId ");
+            queryParams.put("departmentId",departmentId);
+        }
+        if (enable != null) {
+            sqlConditional.append("AND u.enable = :enable ");
+            queryParams.put("enable",enable);
+        }
+
+        Query query = entityManager.createNativeQuery(sqlGetData + sqlConditional + orderByClause);
+        queryParams.forEach(query::setParameter);
+        List<Object[]> queryResult = query.getResultList();
+        List<IUserController.UserFilter> listData = new ArrayList<>();
+        for (Object[] object : queryResult) {
+            IUserController.UserFilter userFilter = new IUserController.UserFilter();
+            userFilter.setUsername((String) object[0]);
+            userFilter.setFirstName((String) object[1]);
+            userFilter.setLastName((String) object[2]);
+            userFilter.setEmail((String) object[3]);
+            userFilter.setGender((String) object[4]);
+            userFilter.setPhoneNumber((String) object[5]);
+            userFilter.setDateOfBirth((Date) object[6]);
+            userFilter.setEnable((Boolean) object[7]);
+            userFilter.setRoleName((String) object[8]);
+            userFilter.setDepartmentName((String) object[9]);
+            listData.add(userFilter);
+        }
+        return listData;
     }
 }

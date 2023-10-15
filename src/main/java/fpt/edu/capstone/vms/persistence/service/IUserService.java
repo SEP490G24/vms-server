@@ -29,6 +29,15 @@ public interface IUserService {
                                             String keyword,
                                             String department);
 
+    List<IUserController.UserFilter> filter(
+                                            List<String> usernames,
+                                            List<Constants.UserRole> roles,
+                                            LocalDateTime createdOnStart,
+                                            LocalDateTime createdOnEnd,
+                                            Boolean enable,
+                                            String keyword,
+                                            String department);
+
     User createUser(IUserResource.UserDto userDto);
 
     User updateUser(IUserResource.UserDto userDto) throws NotFoundException;

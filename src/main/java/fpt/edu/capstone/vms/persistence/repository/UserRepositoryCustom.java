@@ -9,10 +9,19 @@ import org.springframework.lang.Nullable;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.List;
 
 public interface UserRepositoryCustom {
     Page<IUserController.UserFilter> filter(Pageable pageable,
                                             @Param("usernames") @Nullable Collection<String> usernames,
+                                            @Param("roles") @Nullable Collection<Constants.UserRole> roles,
+                                            @Param("createdOnStart") @Nullable LocalDateTime createdOnStart,
+                                            @Param("createdOnEnd") @Nullable LocalDateTime createdOnEnd,
+                                            @Param("enable") @Nullable Boolean isEnable,
+                                            @Param("keyword") @Nullable String keyword,
+                                            @Param("departmentId") @Nullable String departmentId);
+
+    List<IUserController.UserFilter> filter(@Param("usernames") @Nullable Collection<String> usernames,
                                             @Param("roles") @Nullable Collection<Constants.UserRole> roles,
                                             @Param("createdOnStart") @Nullable LocalDateTime createdOnStart,
                                             @Param("createdOnEnd") @Nullable LocalDateTime createdOnEnd,
