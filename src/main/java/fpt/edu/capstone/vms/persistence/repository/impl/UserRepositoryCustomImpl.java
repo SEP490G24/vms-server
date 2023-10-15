@@ -35,7 +35,7 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
         }
         String sqlCountAll = "SELECT COUNT(1) ";
         String sqlGetData = "SELECT u.username, u.first_name as firstName, u.last_name as lastName, u.email, u.gender, u.phone_number as phoneNumber," +
-            "u.dob as dateOfBirth, u.enable, u.role as roleName, d.name as departmentName ";
+            "u.dob as dateOfBirth, u.enable, u.role as roleName, d.name as departmentName, u.country_code as countryCode,  u.created_on as createdOn,  u.last_updated_on as lastUpdatedOn ";
         StringBuilder sqlConditional = new StringBuilder();
         sqlConditional.append("FROM \"user\" u ");
         sqlConditional.append("LEFT JOIN department d ON u.department_id = d.id ");
@@ -85,6 +85,9 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
             userFilter.setEnable((Boolean) object[7]);
             userFilter.setRoleName((String) object[8]);
             userFilter.setDepartmentName((String) object[9]);
+            userFilter.setCountryCode((String) object[10]);
+            userFilter.setCreatedOn((Date) object[11]);
+            userFilter.setLastUpdatedOn((Date) object[12]);
             listData.add(userFilter);
         }
         Query queryCountAll = entityManager.createNativeQuery(sqlCountAll + sqlConditional);
@@ -99,7 +102,7 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
         Map<String, Object> queryParams = new HashMap<>();
         String orderByClause = "";
         String sqlGetData = "SELECT u.username, u.first_name as firstName, u.last_name as lastName, u.email, u.gender, u.phone_number as phoneNumber," +
-            "u.dob as dateOfBirth, u.enable, u.role as roleName, d.name as departmentName ";
+            "u.dob as dateOfBirth, u.enable, u.role as roleName, d.name as departmentName, u.country_code as countryCode, u.created_on as createdOn,  u.last_updated_on as lastUpdatedOn ";
         StringBuilder sqlConditional = new StringBuilder();
         sqlConditional.append("FROM \"user\" u ");
         sqlConditional.append("LEFT JOIN department d ON u.department_id = d.id ");
@@ -147,6 +150,9 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
             userFilter.setEnable((Boolean) object[7]);
             userFilter.setRoleName((String) object[8]);
             userFilter.setDepartmentName((String) object[9]);
+            userFilter.setCountryCode((String) object[10]);
+            userFilter.setCreatedOn((Date) object[11]);
+            userFilter.setLastUpdatedOn((Date) object[12]);
             listData.add(userFilter);
         }
         return listData;

@@ -143,6 +143,8 @@ public interface IUserController {
         Date dateOfBirth;
         String gender;
         String roleName;
+        Date createdOn;
+        Date lastUpdatedOn;
     }
 
     @Data

@@ -4,7 +4,9 @@ package fpt.edu.capstone.vms.persistence.service.impl;
 import com.azure.storage.blob.BlobClient;
 import com.monitorjbl.xlsx.StreamingReader;
 import fpt.edu.capstone.vms.constants.Constants;
+import fpt.edu.capstone.vms.constants.ErrorApp;
 import fpt.edu.capstone.vms.controller.IUserController;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
 import fpt.edu.capstone.vms.persistence.entity.Department;
@@ -14,6 +16,7 @@ import fpt.edu.capstone.vms.persistence.repository.FileRepository;
 import fpt.edu.capstone.vms.persistence.repository.UserRepository;
 import fpt.edu.capstone.vms.persistence.service.IUserService;
 import fpt.edu.capstone.vms.util.FileUtils;
+import fpt.edu.capstone.vms.util.ResponseUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -313,10 +316,10 @@ public class UserServiceImpl implements IUserService {
     @Override
     public ResponseEntity<Object> importUser(MultipartFile file) {
         if (!FileUtils.isValidFileUpload(file, "xls", "xlsx", "XLS", "XLSX")) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The file is not in the correct format");
+            throw new CustomException(ErrorApp.FILE_NOT_FORMAT);
         }
         if (file.isEmpty()) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Empty file");
+            throw new CustomException(ErrorApp.FILE_EMPTY);
         }
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             Workbook workbook = importExcel(file);
@@ -337,9 +340,13 @@ public class UserServiceImpl implements IUserService {
             headers.setContentDispositionFormData("attachment", "Thong-tin-loi-danh-sach-nguoi-dung.xlsx");
             return ResponseEntity.status(HttpStatus.OK).headers(headers).body(byteData);
 
-        } catch (Exception e) {
+        } catch (CustomException e) {
             log.error("Lỗi xảy ra trong quá trình import", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseUtils.getResponseEntity(e.getErrorApp(),HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        catch (Exception e) {
+            log.error("Lỗi xảy ra trong quá trình import", e);
+            return ResponseUtils.getResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -410,7 +417,7 @@ public class UserServiceImpl implements IUserService {
             workbookRead.close();
 
             if (isAllRowBlank) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Empty file");
+                throw new CustomException(ErrorApp.FILE_EMPTY);
             }
 
 
