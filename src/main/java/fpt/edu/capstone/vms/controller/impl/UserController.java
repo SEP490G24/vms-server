@@ -37,15 +37,6 @@ public class UserController implements IUserController {
     private final ModelMapper mapper;
 
     @Override
-    public ResponseEntity<?> info(String username) throws NotFoundException {
-        User user = userService.findByUsername(username);
-        if(user == null) {
-            throw new NotFoundException(String.format("Can't found user with username is %s", username));
-        }
-        return ResponseEntity.ok(user);
-    }
-
-    @Override
     public ResponseEntity<?> filter(UserFilter filter,boolean isPageable,Pageable pageable) {
         return isPageable ? ResponseEntity.ok(
                 userService.filter(
@@ -83,10 +74,9 @@ public class UserController implements IUserController {
     }
 
     @Override
-    public ResponseEntity<?> updateProfile(CreateUserInfo userInfo) throws NotFoundException {
+    public ResponseEntity<?> updateProfile(@Valid UpdateUserInfo userInfo) throws NotFoundException {
         String username = SecurityUtils.loginUsername();
-        userInfo.setUsername(username);
-        User userEntity = userService.updateUser(mapper.map(userInfo, IUserResource.UserDto.class));
+        User userEntity = userService.updateUser(mapper.map(userInfo, IUserResource.UserDto.class).setUsername(username));
         return ResponseEntity.ok(mapper.map(userEntity, IUserResource.UserDto.class));
     }
 

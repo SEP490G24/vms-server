@@ -32,11 +32,6 @@ import java.util.UUID;
 ////@PreAuthorize("isAuthenticated()")
 public interface IUserController {
 
-    @PostMapping("/info/{username}")
-    @Operation(summary = "Find by username")
-//    @PreAuthorize("hasRole('r:user:find')")
-    ResponseEntity<?> info(@PathVariable String username) throws NotFoundException;
-
     @PostMapping("/filter")
     @Operation(summary = "Filter")
 //    @PreAuthorize("hasRole('r:user:find')")
@@ -54,7 +49,7 @@ public interface IUserController {
 
     @PutMapping("/profile")
     @Operation(summary = "Update my profile")
-    ResponseEntity<?> updateProfile(@RequestBody @Valid CreateUserInfo userInfo) throws NotFoundException;
+    ResponseEntity<?> updateProfile(@RequestBody @Valid UpdateUserInfo userInfo) throws NotFoundException;
 
     @PutMapping("/update-state")
     @Operation(summary = "Update my state")
@@ -100,46 +95,30 @@ public interface IUserController {
         String firstName;
         @NotNull
         String lastName;
-        @NotNull
         String phoneNumber;
-        @NotNull
         String avatar;
         @NotNull
         String email;
-        @NotNull
         String countryCode;
         @NotNull
         UUID departmentId;
-        @NotNull
         LocalDate dateOfBirth;
         @NotNull
         Constants.Gender gender;
-        @NotNull
         Boolean enable;
-        String departmentName;
     }
 
     @Data
     class UpdateUserInfo {
-        @NotNull
         String firstName;
-        @NotNull
         String lastName;
-        @NotNull
         String phoneNumber;
-        @NotNull
         String avatar;
-        @NotNull
         String email;
-        @NotNull
         String countryCode;
-        @NotNull
         UUID departmentId;
-        @NotNull
         LocalDate dateOfBirth;
-        @NotNull
         Constants.Gender gender;
-        @NotNull
         Boolean enable;
     }
 

@@ -38,7 +38,7 @@ public interface ISiteController {
 //    @PreAuthorize("hasRole('r:user:create')")
     ResponseEntity<?> createSite(@RequestBody @Valid CreateSiteInfo siteInfo);
 
-    @PatchMapping("/{id}")
+    @PutMapping("/{id}")
     @Operation(summary = "Update site")
     ResponseEntity<?> updateSite(@RequestBody UpdateSiteInfo updateSiteInfo, @PathVariable UUID id);
 
@@ -79,7 +79,7 @@ public interface ISiteController {
         private String address;
         private String taxCode;
         private String description;
-        private String enable;
+        private boolean enable;
     }
 
     @Data
