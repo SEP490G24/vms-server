@@ -46,8 +46,8 @@ public class UserController implements IUserController {
     }
 
     @Override
-    public ResponseEntity<?> filter(UserFilter filter,Pageable pageable) {
-        return ResponseEntity.ok(
+    public ResponseEntity<?> filter(UserFilter filter,boolean isPageable,Pageable pageable) {
+        return isPageable ? ResponseEntity.ok(
                 userService.filter(
                         pageable,
                         filter.getUsernames(),
@@ -56,7 +56,15 @@ public class UserController implements IUserController {
                         filter.getCreatedOnEnd(),
                         filter.getEnable(),
                         filter.getKeyword(),
-                        filter.getDepartmentId()));
+                        filter.getDepartmentId())) : ResponseEntity.ok(
+            userService.filter(
+                filter.getUsernames(),
+                filter.getRoles(),
+                filter.getCreatedOnStart(),
+                filter.getCreatedOnEnd(),
+                filter.getEnable(),
+                filter.getKeyword(),
+                filter.getDepartmentId()));
     }
 
     @Override

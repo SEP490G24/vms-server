@@ -145,6 +145,19 @@ public class UserServiceImpl implements IUserService {
             departmentId);
     }
 
+    @Override
+    public List<IUserController.UserFilter> filter(List<String> usernames, List<Constants.UserRole> roles, LocalDateTime createdOnStart,
+                                                   LocalDateTime createdOnEnd, Boolean enable, String keyword, String departmentId) {
+        return userRepository.filter(
+            usernames,
+            roles,
+            createdOnStart,
+            createdOnEnd,
+            enable,
+            keyword,
+            departmentId);
+    }
+
 
     @Override
     public User createUser(IUserResource.UserDto userDto) {

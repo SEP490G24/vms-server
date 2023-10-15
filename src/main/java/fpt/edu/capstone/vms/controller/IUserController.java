@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.QueryParam;
 import lombok.Data;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Pageable;
@@ -36,10 +37,10 @@ public interface IUserController {
 //    @PreAuthorize("hasRole('r:user:find')")
     ResponseEntity<?> info(@PathVariable String username) throws NotFoundException;
 
-    @GetMapping("/filter")
+    @PostMapping("/filter")
     @Operation(summary = "Filter")
 //    @PreAuthorize("hasRole('r:user:find')")
-    ResponseEntity<?> filter(UserFilter usernames, Pageable pageable);
+    ResponseEntity<?> filter(@RequestBody @Valid UserFilter usernames, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
     @PostMapping("")
     @Operation(summary = "Create new user")

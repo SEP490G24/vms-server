@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -60,10 +61,24 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
     }
 
     @Override
-    public Page<Site> filter(int pageNumber, List<String> names, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, String createBy, String lastUpdatedBy, Boolean enable, String keyword) {
+    public Page<Site> filter(Pageable pageable, List<String> names, UUID orgId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, String createBy, String lastUpdatedBy, Boolean enable, String keyword) {
         return siteRepository.filter(
-            PageRequest.of(pageNumber, Constants.PAGE_SIZE),
+            pageable,
             names,
+            orgId,
+            createdOnStart,
+            createdOnEnd,
+            createBy,
+            lastUpdatedBy,
+            enable,
+            keyword);
+    }
+
+    @Override
+    public List<Site> filter( List<String> names, UUID orgId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, String createBy, String lastUpdatedBy, Boolean enable, String keyword) {
+        return siteRepository.filter(
+            names,
+            orgId,
             createdOnStart,
             createdOnEnd,
             createBy,
