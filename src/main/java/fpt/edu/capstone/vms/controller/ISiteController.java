@@ -53,14 +53,6 @@ public interface ISiteController {
         @NotNull
         private String name;
         @NotNull
-        private UUID organizationId;
-        @NotNull
-        private Boolean mandatoryHealth;
-        @NotNull
-        private Boolean mandatoryTripCode;
-        @NotNull
-        private Boolean nucleicAcidTestReport;
-        @NotNull
         private String phoneNumber;
         @NotNull
         private String province;
@@ -78,9 +70,6 @@ public interface ISiteController {
     @Data
     class UpdateSiteInfo {
         private String name;
-        private Boolean mandatoryHealth;
-        private Boolean mandatoryTripCode;
-        private Boolean nucleicAcidTestReport;
         private String phoneNumber;
         private String province;
         private String district;

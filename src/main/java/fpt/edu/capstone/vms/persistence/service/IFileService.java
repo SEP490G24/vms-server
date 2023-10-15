@@ -10,7 +10,6 @@ import java.util.UUID;
 
 public interface IFileService extends IGenericService<File, UUID> {
 
-    File downloadImage(String url);
     File uploadImage(MultipartFile file);
     Boolean deleteImage(String oldImage, String newImage);
 }

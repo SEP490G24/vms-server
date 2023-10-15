@@ -35,9 +35,10 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
     @Override
     public Site save(Site entity) {
         try {
-            if (StringUtils.isEmpty(entity.getOrganizationId().toString())) {
+            if (StringUtils.isEmpty(SecurityUtils.getOrgId())) {
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "OrganizationId is null");
             }
+            entity.setOrganizationId(UUID.fromString(SecurityUtils.getOrgId()));
             entity.setEnable(true);
             return siteRepository.save(entity);
         } catch (HttpClientErrorException e) {

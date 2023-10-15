@@ -55,15 +55,6 @@ public class Site extends AbstractBaseEntity<UUID> {
     @JsonIgnore
     private Organization organization;
 
-    @Column(name = "mandatory_health")
-    private Boolean mandatoryHealth;
-
-    @Column(name = "mandatory_trip_code")
-    private Boolean mandatoryTripCode;
-
-    @Column(name = "nucleic_acid_test_report")
-    private Boolean nucleicAcidTestReport;
-
     @Column(name = "phone_number")
     @Min(value = 0)
     @Max(value = 10)
@@ -102,9 +93,6 @@ public class Site extends AbstractBaseEntity<UUID> {
         if (siteEntity.name != null) this.name = siteEntity.name;
         if (siteEntity.code != null) this.code = siteEntity.code;
         if (siteEntity.organizationId != null) this.organizationId = siteEntity.organizationId;
-        if (siteEntity.mandatoryHealth != null) this.mandatoryHealth = siteEntity.mandatoryHealth;
-        if (siteEntity.mandatoryTripCode != null) this.mandatoryTripCode = siteEntity.mandatoryTripCode;
-        if (siteEntity.nucleicAcidTestReport != null) this.nucleicAcidTestReport = siteEntity.nucleicAcidTestReport;
         if (siteEntity.phoneNumber != null) this.phoneNumber = siteEntity.phoneNumber;
         if (siteEntity.province != null) this.province = siteEntity.province;
         if (siteEntity.ward != null) this.ward = siteEntity.ward;

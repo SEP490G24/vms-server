@@ -1,6 +1,7 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
 
+import com.azure.storage.blob.BlobClient;
 import com.monitorjbl.xlsx.StreamingReader;
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.IUserController;
@@ -47,8 +48,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -66,11 +65,9 @@ public class UserServiceImpl implements IUserService {
 
     static final String PATH_FILE = "/jasper/users.jrxml";
 
-    @Value("${images.folder}")
-    private String imagesFolder;
-
     private final UserRepository userRepository;
     private final FileRepository fileRepository;
+    private final FileServiceImpl fileService;
     private final IUserResource userResource;
     private final ModelMapper mapper;
     final DepartmentRepository departmentRepository;
@@ -258,23 +255,19 @@ public class UserServiceImpl implements IUserService {
     public Boolean deleteAvatar(String oldImage, String newImage, String username) {
         var oldFile = fileRepository.findByName(oldImage);
         var newFile = fileRepository.findByName(newImage);
-        String filePath = imagesFolder + "/";
-        try {
-            if (ObjectUtils.isEmpty(newFile))
-                throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can not found image in file");
-            if (!SecurityUtils.loginUsername().equals(username)) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User is not true");
-            }
-            Path rawFile = Paths.get(filePath, oldImage);
-            Files.deleteIfExists(rawFile);
-            if (!ObjectUtils.isEmpty(oldFile)) {
-                fileRepository.delete(oldFile);
-                return true;
-            }
-            return true;
-        } catch (IOException e) {
-            throw new RuntimeException();
+        if (ObjectUtils.isEmpty(newFile))
+            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can not found image in file");
+        if (!SecurityUtils.loginUsername().equals(username)) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User is not true");
         }
+
+        BlobClient blobClient = fileService.getBlobClient(oldImage);
+        blobClient.deleteIfExists();
+        if (!ObjectUtils.isEmpty(oldFile)) {
+            fileRepository.delete(oldFile);
+            return true;
+        }
+        return true;
     }
 
     @Override
