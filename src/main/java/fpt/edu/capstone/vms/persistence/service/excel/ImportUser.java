@@ -3,10 +3,12 @@ package fpt.edu.capstone.vms.persistence.service.excel;
 import com.monitorjbl.xlsx.StreamingReader;
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.IUserController;
+import fpt.edu.capstone.vms.oauth2.IUserResource;
 import fpt.edu.capstone.vms.persistence.entity.Department;
 import fpt.edu.capstone.vms.persistence.entity.User;
 import fpt.edu.capstone.vms.persistence.repository.DepartmentRepository;
 import fpt.edu.capstone.vms.persistence.repository.UserRepository;
+import fpt.edu.capstone.vms.persistence.service.impl.UserServiceImpl;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
@@ -15,11 +17,12 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -30,6 +33,8 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
 
+import static fpt.edu.capstone.vms.persistence.entity.User.encodePassword;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -38,6 +43,7 @@ import java.util.*;
 public class ImportUser {
     final DepartmentRepository departmentRepository;
     final UserRepository userRepository;
+    private final IUserResource userResource;
     final ModelMapper mapper;
 
 
@@ -98,13 +104,26 @@ public class ImportUser {
 
     @Transactional
     public User saveImportExcel(IUserController.CreateUserInfo dto) {
+        User userEntity = null;
+        IUserResource.UserDto userDto = mapper.map(dto, IUserResource.UserDto.class);
+        // (1) Create user on Keycloak
+        String kcUserId = userResource.create(userDto);
+
         try {
-            User user = mapper.map(dto, User.class);
-            return userRepository.save(user);
+            if (!StringUtils.isEmpty(kcUserId)) {
+                userEntity = mapper.map(userDto, User.class).setOpenid(kcUserId);
+                userEntity.setPassword(encodePassword(userEntity.getPassword()));
+                if (userEntity.getDepartmentId() == null)
+                    throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SiteId not null");
+                userRepository.save(userEntity);
+            }
         } catch (Exception e) {
-            log.error("Lỗi khi import trạm bảo hành ủy quyền:{} \nERROR: {}", dto, e);
-            throw e;
+            log.error(e.getMessage(), e);
+            if (null != kcUserId) {
+                userResource.delete(kcUserId);
+            }
         }
+        return userEntity;
     }
 
     public Workbook importExcel(MultipartFile file) {
