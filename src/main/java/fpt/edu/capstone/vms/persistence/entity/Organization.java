@@ -39,8 +39,36 @@ public class Organization extends AbstractBaseEntity<UUID> {
     @Column(name = "representative")
     private String representative;
 
+    @Column(name = "description")
+    private String description;
+
+    @Column(name = "logo")
+    private String logo;
+
+    @Column(name = "contact_info")
+    private String contactInfo;
+
+    @Column(name = "contact_phone_number")
+    private String contactPhoneNumber;
+
     @Column(name = "enable")
     private Boolean enable;
+
+
+    public Organization update(Organization organizationEntity) {
+        if (organizationEntity.name != null) this.name = organizationEntity.name;
+        if (organizationEntity.code != null) this.code = organizationEntity.code;
+        if (organizationEntity.representative != null) this.representative = organizationEntity.representative;
+        if (organizationEntity.website != null) this.website = organizationEntity.website;
+        if (organizationEntity.description != null) this.description = organizationEntity.description;
+        if (organizationEntity.contactInfo != null) this.contactInfo = organizationEntity.contactInfo;
+        if (organizationEntity.contactPhoneNumber != null) this.contactPhoneNumber = organizationEntity.contactPhoneNumber;
+        if (organizationEntity.enable != null) this.enable = organizationEntity.enable;
+        if (organizationEntity.getCreatedBy() != null) this.setCreatedBy(organizationEntity.getCreatedBy());
+        if (organizationEntity.getCreatedOn() != null) this.setCreatedOn(organizationEntity.getCreatedOn());
+        return this;
+    }
+
 
     @Override
     public UUID getId() {

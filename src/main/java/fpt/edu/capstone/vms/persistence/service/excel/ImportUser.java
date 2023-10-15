@@ -1,76 +1,50 @@
-package fpt.edu.capstone.vms.persistence.service.impl;
+package fpt.edu.capstone.vms.persistence.service.excel;
 
-
-import com.azure.storage.blob.BlobClient;
 import com.monitorjbl.xlsx.StreamingReader;
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.IUserController;
-import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
 import fpt.edu.capstone.vms.persistence.entity.Department;
 import fpt.edu.capstone.vms.persistence.entity.User;
 import fpt.edu.capstone.vms.persistence.repository.DepartmentRepository;
-import fpt.edu.capstone.vms.persistence.repository.FileRepository;
 import fpt.edu.capstone.vms.persistence.repository.UserRepository;
-import fpt.edu.capstone.vms.persistence.service.IUserService;
-import fpt.edu.capstone.vms.util.FileUtils;
+import fpt.edu.capstone.vms.persistence.service.impl.UserServiceImpl;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import jakarta.transaction.Transactional;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import net.sf.jasperreports.engine.*;
-import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
-import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
-import net.sf.jasperreports.export.SimpleExporterInput;
-import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.openxml4j.util.ZipSecureFile;
 import org.apache.poi.ss.usermodel.*;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 
-import static fpt.edu.capstone.vms.persistence.entity.User.checkPassword;
 import static fpt.edu.capstone.vms.persistence.entity.User.encodePassword;
 
-@Slf4j
 @Service
+@Slf4j
 @RequiredArgsConstructor
-public class UserServiceImpl implements IUserService {
-
-    static final String PATH_FILE = "/jasper/users.jrxml";
-
-    private final UserRepository userRepository;
-    private final FileRepository fileRepository;
-    private final FileServiceImpl fileService;
-    private final IUserResource userResource;
-    private final ModelMapper mapper;
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@Transactional
+public class ImportUser {
     final DepartmentRepository departmentRepository;
+    final UserRepository userRepository;
+    private final IUserResource userResource;
+    final ModelMapper mapper;
 
 
     Integer currentRowIndex;
@@ -101,11 +75,10 @@ public class UserServiceImpl implements IUserService {
     static final Integer LAST_COLUMN_INDEX = 9;
     static final Map<Integer, String> HEADER_EXCEL_FILE = new HashMap<>();
 
-    public static final String USERNAME_ALREADY_EXISTS_MESSAGE = "Username already exist";
-    public static final String EMAIL_ALREADY_EXISTS_MESSAGE = "Email already exist";
-    public static final String INVALID_STATION_CODE_FORMAT_MESSAGE = "Username must not contain special characters";
-    public static final String INVALID_PHONE_NUMBER_FORMAT_MESSAGE = "The phone number is not in the correct format";
-    public static final String INVALID_EMAIL_FORMAT_MESSAGE = "Email invalidate";
+    public static final String STATION_CODE_ALREADY_EXISTS_MESSAGE = "Username đã tồn tại";
+    public static final String INVALID_STATION_CODE_FORMAT_MESSAGE = "Mã trạm BHUQ không được chứa ký tự đặc biệt và tiếng việt có dấu";
+    public static final String INVALID_PHONE_NUMBER_FORMAT_MESSAGE = "Số điện thoại không đúng định dạng";
+    public static final String INVALID_EMAIL_FORMAT_MESSAGE = "Email không đúng định dạng";
     public static final String MALE = "MALE";
     public static final String FEMALE = "FEMALE";
     public static final String OTHER = "OTHER";
@@ -129,40 +102,10 @@ public class UserServiceImpl implements IUserService {
         HEADER_EXCEL_FILE.put(9, "Enable");
     }
 
-
-
-    @Override
-    public Page<IUserController.UserFilter> filter(Pageable pageable, List<String> usernames, List<Constants.UserRole> roles, LocalDateTime createdOnStart,
-                                                   LocalDateTime createdOnEnd, Boolean enable, String keyword, String departmentId) {
-        return userRepository.filter(
-            pageable,
-            usernames,
-            roles,
-            createdOnStart,
-            createdOnEnd,
-            enable,
-            keyword,
-            departmentId);
-    }
-
-    @Override
-    public List<IUserController.UserFilter> filter(List<String> usernames, List<Constants.UserRole> roles, LocalDateTime createdOnStart,
-                                                   LocalDateTime createdOnEnd, Boolean enable, String keyword, String departmentId) {
-        return userRepository.filter(
-            usernames,
-            roles,
-            createdOnStart,
-            createdOnEnd,
-            enable,
-            keyword,
-            departmentId);
-    }
-
-
-    @Override
-    public User createUser(IUserResource.UserDto userDto) {
+    @Transactional
+    public User saveImportExcel(IUserController.CreateUserInfo dto) {
         User userEntity = null;
-
+        IUserResource.UserDto userDto = mapper.map(dto, IUserResource.UserDto.class);
         // (1) Create user on Keycloak
         String kcUserId = userResource.create(userDto);
 
@@ -183,187 +126,6 @@ public class UserServiceImpl implements IUserService {
         return userEntity;
     }
 
-    @Override
-    @Transactional
-    public User updateUser(IUserResource.UserDto userDto) throws NotFoundException {
-        var userEntity = userRepository.findByUsername(userDto.getUsername()).orElse(null);
-        if (userEntity == null) throw new NotFoundException();
-        if (userResource.update(userDto.setOpenid(userEntity.getOpenid()))) {
-            var value = mapper.map(userDto, User.class);
-            if (value.getAvatar() != null && !value.getAvatar().equals(userEntity.getAvatar())) {
-                if (deleteAvatar(userEntity.getAvatar(), userDto.getAvatar(), userDto.getUsername())) {
-                    userEntity.setAvatar(value.getAvatar());
-                }
-            }
-            userEntity = userEntity.update(value);
-            userRepository.save(userEntity);
-        }
-        return userEntity;
-    }
-
-    @Override
-    @Transactional
-    public void changePasswordUser(IUserController.ChangePasswordUserDto userDto) {
-        String username = SecurityUtils.loginUsername();
-        var userEntity = userRepository.findByUsername(username).orElse(null);
-        if (userEntity == null) throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can not found user");
-
-        if (userDto.getNewPassword().isEmpty())
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Can not null for new password");
-        if (checkPassword(userDto.getNewPassword(), userEntity.getPassword()))
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Can not be user old password to update new");
-
-        if (checkPassword(userDto.getOldPassword(), userEntity.getPassword())) {
-            userEntity.setPassword(encodePassword(userDto.getNewPassword()));
-            userResource.changePassword(userEntity.getOpenid(), userDto.getNewPassword());
-            userRepository.save(userEntity);
-        } else {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The old password not match in database");
-        }
-    }
-
-
-    @Override
-    public int updateState(boolean isEnable, String username) {
-        return userRepository.updateStateByUsername(isEnable, username);
-    }
-
-    @Override
-    public void handleAuthSuccess(String username) {
-        var userOptional = userRepository.findByUsername(username);
-        if (userOptional.isPresent()) {
-            var userEntity = userOptional.get();
-            userEntity.setLastLoginTime(LocalDateTime.now());
-            userRepository.save(userEntity);
-        }
-    }
-
-    @Override
-    public void deleteUser(String username) {
-
-    }
-
-    @Override
-    public User findByUsername(String username) {
-        return userRepository.findFirstByUsername(username);
-    }
-
-    @Override
-    public void synAccountFromKeycloak() {
-        List<IUserResource.UserDto> users = userResource.users();
-
-        for (IUserResource.UserDto userDto : users) {
-            if (null != userDto.getRole()) {
-                User userEntity = userRepository.findFirstByUsername(userDto.getUsername());
-                if (null == userEntity) {
-                    userEntity = mapper.map(userDto, User.class);
-                    userRepository.save(userEntity);
-                    log.info("Create user {}", userDto.getUsername());
-                }
-            }
-        }
-    }
-
-    @Override
-    public Boolean deleteAvatar(String oldImage, String newImage, String username) {
-        var oldFile = fileRepository.findByName(oldImage);
-        var newFile = fileRepository.findByName(newImage);
-        if (ObjectUtils.isEmpty(newFile))
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can not found image in file");
-        if (!SecurityUtils.loginUsername().equals(username)) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User is not true");
-        }
-
-        BlobClient blobClient = fileService.getBlobClient(oldImage);
-        blobClient.deleteIfExists();
-        if (!ObjectUtils.isEmpty(oldFile)) {
-            fileRepository.delete(oldFile);
-            return true;
-        }
-        return true;
-    }
-
-    @Override
-    public ByteArrayResource export(IUserController.UserFilter userFilter) {
-        Pageable pageable = PageRequest.of(0, 1000000);
-        Page<IUserController.UserFilter> listData = filter(pageable, userFilter.getUsernames(), userFilter.getRoles(), userFilter.getCreatedOnStart(), userFilter.getCreatedOnEnd(), userFilter.getEnable(), userFilter.getKeyword(), userFilter.getDepartmentId());
-        try {
-            JasperReport jasperReport = JasperCompileManager.compileReport(getClass().getResourceAsStream(PATH_FILE));
-
-            JRBeanCollectionDataSource listDataSource = new JRBeanCollectionDataSource(
-                listData.getContent().size() == 0 ? Collections.singletonList(new User()) : listData.getContent());
-            Map<String, Object> parameters = new HashMap<>();
-            parameters.put("tableDataset", listDataSource);
-            JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, new JREmptyDataSource());
-
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            JRXlsxExporter exporter = new JRXlsxExporter();
-            exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
-            exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(byteArrayOutputStream));
-            exporter.exportReport();
-
-            byte[] excelBytes = byteArrayOutputStream.toByteArray();
-            return new ByteArrayResource(excelBytes);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    @Transactional
-    @Override
-    public ResponseEntity<Object> importUser(MultipartFile file) {
-        if (!FileUtils.isValidFileUpload(file, "xls", "xlsx", "XLS", "XLSX")) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The file is not in the correct format");
-        }
-        if (file.isEmpty()) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Empty file");
-        }
-        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-            Workbook workbook = importExcel(file);
-            if (workbook == null) {
-                return ResponseEntity.ok().build();
-            }
-
-            workbook.write(outputStream);
-
-            // Create a ByteArrayResource for the Excel bytes
-            byte[] excelBytes = outputStream.toByteArray();
-
-            ZipSecureFile.setMinInflateRatio(0);
-            ByteArrayResource byteData = new ByteArrayResource(excelBytes);
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-            headers.setContentDispositionFormData("attachment", "Thong-tin-loi-danh-sach-nguoi-dung.xlsx");
-            return ResponseEntity.status(HttpStatus.OK).headers(headers).body(byteData);
-
-        } catch (Exception e) {
-            log.error("Lỗi xảy ra trong quá trình import", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
-
-    @Override
-    public ResponseEntity<ByteArrayResource> downloadExcel() {
-        try {
-            ClassPathResource resource = new ClassPathResource("template/Mau-danh-sach-nguoi-dung.xlsx");
-            byte[] bytes = Files.readAllBytes(resource.getFile().toPath());
-            ByteArrayResource byteArrayResource = new ByteArrayResource(bytes);
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-            headers.setContentDispositionFormData("attachment", "Mau-danh-sach-nguoi-dung.xlsx");
-            return ResponseEntity
-                .status(HttpStatus.OK)
-                .headers(headers)
-                .body(byteArrayResource);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-
-    }
-
-
-    @Transactional
     public Workbook importExcel(MultipartFile file) {
         try {
             this.mapError = new HashMap<>();
@@ -381,7 +143,7 @@ public class UserServiceImpl implements IUserService {
                     if (validateHeaderCellInExcelFile(row, LAST_COLUMN_INDEX, HEADER_EXCEL_FILE)) {
                         continue;
                     } else {
-                        throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Header is not in correct format");
+                        //throw new CustomException(ErrorApp.FILE_HEADER_FORMAT);
                     }
                 }
 
@@ -410,12 +172,13 @@ public class UserServiceImpl implements IUserService {
             workbookRead.close();
 
             if (isAllRowBlank) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Empty file");
+                //throw new CustomException(ErrorApp.FILE_EMPTY);
             }
 
 
             //get list combobox
             List<User> users = userRepository.findAllByEnableIsTrue();
+            String username = SecurityUtils.getUserDetails().getName();
             List<Department> departments = departmentRepository.findAllByEnableIsTrue();
 
             for (Map.Entry<Integer, Map<Integer, String>> entryRow : listRowExcel.entrySet()) {
@@ -441,7 +204,7 @@ public class UserServiceImpl implements IUserService {
                             if (user.isEmpty() && !listUsernameValid.contains(cellValue)) {
                                 dto.setUsername(cellValue);
                             } else {
-                                setCommentAndColorError(USERNAME_ALREADY_EXISTS_MESSAGE);
+                                setCommentAndColorError(STATION_CODE_ALREADY_EXISTS_MESSAGE);
                             }
                         }
                         continue;
@@ -474,14 +237,7 @@ public class UserServiceImpl implements IUserService {
                     //Email
                     if (cellIndex == UserIndexColumn.EMAIL.getValue()) {
                         if (validateEmptyCell(HEADER_EXCEL_FILE.get(5), cellValue) && validateEmptyCell(HEADER_EXCEL_FILE.get(5), cellValue) && checkRegex(cellValue, EMAIL_REGEX, INVALID_EMAIL_FORMAT_MESSAGE, true)) {
-                            Optional<User> user = users.stream()
-                                .filter(x -> cellValue.equalsIgnoreCase(x.getEmail()))
-                                .findFirst();
-                            if (user.isEmpty()) {
-                                dto.setEmail(cellValue);
-                            } else {
-                                setCommentAndColorError(EMAIL_ALREADY_EXISTS_MESSAGE);
-                            }
+                            dto.setEmail(cellValue);
                         }
                         continue;
                     }
@@ -500,7 +256,7 @@ public class UserServiceImpl implements IUserService {
 
                     //dateOfBirth
                     if (cellIndex == UserIndexColumn.DATA_OF_BIRTH.getValue()) {
-                        if (validateEmptyCell(HEADER_EXCEL_FILE.get(7), cellValue) && validateEmptyCell(HEADER_EXCEL_FILE.get(7), cellValue) && validateBeforeCurrentDate(cellValue, HEADER_EXCEL_FILE.get(7))) {
+                        if (validateEmptyCell(HEADER_EXCEL_FILE.get(7), cellValue) && validateEmptyCell(HEADER_EXCEL_FILE.get(7), cellValue) && validateBeforeCurrentDate(cellValue, HEADER_EXCEL_FILE.get(20))) {
                             dto.setDateOfBirth(formatDate(cellValue));
                         }
                         continue;
@@ -528,12 +284,11 @@ public class UserServiceImpl implements IUserService {
                             dto.setEnable(BooleanUtils.toBoolean(Integer.parseInt(cellValue)));
                         }
                     }
-                    dto.setPassword("123456aA@");
                 }
 
                 //check error by current row
                 if (mapError.get(this.currentRowIndex) == null) {
-                    User entity = createUser(mapper.map(dto, IUserResource.UserDto.class).setRole(Constants.UserRole.STAFF));
+                    User entity = saveImportExcel(dto);
                     listUsernameValid.add(entity.getUsername());
                     //delete message error if exist
                     if (!CollectionUtils.isEmpty(this.mapError.get(currentRowIndex))) {
@@ -635,23 +390,17 @@ public class UserServiceImpl implements IUserService {
     }
 
     private Boolean validateBeforeCurrentDate(String dateRequest, String cellName) {
-        LocalDate localDate = formatDate(dateRequest);
-        if (localDate == null) {
+        Date date = Date.from(Objects.requireNonNull(formatDate(dateRequest)).atStartOfDay(ZoneId.systemDefault()).toInstant());
+        if (date == null) {
             setCommentAndColorError(cellName + " không đúng định dạng yyyy-MM-dd");
             return false;
         }
-        if (isDateOfBirthGreaterThanCurrentDate(localDate)) {
+        if (date.before(formatDate2(new Date()))) {
+            return true;
+        } else {
             setCommentAndColorError(cellName + " phải nhỏ hơn hoặc bằng ngày hiện tại");
             return false;
-        } else {
-            return true;
         }
-    }
-
-    public boolean isDateOfBirthGreaterThanCurrentDate(LocalDate date) {
-        LocalDate currentDate = LocalDate.now();
-        int comparison = date.compareTo(currentDate);
-        return comparison > 0;
     }
 
     private void setCommentAndColorError(String messageIsError) {
@@ -671,6 +420,19 @@ public class UserServiceImpl implements IUserService {
             } catch (ParseException e) {
                 return null;
             }
+        }
+    }
+
+    private Date formatDate2(Date date) {
+        if (date == null) {
+            return null;
+        }
+        try {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+            date = dateFormat.parse(dateFormat.format(date));
+            return date;
+        } catch (ParseException e) {
+            return null;
         }
     }
 

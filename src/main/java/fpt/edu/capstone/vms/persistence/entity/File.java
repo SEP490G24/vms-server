@@ -1,12 +1,12 @@
 package fpt.edu.capstone.vms.persistence.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import fpt.edu.capstone.vms.constants.Constants;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -34,7 +34,7 @@ public class File extends AbstractBaseEntity<UUID> {
     private String name;
 
     @Column(name = "code")
-    private String tenant;
+    private String code;
 
     @Column(name = "description")
     private String description;
@@ -46,8 +46,11 @@ public class File extends AbstractBaseEntity<UUID> {
     private String fileExtension;
 
     @Column(name = "status")
-    private String status;
+    private Boolean status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type")
+    private Constants.FileType type;
     @Override
     public UUID getId() {
         return id;

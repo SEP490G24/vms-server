@@ -55,15 +55,6 @@ public class Site extends AbstractBaseEntity<UUID> {
     @JsonIgnore
     private Organization organization;
 
-    @Column(name = "mandatory_health")
-    private Boolean mandatoryHealth;
-
-    @Column(name = "mandatory_trip_code")
-    private Boolean mandatoryTripCode;
-
-    @Column(name = "nucleic_acid_test_report")
-    private Boolean nucleicAcidTestReport;
-
     @Column(name = "phone_number")
     @Min(value = 0)
     @Max(value = 10)
@@ -91,16 +82,29 @@ public class Site extends AbstractBaseEntity<UUID> {
     private Boolean enable;
 
     @OneToMany(mappedBy = "siteEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
-    @MapKey(name = "siteDepartmentMapPk.siteId")
-    private Map<UUID, SiteDepartmentMap> siteDepartmentMaps;
-
-    @OneToMany(mappedBy = "siteEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     @MapKey(name = "templateSiteMapPk.siteId")
     private Map<UUID, TemplateSiteMap> templateSiteMaps;
 
     @OneToMany(mappedBy = "siteEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     @MapKey(name = "pricePackageSiteMapPk.siteId")
     private Map<UUID, PricePackageSiteMap> pricePackageSiteMaps;
+
+    public Site update(Site siteEntity) {
+        if (siteEntity.name != null) this.name = siteEntity.name;
+        if (siteEntity.code != null) this.code = siteEntity.code;
+        if (siteEntity.organizationId != null) this.organizationId = siteEntity.organizationId;
+        if (siteEntity.phoneNumber != null) this.phoneNumber = siteEntity.phoneNumber;
+        if (siteEntity.province != null) this.province = siteEntity.province;
+        if (siteEntity.ward != null) this.ward = siteEntity.ward;
+        if (siteEntity.district != null) this.district = siteEntity.district;
+        if (siteEntity.address != null) this.address = siteEntity.address;
+        if (siteEntity.taxCode != null) this.taxCode = siteEntity.taxCode;
+        if (siteEntity.description != null) this.description = siteEntity.description;
+        if (siteEntity.enable != null) this.enable = siteEntity.enable;
+        if (siteEntity.getCreatedBy() != null) this.setCreatedBy(siteEntity.getCreatedBy());
+        if (siteEntity.getCreatedOn() != null) this.setCreatedOn(siteEntity.getCreatedOn());
+        return this;
+    }
 
     @Override
     public UUID getId() {

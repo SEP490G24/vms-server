@@ -64,6 +64,7 @@ public class KeycloakUserResource implements IUserResource {
         user.setEmail(userDto.getEmail());
         user.setEnabled(userDto.getEnable());
         user.setEmailVerified(false);
+
         user.setCredentials(List.of(passwordCred));
 
         try (var response = usersResource.create(user)) {
@@ -82,23 +83,27 @@ public class KeycloakUserResource implements IUserResource {
     public boolean update(UserDto userDto) {
         var userResource = usersResource.get(userDto.getOpenid());
         UserRepresentation modifiedUser = userResource.toRepresentation();
-
-        // Update password credential if password not null or empty
-        if (!StringUtils.isEmpty(userDto.getPassword())) {
-            var passwordCred = new CredentialRepresentation();
-            passwordCred.setTemporary(false);
-            passwordCred.setType(CredentialRepresentation.PASSWORD);
-            passwordCred.setValue(userDto.getPassword());
-            modifiedUser.setCredentials(List.of(passwordCred));
-        }
+        updatePassword(modifiedUser, userDto.getPassword());
 
         modifiedUser.setEmail(userDto.getEmail());
+        modifiedUser.setFirstName(userDto.getFirstName());
+        modifiedUser.setLastName(userDto.getLastName());
         if (userDto.getEnable() != null) modifiedUser.setEnabled(userDto.getEnable());
         userResource.update(modifiedUser);
 
         return true;
     }
 
+    public void updatePassword(UserRepresentation modifiedUser, String password){
+        // Update password credential if password not null or empty
+        if (!StringUtils.isEmpty(password)) {
+            var passwordCred = new CredentialRepresentation();
+            passwordCred.setTemporary(false);
+            passwordCred.setType(CredentialRepresentation.PASSWORD);
+            passwordCred.setValue(password);
+            modifiedUser.setCredentials(List.of(passwordCred));
+        }
+    }
     @Override
     public void changeState(String userId, boolean stateEnable) {
         RealmResource realmResource = keycloak.realm(REALM);
@@ -114,6 +119,14 @@ public class KeycloakUserResource implements IUserResource {
     public void delete(String userId) {
         UserResource user = keycloak.realm(REALM).users().get(userId);
         user.remove();
+    }
+
+    @Override
+    public void changePassword(String openId, String newPassword) {
+        var userResource = usersResource.get(openId);
+        UserRepresentation modifiedUser = userResource.toRepresentation();
+        updatePassword(modifiedUser, newPassword);
+        userResource.update(modifiedUser);
     }
 
     @Override

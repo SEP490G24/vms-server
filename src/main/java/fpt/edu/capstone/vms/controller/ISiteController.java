@@ -3,10 +3,14 @@ package fpt.edu.capstone.vms.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.QueryParam;
 import lombok.Data;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,16 +36,42 @@ public interface ISiteController {
     @PostMapping()
     @Operation(summary = "Create new agent")
 //    @PreAuthorize("hasRole('r:user:create')")
-    ResponseEntity<?> createSite(@RequestBody @Valid createSiteInfo siteInfo);
+    ResponseEntity<?> createSite(@RequestBody @Valid CreateSiteInfo siteInfo);
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Update site")
+    ResponseEntity<?> updateSite(@RequestBody UpdateSiteInfo updateSiteInfo, @PathVariable UUID id);
+
+    @PostMapping("/filter")
+    @Operation(summary = "Filter")
+//    @PreAuthorize("hasRole('r:user:find')")
+    ResponseEntity<?> filter(@RequestBody @Valid SiteFilter siteFilter, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
+
+    @GetMapping("/organization/{organizationId}")
+    @Operation(summary = "Get all site by organizationId")
+    ResponseEntity<List<?>> findAllByOrganizationId(@PathVariable String organizationId);
+    @Data
+    class CreateSiteInfo {
+        @NotNull
+        private String name;
+        @NotNull
+        private String phoneNumber;
+        @NotNull
+        private String province;
+        @NotNull
+        private String district;
+        @NotNull
+        private String ward;
+        @NotNull
+        private String address;
+        @NotNull
+        private String taxCode;
+        private String description;
+    }
 
     @Data
-    class createSiteInfo {
+    class UpdateSiteInfo {
         private String name;
-        private String code;
-        private UUID organizationId;
-        private Boolean mandatoryHealth;
-        private Boolean mandatoryTripCode;
-        private Boolean nucleicAcidTestReport;
         private String phoneNumber;
         private String province;
         private String district;
@@ -49,6 +79,18 @@ public interface ISiteController {
         private String address;
         private String taxCode;
         private String description;
-        private Boolean enable;
+        private boolean enable;
+    }
+
+    @Data
+    class SiteFilter {
+        List<String> names;
+        LocalDateTime createdOnStart;
+        LocalDateTime createdOnEnd;
+        String createBy;
+        String lastUpdatedBy;
+        Boolean enable;
+        String keyword;
+        UUID organizationId;
     }
 }

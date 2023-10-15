@@ -28,12 +28,28 @@ public class Constants {
 
     public enum UserRole {
         ORG_ADMIN,
-        STAFF
+        SYS_ADMIN,
+        STAFF,
+        GUARD,
+        RECEPTIONIST
     }
 
     public enum StatusTicket {
         DRAFT,
         DONE,
         PENDING
+    }
+
+    public enum Gender {
+        FEMALE,
+        MALE,
+        OTHER
+    }
+
+    public enum FileType {
+        PDF,
+        IMAGE,
+        EXCEL,
+        WORD
     }
 }

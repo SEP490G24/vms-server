@@ -8,29 +8,43 @@ import fpt.edu.capstone.vms.oauth2.IUserResource;
 import fpt.edu.capstone.vms.persistence.entity.User;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.core.io.ByteArrayResource;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 public interface IUserService {
 
-    Page<User> filter(int pageNumber,
-                      List<String> usernames,
-                      List<Constants.UserRole> roles,
-                      LocalDateTime createdOnStart,
-                      LocalDateTime createdOnEnd,
-                      Constants.UserState state);
+    Page<IUserController.UserFilter> filter(Pageable pageable,
+                                            List<String> usernames,
+                                            List<Constants.UserRole> roles,
+                                            LocalDateTime createdOnStart,
+                                            LocalDateTime createdOnEnd,
+                                            Boolean enable,
+                                            String keyword,
+                                            String department);
 
-    List<User> availableUsers();
-
-    List<User> filterAvailableUsers(List<String> usernames);
+    List<IUserController.UserFilter> filter(
+                                            List<String> usernames,
+                                            List<Constants.UserRole> roles,
+                                            LocalDateTime createdOnStart,
+                                            LocalDateTime createdOnEnd,
+                                            Boolean enable,
+                                            String keyword,
+                                            String department);
 
     User createUser(IUserResource.UserDto userDto);
 
     User updateUser(IUserResource.UserDto userDto) throws NotFoundException;
 
-    int updateState(Constants.UserState state, String username);
+    void changePasswordUser(IUserController.ChangePasswordUserDto userDto);
+
+    int updateState(boolean isEnable, String username);
 
     void handleAuthSuccess(String username);
 
@@ -41,4 +55,10 @@ public interface IUserService {
     void synAccountFromKeycloak();
 
     ByteArrayResource export(IUserController.UserFilter userFilter);
+
+    Boolean deleteAvatar(String name, String newImage, String username);
+
+    ResponseEntity<Object> importUser(MultipartFile file);
+
+    ResponseEntity<ByteArrayResource> downloadExcel() throws IOException;
 }
