@@ -84,5 +84,9 @@ logging:
   file:
     name: ./logs/info.log
 
-images:
-  folder: C:\image
+azure:
+  account:
+    name: vmsprostorage
+    key: zXF1eR1XfyuGINFS7uRsCw07Y+jvhP2zGSTRRttlzd+jnpWTsk5h+SCw614gsvAEzfAvy9Y5cvMc+AStuOfESw==
+  container:
+    name: vmsfiles
