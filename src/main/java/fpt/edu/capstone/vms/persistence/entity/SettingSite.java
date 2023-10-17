@@ -45,6 +45,9 @@ public class SettingSite extends AbstractBaseEntity<UUID> {
     @Column(name = "site_id")
     private UUID siteId;
 
+    @Column(name = "value")
+    private String value;
+
     @ManyToOne
     @JoinColumn(name = "site_id", referencedColumnName = "id", insertable = false, updatable = false)
     @JsonIgnore

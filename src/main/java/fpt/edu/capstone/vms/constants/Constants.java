@@ -52,4 +52,13 @@ public class Constants {
         EXCEL,
         WORD
     }
+
+    public enum PermissionType {
+        CREATE,
+        UPDATE,
+        FIND,
+        DELETE,
+        READ
+
+    }
 }
