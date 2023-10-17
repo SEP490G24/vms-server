@@ -104,6 +104,7 @@ public class KeycloakUserResource implements IUserResource {
             modifiedUser.setCredentials(List.of(passwordCred));
         }
     }
+
     @Override
     public void changeState(String userId, boolean stateEnable) {
         RealmResource realmResource = keycloak.realm(REALM);
@@ -112,6 +113,22 @@ public class KeycloakUserResource implements IUserResource {
         modifiedUser.setEnabled(stateEnable);
 
         realmResource.users().get(userId).update(modifiedUser);
+    }
+
+    @Override
+    public void updateRole(String openId, List<String> roles) {
+        for (String role : roles
+        ) {
+            // Get the user's existing roles
+            List<RoleRepresentation> existingRoles = usersResource.get(openId).roles().realmLevel().listAll();
+
+            // Remove the old roles
+            for (RoleRepresentation existingRole : existingRoles) {
+                usersResource.get(openId).roles().realmLevel().remove(List.of(existingRole));
+            }
+            RoleRepresentation roleRepresentation = rolesResource.get(role).toRepresentation();
+            usersResource.get(openId).roles().realmLevel().add(List.of(roleRepresentation));
+        }
     }
 
 

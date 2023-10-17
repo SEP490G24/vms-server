@@ -29,34 +29,34 @@ public interface IRoleController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Find role by id")
-    @PreAuthorize("hasRole('r:role:find')")
+    //@PreAuthorize("hasRole('r:role:find')")
     ResponseEntity<?> getById(@PathVariable("id") String id);
 
     @PostMapping("/filter")
     @Operation(summary = "Filter role")
-    @PreAuthorize("hasRole('r:role:find')")
+        //@PreAuthorize("hasRole('r:role:find')")
     ResponseEntity<?> filter(@RequestBody RoleFilterPayload filterPayload);
 
     @PostMapping("")
     @Operation(summary = "Create role")
-    @PreAuthorize("hasRole('r:role:create')")
+        //@PreAuthorize("hasRole('r:role:create')")
     ResponseEntity<?> create(@RequestBody CreateRolePayload payload);
 
     @PutMapping("/{id}")
     @Operation(summary = "Update role")
-    @PreAuthorize("hasRole('r:role:update')")
+        //@PreAuthorize("hasRole('r:role:update')")
     ResponseEntity<?> update(@PathVariable("id") String id,
                              @RequestBody UpdateRolePayload payload) throws NotFoundException;
 
     @PutMapping("/{id}/permission")
     @Operation(summary = "Update permission")
-    @PreAuthorize("hasRole('r:role:update')")
+        //@PreAuthorize("hasRole('r:role:update')")
     ResponseEntity<?> updatePermission(@PathVariable("id") String id,
                                        @RequestBody UpdateRolePermissionPayload payload);
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete role")
-    @PreAuthorize("hasRole('r:role:delete')")
+        //@PreAuthorize("hasRole('r:role:delete')")
     ResponseEntity<?> delete(@PathVariable("id") String id);
 
     @Data
@@ -84,7 +84,7 @@ public interface IRoleController {
     }
 
     @Data
-    class RoleFilterPayload {
+    class RoleFilterPayload extends RoleBasePayload {
 
     }
 

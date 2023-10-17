@@ -1,5 +1,6 @@
 package fpt.edu.capstone.vms.oauth2.provider.keycloak;
 
+import fpt.edu.capstone.vms.controller.IRoleController;
 import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.oauth2.IPermissionResource;
 import fpt.edu.capstone.vms.oauth2.IRoleResource;
@@ -12,12 +13,10 @@ import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
-import static fpt.edu.capstone.vms.constants.Constants.IGNORE_CLIENT_ID_KEYCLOAK;
 import static fpt.edu.capstone.vms.constants.Constants.IGNORE_ROLE_REALM_KEYCLOAK;
 
 
@@ -44,11 +43,70 @@ public class KeycloakRealmRoleResource implements IRoleResource {
     public List<RoleDto> findAll() {
         /* fetch all role */
         var roles = this.rolesResource.list().stream()
-                .filter(roleRepresentation -> !Arrays.asList(IGNORE_ROLE_REALM_KEYCLOAK).contains(roleRepresentation.getName()))
-                .toList();
-        var results = (List<RoleDto>) mapper.map(roles, new TypeToken<List<RoleDto>>() {}.getType());
+            .filter(roleRepresentation -> !Arrays.asList(IGNORE_ROLE_REALM_KEYCLOAK).contains(roleRepresentation.getName()))
+            .toList();
+        var results = (List<RoleDto>) mapper.map(roles, new TypeToken<List<RoleDto>>() {
+        }.getType());
 
         /* set permission for role */
+        results.forEach(this::updatePermission4Role);
+
+        return results;
+    }
+
+    @Override
+    public List<RoleDto> filter(IRoleController.RoleBasePayload roleBasePayload) {
+
+        // Get the list of all roles
+        List<RoleRepresentation> roles = this.rolesResource.list();
+
+        // Create a Predicate to check the name
+        Predicate<RoleRepresentation> namePredicate = roleRepresentation -> {
+            if (roleBasePayload.getName() == null || roleBasePayload.getName().isEmpty()) {
+                return true; // Do not filter by name if 'name' is null or empty
+            }
+            return roleRepresentation.getName().equals(roleBasePayload.getName());
+        };
+
+        // Create a Predicate to check the attributes
+        Predicate<RoleRepresentation> attributesPredicate = roleRepresentation -> {
+            Map<String, List<String>> roleAttributes = roleRepresentation.getAttributes();
+            Map<String, List<String>> payloadAttributes = roleBasePayload.getAttributes();
+
+            if (payloadAttributes == null || payloadAttributes.isEmpty()) {
+                return true; // Do not filter by attributes if 'attributes' is null or empty
+            }
+
+            // Check if roleAttributes is null
+            if (roleAttributes == null) {
+                return false;
+            }
+
+            // Check if roleAttributes contains all attributes from payloadAttributes
+            return payloadAttributes.entrySet().stream()
+                .allMatch(payloadEntry -> {
+                    String attributeName = payloadEntry.getKey();
+                    List<String> attributeValues = payloadEntry.getValue();
+
+                    if (roleAttributes.containsKey(attributeName)) {
+                        List<String> roleAttributeValues = roleAttributes.get(attributeName);
+                        return roleAttributeValues.containsAll(attributeValues);
+                    }
+
+                    return false;
+                });
+        };
+
+        // Apply the Predicates to filter the list of roles
+        List<RoleRepresentation> filteredRoles = roles.stream()
+            .filter(namePredicate.and(attributesPredicate))
+            .collect(Collectors.toList());
+
+        // Chuyển đổi danh sách đã lọc thành danh sách RoleDto
+        var results = (List<RoleDto>) mapper.map(roles, new TypeToken<List<RoleDto>>() {
+        }.getType());
+
+        // Set quyền cho từng vai trò
         results.forEach(this::updatePermission4Role);
 
         return results;

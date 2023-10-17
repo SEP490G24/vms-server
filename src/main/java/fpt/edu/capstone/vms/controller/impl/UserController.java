@@ -6,29 +6,24 @@ import fpt.edu.capstone.vms.controller.IUserController;
 import fpt.edu.capstone.vms.exception.HttpClientResponse;
 import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
-import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.entity.User;
 import fpt.edu.capstone.vms.persistence.service.IUserService;
-import fpt.edu.capstone.vms.util.ResponseUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.apache.http.HttpStatus;
 import org.modelmapper.ModelMapper;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Objects;
 
 @RestController
 @AllArgsConstructor
@@ -132,8 +127,14 @@ public class UserController implements IUserController {
     }
 
     @Override
+    public ResponseEntity<?> updateRole(String username, List<String> roles) {
+        userService.updateRole(username, roles);
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
     public ResponseEntity<Object> importUser(MultipartFile file) {
-       return userService.importUser(file);
+        return userService.importUser(file);
     }
 
 }

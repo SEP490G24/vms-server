@@ -11,12 +11,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.core.io.ByteArrayResource;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 
 public interface IUserService {
 
@@ -61,4 +59,6 @@ public interface IUserService {
     ResponseEntity<Object> importUser(MultipartFile file);
 
     ResponseEntity<ByteArrayResource> downloadExcel() throws IOException;
+
+    void updateRole(String username, List<String> roles);
 }

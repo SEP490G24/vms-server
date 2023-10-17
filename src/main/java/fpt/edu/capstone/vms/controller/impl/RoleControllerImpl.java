@@ -29,7 +29,7 @@ public class RoleControllerImpl implements IRoleController {
 
     @Override
     public ResponseEntity<?> filter(RoleFilterPayload filterPayload) {
-        return null;
+        return ResponseEntity.ok(roleService.filter(filterPayload));
     }
 
     @Override

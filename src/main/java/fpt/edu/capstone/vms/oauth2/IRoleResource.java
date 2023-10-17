@@ -1,6 +1,7 @@
 package fpt.edu.capstone.vms.oauth2;
 
 
+import fpt.edu.capstone.vms.controller.IRoleController;
 import fpt.edu.capstone.vms.exception.NotFoundException;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -17,6 +18,14 @@ public interface IRoleResource {
      * @return List<RoleDto>
      */
     List<RoleDto> findAll();
+
+
+    /**
+     * Filter role (Keycloak: role is realm role)
+     *
+     * @return List<RoleDto>
+     */
+    List<RoleDto> filter(IRoleController.RoleBasePayload roleBasePayload);
 
     /**
      * Find role by id (Keycloak: role is realm role)

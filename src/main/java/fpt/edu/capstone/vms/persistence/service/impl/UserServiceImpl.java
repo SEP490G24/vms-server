@@ -31,7 +31,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.openxml4j.util.ZipSecureFile;
 import org.apache.poi.ss.usermodel.*;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
@@ -131,7 +130,6 @@ public class UserServiceImpl implements IUserService {
         HEADER_EXCEL_FILE.put(8, "DepartmentCode");
         HEADER_EXCEL_FILE.put(9, "Enable");
     }
-
 
 
     @Override
@@ -342,9 +340,8 @@ public class UserServiceImpl implements IUserService {
 
         } catch (CustomException e) {
             log.error("Lỗi xảy ra trong quá trình import", e);
-            return ResponseUtils.getResponseEntity(e.getErrorApp(),HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        catch (Exception e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (Exception e) {
             log.error("Lỗi xảy ra trong quá trình import", e);
             return ResponseUtils.getResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -367,6 +364,12 @@ public class UserServiceImpl implements IUserService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
 
+    }
+
+    @Override
+    public void updateRole(String username, List<String> roles) {
+        var userEntity = userRepository.findByUsername(username).orElse(null);
+        userResource.updateRole(userEntity.getOpenid(), roles);
     }
 
 
