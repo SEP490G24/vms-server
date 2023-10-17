@@ -15,6 +15,7 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @AllArgsConstructor
@@ -82,9 +83,13 @@ public class SiteController implements ISiteController {
             filter.getLastUpdatedBy(),
             filter.getEnable(),
             filter.getKeyword());
+
+//        siteEntityPageable.getContent().stream()
+//            .map(entity -> mapper.map(entity,new TypeToken<List<SiteFilterDTO>>() {}.getType()))
+//            .collect(Collectors.toList());
+
         return isPageable ?
-            ResponseEntity.ok(mapper.map(siteEntityPageable.getContent(), new TypeToken<List<SiteFilterDTO>>() {
-        }.getType()))
+            ResponseEntity.ok(siteEntityPageable)
             : ResponseEntity.ok(mapper.map(siteEntity, new TypeToken<List<SiteFilterDTO>>() {
         }.getType()));
     }

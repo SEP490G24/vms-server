@@ -17,6 +17,7 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @AllArgsConstructor
@@ -82,8 +83,11 @@ public class DepartmentController implements IDepartmentController {
             filter.getEnable(),
             filter.getKeyword());
 
-        return isPageable ? ResponseEntity.ok(mapper.map(departmentEntityPageable.getContent(), new TypeToken<List<DepartmentFilterDTO>>() {
-        }.getType()))
+//        departmentEntityPageable.getContent().stream()
+//            .map(entity -> )
+//            .collect(Collectors.toList());
+
+        return isPageable ? ResponseEntity.ok(departmentEntityPageable)
             : ResponseEntity.ok(mapper.map(departmentEntity, new TypeToken<List<DepartmentFilterDTO>>() {
         }.getType()));
     }
