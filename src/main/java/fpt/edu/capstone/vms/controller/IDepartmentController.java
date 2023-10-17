@@ -77,4 +77,19 @@ public interface IDepartmentController {
         String keyword;
         UUID siteId;
     }
+
+    @Data
+    class DepartmentFilterDTO {
+        private String name;
+        private String code;
+        private String enable;
+        private String siteId;
+        private String siteName;
+        private String description;
+        private String createdBy;
+        private String lastUpdatedBy;
+        private LocalDateTime lastUpdatedOn;
+        private LocalDateTime createdOn;
+
+    }
 }

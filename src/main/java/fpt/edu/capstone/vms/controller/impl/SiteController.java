@@ -7,6 +7,7 @@ import fpt.edu.capstone.vms.persistence.service.ISiteService;
 import fpt.edu.capstone.vms.persistence.service.impl.SiteServiceImpl;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -62,26 +63,30 @@ public class SiteController implements ISiteController {
 
     @Override
     public ResponseEntity<?> filter(SiteFilter filter, boolean isPageable, Pageable pageable) {
-        return isPageable ? ResponseEntity.ok(
-            siteService.filter(
-                pageable,
-                filter.getNames(),
-                filter.getOrganizationId(),
-                filter.getCreatedOnStart(),
-                filter.getCreatedOnEnd(),
-                filter.getCreateBy(),
-                filter.getLastUpdatedBy(),
-                filter.getEnable(),
-                filter.getKeyword())) : ResponseEntity.ok(
-            siteService.filter(
-                filter.getNames(),
-                filter.getOrganizationId(),
-                filter.getCreatedOnStart(),
-                filter.getCreatedOnEnd(),
-                filter.getCreateBy(),
-                filter.getLastUpdatedBy(),
-                filter.getEnable(),
-                filter.getKeyword())) ;
+        var siteEntity = siteService.filter(
+            filter.getNames(),
+            filter.getOrganizationId(),
+            filter.getCreatedOnStart(),
+            filter.getCreatedOnEnd(),
+            filter.getCreateBy(),
+            filter.getLastUpdatedBy(),
+            filter.getEnable(),
+            filter.getKeyword());
+        var siteEntityPageable = siteService.filter(
+            pageable,
+            filter.getNames(),
+            filter.getOrganizationId(),
+            filter.getCreatedOnStart(),
+            filter.getCreatedOnEnd(),
+            filter.getCreateBy(),
+            filter.getLastUpdatedBy(),
+            filter.getEnable(),
+            filter.getKeyword());
+        return isPageable ?
+            ResponseEntity.ok(mapper.map(siteEntityPageable.getContent(), new TypeToken<List<SiteFilterDTO>>() {
+        }.getType()))
+            : ResponseEntity.ok(mapper.map(siteEntity, new TypeToken<List<SiteFilterDTO>>() {
+        }.getType()));
     }
 
     @Override
