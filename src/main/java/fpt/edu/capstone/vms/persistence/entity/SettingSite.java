@@ -3,7 +3,9 @@ package fpt.edu.capstone.vms.persistence.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -23,18 +25,18 @@ import java.util.UUID;
 @Accessors(chain = true)
 @Table(schema = "vms", name = "setting_site")
 @EqualsAndHashCode(callSuper = true)
-public class SettingSite extends AbstractBaseEntity<UUID> {
+public class SettingSite extends AbstractBaseEntity<Long> {
 
     @Id
-    @Column(name = "id", length = 64)
-    @GeneratedValue
-    private UUID id;
+    @Column(name = "id", columnDefinition = "int", updatable = false, nullable = false)
+    @GeneratedValue (strategy = GenerationType. IDENTITY)
+    private Long id;
+
+    @Column(name = "code", unique = true, updatable = false, nullable = false, length = 100)
+    private String code;
 
     @Column(name = "name")
     private String name;
-
-    @Column(name = "code")
-    private String code;
 
     @Column(name = "description")
     private String description;
@@ -42,21 +44,35 @@ public class SettingSite extends AbstractBaseEntity<UUID> {
     @Column(name = "type")
     private String type;
 
+    @Column(name = "property_value", length = 500)
+    private String value;
+
+    @Column(name = "default_property_value", length = 500)
+    private String defaultValue;
+
     @Column(name = "site_id")
     private UUID siteId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "site_id", referencedColumnName = "id", insertable = false, updatable = false)
     @JsonIgnore
     private Site site;
 
+    @Column(name = "setting_group_id")
+    private Long groupId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "setting_group_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JsonIgnore
+    private SettingGroup settingGroup;
+
     @Override
-    public UUID getId() {
+    public Long getId() {
         return id;
     }
 
     @Override
-    public void setId(UUID id) {
+    public void setId(Long id) {
         this.id = id;
     }
 }
