@@ -1,6 +1,5 @@
 package fpt.edu.capstone.vms.controller;
 
-import fpt.edu.capstone.vms.constants.Constants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -22,9 +21,9 @@ import java.util.List;
 
 @RestController
 @Tag(name = "Setting Site Service")
-@RequestMapping("/api/v1/setting")
+@RequestMapping("/api/v1/settingGroup")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
-public interface ISettingController {
+public interface ISettingGroupController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Find by id")
@@ -35,8 +34,8 @@ public interface ISettingController {
     ResponseEntity<?> delete(@PathVariable Long id);
 
     @PutMapping ("/{id}")
-    @Operation(summary = "Update setting site")
-    ResponseEntity<?> updateSettingGroup(@PathVariable Long id, @RequestBody @Valid UpdateSettingInfo settingInfo);
+    @Operation(summary = "Update setting group")
+    ResponseEntity<?> updateSettingGroup(@PathVariable Long id, @RequestBody @Valid UpdateSettingGroupInfo settingGroupInfo);
 
     @GetMapping
     @Operation(summary = "Get all")
@@ -45,32 +44,16 @@ public interface ISettingController {
     @PostMapping()
     @Operation(summary = "Create new agent")
 //    @PreAuthorize("hasRole('r:user:create')")
-    ResponseEntity<?> createSetting(@RequestBody @Valid CreateSettingInfo settingInfo);
+    ResponseEntity<?> createSettingGroup(@RequestBody @Valid CreateSettingGroupInfo settingGroupInfo);
 
     @Data
-    class CreateSettingInfo {
-        @NotNull
-        private String code;
+    class CreateSettingGroupInfo {
         @NotNull
         private String name;
-        private String description;
-        @NotNull
-        private Constants.SettingType type;
-        private String defaultValue;
-        @NotNull
-        private Boolean enable;
-        @NotNull
-        private Long groupId;
     }
 
     @Data
-    class UpdateSettingInfo {
-        private String code;
-        private String name;
-        private String description;
-        private Constants.SettingType type;
-        private String defaultValue;
-        private Boolean enable;
-        private Long groupId;
+    class UpdateSettingGroupInfo {
+        String name;
     }
 }

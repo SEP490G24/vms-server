@@ -33,6 +33,13 @@ public class OrganizationServiceImpl extends GenericServiceImpl<Organization, UU
 
     @Override
     public Organization update(Organization entity, UUID id) {
+
+        if (!StringUtils.isEmpty(entity.getCode())) {
+            if (organizationRepository.existsByCode(entity.getCode())) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code of organization is exist");
+            }
+        }
+
         if (!SecurityUtils.getOrgId().equals(id.toString())) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "You are not in organization to update");
         }
@@ -52,6 +59,12 @@ public class OrganizationServiceImpl extends GenericServiceImpl<Organization, UU
 
     @Override
     public Organization save(Organization entity) {
+
+        if (StringUtils.isEmpty(entity.getCode())) throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code is null");
+
+        if (organizationRepository.existsByCode(entity.getCode())) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code of organization is exist");
+        }
         if (ObjectUtils.isEmpty(entity)) throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Object is empty");
         entity.setEnable(true);
         return organizationRepository.save(entity);

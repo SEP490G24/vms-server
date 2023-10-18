@@ -63,4 +63,6 @@ public interface DepartmentRepository extends GenericRepository<Department, UUID
                             @Param("keyword") @Nullable String keyword);
 
     List<Department> findAllByEnableIsTrue();
+    boolean existsByCode(String code);
+
 }

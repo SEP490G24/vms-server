@@ -6,5 +6,4 @@ import fpt.edu.capstone.vms.persistence.service.generic.IGenericService;
 
 
 public interface ISettingService extends IGenericService<Setting, Long> {
-
 }

@@ -30,7 +30,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-@Table(schema = "vms", name = "setting_site")
+@Table(schema = "vms", name = "setting")
 @EqualsAndHashCode(callSuper = true)
 public class Setting extends AbstractBaseEntity<Long> {
 
@@ -66,9 +66,10 @@ public class Setting extends AbstractBaseEntity<Long> {
     @JsonIgnore
     private SettingGroup settingGroup;
 
-    @OneToMany(mappedBy = "siteEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
-    @MapKey(name = "settingSiteMapPk.siteId")
-    private Map<UUID, SettingSiteMap> settingSiteMaps;
+    @OneToMany(mappedBy = "settingEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @MapKey(name = "settingSiteMapPk.settingId")
+    private Map<Long, SettingSiteMap> settingSiteMaps;
+
     public Setting update(Setting settingEntity) {
         if (settingEntity.name != null) this.name = settingEntity.name;
         if (settingEntity.code != null) this.code = settingEntity.code;

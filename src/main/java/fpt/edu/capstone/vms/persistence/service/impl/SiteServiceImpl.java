@@ -36,6 +36,13 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
     @Override
     public Site save(Site entity) {
         try {
+            if (StringUtils.isEmpty(entity.getCode())) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code is null");
+            }
+            if (siteRepository.existsByCode(entity.getCode())) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code of organization is exist");
+            }
+
             if (StringUtils.isEmpty(SecurityUtils.getOrgId())) {
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "OrganizationId is null");
             }
@@ -49,6 +56,13 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
 
     @Override
     public Site updateSite(ISiteController.UpdateSiteInfo updateSite, UUID id) {
+
+        if (!StringUtils.isEmpty(updateSite.getCode())) {
+            if (siteRepository.existsByCode(updateSite.getCode())) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code of site is exist");
+            }
+        }
+
         var siteEntity = siteRepository.findById(id).orElse(null);
         var update = mapper.map(updateSite, Site.class);
         if (ObjectUtils.isEmpty(siteEntity))

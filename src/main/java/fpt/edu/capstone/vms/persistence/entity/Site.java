@@ -89,6 +89,10 @@ public class Site extends AbstractBaseEntity<UUID> {
     @MapKey(name = "pricePackageSiteMapPk.siteId")
     private Map<UUID, PricePackageSiteMap> pricePackageSiteMaps;
 
+    @OneToMany(mappedBy = "siteEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @MapKey(name = "settingSiteMapPk.siteId")
+    private Map<UUID, SettingSiteMap> settingSiteMaps;
+
     public Site update(Site siteEntity) {
         if (siteEntity.name != null) this.name = siteEntity.name;
         if (siteEntity.code != null) this.code = siteEntity.code;

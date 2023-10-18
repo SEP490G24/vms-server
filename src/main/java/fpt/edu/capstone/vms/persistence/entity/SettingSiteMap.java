@@ -47,7 +47,7 @@ public class SettingSiteMap extends AbstractBaseEntity<SettingSiteMapPk> {
     public SettingSiteMap update(SettingSiteMap settingSiteMap) {
         if (settingSiteMap.description != null) this.description = settingSiteMap.description;
         if (settingSiteMap.value != null) this.value = settingSiteMap.value;
-        if (settingSiteMap.value != null) this.status = settingSiteMap.status;
+        if (settingSiteMap.status != null) this.status = settingSiteMap.status;
         if (settingSiteMap.getCreatedBy() != null) this.setCreatedBy(settingSiteMap.getCreatedBy());
         if (settingSiteMap.getCreatedOn() != null) this.setCreatedOn(settingSiteMap.getCreatedOn());
         return this;
