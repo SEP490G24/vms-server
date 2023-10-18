@@ -61,4 +61,9 @@ public class Constants {
         READ
 
     }
+
+    public enum SettingType {
+        INPUT,
+        CHECK_BOX
+    }
 }

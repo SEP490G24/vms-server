@@ -1,5 +1,7 @@
 package fpt.edu.capstone.vms.persistence.entity;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import fpt.edu.capstone.vms.constants.Constants;
 import jakarta.persistence.Column;
@@ -18,8 +20,12 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.hibernate.annotations.Type;
+
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @Data
@@ -105,6 +111,9 @@ public class Ticket extends AbstractBaseEntity<UUID> {
     @JoinColumn(name = "room_id", referencedColumnName = "id", insertable = false, updatable = false)
     @JsonIgnore
     private RoomSite roomSite;
+
+    @Column(name = "settings", length = 500)
+    private String settings;
 
     @Override
     public UUID getId() {
