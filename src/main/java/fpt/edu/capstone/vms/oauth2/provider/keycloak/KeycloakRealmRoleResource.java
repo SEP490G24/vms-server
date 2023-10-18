@@ -4,6 +4,7 @@ import fpt.edu.capstone.vms.controller.IRoleController;
 import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.oauth2.IPermissionResource;
 import fpt.edu.capstone.vms.oauth2.IRoleResource;
+import fpt.edu.capstone.vms.persistence.entity.Site;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RolesResource;
@@ -13,9 +14,10 @@ import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 import static fpt.edu.capstone.vms.constants.Constants.IGNORE_ROLE_REALM_KEYCLOAK;
 
@@ -58,52 +60,21 @@ public class KeycloakRealmRoleResource implements IRoleResource {
     public List<RoleDto> filter(IRoleController.RoleBasePayload roleBasePayload) {
 
         // Get the list of all roles
-        List<RoleRepresentation> roles = this.rolesResource.list();
+        List<RoleRepresentation> roles = this.rolesResource.list(false);
 
-        // Create a Predicate to check the name
-        Predicate<RoleRepresentation> namePredicate = roleRepresentation -> {
-            if (roleBasePayload.getName() == null || roleBasePayload.getName().isEmpty()) {
-                return true; // Do not filter by name if 'name' is null or empty
-            }
-            return roleRepresentation.getName().equals(roleBasePayload.getName());
-        };
+        var role = roles.stream()
+            .filter(roleRepresentation -> {
 
-        // Create a Predicate to check the attributes
-        Predicate<RoleRepresentation> attributesPredicate = roleRepresentation -> {
-            Map<String, List<String>> roleAttributes = roleRepresentation.getAttributes();
-            Map<String, List<String>> payloadAttributes = roleBasePayload.getAttributes();
-
-            if (payloadAttributes == null || payloadAttributes.isEmpty()) {
-                return true; // Do not filter by attributes if 'attributes' is null or empty
-            }
-
-            // Check if roleAttributes is null
-            if (roleAttributes == null) {
+                if (roleBasePayload.getName().contains(roleRepresentation.getName()) && roleRepresentation.getAttributes() != null) {
+                    List<String> siteIds = roleRepresentation.getAttributes().get("site_id");
+                    return siteIds != null && siteIds.contains(roleBasePayload.getAttributes().get("site_id").get(0));
+                }
                 return false;
-            }
+            }).toList();
 
-            // Check if roleAttributes contains all attributes from payloadAttributes
-            return payloadAttributes.entrySet().stream()
-                .allMatch(payloadEntry -> {
-                    String attributeName = payloadEntry.getKey();
-                    List<String> attributeValues = payloadEntry.getValue();
-
-                    if (roleAttributes.containsKey(attributeName)) {
-                        List<String> roleAttributeValues = roleAttributes.get(attributeName);
-                        return roleAttributeValues.containsAll(attributeValues);
-                    }
-
-                    return false;
-                });
-        };
-
-        // Apply the Predicates to filter the list of roles
-        List<RoleRepresentation> filteredRoles = roles.stream()
-            .filter(namePredicate.and(attributesPredicate))
-            .collect(Collectors.toList());
 
         // Chuyển đổi danh sách đã lọc thành danh sách RoleDto
-        var results = (List<RoleDto>) mapper.map(roles, new TypeToken<List<RoleDto>>() {
+        var results = (List<RoleDto>) mapper.map(role, new TypeToken<List<RoleDto>>() {
         }.getType());
 
         // Set quyền cho từng vai trò
@@ -122,9 +93,10 @@ public class KeycloakRealmRoleResource implements IRoleResource {
     }
 
     @Override
-    public RoleDto create(RoleDto value) {
+    public RoleDto create(Site site, RoleDto value) {
         var roleInsert = new RoleRepresentation();
-        roleInsert.setName(value.getName());
+        roleInsert.setName(site.getCode() + "_" + value.getName());
+        value.getAttributes().put("site_id", List.of(site.getId().toString()));
         roleInsert.setAttributes(value.getAttributes());
         this.rolesResource.create(roleInsert);
         return mapper.map(roleInsert, RoleDto.class);

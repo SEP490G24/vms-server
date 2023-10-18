@@ -4,10 +4,10 @@ import fpt.edu.capstone.vms.controller.ISiteController;
 import fpt.edu.capstone.vms.exception.HttpClientResponse;
 import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.service.ISiteService;
-import fpt.edu.capstone.vms.persistence.service.impl.SiteServiceImpl;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,7 +15,6 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @RestController
 @AllArgsConstructor
@@ -84,12 +83,12 @@ public class SiteController implements ISiteController {
             filter.getEnable(),
             filter.getKeyword());
 
-//        siteEntityPageable.getContent().stream()
-//            .map(entity -> mapper.map(entity,new TypeToken<List<SiteFilterDTO>>() {}.getType()))
-//            .collect(Collectors.toList());
+
+        List<ISiteController.SiteFilterDTO> siteFilterDTOS = mapper.map(siteEntityPageable.getContent(), new TypeToken<List<ISiteController.SiteFilterDTO>>() {
+        }.getType());
 
         return isPageable ?
-            ResponseEntity.ok(siteEntityPageable)
+            ResponseEntity.ok(new PageImpl(siteFilterDTOS, pageable, siteFilterDTOS.size()))
             : ResponseEntity.ok(mapper.map(siteEntity, new TypeToken<List<SiteFilterDTO>>() {
         }.getType()));
     }

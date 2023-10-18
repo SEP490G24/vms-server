@@ -24,7 +24,7 @@ public interface IRoleController {
 
     @GetMapping("")
     @Operation(summary = "Find all roles")
-    @PreAuthorize("hasRole('r:role:find')")
+    //@PreAuthorize("hasRole('r:role:find')")
     ResponseEntity<?> getAll();
 
     @GetMapping("/{id}")

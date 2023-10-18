@@ -1,15 +1,13 @@
 package fpt.edu.capstone.vms.controller.impl;
 
 import fpt.edu.capstone.vms.controller.IDepartmentController;
-import fpt.edu.capstone.vms.controller.ISiteController;
 import fpt.edu.capstone.vms.exception.HttpClientResponse;
 import fpt.edu.capstone.vms.persistence.entity.Department;
-import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.service.IDepartmentService;
-import fpt.edu.capstone.vms.persistence.service.impl.DepartmentServiceImpl;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,7 +15,6 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @RestController
 @AllArgsConstructor
@@ -83,11 +80,10 @@ public class DepartmentController implements IDepartmentController {
             filter.getEnable(),
             filter.getKeyword());
 
-//        departmentEntityPageable.getContent().stream()
-//            .map(entity -> )
-//            .collect(Collectors.toList());
+        List<DepartmentFilterDTO> departmentFilterDTOS = mapper.map(departmentEntityPageable.getContent(), new TypeToken<List<DepartmentFilterDTO>>() {
+        }.getType());
 
-        return isPageable ? ResponseEntity.ok(departmentEntityPageable)
+        return isPageable ? ResponseEntity.ok(new PageImpl(departmentFilterDTOS, pageable, departmentFilterDTOS.size()))
             : ResponseEntity.ok(mapper.map(departmentEntity, new TypeToken<List<DepartmentFilterDTO>>() {
         }.getType()));
     }

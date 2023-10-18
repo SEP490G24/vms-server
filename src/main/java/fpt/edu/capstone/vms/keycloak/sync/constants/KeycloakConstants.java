@@ -14,7 +14,7 @@ public final class KeycloakConstants {
     public final static String REALM_ADMIN_ROLE = "REALM_ADMIN";
 
     public final static String REALM_MASTER = "master";
-    public final static String SEVER_URL = "https://keycloak-vms.azurewebsites.net";
+    public final static String SEVER_URL = "http://localhost:9080";
     public static final String CLIENT = "admin-cli";
     public final static String USERNAME = "admin";
     public final static String PASSWORD = "admin";

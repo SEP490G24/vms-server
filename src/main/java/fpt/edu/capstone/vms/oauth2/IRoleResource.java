@@ -3,6 +3,7 @@ package fpt.edu.capstone.vms.oauth2;
 
 import fpt.edu.capstone.vms.controller.IRoleController;
 import fpt.edu.capstone.vms.exception.NotFoundException;
+import fpt.edu.capstone.vms.persistence.entity.Site;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -40,7 +41,7 @@ public interface IRoleResource {
      *
      * @param dto DTO for role
      */
-    RoleDto create(RoleDto dto);
+    RoleDto create(Site site, RoleDto dto);
 
     /**
      * Update role (Keycloak: role is realm role)
