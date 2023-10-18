@@ -2,6 +2,7 @@ package fpt.edu.capstone.vms.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.persistence.Column;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.QueryParam;
@@ -92,5 +93,25 @@ public interface ISiteController {
         Boolean enable;
         String keyword;
         UUID organizationId;
+    }
+
+    @Data
+    class SiteFilterDTO {
+        private String name;
+        private String code;
+        private String enable;
+        private String organizationId;
+        private String organizationName;
+        private String phoneNumber;
+        private String province;
+        private String district;
+        private String ward;
+        private String address;
+        private String taxCode;
+        private String description;
+        private String createdBy;
+        private String lastUpdatedBy;
+        private LocalDateTime lastUpdatedOn;
+        private LocalDateTime createdOn;
     }
 }

@@ -1,8 +1,12 @@
 package fpt.edu.capstone.vms.config.mapper;
 
 
+import fpt.edu.capstone.vms.controller.IDepartmentController;
+import fpt.edu.capstone.vms.controller.ISiteController;
 import fpt.edu.capstone.vms.controller.IUserController;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
+import fpt.edu.capstone.vms.persistence.entity.Department;
+import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.entity.User;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.modelmapper.ModelMapper;
@@ -39,6 +43,14 @@ public class ModelMapperConfig {
         // UpdateUserInfo => IUserResource.UserDto
         modelMapper.createTypeMap(IUserController.UpdateUserInfo.class, IUserResource.UserDto.class)
                 .addMappings(mapping -> mapping.map(IUserController.UpdateUserInfo::getPhoneNumber, IUserResource.UserDto::setPhone));
+
+        // department => departmentFilterDTO
+        modelMapper.createTypeMap(Department.class, IDepartmentController.DepartmentFilterDTO.class)
+            .addMappings(mapping -> mapping.map((department -> department.getSite().getName()), IDepartmentController.DepartmentFilterDTO::setSiteName));
+
+        // site => siteFilterDTO
+        modelMapper.createTypeMap(Site.class, ISiteController.SiteFilterDTO.class)
+            .addMappings(mapping -> mapping.map((site -> site.getOrganization().getName()), ISiteController.SiteFilterDTO::setOrganizationName));
 
         return modelMapper;
     }
