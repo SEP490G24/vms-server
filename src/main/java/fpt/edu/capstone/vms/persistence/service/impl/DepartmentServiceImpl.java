@@ -36,6 +36,13 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
 
     @Override
     public Department update(Department updateDepartmentInfo, UUID id) {
+
+        if (!StringUtils.isEmpty(updateDepartmentInfo.getCode())) {
+            if (departmentRepository.existsByCode(updateDepartmentInfo.getCode())) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code of department is exist");
+            }
+        }
+
         var department = departmentRepository.findById(id).orElse(null);
         if (ObjectUtils.isEmpty(department))
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't found department");
@@ -46,6 +53,13 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
     @Override
     @Transactional
     public Department createDepartment(IDepartmentController.createDepartmentInfo departmentInfo) {
+
+        if (StringUtils.isEmpty(departmentInfo.getCode())) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code is null");
+        }
+        if (departmentRepository.existsByCode(departmentInfo.getCode())) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code of organization is exist");
+        }
         if (ObjectUtils.isEmpty(departmentInfo))
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Object is empty");
         if (StringUtils.isEmpty(departmentInfo.getSiteId()))

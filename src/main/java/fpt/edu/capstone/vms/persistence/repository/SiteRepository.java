@@ -1,8 +1,7 @@
 package fpt.edu.capstone.vms.persistence.repository;
 
-import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.persistence.entity.Site;
-import fpt.edu.capstone.vms.persistence.entity.User;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
@@ -74,4 +73,6 @@ public interface SiteRepository extends GenericRepository<Site, UUID> {
                       @Param("keyword") @Nullable String keyword);
 
     List<Site> findAllByOrganizationId(UUID organizationId);
+
+    boolean existsByCode(String code);
 }

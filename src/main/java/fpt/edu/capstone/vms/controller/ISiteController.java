@@ -73,6 +73,7 @@ public interface ISiteController {
     @Data
     class UpdateSiteInfo {
         private String name;
+        private String code;
         private String phoneNumber;
         private String province;
         private String district;
