@@ -40,9 +40,9 @@ spring:
     name: vms-service
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}
-    username: ${POSTGRES_USER}
-    password: ${POSTGRES_PASSWORD}
+    url: jdbc:postgresql://vms-db.postgres.database.azure.com:5432/vms-db
+    username: vms
+    password: Password123
   jpa:
     database: POSTGRESQL
     hibernate:
