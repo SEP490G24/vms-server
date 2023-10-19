@@ -68,11 +68,14 @@ public interface IRoleResource {
      */
     void delete(String id);
 
+    List<RoleDto> getBySites(List<String> sites);
+
 
     @Data
     @Accessors(chain = true)
     class RoleDto {
         private String name;
+        private String description;
         private Map<String, List<String>> attributes;
         private Set<IPermissionResource.PermissionDto> permissionDtos;
     }

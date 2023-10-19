@@ -40,7 +40,7 @@ spring:
     name: vms-service
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://vmsdbserver.postgres.database.azure.com:5432/vms-db
+    url:  jdbc:postgresql://vms-db.postgres.database.azure.com:5432/vms-db
     username: vms
     password: Password123
   jpa:

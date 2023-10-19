@@ -62,4 +62,9 @@ public class RoleService implements IRoleService {
     public void delete(String id) {
         roleResource.delete(id);
     }
+
+    @Override
+    public List<IRoleResource.RoleDto> getBySites(List<String> sites) {
+        return roleResource.getBySites(sites);
+    }
 }

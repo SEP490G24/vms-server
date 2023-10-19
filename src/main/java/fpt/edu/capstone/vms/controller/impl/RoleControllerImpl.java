@@ -10,6 +10,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 public class RoleControllerImpl implements IRoleController {
@@ -51,5 +53,10 @@ public class RoleControllerImpl implements IRoleController {
     public ResponseEntity<?> delete(String id) {
         roleService.delete(id);
         return ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<?> getBySites(List<String> sites) {
+        return ResponseEntity.ok(roleService.getBySites(sites));
     }
 }
