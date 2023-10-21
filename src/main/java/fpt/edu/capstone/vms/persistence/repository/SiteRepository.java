@@ -27,10 +27,7 @@ public interface SiteRepository extends GenericRepository<Site, UUID> {
         "and ((:keyword is null) " +
         "or (u.name LIKE %:keyword% " +
         "or u.address LIKE %:keyword% " +
-        "or u.district LIKE %:keyword% " +
-        "or u.province LIKE %:keyword% " +
         "or u.taxCode LIKE %:keyword% " +
-        "or u.ward LIKE %:keyword% " +
         "or u.lastUpdatedBy LIKE %:keyword% " +
         "or u.createdBy LIKE %:keyword% " +
         "or u.phoneNumber LIKE %:keyword% ))")
@@ -55,10 +52,7 @@ public interface SiteRepository extends GenericRepository<Site, UUID> {
         "and ((:keyword is null) " +
         "or (u.name LIKE %:keyword% " +
         "or u.address LIKE %:keyword% " +
-        "or u.district LIKE %:keyword% " +
-        "or u.province LIKE %:keyword% " +
         "or u.taxCode LIKE %:keyword% " +
-        "or u.ward LIKE %:keyword% " +
         "or u.lastUpdatedBy LIKE %:keyword% " +
         "or u.createdBy LIKE %:keyword% " +
         "or u.phoneNumber LIKE %:keyword% ))")

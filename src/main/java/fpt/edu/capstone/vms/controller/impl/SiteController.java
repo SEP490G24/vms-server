@@ -23,8 +23,8 @@ public class SiteController implements ISiteController {
     private final ModelMapper mapper;
 
     @Override
-    public ResponseEntity<Site> findById(UUID id) {
-        return ResponseEntity.ok(siteService.findById(id));
+    public ResponseEntity<?> findById(UUID id) {
+        return ResponseEntity.ok(mapper.map(siteService.findById(id), SiteFilterDTO.class));
     }
 
     @Override
@@ -38,7 +38,7 @@ public class SiteController implements ISiteController {
 
     @Override
     public ResponseEntity<List<?>> findAll() {
-        return ResponseEntity.ok(siteService.findAll());
+        return ResponseEntity.ok(mapper.map(siteService.findAll(), new TypeToken<List<SiteFilterDTO>>() {}.getType()));
     }
 
     @Override
@@ -95,6 +95,6 @@ public class SiteController implements ISiteController {
 
     @Override
     public ResponseEntity<List<?>> findAllByOrganizationId(String organizationId) {
-        return ResponseEntity.ok(siteService.findAllByOrganizationId(organizationId));
+        return ResponseEntity.ok(mapper.map(siteService.findAllByOrganizationId(organizationId), new TypeToken<List<SiteFilterDTO>>() {}.getType()));
     }
 }

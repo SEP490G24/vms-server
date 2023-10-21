@@ -8,16 +8,24 @@ import fpt.edu.capstone.vms.oauth2.IUserResource;
 import fpt.edu.capstone.vms.persistence.entity.Department;
 import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.entity.User;
+import fpt.edu.capstone.vms.persistence.repository.ProvinceRepository;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.UUID;
+import java.util.Objects;
 
 @Configuration
 public class ModelMapperConfig {
+
+    private final ProvinceRepository provinceRepository;
+
+    public ModelMapperConfig(ProvinceRepository provinceRepository) {
+        this.provinceRepository = provinceRepository;
+    }
+
     @Bean
     public ModelMapper modelMapper() {
         ModelMapper modelMapper = new ModelMapper();
@@ -50,7 +58,10 @@ public class ModelMapperConfig {
 
         // site => siteFilterDTO
         modelMapper.createTypeMap(Site.class, ISiteController.SiteFilterDTO.class)
-            .addMappings(mapping -> mapping.map((site -> site.getOrganization().getName()), ISiteController.SiteFilterDTO::setOrganizationName));
+            .addMappings(mapping -> mapping.map((site -> site.getOrganization().getName()), ISiteController.SiteFilterDTO::setOrganizationName))
+                    .addMappings(mapping -> mapping.map(site -> site.getProvince().getName(), ISiteController.SiteFilterDTO::setProvinceName))
+                    .addMappings(mapping -> mapping.map(site -> site.getDistrict().getName(), ISiteController.SiteFilterDTO::setDistrictName))
+                    .addMappings(mapping -> mapping.map(site -> site.getCommune().getName(), ISiteController.SiteFilterDTO::setCommuneName));
 
         return modelMapper;
     }
