@@ -25,4 +25,5 @@ public interface IRoleService {
 
     void delete(String id);
 
+    List<IRoleResource.RoleDto> getBySites(List<String> sites);
 }
