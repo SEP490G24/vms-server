@@ -2,9 +2,6 @@ package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.controller.ISiteController;
 import fpt.edu.capstone.vms.persistence.entity.Site;
-import fpt.edu.capstone.vms.persistence.repository.CommuneRepository;
-import fpt.edu.capstone.vms.persistence.repository.DistrictRepository;
-import fpt.edu.capstone.vms.persistence.repository.ProvinceRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.service.ISiteService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
