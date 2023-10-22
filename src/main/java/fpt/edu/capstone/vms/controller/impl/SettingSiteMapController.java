@@ -87,4 +87,9 @@ public class SettingSiteMapController implements ISettingSiteMapController {
         return ResponseEntity.ok(settingSiteService.getAllSettingSiteBySiteId(siteId));
     }
 
+    @Override
+    public ResponseEntity<List<?>> findAllBySiteIdAndGroupId(String siteId, Integer settingGroupId) {
+        return ResponseEntity.ok(settingSiteService.findAllBySiteIdAndGroupId(siteId, settingGroupId));
+    }
+
 }

@@ -34,7 +34,7 @@ public class Department extends AbstractBaseEntity<UUID>{
     @Column(name = "name")
     private String name;
 
-    @Column(name = "code")
+    @Column(name = "code", unique = true, updatable = false, nullable = false)
     private String code;
 
     @Column(name = "description")
