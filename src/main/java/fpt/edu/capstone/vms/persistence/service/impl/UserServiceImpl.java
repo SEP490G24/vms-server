@@ -31,7 +31,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.openxml4j.util.ZipSecureFile;
 import org.apache.poi.ss.usermodel.*;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
@@ -133,7 +132,6 @@ public class UserServiceImpl implements IUserService {
     }
 
 
-
     @Override
     public Page<IUserController.UserFilter> filter(Pageable pageable, List<String> usernames, List<Constants.UserRole> roles, LocalDateTime createdOnStart,
                                                    LocalDateTime createdOnEnd, Boolean enable, String keyword, String departmentId) {
@@ -165,7 +163,9 @@ public class UserServiceImpl implements IUserService {
     @Override
     public User createUser(IUserResource.UserDto userDto) {
         User userEntity = null;
-
+        Department department = departmentRepository.findById(userDto.getDepartmentId()).get();
+        userDto.setUsername(department.getSite().getCode().toLowerCase() + "_" + userDto.getUsername());
+        userDto.setIsCreateUserOrg(false);
         // (1) Create user on Keycloak
         String kcUserId = userResource.create(userDto);
 
@@ -173,8 +173,6 @@ public class UserServiceImpl implements IUserService {
             if (!StringUtils.isEmpty(kcUserId)) {
                 userEntity = mapper.map(userDto, User.class).setOpenid(kcUserId);
                 userEntity.setPassword(encodePassword(userEntity.getPassword()));
-                if (userEntity.getDepartmentId() == null)
-                    throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SiteId not null");
                 userRepository.save(userEntity);
             }
         } catch (Exception e) {
@@ -342,9 +340,8 @@ public class UserServiceImpl implements IUserService {
 
         } catch (CustomException e) {
             log.error("Lỗi xảy ra trong quá trình import", e);
-            return ResponseUtils.getResponseEntity(e.getErrorApp(),HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        catch (Exception e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (Exception e) {
             log.error("Lỗi xảy ra trong quá trình import", e);
             return ResponseUtils.getResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -367,6 +364,12 @@ public class UserServiceImpl implements IUserService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
 
+    }
+
+    @Override
+    public void updateRole(String username, List<String> roles) {
+        var userEntity = userRepository.findByUsername(username).orElse(null);
+        userResource.updateRole(userEntity.getOpenid(), roles);
     }
 
 

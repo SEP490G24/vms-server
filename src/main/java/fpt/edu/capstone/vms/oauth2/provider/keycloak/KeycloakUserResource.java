@@ -2,7 +2,6 @@ package fpt.edu.capstone.vms.oauth2.provider.keycloak;
 
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
-import fpt.edu.capstone.vms.util.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.keycloak.admin.client.CreatedResponseUtil;
@@ -49,7 +48,9 @@ public class KeycloakUserResource implements IUserResource {
     public String create(UserDto userDto) {
 
         Map<String, List<String>> attributes = new HashMap<>();
-        attributes.put(Constants.Claims.OrgId, List.of(SecurityUtils.getOrgId()));
+        if (userDto.getIsCreateUserOrg()) {
+            attributes.put(Constants.Claims.OrgId, List.of(userDto.getOrgId()));
+        }
 
         /* Define password credential */
         var passwordCred = new CredentialRepresentation();
@@ -64,7 +65,7 @@ public class KeycloakUserResource implements IUserResource {
         user.setEmail(userDto.getEmail());
         user.setEnabled(userDto.getEnable());
         user.setEmailVerified(false);
-
+        user.setAttributes(attributes);
         user.setCredentials(List.of(passwordCred));
 
         try (var response = usersResource.create(user)) {
@@ -72,8 +73,8 @@ public class KeycloakUserResource implements IUserResource {
             String userId = CreatedResponseUtil.getCreatedId(response);
 
             // assign role
-            RoleRepresentation roleRepresentation = rolesResource.get(userDto.getRole().toString()).toRepresentation();
-            usersResource.get(userId).roles().realmLevel().add(List.of(roleRepresentation));
+            //RoleRepresentation roleRepresentation = rolesResource.get(userDto.getRole().toString()).toRepresentation();
+            //usersResource.get(userId).roles().realmLevel().add(List.of(roleRepresentation));
 
             return userId;
         }
@@ -104,6 +105,7 @@ public class KeycloakUserResource implements IUserResource {
             modifiedUser.setCredentials(List.of(passwordCred));
         }
     }
+
     @Override
     public void changeState(String userId, boolean stateEnable) {
         RealmResource realmResource = keycloak.realm(REALM);
@@ -112,6 +114,22 @@ public class KeycloakUserResource implements IUserResource {
         modifiedUser.setEnabled(stateEnable);
 
         realmResource.users().get(userId).update(modifiedUser);
+    }
+
+    @Override
+    public void updateRole(String openId, List<String> roles) {
+        // Get the user's existing roles
+        List<RoleRepresentation> existingRoles = usersResource.get(openId).roles().realmLevel().listAll();
+
+        // Remove the old roles
+        for (RoleRepresentation existingRole : existingRoles) {
+            usersResource.get(openId).roles().realmLevel().remove(List.of(existingRole));
+        }
+        for (String role : roles
+        ) {
+            RoleRepresentation roleRepresentation = rolesResource.get(role).toRepresentation();
+            usersResource.get(openId).roles().realmLevel().add(List.of(roleRepresentation));
+        }
     }
 
 

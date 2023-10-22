@@ -51,7 +51,7 @@ public class KeycloakClientRoleResource implements IPermissionResource {
         var permissions = this.realmResource.clients().get(cId).roles().list(false);
         var permissionDtos = (List<PermissionDto>) mapper.map(permissions, new TypeToken<List<PermissionDto>>() {
         }.getType());
-        permissionDtos.forEach(PermissionDto::updateLabel);
+        //permissionDtos.forEach(PermissionDto::updateLabel);
         return permissionDtos;
     }
 

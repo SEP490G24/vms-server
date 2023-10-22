@@ -24,6 +24,15 @@ public class SettingServiceImpl extends GenericServiceImpl<Setting, Long> implem
         this.init(settingRepository);
     }
 
+    /**
+     * The `update` function in Java updates a `Setting` entity with the provided data and throws exceptions if the code
+     * already exists or if the entity or setting cannot be found.
+     *
+     * @param entity The entity parameter is an object of type Setting, which represents the updated setting information
+     * that needs to be saved.
+     * @param id The `id` parameter is the unique identifier of the `Setting` entity that needs to be updated.
+     * @return The method is returning a Setting object.
+     */
     @Override
     public Setting update(Setting entity, Long id) {
         if (!StringUtils.isEmpty(entity.getCode())) {

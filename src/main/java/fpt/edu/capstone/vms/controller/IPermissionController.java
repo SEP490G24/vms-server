@@ -24,39 +24,39 @@ public interface IPermissionController {
 
     @GetMapping("")
     @Operation(summary = "Find all module")
-    @PreAuthorize("hasRole('r:permission:find')")
+    //@PreAuthorize("hasRole('r:permission:find')")
     ResponseEntity<?> getAllModule(@QueryParam("fetchPermission") boolean fetchPermission);
 
     @GetMapping("/{mId}")
     @Operation(summary = "Find all permissions in module")
-    @PreAuthorize("hasRole('r:permission:find')")
+        //@PreAuthorize("hasRole('r:permission:find')")
     ResponseEntity<?> getAllByModuleId(@PathVariable("mId") String mId);
 
     @GetMapping("/{mId}/permission/{pId}")
     @Operation(summary = "Find permission by id and module id")
-    @PreAuthorize("hasRole('r:permission:find')")
+        //@PreAuthorize("hasRole('r:permission:find')")
     ResponseEntity<?> getByIdAndModuleId(@PathVariable("mId") String mId, @PathVariable("pId") String pId);
 
     @PostMapping("/permission/filter")
     @Operation(summary = "Filter permission")
-    @PreAuthorize("hasRole('r:permission:find')")
+        //@PreAuthorize("hasRole('r:permission:find')")
     ResponseEntity<?> filter(@RequestBody PermissionFilterPayload filterPayload);
 
     @PostMapping("/{mId}/permission")
     @Operation(summary = "Create permission")
-    @PreAuthorize("hasRole('r:permission:create')")
+        //@PreAuthorize("hasRole('r:permission:create')")
     ResponseEntity<?> create(@PathVariable("mId") String mId, @RequestBody CreatePermissionPayload payload);
 
     @PutMapping("/{mId}/permission/{pId}")
     @Operation(summary = "Update permission")
-    @PreAuthorize("hasRole('r:permission:update')")
+        //@PreAuthorize("hasRole('r:permission:update')")
     ResponseEntity<?> update(@PathVariable("mId") String mId,
                              @PathVariable("pId") String pId,
                              @RequestBody UpdatePermissionPayload payload) throws NotFoundException;
 
     @PutMapping("/{mId}/permission/attribute")
     @Operation(summary = "Update attribute permission")
-    @PreAuthorize("hasRole('r:permission:update')")
+        //@PreAuthorize("hasRole('r:permission:update')")
     ResponseEntity<?> updateAttribute(@PathVariable("mId") String mId,
                                       @RequestBody UpdateAttributePermissionPayload payload);
 

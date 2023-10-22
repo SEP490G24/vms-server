@@ -1,6 +1,9 @@
 package fpt.edu.capstone.vms.keycloak.sync.constants;
 
-import fpt.edu.capstone.vms.keycloak.sync.models.properties.*;
+import fpt.edu.capstone.vms.keycloak.sync.models.properties.KeycloakClientProperties;
+import fpt.edu.capstone.vms.keycloak.sync.models.properties.KeycloakClientScopeProperties;
+import fpt.edu.capstone.vms.keycloak.sync.models.properties.KeycloakRoleProperties;
+import fpt.edu.capstone.vms.keycloak.sync.models.properties.KeycloakUserProperties;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,7 +14,7 @@ public final class KeycloakConstants {
     public final static String REALM_ADMIN_ROLE = "REALM_ADMIN";
 
     public final static String REALM_MASTER = "master";
-    public final static String SEVER_URL = "http://localhost:9080";
+    public final static String SEVER_URL = "https://keycloak-vms.azurewebsites.net";
     public static final String CLIENT = "admin-cli";
     public final static String USERNAME = "admin";
     public final static String PASSWORD = "admin";
@@ -34,21 +37,21 @@ public final class KeycloakConstants {
         add(new KeycloakRoleProperties()
                 .setName(REALM_ADMIN_ROLE)
                 .setDescription("Realm admin role"));
-        add(new KeycloakRoleProperties()
+/*        add(new KeycloakRoleProperties()
                 .setName("STAFF")
                 .setDescription("Staff role"));
         add(new KeycloakRoleProperties()
                 .setName("ORG_ADMIN")
-                .setDescription("Organization admin role"));
+                .setDescription("Organization admin role"));*/
     }};
 
     public final static List<KeycloakClientProperties> clients = new ArrayList<>() {{
         add(new KeycloakClientProperties()
-                .setClientId(CLIENT_APP)
-                .setName("VMS Application")
-                .setSecret("7r5uiBkk4lDoXKzwt20UYWACNRxwfeZD")
-                .setBaseUrl("http://localhost:3000")
-                .setRedirectUris(Collections.singletonList("http://localhost:3000/*"))
+            .setClientId(CLIENT_APP)
+            .setName("VMS Application")
+            .setSecret("7r5uiBkk4lDoXKzwt20UYWACNRxwfeZD")
+            .setBaseUrl("https://web-vms.azurewebsites.net")
+            .setRedirectUris(Collections.singletonList("https://web-vms.azurewebsites.net/*"))
                 .setImplicitFlowEnabled(true)
                 .setServiceAccountsEnabled(true)
                 .setDefaultClientScopes(Collections.singletonList(ORG_ID)));

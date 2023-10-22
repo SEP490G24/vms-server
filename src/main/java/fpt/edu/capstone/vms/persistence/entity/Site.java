@@ -60,14 +60,29 @@ public class Site extends AbstractBaseEntity<UUID> {
     @Max(value = 10)
     private String phoneNumber;
 
-    @Column(name = "province")
-    private String province;
+    @Column(name = "province_id")
+    private Integer provinceId;
 
-    @Column(name = "district")
-    private String district;
+    @ManyToOne
+    @JoinColumn(name = "province_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JsonIgnore
+    private Province province;
 
-    @Column(name = "ward")
-    private String ward;
+    @Column(name = "district_id")
+    private Integer districtId;
+
+    @ManyToOne
+    @JoinColumn(name = "district_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JsonIgnore
+    private District district;
+
+    @Column(name = "commune_id")
+    private Integer communeId;
+
+    @ManyToOne
+    @JoinColumn(name = "commune_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JsonIgnore
+    private Commune commune;
 
     @Column(name = "address")
     private String address;
@@ -99,7 +114,7 @@ public class Site extends AbstractBaseEntity<UUID> {
         if (siteEntity.organizationId != null) this.organizationId = siteEntity.organizationId;
         if (siteEntity.phoneNumber != null) this.phoneNumber = siteEntity.phoneNumber;
         if (siteEntity.province != null) this.province = siteEntity.province;
-        if (siteEntity.ward != null) this.ward = siteEntity.ward;
+        if (siteEntity.commune != null) this.commune = siteEntity.commune;
         if (siteEntity.district != null) this.district = siteEntity.district;
         if (siteEntity.address != null) this.address = siteEntity.address;
         if (siteEntity.taxCode != null) this.taxCode = siteEntity.taxCode;

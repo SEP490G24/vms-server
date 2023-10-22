@@ -11,18 +11,15 @@ import jakarta.ws.rs.QueryParam;
 import lombok.Data;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 @RestController
@@ -84,6 +81,12 @@ public interface IUserController {
     @Operation(summary = "Change Password")
 //    @PreAuthorize("hasRole('r:user:find')")
     ResponseEntity<?> changePassword(@RequestBody ChangePasswordUserDto changePasswordUserDto);
+
+    @PutMapping("/{username}/role")
+    @Operation(summary = "Update role")
+        //@PreAuthorize("hasRole('r:role:update')")
+    ResponseEntity<?> updateRole(@PathVariable("username") String username,
+                                 @RequestBody List<String> roles);
 
     @Data
     class CreateUserInfo {
