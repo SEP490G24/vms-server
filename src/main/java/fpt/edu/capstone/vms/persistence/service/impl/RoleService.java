@@ -1,19 +1,22 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
+import fpt.edu.capstone.vms.constants.ErrorApp;
 import fpt.edu.capstone.vms.controller.IRoleController;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.oauth2.IPermissionResource;
 import fpt.edu.capstone.vms.oauth2.IRoleResource;
 import fpt.edu.capstone.vms.persistence.entity.Site;
-import fpt.edu.capstone.vms.persistence.entity.User;
+import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.repository.UserRepository;
 import fpt.edu.capstone.vms.persistence.service.IRoleService;
-import fpt.edu.capstone.vms.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 
 @Slf4j
@@ -23,6 +26,7 @@ public class RoleService implements IRoleService {
 
     private final IRoleResource roleResource;
     private final UserRepository userRepository;
+    private final SiteRepository siteRepository;
 
     @Override
     public List<IRoleResource.RoleDto> findAll() {
@@ -42,9 +46,8 @@ public class RoleService implements IRoleService {
 
     @Override
     public IRoleResource.RoleDto create(IRoleResource.RoleDto dto) {
-        String username = SecurityUtils.loginUsername();
-        User user = userRepository.findByUsername(username).orElse(null);
-        Site site = user.getDepartment().getSite();
+        Site site = siteRepository.findById(UUID.fromString(dto.getSiteId())).orElse(null);
+        if (ObjectUtils.isEmpty(site)) throw new CustomException(ErrorApp.BAD_REQUEST);
         return roleResource.create(site, dto);
     }
 

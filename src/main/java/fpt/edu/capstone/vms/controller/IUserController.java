@@ -83,7 +83,7 @@ public interface IUserController {
     ResponseEntity<?> changePassword(@RequestBody ChangePasswordUserDto changePasswordUserDto);
 
     @PutMapping("/{username}/role")
-    @Operation(summary = "Update permission")
+    @Operation(summary = "Update role")
         //@PreAuthorize("hasRole('r:role:update')")
     ResponseEntity<?> updateRole(@PathVariable("username") String username,
                                  @RequestBody List<String> roles);
