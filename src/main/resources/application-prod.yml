@@ -7,7 +7,7 @@ edu:
           provider: keycloak
           keycloak:
             realm: ${KEYCLOAK_REALM}
-            issuer-uri: http://${KEYCLOAK_HOST}/realms/${edu.fpt.capstone.vms.oauth2.keycloak.realm}
+            issuer-uri: https://${KEYCLOAK_HOST}/realms/${edu.fpt.capstone.vms.oauth2.keycloak.realm}
             jwk-set-uri: ${edu.fpt.capstone.vms.oauth2.keycloak.issuer-uri}/protocol/openid-connect/certs
             client-id: vms-api
             principal-attribute: preferred_username
