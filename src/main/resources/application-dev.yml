@@ -91,7 +91,7 @@ logging:
 
 azure:
   account:
-    name: vmsprostorage
-    key: zXF1eR1XfyuGINFS7uRsCw07Y+jvhP2zGSTRRttlzd+jnpWTsk5h+SCw614gsvAEzfAvy9Y5cvMc+AStuOfESw==
+    name: vmspersonalstorage
+    key: hKZROIDAaVrcmvtdueHdLfx3lSo0VObfxbEjzXVGxmbiU9jkpHSpZ3CzvukuVYLJK1jWHjSVH/fZ+AStYRKRdQ==
   container:
-    name: vmsfiles
+    name: vms-storage
