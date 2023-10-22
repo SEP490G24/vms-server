@@ -41,6 +41,14 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
         this.init(this.settingSiteMapRepository);
     }
 
+    /**
+     * The function creates or updates a setting-site mapping based on the provided setting and site information.
+     *
+     * @param settingSiteInfo The parameter `settingSiteInfo` is an object of type
+     * `ISettingSiteMapController.SettingSiteInfo`. It contains information related to a setting site, such as the setting
+     * ID, site ID, value, and description.
+     * @return The method is returning a `SettingSiteMap` object.
+     */
     @Override
     public SettingSiteMap createOrUpdateSettingSiteMap(ISettingSiteMapController.SettingSiteInfo settingSiteInfo) {
 
@@ -87,6 +95,13 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
         }
     }
 
+    /**
+     * The function returns a list of SettingSiteMap objects based on the given siteId.
+     *
+     * @param siteId The siteId parameter is a unique identifier for a site. It is expected to be a string representation
+     * of a UUID (Universally Unique Identifier).
+     * @return The method is returning a List of SettingSiteMap objects.
+     */
     @Override
     public List<SettingSiteMap> getAllSettingSiteBySiteId(String siteId) {
         return settingSiteMapRepository.findAllBySettingSiteMapPk_SiteId(UUID.fromString(siteId));

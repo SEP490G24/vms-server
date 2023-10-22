@@ -21,6 +21,14 @@ public class SettingGroupServiceImpl extends GenericServiceImpl<SettingGroup, Lo
         this.init(settingGroupRepository);
     }
 
+    /**
+     * The function updates a setting group entity with the provided data and returns the updated entity.
+     *
+     * @param entity The "entity" parameter is an instance of the SettingGroup class that contains the updated values for a
+     * specific setting group.
+     * @param id The "id" parameter is the unique identifier of the setting group that needs to be updated.
+     * @return The method is returning a SettingGroup object.
+     */
     @Override
     public SettingGroup update(SettingGroup entity, Long id) {
 

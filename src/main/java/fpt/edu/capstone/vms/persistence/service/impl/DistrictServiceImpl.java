@@ -18,6 +18,12 @@ public class DistrictServiceImpl extends GenericServiceImpl<District, Integer> i
         this.init(districtRepository);
     }
 
+    /**
+     * The function returns a list of districts based on the given province ID.
+     *
+     * @param provinceId The provinceId parameter is an Integer that represents the ID of a province.
+     * @return The method is returning a list of District objects.
+     */
     @Override
     public List<District> findAllByProvinceId(Integer provinceId) {
         return districtRepository.findAllByProvinceId(provinceId);

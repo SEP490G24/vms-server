@@ -43,6 +43,15 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
         this.init(siteRepository);
     }
 
+    /**
+     * The save function in this Java code checks for various conditions before saving a Site entity and throws an
+     * exception if any of the conditions are not met.
+     *
+     * @param entity The "entity" parameter is an object of type "Site" that represents the site entity to be saved. It
+     * contains various properties such as "code", "provinceId", "districtId", "communeId", etc. These properties are used
+     * to perform validation checks and set values before saving the
+     * @return The method is returning a Site object.
+     */
     @Override
     public Site save(Site entity) {
         try {
@@ -65,6 +74,14 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
         }
     }
 
+    /**
+     * The function updates a site's information and returns the updated site entity.
+     *
+     * @param updateSite The `updateSite` parameter is an object of type `ISiteController.UpdateSiteInfo`. It contains
+     * information about the site that needs to be updated, such as the code, name, and address.
+     * @param id The `id` parameter is the unique identifier of the site that needs to be updated.
+     * @return The method is returning a Site object.
+     */
     @Override
     public Site updateSite(ISiteController.UpdateSiteInfo updateSite, UUID id) {
 

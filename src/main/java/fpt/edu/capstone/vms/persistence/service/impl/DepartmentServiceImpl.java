@@ -34,6 +34,15 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
         this.init(departmentRepository);
     }
 
+    /**
+     * The function updates a department's information and returns the updated department.
+     *
+     * @param updateDepartmentInfo The updateDepartmentInfo parameter is an object that contains the updated information
+     * for a department. It likely includes properties such as code, name, description, etc.
+     * @param id The `id` parameter is a `UUID` (Universally Unique Identifier) that represents the unique identifier of
+     * the department that needs to be updated.
+     * @return The method is returning a Department object.
+     */
     @Override
     public Department update(Department updateDepartmentInfo, UUID id) {
 
@@ -50,6 +59,13 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
         return department;
     }
 
+    /**
+     * The function creates a new department if the provided department information is valid and does not already exist.
+     *
+     * @param departmentInfo The departmentInfo parameter is an object of type IDepartmentController.createDepartmentInfo.
+     * It contains information about the department that needs to be created, such as the department code and site ID.
+     * @return The method is returning a Department object.
+     */
     @Override
     @Transactional
     public Department createDepartment(IDepartmentController.createDepartmentInfo departmentInfo) {
@@ -70,6 +86,28 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
         return department;
     }
 
+    /**
+     * The function filters departments based on various criteria and returns a paginated result.
+     *
+     * @param pageable The pageable parameter is used for pagination and sorting. It allows you to specify the page number,
+     * page size, and sorting criteria for the results.
+     * @param names A list of department names to filter by.
+     * @param siteId The siteId parameter is a UUID (Universally Unique Identifier) that represents the unique identifier
+     * of a site. It is used to filter departments based on the site they belong to.
+     * @param createdOnStart The start date and time for filtering departments based on their creation date.
+     * @param createdOnEnd The "createdOnEnd" parameter is used to specify the end date and time for filtering departments
+     * based on their creation date. It is a LocalDateTime object that represents the date and time when the department was
+     * created.
+     * @param createBy The "createBy" parameter is used to filter departments based on the user who created them.
+     * @param lastUpdatedBy The "lastUpdatedBy" parameter is used to filter departments based on the user who last updated
+     * them. It is a string parameter that represents the username or ID of the user who last updated the departments.
+     * @param enable The "enable" parameter is a boolean value that indicates whether the department is enabled or
+     * disabled. If the value is true, it means the department is enabled. If the value is false, it means the department
+     * is disabled.
+     * @param keyword The "keyword" parameter is a string that can be used to search for a specific keyword in the
+     * department names or any other relevant fields.
+     * @return The method is returning a Page object containing a list of Department objects.
+     */
     @Override
     public Page<Department> filter(Pageable pageable, List<String> names, UUID siteId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, String createBy, String lastUpdatedBy, Boolean enable, String keyword) {
         return departmentRepository.filter(
@@ -84,6 +122,29 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
             keyword);
     }
 
+    /**
+     * The function filters a list of departments based on various criteria such as names, site ID, creation date, creator,
+     * last updater, enable status, and keyword.
+     *
+     * @param names A list of department names to filter by.
+     * @param siteId The siteId parameter is a unique identifier for a specific site or location. It is used to filter
+     * departments based on the site they belong to.
+     * @param createdOnStart The parameter "createdOnStart" is a LocalDateTime object that represents the start date and
+     * time for filtering departments based on their creation date.
+     * @param createdOnEnd The "createdOnEnd" parameter is used to specify the end date and time for filtering departments
+     * based on their creation date. It is a LocalDateTime object that represents the date and time in the format
+     * "yyyy-MM-dd HH:mm:ss".
+     * @param createBy The "createBy" parameter is used to filter the departments based on the user who created them. It is
+     * a string that represents the username or ID of the user who created the departments.
+     * @param lastUpdatedBy The `lastUpdatedBy` parameter is used to filter the departments based on the user who last
+     * updated them. It is a string that represents the username or ID of the user.
+     * @param enable The "enable" parameter is a boolean value that indicates whether the department is enabled or not. If
+     * it is set to true, it means that the department is enabled. If it is set to false, it means that the department is
+     * disabled.
+     * @param keyword The "keyword" parameter is used to search for departments that contain a specific keyword in their
+     * name or description.
+     * @return The method is returning a List of Department objects.
+     */
     @Override
     public List<Department> filter( List<String> names, UUID siteId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, String createBy, String lastUpdatedBy, Boolean enable, String keyword) {
         return departmentRepository.filter(

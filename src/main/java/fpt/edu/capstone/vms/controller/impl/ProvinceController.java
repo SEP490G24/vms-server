@@ -17,11 +17,23 @@ public class ProvinceController implements IProvinceController {
     private final IProvinceService provinceService;
     private final ModelMapper mapper;
 
+    /**
+     * The function returns a ResponseEntity containing a ProvinceDto object mapped from the Province object with the given
+     * id.
+     *
+     * @param id The parameter "id" is an Integer representing the unique identifier of a province.
+     * @return The method is returning a ResponseEntity object.
+     */
     @Override
     public ResponseEntity<?> findById(Integer id) {
         return ResponseEntity.ok(mapper.map(provinceService.findById(id), ProvinceDto.class));
     }
 
+    /**
+     * The function returns a ResponseEntity containing a list of ProvinceDto objects.
+     *
+     * @return The method is returning a ResponseEntity object containing a list of objects.
+     */
     @Override
     public ResponseEntity<List<?>> findAll() {
         return ResponseEntity.ok(mapper.map(provinceService.findAll(), new TypeToken<List<ProvinceDto>>() {}.getType()));

@@ -18,6 +18,12 @@ public class CommuneServiceImpl extends GenericServiceImpl<Commune, Integer> imp
         this.init(communeRepository);
     }
 
+    /**
+     * The function returns a list of communes based on the given district ID.
+     *
+     * @param districtId The districtId parameter is an Integer that represents the unique identifier of a district.
+     * @return The method is returning a list of Commune objects.
+     */
     @Override
     public List<Commune> findAllByDistrictId(Integer districtId) {
         return communeRepository.findAllByDistrictId(districtId);
