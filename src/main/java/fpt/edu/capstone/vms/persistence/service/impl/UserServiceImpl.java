@@ -163,7 +163,9 @@ public class UserServiceImpl implements IUserService {
     @Override
     public User createUser(IUserResource.UserDto userDto) {
         User userEntity = null;
-
+        Department department = departmentRepository.findById(userDto.getDepartmentId()).get();
+        userDto.setUsername(department.getSite().getCode().toLowerCase() + "_" + userDto.getUsername());
+        userDto.setIsCreateUserOrg(false);
         // (1) Create user on Keycloak
         String kcUserId = userResource.create(userDto);
 
@@ -171,8 +173,6 @@ public class UserServiceImpl implements IUserService {
             if (!StringUtils.isEmpty(kcUserId)) {
                 userEntity = mapper.map(userDto, User.class).setOpenid(kcUserId);
                 userEntity.setPassword(encodePassword(userEntity.getPassword()));
-                if (userEntity.getDepartmentId() == null)
-                    throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SiteId not null");
                 userRepository.save(userEntity);
             }
         } catch (Exception e) {

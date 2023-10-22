@@ -14,7 +14,7 @@ public final class KeycloakConstants {
     public final static String REALM_ADMIN_ROLE = "REALM_ADMIN";
 
     public final static String REALM_MASTER = "master";
-    public final static String SEVER_URL = "http://localhost:9080";
+    public final static String SEVER_URL = "https://keycloak-vms.azurewebsites.net";
     public static final String CLIENT = "admin-cli";
     public final static String USERNAME = "admin";
     public final static String PASSWORD = "admin";
@@ -37,12 +37,12 @@ public final class KeycloakConstants {
         add(new KeycloakRoleProperties()
                 .setName(REALM_ADMIN_ROLE)
                 .setDescription("Realm admin role"));
-        add(new KeycloakRoleProperties()
+/*        add(new KeycloakRoleProperties()
                 .setName("STAFF")
                 .setDescription("Staff role"));
         add(new KeycloakRoleProperties()
                 .setName("ORG_ADMIN")
-                .setDescription("Organization admin role"));
+                .setDescription("Organization admin role"));*/
     }};
 
     public final static List<KeycloakClientProperties> clients = new ArrayList<>() {{

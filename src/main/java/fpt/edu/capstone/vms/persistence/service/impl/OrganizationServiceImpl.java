@@ -1,12 +1,12 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.constants.Constants;
-import fpt.edu.capstone.vms.oauth2.IRoleResource;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
 import fpt.edu.capstone.vms.persistence.entity.Organization;
 import fpt.edu.capstone.vms.persistence.repository.OrganizationRepository;
 import fpt.edu.capstone.vms.persistence.service.IFileService;
 import fpt.edu.capstone.vms.persistence.service.IOrganizationService;
+import fpt.edu.capstone.vms.persistence.service.IRoleService;
 import fpt.edu.capstone.vms.persistence.service.IUserService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import fpt.edu.capstone.vms.util.SecurityUtils;
@@ -27,13 +27,13 @@ public class OrganizationServiceImpl extends GenericServiceImpl<Organization, UU
     private final OrganizationRepository organizationRepository;
     private final IFileService iFileService;
     private final IUserService iUserService;
-    private final IRoleResource iRoleResource;
+    private final IRoleService iRoleService;
 
-    public OrganizationServiceImpl(OrganizationRepository organizationRepository, IFileService iFileService, IUserService iUserService, IRoleResource iRoleResource) {
+    public OrganizationServiceImpl(OrganizationRepository organizationRepository, IFileService iFileService, IUserService iUserService, IRoleService iRoleService) {
         this.organizationRepository = organizationRepository;
         this.iFileService = iFileService;
         this.iUserService = iUserService;
-        this.iRoleResource = iRoleResource;
+        this.iRoleService = iRoleService;
         this.init(organizationRepository);
     }
 
@@ -61,20 +61,17 @@ public class OrganizationServiceImpl extends GenericServiceImpl<Organization, UU
         if (ObjectUtils.isEmpty(entity)) throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Object is empty");
         entity.setEnable(true);
 
+        Organization organization = organizationRepository.save(entity);
 
         //Create account admin of organization
         IUserResource.UserDto userDto = new IUserResource.UserDto();
         userDto.setUsername(entity.getCode().toLowerCase() + "_" + "admin");
         userDto.setPassword("123456aA@");
-        //Create role admin and assign for admin of organization
-
-        //IUserResource.RoleDto roleDto = new IUserResource.RoleDto();
-        //roleDto.getName(entity.getCode().toUpperCase() + "_" + "ORGAMIZATION_MANAGER");
-
+        userDto.setOrgId(organization.getId().toString());
+        userDto.setIsCreateUserOrg(true);
         iUserService.createUser(userDto);
 
-
-        return organizationRepository.save(entity);
+        return organization;
     }
 
     @Override

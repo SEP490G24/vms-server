@@ -66,6 +66,7 @@ public interface IRoleController {
 
     @Data
     class RoleBasePayload {
+        private String siteId;
         private String name;
         private Map<String, List<String>> attributes;
         private String description;
