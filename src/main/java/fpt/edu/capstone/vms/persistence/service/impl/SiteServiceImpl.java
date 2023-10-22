@@ -1,15 +1,18 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.controller.ISiteController;
+import fpt.edu.capstone.vms.persistence.entity.SettingSiteMap;
+import fpt.edu.capstone.vms.persistence.entity.SettingSiteMapPk;
 import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.repository.CommuneRepository;
 import fpt.edu.capstone.vms.persistence.repository.DistrictRepository;
 import fpt.edu.capstone.vms.persistence.repository.ProvinceRepository;
+import fpt.edu.capstone.vms.persistence.repository.SettingRepository;
+import fpt.edu.capstone.vms.persistence.repository.SettingSiteMapRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.service.ISiteService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import fpt.edu.capstone.vms.util.SecurityUtils;
-import fpt.edu.capstone.vms.util.Utils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
@@ -17,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
@@ -30,29 +34,35 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
     private final ProvinceRepository provinceRepository;
     private final DistrictRepository districtRepository;
     private final CommuneRepository communeRepository;
-    private final Utils utils;
+    private final SettingSiteMapRepository settingSiteMapRepository;
+    private final SettingRepository settingRepository;
     private final ModelMapper mapper;
 
-    public SiteServiceImpl(SiteRepository siteRepository, ProvinceRepository provinceRepository, DistrictRepository districtRepository, CommuneRepository communeRepository, Utils utils, ModelMapper mapper) {
+    public SiteServiceImpl(SiteRepository siteRepository
+        , ProvinceRepository provinceRepository
+        , DistrictRepository districtRepository
+        , CommuneRepository communeRepository
+        , SettingSiteMapRepository settingSiteMapRepository
+        , SettingRepository settingRepository, ModelMapper mapper) {
         this.siteRepository = siteRepository;
         this.provinceRepository = provinceRepository;
         this.districtRepository = districtRepository;
         this.communeRepository = communeRepository;
-        this.utils = utils;
+        this.settingSiteMapRepository = settingSiteMapRepository;
+        this.settingRepository = settingRepository;
         this.mapper = mapper;
         this.init(siteRepository);
     }
 
     /**
-     * The save function in this Java code checks for various conditions before saving a Site entity and throws an
-     * exception if any of the conditions are not met.
+     * The `save` function in Java is used to save a `Site` entity, performing various checks and validations before saving
+     * it to the database.
      *
-     * @param entity The "entity" parameter is an object of type "Site" that represents the site entity to be saved. It
-     * contains various properties such as "code", "provinceId", "districtId", "communeId", etc. These properties are used
-     * to perform validation checks and set values before saving the
+     * @param entity The `entity` parameter is an object of type `Site` that represents the site to be saved.
      * @return The method is returning a Site object.
      */
     @Override
+    @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
     public Site save(Site entity) {
         try {
             if (StringUtils.isEmpty(entity.getCode())) {
@@ -68,7 +78,9 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
             checkAddress(entity.getProvinceId(), entity.getDistrictId(), entity.getCommuneId());
             entity.setOrganizationId(UUID.fromString(SecurityUtils.getOrgId()));
             entity.setEnable(true);
-            return siteRepository.save(entity);
+            var site = siteRepository.save(entity);
+            if (!ObjectUtils.isEmpty(site)) addSettingForSite(site.getId());
+            return site;
         } catch (HttpClientErrorException e) {
             throw new HttpClientErrorException(e.getStatusCode(), e.getMessage());
         }
@@ -171,6 +183,21 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
 
         if (commune.getDistrictId() != district.getId()) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "the commune not in district please check it again");
+        }
+    }
+
+    private void addSettingForSite(UUID siteId) {
+        var settings = settingRepository.findAll();
+        if (!settings.isEmpty()) {
+            settings.forEach(o -> {
+                SettingSiteMapPk pk = new SettingSiteMapPk();
+                pk.setSiteId(siteId);
+                pk.setSettingId(o.getId());
+                SettingSiteMap settingSiteMap = new SettingSiteMap();
+                settingSiteMap.setSettingSiteMapPk(pk);
+                settingSiteMap.setStatus(true);
+                settingSiteMapRepository.save(settingSiteMap);
+            });
         }
     }
 

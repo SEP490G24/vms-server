@@ -64,6 +64,7 @@ public class Constants {
 
     public enum SettingType {
         INPUT,
-        CHECK_BOX
+        SWITCH,
+        SELECT
     }
 }

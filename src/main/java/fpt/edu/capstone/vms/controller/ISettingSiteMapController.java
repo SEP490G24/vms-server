@@ -15,7 +15,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 
 @RestController
@@ -44,6 +47,9 @@ public interface ISettingSiteMapController {
     @Operation(summary = "Find All by site id")
     ResponseEntity<List<?>> findAllBySiteId(@PathVariable String siteId);
 
+    @GetMapping("/site/groupSetting")
+    @Operation(summary = "Find All by site id and group id")
+    ResponseEntity<List<?>> findAllBySiteIdAndGroupId(String siteId, Integer settingGroupId);
     @Data
     class SettingSiteInfo {
         @NotNull
@@ -55,4 +61,23 @@ public interface ISettingSiteMapController {
         private String value;
     }
 
+    @Data
+    class SettingSiteDTO {
+        private Long settingId;
+        private UUID siteId;
+        private String code;
+        private Boolean status;
+        private String propertyValue;
+        private String defaultPropertyValue;
+        private String description;
+        private Long settingGroupId;
+        private String settingGroupName;
+        private String settingName;
+        private String type;
+        private String valueList;
+        private String createdBy;
+        private String lastUpdatedBy;
+        private Date lastUpdatedOn;
+        private Date createdOn;
+    }
 }

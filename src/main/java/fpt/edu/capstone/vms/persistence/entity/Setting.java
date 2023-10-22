@@ -55,6 +55,9 @@ public class Setting extends AbstractBaseEntity<Long> {
     @Column(name = "default_property_value", length = 500)
     private String defaultValue;
 
+    @Column(name = "value_list", length = 500)
+    private String valueList;
+
     @Column(name = "enable")
     private Boolean enable;
 

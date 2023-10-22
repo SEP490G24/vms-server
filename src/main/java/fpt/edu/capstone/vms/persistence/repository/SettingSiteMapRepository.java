@@ -9,7 +9,7 @@ import java.util.UUID;
 
 
 @Repository
-public interface SettingSiteMapRepository extends GenericRepository<SettingSiteMap, SettingSiteMapPk> {
+public interface SettingSiteMapRepository extends GenericRepository<SettingSiteMap, SettingSiteMapPk>, SettingSiteMapRepositoryCustomer {
 
     List<SettingSiteMap> findAllBySettingSiteMapPk_SiteId(UUID siteId);
 }

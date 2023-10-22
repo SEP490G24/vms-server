@@ -106,4 +106,17 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
     public List<SettingSiteMap> getAllSettingSiteBySiteId(String siteId) {
         return settingSiteMapRepository.findAllBySettingSiteMapPk_SiteId(UUID.fromString(siteId));
     }
+
+    /**
+     * The function returns a list of SettingSiteDTO objects based on the given siteId and settingGroupId.
+     *
+     * @param siteId The siteId parameter is a String that represents the unique identifier of a site. It is used to filter
+     * the results and retrieve only the setting site DTOs that belong to the specified site.
+     * @param settingGroupId The settingGroupId parameter is an Integer that represents the ID of a setting group.
+     * @return The method is returning a List of SettingSiteDTO objects.
+     */
+    @Override
+    public List<ISettingSiteMapController.SettingSiteDTO> findAllBySiteIdAndGroupId(String siteId, Integer settingGroupId) {
+        return settingSiteMapRepository.findAllBySiteIdAndGroupId(siteId, settingGroupId);
+    }
 }
