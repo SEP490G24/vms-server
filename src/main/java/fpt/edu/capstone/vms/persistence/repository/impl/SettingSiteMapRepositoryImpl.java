@@ -28,7 +28,7 @@ public class SettingSiteMapRepositoryImpl implements SettingSiteMapRepositoryCus
      * @return The method is returning a list of objects of type `ISettingSiteMapController.SettingSiteDTO`.
      */
     @Override
-    public List<ISettingSiteMapController.SettingSiteDTO> findAllBySiteIdAndGroupId(String siteId, Integer settingGroupId) {
+    public List<ISettingSiteMapController.SettingSite> findAllBySiteIdAndGroupId(String siteId, Integer settingGroupId) {
         Map<String, Object> queryParams = new HashMap<>();
         String sqlGetData = "SELECT s.setting_id, s.site_id, s.created_by, s.created_on, s.last_updated_by, s.last_updated_on," +
             " s.status, s.property_value, st.setting_group_id, st.\"type\", st.\"name\" as settingName, sg.\"name\" as groupName" +
@@ -48,9 +48,9 @@ public class SettingSiteMapRepositoryImpl implements SettingSiteMapRepositoryCus
         Query query = entityManager.createNativeQuery(sqlGetData + sqlConditional);
         queryParams.forEach(query::setParameter);
         List<Object[]> queryResult = query.getResultList();
-        List<ISettingSiteMapController.SettingSiteDTO> listData = new ArrayList<>();
+        List<ISettingSiteMapController.SettingSite> listData = new ArrayList<>();
         for (Object[] object : queryResult) {
-            ISettingSiteMapController.SettingSiteDTO settingSiteDTO = new ISettingSiteMapController.SettingSiteDTO();
+            ISettingSiteMapController.SettingSite settingSiteDTO = new ISettingSiteMapController.SettingSite();
             settingSiteDTO.setSettingId((Long) object[0]);
             settingSiteDTO.setSiteId((UUID) object[1]);
             settingSiteDTO.setCreatedBy((String) object[2]);

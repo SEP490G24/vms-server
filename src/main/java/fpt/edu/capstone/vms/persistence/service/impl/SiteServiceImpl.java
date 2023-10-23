@@ -79,7 +79,7 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
             entity.setOrganizationId(UUID.fromString(SecurityUtils.getOrgId()));
             entity.setEnable(true);
             var site = siteRepository.save(entity);
-            if (!ObjectUtils.isEmpty(site)) addSettingForSite(site.getId());
+//            if (!ObjectUtils.isEmpty(site)) addSettingForSite(site.getId());
             return site;
         } catch (HttpClientErrorException e) {
             throw new HttpClientErrorException(e.getStatusCode(), e.getMessage());

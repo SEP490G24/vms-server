@@ -3,7 +3,6 @@ package fpt.edu.capstone.vms.persistence.service.impl;
 import fpt.edu.capstone.vms.controller.ISettingSiteMapController;
 import fpt.edu.capstone.vms.persistence.entity.SettingSiteMap;
 import fpt.edu.capstone.vms.persistence.entity.SettingSiteMapPk;
-import fpt.edu.capstone.vms.persistence.entity.User;
 import fpt.edu.capstone.vms.persistence.repository.SettingRepository;
 import fpt.edu.capstone.vms.persistence.repository.SettingSiteMapRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
@@ -18,8 +17,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -107,16 +108,31 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
         return settingSiteMapRepository.findAllBySettingSiteMapPk_SiteId(UUID.fromString(siteId));
     }
 
+
     /**
-     * The function returns a list of SettingSiteDTO objects based on the given siteId and settingGroupId.
+     * The function retrieves a list of SettingSiteDTO objects based on the provided siteId and settingGroupId.
      *
-     * @param siteId The siteId parameter is a String that represents the unique identifier of a site. It is used to filter
-     * the results and retrieve only the setting site DTOs that belong to the specified site.
+     * @param siteId The siteId parameter is a String that represents the ID of a site.
      * @param settingGroupId The settingGroupId parameter is an Integer that represents the ID of a setting group.
-     * @return The method is returning a List of SettingSiteDTO objects.
+     * @return The method is returning a list of `ISettingSiteMapController.SettingSiteDTO` objects.
      */
     @Override
-    public List<ISettingSiteMapController.SettingSiteDTO> findAllBySiteIdAndGroupId(String siteId, Integer settingGroupId) {
-        return settingSiteMapRepository.findAllBySiteIdAndGroupId(siteId, settingGroupId);
+    public ISettingSiteMapController.SettingSiteDTO findAllBySiteIdAndGroupId(String siteId, Integer settingGroupId) {
+        var settingSites = settingSiteMapRepository.findAllBySiteIdAndGroupId(siteId, settingGroupId);
+        ISettingSiteMapController.SettingSiteDTO settingSiteDTO = new ISettingSiteMapController.SettingSiteDTO();
+        if (!settingSites.isEmpty()) {
+            settingSiteDTO.setSiteId(siteId);
+            settingSiteDTO.setSettingGroupId(Long.valueOf(settingGroupId));
+            Map<String, String> setting = new HashMap<>();
+            settingSites.forEach(o -> {
+                if (StringUtils.isEmpty(o.getPropertyValue())) {
+                    setting.put(o.getCode(), o.getDefaultPropertyValue());
+                } else {
+                    setting.put(o.getCode(), o.getPropertyValue());
+                }
+            });
+            settingSiteDTO.setSettings(setting);
+        }
+        return settingSiteDTO;
     }
 }
