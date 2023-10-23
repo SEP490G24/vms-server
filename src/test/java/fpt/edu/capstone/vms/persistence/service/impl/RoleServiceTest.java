@@ -1,6 +1,7 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.controller.IRoleController;
+import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.oauth2.IRoleResource;
 import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
@@ -16,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -48,83 +50,137 @@ class RoleServiceTest {
         IRoleResource.RoleDto role2 = new IRoleResource.RoleDto();
         role2.setName("ROLE_USER");
         List<IRoleResource.RoleDto> mockRoles = Arrays.asList(role1, role2);
-        when(roleResource.findAll()).thenReturn(mockRoles);
 
         //when
+        when(roleResource.findAll()).thenReturn(mockRoles);
         List<IRoleResource.RoleDto> roles = roleService.findAll();
 
         //then
-        assertEquals(2, roles.size()); // Check that the list has 2 roles
-        assertEquals("ROLE_ADMIN", roles.get(0).getName()); // Check the first role's name
-        assertEquals("ROLE_USER", roles.get(1).getName()); // Check the second role's name
+        assertEquals(2, roles.size());
+        assertEquals("ROLE_ADMIN", roles.get(0).getName());
+        assertEquals("ROLE_USER", roles.get(1).getName());
         assertNotNull(roles);
         assertFalse(roles.isEmpty());
 
-        // Verify that the roleRepository's findAll method was called
+        // Verify
         Mockito.verify(roleResource, Mockito.times(1)).findAll();
-
     }
 
 
     @Test
-    void filter() {
-        // Mock data
+    @DisplayName("given roleBasePayload, when filter role, then roles are retrieved")
+    void whenFilterRoles_ThenRolesRetrieved() {
+        // given
         IRoleController.RoleBasePayload roleBasePayload = new IRoleController.RoleBasePayload();
         roleBasePayload.setName("MANAGER");
-
         IRoleResource.RoleDto role1 = new IRoleResource.RoleDto();
         role1.setName("ORG_MANAGER");
         IRoleResource.RoleDto role2 = new IRoleResource.RoleDto();
         role2.setName("SITE_MANAGER");
         List<IRoleResource.RoleDto> mockRoles = Arrays.asList(role1, role2);
 
-        // Mock behavior of the roleRepository
+        // then
         when(roleResource.filter(roleBasePayload)).thenReturn(mockRoles);
-
-        // Call the service method
         List<IRoleResource.RoleDto> roles = roleService.filter(roleBasePayload);
 
         // Assert the result
-        assertEquals(2, roles.size()); // Check that the list has 2 roles
-        assertEquals("ORG_MANAGER", roles.get(0).getName()); // Check the first role's name
-        assertEquals("SITE_MANAGER", roles.get(1).getName()); // Check the second role's name
+        assertEquals(2, roles.size());
+        assertEquals("ORG_MANAGER", roles.get(0).getName());
+        assertEquals("SITE_MANAGER", roles.get(1).getName());
 
-        // Verify that the roleRepository's findAll method was called
+        // Verify
         Mockito.verify(roleResource, Mockito.times(1)).filter(roleBasePayload);
     }
 
     @Test
-    @DisplayName("given Author id, when delete non existing Author, then exception is thrown")
-    void givenAuthorId_whenDeleteNonExistingAuthor_ThenExceptionThrown() {
+    @DisplayName("given role id, when find existing role, then role are retrieved")
+    void givenRoleId_whenFindExistingRole_ThenRoleRetrieved() {
 
         //given
-        String nonExistingAuthorId = "A";
-        String errorMsg = "Author Not Found : " + nonExistingAuthorId;
-        when(roleResource.findById(nonExistingAuthorId)).thenThrow(new EntityNotFoundException(errorMsg));
+        String existingRoleId = "123";
+        IRoleResource.RoleDto roleDto = new IRoleResource.RoleDto();
+        roleDto.setName("Test123");
 
         //when
-        EntityNotFoundException throwException = assertThrows(EntityNotFoundException.class, () -> roleService.findById(nonExistingAuthorId));
+        when(roleResource.findById(existingRoleId)).thenReturn(roleDto);
+        IRoleResource.RoleDto role = roleService.findById(existingRoleId);
+
+        // then
+        assertEquals("Test123", role.getName());
+        assertNotNull(role.getName());
+    }
+
+    @Test
+    @DisplayName("given role id, when find non existing role, then exception is thrown")
+    void givenRoleId_whenFindNonExistingRole_ThenExceptionThrown() {
+
+        //given
+        String nonExistingRoleId = "A";
+        String errorMsg = "Role Not Found : " + nonExistingRoleId;
+        when(roleResource.findById(nonExistingRoleId)).thenThrow(new EntityNotFoundException(errorMsg));
+
+        //when
+        EntityNotFoundException throwException = assertThrows(EntityNotFoundException.class, () -> roleService.findById(nonExistingRoleId));
+
+        // then
+        assertEquals(errorMsg, throwException.getMessage());
+    }
+
+
+    @Test
+    @DisplayName("given role data, when create new Role, then Role id is returned")
+    void givenRoleData_whenCreateRole_ThenRoleReturned() {
+
+        //given
+        IRoleResource.RoleDto roleDto = new IRoleResource.RoleDto();
+        roleDto.setName("Test");
+        roleDto.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        Site site = new Site();
+        site.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+
+        //when
+        when(roleResource.create(site, roleDto)).thenReturn(roleDto);
+        when(siteRepository.findById(site.getId())).thenReturn(Optional.of(site));
+
+        IRoleResource.RoleDto role = roleService.create(roleDto);
+
+        //then
+        assertEquals("Test", role.getName());
+    }
+
+    @Test
+    @DisplayName("given Role incomplete data, when create new Role, then exception is thrown")
+    void givenAdIncompleteData_whenCreateAd_ThenExceptionIsThrown() {
+
+        //given
+        IRoleResource.RoleDto roleDto = new IRoleResource.RoleDto();
+        Site site = new Site();
+        site.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+        String errorMsg = "Unable to save an incomplete entity : " + roleDto;
+
+        //when
+        when(roleResource.create(site, roleDto)).thenThrow(new RuntimeException(errorMsg));
+        RuntimeException throwException = assertThrows(RuntimeException.class, () -> roleService.create(roleDto));
 
         // then
         assertEquals(errorMsg, throwException.getMessage());
     }
 
     @Test
-    @DisplayName("given Author data, when create new Author, then Author id is returned")
-    void givenAuthorData_whenCreateAuthor_ThenAuthorIdReturned() {
+    @DisplayName("given role id, when update non existing role, then exception is thrown")
+    void givenRoleId_whenUpdateNonExistingRole_ThenExceptionThrown() throws NotFoundException {
 
         //given
-        IRoleResource.RoleDto authorDto1 = new IRoleResource.RoleDto();
-        authorDto1.setName("Test");
-        authorDto1.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
-        Site site = new Site();
-        site.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+        String nonExistingRoleId = "A";
+        IRoleResource.RoleDto roleDto = new IRoleResource.RoleDto();
+        roleDto.setName("Test");
+        String errorMsg = "Role Not Found : " + nonExistingRoleId;
+        when(roleResource.update(nonExistingRoleId, roleDto)).thenThrow(new EntityNotFoundException(errorMsg));
 
         //when
-        when(roleResource.create(site, authorDto1)).thenReturn(authorDto1);
-        IRoleResource.RoleDto authorId1 = roleService.create(authorDto1);
+        EntityNotFoundException throwException = assertThrows(EntityNotFoundException.class, () -> roleService.update(nonExistingRoleId, roleDto));
 
-        //then
-        assertEquals("te", authorId1.getName());
+        // then
+        assertEquals(errorMsg, throwException.getMessage());
     }
 }

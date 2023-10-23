@@ -7,7 +7,7 @@ edu:
           provider: keycloak
           keycloak:
             realm: vms
-            issuer-uri: http://localhost:9080/realms/${edu.fpt.capstone.vms.oauth2.keycloak.realm}
+            issuer-uri: https://keycloak-vms.azurewebsites.net/realms/${edu.fpt.capstone.vms.oauth2.keycloak.realm}
             jwk-set-uri: ${edu.fpt.capstone.vms.oauth2.keycloak.issuer-uri}/protocol/openid-connect/certs
             client-id: vms-api
             principal-attribute: preferred_username
@@ -40,7 +40,7 @@ spring:
     name: vms-service
   datasource:
     driver-class-name: org.postgresql.Driver
-    url:  jdbc:postgresql://vms-db.postgres.database.azure.com:5432/vms-db
+    url: jdbc:postgresql://vms-db.postgres.database.azure.com:5432/vms-db
     username: vms
     password: Password123
   jpa:
