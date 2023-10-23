@@ -65,7 +65,7 @@ public interface IUserController {
 //    @PreAuthorize("hasRole('r:user:sync')")
     ResponseEntity<?> sync();
 
-    @GetMapping("/export")
+    @PostMapping("/export")
     @Operation(summary = "Export list of user to excel")
     ResponseEntity<?> export(UserFilter userFilter);
 
