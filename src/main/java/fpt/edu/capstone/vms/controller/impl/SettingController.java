@@ -56,8 +56,9 @@ public class SettingController implements ISettingController {
      * @return The method is returning a ResponseEntity object containing a List of unknown type.
      */
     @Override
-    public ResponseEntity<List<?>> findAll() {
-        return ResponseEntity.ok(settingService.findAll());
+    public ResponseEntity<List<?>> findAll(Integer groupId) {
+        return groupId == null ?
+             ResponseEntity.ok(settingService.findAll()) : ResponseEntity.ok(settingService.findAllByGroupId(groupId))  ;
     }
 
     /**

@@ -4,6 +4,7 @@ import fpt.edu.capstone.vms.controller.IDepartmentController;
 import fpt.edu.capstone.vms.persistence.entity.Department;
 import fpt.edu.capstone.vms.persistence.repository.DepartmentRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 
@@ -44,7 +45,8 @@ class DepartmentServiceImplTest {
     }
 
     @Test
-    void testSaveWithNullCode() {
+    @DisplayName("given incomplete data, when department with null code, then exception is thrown")
+    void givenDepartment_WhenSaveWithNullCode_ThenThrowException() {
         IDepartmentController.createDepartmentInfo departmentInfo = new IDepartmentController.createDepartmentInfo();
         departmentInfo.setCode(null);
 
@@ -52,7 +54,8 @@ class DepartmentServiceImplTest {
     }
 
     @Test
-    void testSaveWithExistingCode() {
+    @DisplayName("given incomplete data, when department with existing siteId, then exception is thrown")
+    void givenDepartment_WhenSaveWithExistingCode_ThenThrowException() {
         IDepartmentController.createDepartmentInfo departmentInfo = new IDepartmentController.createDepartmentInfo();
         departmentInfo.setCode("existingCode");
 
@@ -62,14 +65,16 @@ class DepartmentServiceImplTest {
     }
 
     @Test
-    void testSaveWithNullObject() {
+    @DisplayName("given incomplete data, when department with null object, then exception is thrown")
+    void givenDepartment_WhenSaveWithNullObject_ThenThrowException() {
         IDepartmentController.createDepartmentInfo departmentInfo = null;
 
         assertThrows(NullPointerException.class, () -> departmentService.createDepartment(departmentInfo));
     }
 
     @Test
-    void testSaveWithNullSiteId() {
+    @DisplayName("given incomplete data, when department with null siteId, then exception is thrown")
+    void givenDepartment_WhenSaveWithNullSiteId_ThenThrowException() {
         IDepartmentController.createDepartmentInfo departmentInfo = new IDepartmentController.createDepartmentInfo();
         departmentInfo.setCode("validCode");
         departmentInfo.setSiteId(null);
@@ -78,7 +83,8 @@ class DepartmentServiceImplTest {
     }
 
     @Test
-    void testSaveValidDepartment() {
+    @DisplayName("given incomplete data, when create new department, then department is save")
+    void givenDepartment_WhenSaveValidDepartment_ThenCreateNewDepartment() {
         UUID siteId = UUID.randomUUID();
         IDepartmentController.createDepartmentInfo departmentInfo = new IDepartmentController.createDepartmentInfo();
         departmentInfo.setCode(siteId.toString());
@@ -99,7 +105,8 @@ class DepartmentServiceImplTest {
     }
 
     @Test
-    void testUpdateWithExistingCode() {
+    @DisplayName("given incomplete data, when update department with existing code, then exception is thrown")
+    void givenDepartmentId_WhenUpdateWithExistingCode_ThenThrowException() {
         UUID id = UUID.randomUUID();
         Department updateDepartmentInfo = new Department();
         updateDepartmentInfo.setCode("existingCode");
@@ -110,7 +117,8 @@ class DepartmentServiceImplTest {
     }
 
     @Test
-    void testUpdateWithNonExistingDepartment() {
+    @DisplayName("given incomplete data, when update department with non existing department, then exception is thrown")
+    void givenDepartmentId_WhenUpdateWithNonExistingDepartment_ThenThrowException() {
         UUID id = UUID.randomUUID();
         Department updateDepartmentInfo = new Department();
         updateDepartmentInfo.setCode("newCode");
@@ -122,7 +130,7 @@ class DepartmentServiceImplTest {
 
 
     @Test
-    void testUpdateValidDepartment() {
+    void givenDepartmentId_WhenUpdateValidDepartment_ThenUpdateDepartment() {
         UUID id = UUID.randomUUID();
         Department updateDepartmentInfo = new Department();
         updateDepartmentInfo.setCode("newCode");

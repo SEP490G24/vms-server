@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -40,7 +41,7 @@ public interface ISettingController {
 
     @GetMapping
     @Operation(summary = "Get all")
-    ResponseEntity<List<?>> findAll();
+    ResponseEntity<List<?>> findAll(@RequestParam Integer groupId);
 
     @PostMapping()
     @Operation(summary = "Create new agent")
@@ -73,4 +74,10 @@ public interface ISettingController {
         private Boolean enable;
         private Long groupId;
     }
+
+    @Data
+    class GroupIdDto {
+        private Long groupId;
+    }
+
 }
