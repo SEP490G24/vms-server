@@ -12,6 +12,7 @@ import lombok.Data;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,22 +27,22 @@ import java.util.UUID;
 @Tag(name = "Account Service")
 @RequestMapping("/api/v1/user")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
-////@PreAuthorize("isAuthenticated()")
+@PreAuthorize("isAuthenticated()")
 public interface IUserController {
 
     @PostMapping("/filter")
     @Operation(summary = "Filter")
-//    @PreAuthorize("hasRole('r:user:find')")
+    @PreAuthorize("hasRole('r:user:find')")
     ResponseEntity<?> filter(@RequestBody @Valid UserFilter usernames, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
     @PostMapping("")
     @Operation(summary = "Create new user")
-    //@PreAuthorize("hasRole('r:user:create')")
+    @PreAuthorize("hasRole('r:user:create')")
     ResponseEntity<?> create(@RequestBody @Valid CreateUserInfo userInfo);
 
     @PutMapping("/{username}")
     @Operation(summary = "Update user")
-//    @PreAuthorize("hasRole('r:user:update')")
+    @PreAuthorize("hasRole('r:user:update')")
     ResponseEntity<?> update(@PathVariable("username") String username, @RequestBody @Valid UpdateUserInfo userInfo) throws NotFoundException;
 
     @PutMapping("/profile")
@@ -52,39 +53,33 @@ public interface IUserController {
     @Operation(summary = "Update my state")
     ResponseEntity<?> updateState(@RequestBody @Valid UpdateState updateState);
 
-    @GetMapping("/handle-auth-success")
-    @Operation(summary = "Handle event login success")
-    ResponseEntity<?> handleAuthSuccess();
-
     @GetMapping("/profile")
     @Operation(summary = "View my profile")
     ResponseEntity<?> viewMyProfile();
 
-    @GetMapping("/sync")
-    @Operation(summary = "Sync account between keycloak & database")
-//    @PreAuthorize("hasRole('r:user:sync')")
-    ResponseEntity<?> sync();
-
-    @GetMapping("/export")
+    @PostMapping("/export")
     @Operation(summary = "Export list of user to excel")
+    @PreAuthorize("hasRole('r:user:export')")
     ResponseEntity<?> export(UserFilter userFilter);
 
     @GetMapping("/import")
     @Operation(summary = "download template import user")
+    @PreAuthorize("hasRole('r:user:import')")
     ResponseEntity<ByteArrayResource> downloadExcel() throws IOException;
 
     @PostMapping("/import")
     @Operation(summary = "Import list of user use excel")
+    @PreAuthorize("hasRole('r:user:import')")
     ResponseEntity<Object> importUser(@RequestBody MultipartFile file);
 
     @PostMapping("/change-password")
     @Operation(summary = "Change Password")
-//    @PreAuthorize("hasRole('r:user:find')")
+    @PreAuthorize("hasRole('r:user:find')")
     ResponseEntity<?> changePassword(@RequestBody ChangePasswordUserDto changePasswordUserDto);
 
     @PutMapping("/{username}/role")
     @Operation(summary = "Update role")
-        //@PreAuthorize("hasRole('r:role:update')")
+    @PreAuthorize("hasRole('r:role:update')")
     ResponseEntity<?> updateRole(@PathVariable("username") String username,
                                  @RequestBody List<String> roles);
 

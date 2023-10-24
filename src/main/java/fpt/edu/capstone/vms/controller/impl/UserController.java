@@ -86,23 +86,11 @@ public class UserController implements IUserController {
     }
 
     @Override
-    public ResponseEntity<?> handleAuthSuccess() {
-        String username = SecurityUtils.loginUsername();
-        userService.handleAuthSuccess(username);
-        return ResponseEntity.ok().build();
-    }
-
-    @Override
     public ResponseEntity<?> viewMyProfile() {
         String username = SecurityUtils.loginUsername();
         return ResponseEntity.ok(userService.findByUsername(username));
     }
 
-    @Override
-    public ResponseEntity<?> sync() {
-        userService.synAccountFromKeycloak();
-        return ResponseEntity.ok().build();
-    }
     @Override
     public ResponseEntity<?> export(UserFilter userFilter) {
         HttpHeaders headers = new HttpHeaders();

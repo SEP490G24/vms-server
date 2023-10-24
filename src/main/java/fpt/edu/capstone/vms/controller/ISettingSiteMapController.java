@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,34 +23,42 @@ import java.util.UUID;
 
 
 @RestController
-@Tag(name = "Setting Site Service")
+@Tag(name = "Setting Site Value Service")
 @RequestMapping("/api/v1/settingSiteMap")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
+@PreAuthorize("isAuthenticated()")
 public interface ISettingSiteMapController {
 
     @GetMapping("/{siteId}/{settingId}")
     @Operation(summary = "Find by id")
+    @PreAuthorize("hasRole('r:setting-site:find')")
     ResponseEntity<?> findById(@PathVariable String siteId, @PathVariable Long settingId);
 
     @DeleteMapping("/{siteId}/{settingId}")
     @Operation(summary = "Delete")
+    @PreAuthorize("hasRole('r:setting-site:delete')")
     ResponseEntity<?> delete(@PathVariable String siteId, @PathVariable Long settingId);
 
-    @PostMapping ()
+    @PostMapping()
     @Operation(summary = "Create or Update setting site")
-        //    @PreAuthorize("hasRole('r:user:create')")
+    @PreAuthorize("hasRole('r:setting-site:create')")
     ResponseEntity<?> createOrUpdateSettingSiteMap(@RequestBody @Valid SettingSiteInfo updateSettingSiteInfo);
+
     @GetMapping
     @Operation(summary = "Get all")
+    @PreAuthorize("hasRole('r:setting-site:find')")
     ResponseEntity<List<?>> findAll();
 
     @GetMapping("/{siteId}")
     @Operation(summary = "Find All by site id")
+    @PreAuthorize("hasRole('r:setting-site:find')")
     ResponseEntity<List<?>> findAllBySiteId(@PathVariable String siteId);
 
     @GetMapping("/site/groupSetting")
     @Operation(summary = "Find All by site id and group id")
+    @PreAuthorize("hasRole('r:setting-site:find')")
     ResponseEntity<?> findAllBySiteIdAndGroupId(String siteId, Integer settingGroupId);
+
     @Data
     class SettingSiteInfo {
         @NotNull

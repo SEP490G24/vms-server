@@ -12,6 +12,5 @@ import lombok.NoArgsConstructor;
 public class KeycloakRoleExtractConfig {
     private String startWith;
     private String endWith;
-    private String module;
     private String cleanup;
 }

@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -18,33 +19,37 @@ import java.util.UUID;
 @Tag(name = "Organization Service")
 @RequestMapping("/api/v1/organization")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
+@PreAuthorize("isAuthenticated()")
 public interface IOrganizationController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Find by id")
+    @PreAuthorize("hasRole('r:organization:find')")
     ResponseEntity<?> findById(@PathVariable UUID id);
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete")
+    @Operation(summary = "Delete organization")
+    @PreAuthorize("hasRole('r:organization:delete')")
     ResponseEntity<?> delete(@PathVariable UUID id);
 
     @GetMapping
-    @Operation(summary = "Get all")
+    @Operation(summary = "Get all organization")
+    @PreAuthorize("hasRole('r:organization:find')")
     ResponseEntity<List<?>> findAll();
 
     @PostMapping()
     @Operation(summary = "Create new organization")
-//    @PreAuthorize("hasRole('r:user:create')")
+    @PreAuthorize("hasRole('r:organization:create')")
     ResponseEntity<?> createOrganization(@RequestBody @Valid CreateOrganizationInfo organizationInfo);
 
     @PatchMapping("/{id}")
     @Operation(summary = "Update organization")
-//    @PreAuthorize("hasRole('r:user:create')")
+    @PreAuthorize("hasRole('r:organization:update')")
     ResponseEntity<?> updateOrganization(@RequestBody @Valid UpdateOrganizationInfo organizationInfo, @PathVariable UUID id);
 
     @PostMapping("/filter")
-    @Operation(summary = "Filter")
-//    @PreAuthorize("hasRole('r:user:find')")
+    @Operation(summary = "Filter organization")
+    @PreAuthorize("hasRole('r:organization:find')")
     ResponseEntity<?> filter(@RequestBody OrganizationFilter organizationFilter);
 
     @Data

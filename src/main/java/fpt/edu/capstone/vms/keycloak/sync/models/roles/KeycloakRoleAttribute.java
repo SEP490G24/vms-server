@@ -11,6 +11,5 @@ import lombok.experimental.FieldDefaults;
 public class KeycloakRoleAttribute {
     String name;
     String feature;
-    String module;
     String description;
 }
