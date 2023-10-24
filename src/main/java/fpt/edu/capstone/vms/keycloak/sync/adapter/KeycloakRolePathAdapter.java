@@ -22,7 +22,7 @@ public class KeycloakRolePathAdapter extends KeycloakRoleExtractResults {
         Map<String, Map<String, KeycloakRoleAttribute>> roles = new HashMap<>();
         /* Convert role string to roles map details */
         rolePaths.forEach(role -> {
-            roles.put(role, KeycloakRoleMapper.convert2RoleMap(role, this.module));
+            roles.put(role, KeycloakRoleMapper.convert2RoleMap(role));
         });
         return roles;
     }

@@ -1,7 +1,9 @@
 package fpt.edu.capstone.vms.oauth2;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import fpt.edu.capstone.vms.exception.NotFoundException;
+import fpt.edu.capstone.vms.keycloak.sync.models.roles.RoleAttributes;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -89,20 +91,25 @@ public interface IPermissionResource {
         private String id;
         private String name;
         private String clientId;
+        private String group;
         private Map<String, List<String>> attributes;
         private Map<String, Map<String, String>> label = new HashMap<>();
 
-        public PermissionDto updateLabel() {
+        public PermissionDto initMetadata() {
+            this.setGroup(attributes.get(RoleAttributes.GROUP.getValue()).get(0));
+
             var label = this.getAttributes()
-                    .entrySet().stream().collect(groupingBy((entry) -> entry.getKey().split(":")[1]))
-                    .entrySet().stream().collect(Collectors.toMap(
-                            Map.Entry::getKey,
-                            (entry) -> entry.getValue().stream()
-                                    .collect(Collectors.toMap(
-                                            (attribute) -> attribute.getKey().split(":")[0],
-                                            (attribute) -> attribute.getValue().get(0))
-                                    )
-                    ));
+                .entrySet().stream()
+                .filter((attribute) -> attribute.getKey().contains(":"))
+                .collect(groupingBy((entry) -> entry.getKey().split(":")[1]))
+                .entrySet().stream().collect(Collectors.toMap(
+                    Map.Entry::getKey,
+                    (entry) -> entry.getValue().stream()
+                        .collect(Collectors.toMap(
+                            (attribute) -> attribute.getKey().split(":")[0],
+                            (attribute) -> attribute.getValue().get(0))
+                        )
+                ));
             this.setLabel(label);
             return this;
         }

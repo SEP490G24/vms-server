@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.Data;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -16,23 +17,27 @@ import java.util.UUID;
 @Tag(name = "Ticket Service")
 @RequestMapping("/api/v1/ticket")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
+@PreAuthorize("isAuthenticated()")
 public interface ITicketController {
 
     @GetMapping("/{id}")
-    @Operation(summary = "Find by id")
+    @Operation(summary = "Find by id ticket")
+    @PreAuthorize("hasRole('r:ticket:find')")
     ResponseEntity<?> findById(@PathVariable UUID id);
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete")
+    @Operation(summary = "Delete ticket")
+    @PreAuthorize("hasRole('r:ticket:delete')")
     ResponseEntity<?> delete(@PathVariable UUID id);
 
     @GetMapping
-    @Operation(summary = "Get all")
+    @Operation(summary = "Get all ticket")
+    @PreAuthorize("hasRole('r:ticket:find')")
     ResponseEntity<List<?>> findAll();
 
     @PostMapping()
-    @Operation(summary = "Create new agent")
-//    @PreAuthorize("hasRole('r:user:create')")
+    @Operation(summary = "Create new ticket")
+    @PreAuthorize("hasRole('r:ticket:create')")
     ResponseEntity<?> createTicket(@RequestBody @Valid createTicketInfo ticketInfo);
 
     @Data

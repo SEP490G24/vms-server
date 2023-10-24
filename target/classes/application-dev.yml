@@ -14,7 +14,7 @@ edu:
             credentials-secret: uq9MroK6qI2gs77wEIKG6ZroKCnzgZMt
             admin-username: admin
             admin-password: admin
-            ignore-default-roles: default-roles-${com.saltlux.livechat.oauth2.keycloak.realm},offline_access,uma_authorization
+            ignore-default-roles: default-roles-${edu.fpt.capstone.vms.oauth2.keycloak.realm},offline_access,uma_authorization
 
 management:
   endpoint:
