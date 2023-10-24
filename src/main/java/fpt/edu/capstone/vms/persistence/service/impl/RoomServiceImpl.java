@@ -78,7 +78,7 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
     }
 
     @Override
-    public List<Room> finAllBySiteId(String siteId) {
-        return null;
+    public List<Room> finAllBySiteId(UUID siteId) {
+        return roomRepository.findAllBySiteIdAndEnableIsTrue(siteId);
     }
 }

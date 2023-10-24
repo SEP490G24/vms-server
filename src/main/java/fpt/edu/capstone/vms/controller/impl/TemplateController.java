@@ -1,9 +1,9 @@
 package fpt.edu.capstone.vms.controller.impl;
 
-import fpt.edu.capstone.vms.controller.IRoomController;
+import fpt.edu.capstone.vms.controller.ITemplateController;
 import fpt.edu.capstone.vms.exception.HttpClientResponse;
-import fpt.edu.capstone.vms.persistence.entity.Room;
-import fpt.edu.capstone.vms.persistence.service.IRoomService;
+import fpt.edu.capstone.vms.persistence.entity.Template;
+import fpt.edu.capstone.vms.persistence.service.ITemplateService;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
@@ -18,29 +18,29 @@ import java.util.UUID;
 
 @RestController
 @AllArgsConstructor
-public class RoomController implements IRoomController {
-    private final IRoomService roomService;
+public class TemplateController implements ITemplateController {
+    private final ITemplateService templateService;
     private final ModelMapper mapper;
 
     @Override
-    public ResponseEntity<Room> findById(UUID id) {
-        return ResponseEntity.ok(roomService.findById(id));
+    public ResponseEntity<Template> findById(UUID id) {
+        return ResponseEntity.ok(templateService.findById(id));
     }
 
     @Override
-    public ResponseEntity<Room> delete(UUID id) {
-        return roomService.delete(id);
+    public ResponseEntity<Template> delete(UUID id) {
+        return templateService.delete(id);
     }
 
     @Override
     public ResponseEntity<List<?>> findAll() {
-        return ResponseEntity.ok(roomService.findAll());
+        return ResponseEntity.ok(templateService.findAll());
     }
 
     @Override
-    public ResponseEntity<?> create(RoomDto roomDto) {
+    public ResponseEntity<?> create(TemplateDto templateDto) {
         try {
-            var room = roomService.create(roomDto);
+            var room = templateService.create(templateDto);
             return ResponseEntity.ok(room);
         } catch (HttpClientErrorException e) {
             return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
@@ -48,18 +48,18 @@ public class RoomController implements IRoomController {
     }
 
     @Override
-    public ResponseEntity<?> update(RoomDto roomDto, UUID id) {
+    public ResponseEntity<?> update(TemplateDto templateDto, UUID id) {
         try {
-            var room = roomService.update(mapper.map(roomDto, Room.class), id);
-            return ResponseEntity.ok(room);
+            var template = templateService.update(mapper.map(templateDto, Template.class), id);
+            return ResponseEntity.ok(template);
         } catch (HttpClientErrorException e) {
             return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
         }
     }
 
     @Override
-    public ResponseEntity<?> filter(RoomFilterDTO filter, boolean isPageable, Pageable pageable) {
-        var roomEntity = roomService.filter(
+    public ResponseEntity<?> filter(TemplateFilterDTO filter, boolean isPageable, Pageable pageable) {
+        var templateEntity = templateService.filter(
             filter.getNames(),
             filter.getSiteId(),
             filter.getCreatedOnStart(),
@@ -67,7 +67,7 @@ public class RoomController implements IRoomController {
             filter.getEnable(),
             filter.getKeyword());
 
-        var roomEntityPageable = roomService.filter(
+        var templateEntityPageable = templateService.filter(
             pageable,
             filter.getNames(),
             filter.getSiteId(),
@@ -76,17 +76,17 @@ public class RoomController implements IRoomController {
             filter.getEnable(),
             filter.getKeyword());
 
-        List<RoomDto> roomDtos = mapper.map(roomEntityPageable.getContent(), new TypeToken<List<RoomDto>>() {
+        List<TemplateDto> templateDtos = mapper.map(templateEntityPageable.getContent(), new TypeToken<List<TemplateDto>>() {
         }.getType());
 
-        return isPageable ? ResponseEntity.ok(new PageImpl(roomDtos, pageable, roomDtos.size()))
-            : ResponseEntity.ok(mapper.map(roomEntity, new TypeToken<List<RoomDto>>() {
+        return isPageable ? ResponseEntity.ok(new PageImpl(templateDtos, pageable, templateDtos.size()))
+            : ResponseEntity.ok(mapper.map(templateEntity, new TypeToken<List<TemplateDto>>() {
         }.getType()));
     }
 
     @Override
     public ResponseEntity<List<?>> findAllBySiteId(UUID siteId) {
-        return ResponseEntity.ok(roomService.finAllBySiteId(siteId));
+        return null;
     }
 
 }

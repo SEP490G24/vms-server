@@ -31,5 +31,5 @@ public interface IRoomService extends IGenericService<Room, UUID> {
         Boolean enable,
         String keyword);
 
-    List<Room> finAllBySiteId(String siteId);
+    List<Room> finAllBySiteId(UUID siteId);
 }

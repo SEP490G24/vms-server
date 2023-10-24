@@ -2,10 +2,7 @@ package fpt.edu.capstone.vms.persistence.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.Accessors;
 
 import java.util.UUID;
@@ -16,6 +13,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Accessors(chain = true)
 @Table(schema = "vms", name = "room_site")
+@Builder
 @EqualsAndHashCode(callSuper = true)
 public class Room extends AbstractBaseEntity<UUID> {
 

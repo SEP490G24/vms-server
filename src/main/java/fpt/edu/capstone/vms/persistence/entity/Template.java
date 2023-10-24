@@ -1,21 +1,14 @@
 package fpt.edu.capstone.vms.persistence.entity;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.MapKey;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import fpt.edu.capstone.vms.constants.Constants;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
-import java.util.Map;
 import java.util.UUID;
 
 @Data
@@ -38,15 +31,29 @@ public class Template extends AbstractBaseEntity<UUID> {
     @Column(name = "code")
     private String code;
 
+    @Column(name = "subject")
+    private String subject;
+
     @Column(name = "description")
     private String description;
 
     @Column(name = "body")
     private String body;
 
-    @OneToMany(mappedBy = "templateEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
-    @MapKey(name = "templateSiteMapPk.templateId")
-    private Map<UUID, TemplateSiteMap> templateSiteMaps;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type")
+    private Constants.TemplateType type;
+
+    @Column(name = "enable")
+    private Boolean enable;
+
+    @Column(name = "site_id")
+    private UUID siteId;
+
+    @ManyToOne
+    @JoinColumn(name = "site_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JsonIgnore
+    private Site site;
 
     @Override
     public UUID getId() {
@@ -56,5 +63,18 @@ public class Template extends AbstractBaseEntity<UUID> {
     @Override
     public void setId(UUID id) {
         this.id = id;
+    }
+
+    public Template update(Template template) {
+        if (template.name != null) this.name = template.name;
+        if (template.code != null) this.code = template.code;
+        if (template.subject != null) this.subject = template.subject;
+        if (template.body != null) this.body = template.body;
+        if (template.type != null) this.type = template.type;
+        if (template.description != null) this.description = template.description;
+        if (template.enable != null) this.enable = template.enable;
+        if (template.getCreatedBy() != null) this.setCreatedBy(template.getCreatedBy());
+        if (template.getCreatedOn() != null) this.setCreatedOn(template.getCreatedOn());
+        return this;
     }
 }
