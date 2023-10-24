@@ -50,8 +50,8 @@ public class RoomController implements IRoomController {
     @Override
     public ResponseEntity<?> update(RoomDto roomDto, UUID id) {
         try {
-            var site = roomService.update(mapper.map(roomDto, Room.class), id);
-            return ResponseEntity.ok(site);
+            var room = roomService.update(mapper.map(roomDto, Room.class), id);
+            return ResponseEntity.ok(room);
         } catch (HttpClientErrorException e) {
             return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
         }

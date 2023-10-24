@@ -61,7 +61,7 @@ public interface IRoomController {
         @NotNull
         private Boolean enable;
         @NotNull
-        private String siteId;
+        private UUID siteId;
         private String siteName;
 
     }

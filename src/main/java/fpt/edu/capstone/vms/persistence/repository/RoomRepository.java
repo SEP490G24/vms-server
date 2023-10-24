@@ -16,11 +16,9 @@ import java.util.UUID;
 @Repository
 public interface RoomRepository extends GenericRepository<Room, UUID> {
 
-    @Query(value = "select u from Department u " +
+    @Query(value = "select u from Room u " +
         "where ((coalesce(:names) is null) or (u.name in :names)) " +
         "and (((cast(:createdOnStart as date) is null ) or (cast(:createdOnEnd as date) is null )) or (u.createdOn between :createdOnStart and :createdOnEnd)) " +
-        "and ((:createBy is null) or (u.createdBy in :createBy)) " +
-        "and ((:lastUpdatedBy is null) or (u.lastUpdatedBy in :lastUpdatedBy)) " +
         "and ((:enable is null) or (u.enable = :enable)) " +
         "and ((cast(:siteId as string) is null) or (u.siteId = :siteId)) " +
         "and ((:keyword is null) " +
@@ -37,11 +35,9 @@ public interface RoomRepository extends GenericRepository<Room, UUID> {
                       @Param("enable") @Nullable Boolean isEnable,
                       @Param("keyword") @Nullable String keyword);
 
-    @Query(value = "select u from Department u " +
+    @Query(value = "select u from Room u " +
         "where ((coalesce(:names) is null) or (u.name in :names)) " +
         "and (((cast(:createdOnStart as date) is null ) or (cast(:createdOnEnd as date) is null )) or (u.createdOn between :createdOnStart and :createdOnEnd)) " +
-        "and ((:createBy is null) or (u.createdBy in :createBy)) " +
-        "and ((:lastUpdatedBy is null) or (u.lastUpdatedBy in :lastUpdatedBy)) " +
         "and ((:enable is null) or (u.enable = :enable)) " +
         "and ((cast(:siteId as string) is null) or (u.siteId = :siteId)) " +
         "and ((:keyword is null) " +

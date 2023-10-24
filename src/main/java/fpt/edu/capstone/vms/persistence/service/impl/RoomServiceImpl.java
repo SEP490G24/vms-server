@@ -46,12 +46,12 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
     public Room create(IRoomController.RoomDto roomDto) {
         if (ObjectUtils.isEmpty(roomDto))
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Object is empty");
-        if (StringUtils.isEmpty(roomDto.getSiteId()))
+        if (StringUtils.isEmpty(roomDto.getSiteId().toString()))
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "SiteId is null");
-        var department = mapper.map(roomDto, Room.class);
-        department.setEnable(true);
-        roomRepository.save(department);
-        return department;
+        var room = mapper.map(roomDto, Room.class);
+        room.setEnable(true);
+        roomRepository.save(room);
+        return room;
     }
 
     @Override
