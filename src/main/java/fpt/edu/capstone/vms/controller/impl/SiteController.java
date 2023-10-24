@@ -22,11 +22,28 @@ public class SiteController implements ISiteController {
     private final ISiteService siteService;
     private final ModelMapper mapper;
 
+    /**
+     * The function returns a ResponseEntity containing a SiteFilterDTO object mapped from the Site object with the given
+     * id.
+     *
+     * @param id The parameter "id" is of type UUID, which stands for Universally Unique Identifier. It is a 128-bit value
+     * used to uniquely identify an object or entity in a distributed computing environment. In this code snippet, the
+     * method "findById" is used to retrieve a site object by its id and
+     * @return The method is returning a ResponseEntity object.
+     */
     @Override
-    public ResponseEntity<Site> findById(UUID id) {
-        return ResponseEntity.ok(siteService.findById(id));
+    public ResponseEntity<?> findById(UUID id) {
+        return ResponseEntity.ok(mapper.map(siteService.findById(id), SiteFilterDTO.class));
     }
 
+    /**
+     * This function deletes a site with the given ID and returns a ResponseEntity with the result.
+     *
+     * @param id The "id" parameter is of type UUID, which stands for Universally Unique Identifier. It is a 128-bit value
+     * used to uniquely identify information in computer systems. In this case, it is used to identify a specific site that
+     * needs to be deleted.
+     * @return The method is returning a ResponseEntity object.
+     */
     @Override
     public ResponseEntity<?> delete(UUID id) {
         try {
@@ -36,11 +53,24 @@ public class SiteController implements ISiteController {
         }
     }
 
+    /**
+     * The function returns a ResponseEntity containing a list of SiteFilterDTO objects.
+     *
+     * @return The method is returning a ResponseEntity object containing a list of objects.
+     */
     @Override
     public ResponseEntity<List<?>> findAll() {
-        return ResponseEntity.ok(siteService.findAll());
+        return ResponseEntity.ok(mapper.map(siteService.findAll(), new TypeToken<List<SiteFilterDTO>>() {}.getType()));
     }
 
+    /**
+     * The function creates a site using the provided site information and returns a response entity with the created site
+     * or an error message.
+     *
+     * @param siteInfo The parameter `siteInfo` is an object of type `CreateSiteInfo`. It contains information required to
+     * create a site.
+     * @return The method is returning a ResponseEntity object.
+     */
     @Override
     public ResponseEntity<?> createSite(CreateSiteInfo siteInfo) {
         try {
@@ -51,6 +81,17 @@ public class SiteController implements ISiteController {
         }
     }
 
+    /**
+     * The function updates a site using the provided information and returns a response entity with the updated site or an
+     * error message.
+     *
+     * @param updateSiteInfo The updateSiteInfo parameter is an object that contains the information needed to update a
+     * site. It likely includes properties such as the site's name, address, and any other relevant details that can be
+     * updated.
+     * @param id The `id` parameter is of type `UUID` and represents the unique identifier of the site that needs to be
+     * updated.
+     * @return The method is returning a ResponseEntity object.
+     */
     @Override
     public ResponseEntity<?> updateSite(UpdateSiteInfo updateSiteInfo, UUID id) {
         try {
@@ -61,6 +102,19 @@ public class SiteController implements ISiteController {
         }
     }
 
+    /**
+     * The function filters site entities based on the provided filter criteria and returns the result as a ResponseEntity.
+     *
+     * @param filter The `filter` parameter is an object of type `SiteFilter` which contains various filter criteria such
+     * as names, organization ID, created on start and end dates, create by, last updated by, enable status, and keyword.
+     * @param isPageable The `isPageable` parameter is a boolean value that indicates whether the filtering should be
+     * pageable or not. If `isPageable` is `true`, the filtering results will be returned as a pageable response. If
+     * `isPageable` is `false`, the filtering results will be returned as
+     * @param pageable The `pageable` parameter is an object of type `Pageable` which is used for pagination. It contains
+     * information about the current page number, page size, sorting criteria, etc. It is used to retrieve a specific page
+     * of results from the filtered data.
+     * @return The method is returning a ResponseEntity object.
+     */
     @Override
     public ResponseEntity<?> filter(SiteFilter filter, boolean isPageable, Pageable pageable) {
         var siteEntity = siteService.filter(
@@ -93,8 +147,16 @@ public class SiteController implements ISiteController {
         }.getType()));
     }
 
+    /**
+     * The function returns a ResponseEntity containing a list of SiteFilterDTO objects mapped from a list of sites found
+     * by organizationId.
+     *
+     * @param organizationId The organizationId parameter is a unique identifier for an organization. It is used to filter
+     * and retrieve a list of sites that belong to the specified organization.
+     * @return The method is returning a ResponseEntity object containing a List of objects.
+     */
     @Override
     public ResponseEntity<List<?>> findAllByOrganizationId(String organizationId) {
-        return ResponseEntity.ok(siteService.findAllByOrganizationId(organizationId));
+        return ResponseEntity.ok(mapper.map(siteService.findAllByOrganizationId(organizationId), new TypeToken<List<SiteFilterDTO>>() {}.getType()));
     }
 }

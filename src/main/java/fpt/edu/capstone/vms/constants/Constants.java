@@ -61,4 +61,10 @@ public class Constants {
         READ
 
     }
+
+    public enum SettingType {
+        INPUT,
+        SWITCH,
+        SELECT
+    }
 }

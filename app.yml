@@ -12,7 +12,7 @@ services:
       - KEYCLOAK_REALM_ADMIN_PASS=admin
       - KEYCLOAK_REALM_ADMIN_USER=admin
       - KEYCLOAK_CREDENTIALS=uq9MroK6qI2gs77wEIKG6ZroKCnzgZMt
-      - POSTGRES_HOST=vmsdbserver.postgres.database.azure.com
+      - POSTGRES_HOST=vms-db.postgres.database.azure.com
       - POSTGRES_PORT=5432
       - POSTGRES_DATABASE=vms-db
       - POSTGRES_USER=vms

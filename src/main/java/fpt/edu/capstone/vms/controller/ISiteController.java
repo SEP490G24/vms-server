@@ -2,7 +2,6 @@ package fpt.edu.capstone.vms.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.persistence.Column;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.QueryParam;
@@ -56,13 +55,15 @@ public interface ISiteController {
         @NotNull
         private String name;
         @NotNull
+        private String code;
+        @NotNull
         private String phoneNumber;
         @NotNull
-        private String province;
+        private Integer provinceId;
         @NotNull
-        private String district;
+        private Integer districtId;
         @NotNull
-        private String ward;
+        private Integer communeId;
         @NotNull
         private String address;
         @NotNull
@@ -73,10 +74,11 @@ public interface ISiteController {
     @Data
     class UpdateSiteInfo {
         private String name;
+        private String code;
         private String phoneNumber;
-        private String province;
-        private String district;
-        private String ward;
+        private Integer provinceId;
+        private Integer districtId;
+        private Integer communeId;
         private String address;
         private String taxCode;
         private String description;
@@ -103,9 +105,12 @@ public interface ISiteController {
         private String organizationId;
         private String organizationName;
         private String phoneNumber;
-        private String province;
-        private String district;
-        private String ward;
+        private Integer provinceId;
+        private Integer communeId;
+        private Integer districtId;
+        private String provinceName;
+        private String districtName;
+        private String communeName;
         private String address;
         private String taxCode;
         private String description;
