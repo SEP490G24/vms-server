@@ -44,10 +44,6 @@ public class Template extends AbstractBaseEntity<UUID> {
     @Column(name = "body")
     private String body;
 
-    @OneToMany(mappedBy = "templateEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
-    @MapKey(name = "templateSiteMapPk.templateId")
-    private Map<UUID, TemplateSiteMap> templateSiteMaps;
-
     @Override
     public UUID getId() {
         return id;

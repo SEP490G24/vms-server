@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -48,5 +49,10 @@ public class SettingServiceImpl extends GenericServiceImpl<Setting, Long> implem
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't found setting by id: " + id);
 
         return settingRepository.save(settingEntity.update(entity));
+    }
+
+    @Override
+    public List<Setting> findAllByGroupId(Integer groupId) {
+        return settingRepository.findAllByGroupId(groupId.longValue());
     }
 }
