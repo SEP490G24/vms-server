@@ -11,7 +11,7 @@ public interface ISettingSiteMapService extends IGenericService<SettingSiteMap, 
 
     SettingSiteMap createOrUpdateSettingSiteMap(ISettingSiteMapController.SettingSiteInfo settingSiteInfo);
 
-    List<SettingSiteMap> getAllSettingSiteBySiteId(String siteId);
+    List<ISettingSiteMapController.SettingSiteDTO> getAllSettingSiteBySiteId(String siteId);
 
     ISettingSiteMapController.SettingSiteDTO findAllBySiteIdAndGroupId(String siteId, Integer settingGroupId);
 

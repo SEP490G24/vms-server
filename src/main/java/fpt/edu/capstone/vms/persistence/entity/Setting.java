@@ -71,6 +71,7 @@ public class Setting extends AbstractBaseEntity<Long> {
 
     @OneToMany(mappedBy = "settingEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     @MapKey(name = "settingSiteMapPk.settingId")
+    @JsonIgnore
     private Map<Long, SettingSiteMap> settingSiteMaps;
 
     public Setting update(Setting settingEntity) {
