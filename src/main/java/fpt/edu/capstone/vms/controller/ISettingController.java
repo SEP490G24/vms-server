@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,27 +25,32 @@ import java.util.List;
 @Tag(name = "Setting Site Service")
 @RequestMapping("/api/v1/setting")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
+@PreAuthorize("isAuthenticated()")
 public interface ISettingController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Find by id")
+    @PreAuthorize("hasRole('r:setting:find')")
     ResponseEntity<?> findById(@PathVariable Long id);
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete")
+    @PreAuthorize("hasRole('r:setting:delete')")
     ResponseEntity<?> delete(@PathVariable Long id);
 
     @PutMapping ("/{id}")
     @Operation(summary = "Update setting site")
+    @PreAuthorize("hasRole('r:setting:update')")
     ResponseEntity<?> updateSettingGroup(@PathVariable Long id, @RequestBody @Valid UpdateSettingInfo settingInfo);
 
     @GetMapping
     @Operation(summary = "Get all")
+    @PreAuthorize("hasRole('r:setting:find')")
     ResponseEntity<List<?>> findAll();
 
     @PostMapping()
     @Operation(summary = "Create new agent")
-//    @PreAuthorize("hasRole('r:user:create')")
+    @PreAuthorize("hasRole('r:setting:create')")
     ResponseEntity<?> createSetting(@RequestBody @Valid CreateSettingInfo settingInfo);
 
     @Data

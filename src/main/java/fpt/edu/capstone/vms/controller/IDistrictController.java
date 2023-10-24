@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,6 +19,7 @@ import java.util.List;
 @Tag(name = "District Service")
 @RequestMapping("/api/v1/district")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
+@PreAuthorize("isAuthenticated()")
 public interface IDistrictController {
 
     @GetMapping("/{id}")

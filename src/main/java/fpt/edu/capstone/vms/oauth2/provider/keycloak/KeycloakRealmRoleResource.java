@@ -29,13 +29,14 @@ public class KeycloakRealmRoleResource implements IRoleResource {
     private final RolesResource rolesResource;
     private final ModelMapper mapper;
 
-//    @Value("${edu.fpt.capstone.vms.oauth2.keycloak.ignore-default-roles}")
-//    private String[] ignoreDefaultRoles;
+    private final String[] ignoreDefaultRoles;
 
     public KeycloakRealmRoleResource(
             Keycloak keycloak,
             @Value("${edu.fpt.capstone.vms.oauth2.keycloak.realm}") String realm,
+            @Value("${edu.fpt.capstone.vms.oauth2.keycloak.ignore-default-roles}") String [] ignoreDefaultRoles,
             ModelMapper mapper) {
+        this.ignoreDefaultRoles = ignoreDefaultRoles;
         this.rolesResource = keycloak.realm(realm).roles();
         this.mapper = mapper;
     }
@@ -45,7 +46,7 @@ public class KeycloakRealmRoleResource implements IRoleResource {
     public List<RoleDto> findAll() {
         /* fetch all role */
         var roles = this.rolesResource.list().stream()
-            .filter(roleRepresentation -> !Arrays.asList(IGNORE_ROLE_REALM_KEYCLOAK).contains(roleRepresentation.getName()))
+            .filter(roleRepresentation -> !Arrays.asList(ignoreDefaultRoles).contains(roleRepresentation.getName()))
             .toList();
         var results = (List<RoleDto>) mapper.map(roles, new TypeToken<List<RoleDto>>() {
         }.getType());

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@Tag(name = "Roles Service")
+@Tag(name = "File Service")
 @RequestMapping("/api/v1/file")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @PreAuthorize("isAuthenticated()")
@@ -20,6 +20,7 @@ public interface IFileController {
 
     @PostMapping("/uploadImage")
     @Operation(summary = "Upload Image")
+    @PreAuthorize("hasRole('r:file:upload')")
     ResponseEntity<?> uploadImage(@RequestBody MultipartFile file);
 
 }
