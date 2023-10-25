@@ -104,8 +104,16 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
      * @return The method is returning a List of SettingSiteMap objects.
      */
     @Override
-    public List<SettingSiteMap> getAllSettingSiteBySiteId(String siteId) {
-        return settingSiteMapRepository.findAllBySettingSiteMapPk_SiteId(UUID.fromString(siteId));
+    public List<ISettingSiteMapController.SettingSiteDTO> getAllSettingSiteBySiteId(String siteId) {
+        List<ISettingSiteMapController.SettingSiteDTO> settingSiteDTOs = new ArrayList<>();
+        List<Object[]> objects = settingRepository.findAllDistinctGroupIdBySiteId(UUID.fromString(siteId));
+        if (!objects.isEmpty()) {
+            for (Object[] results : objects) {
+                var settingSiteDTO = findAllBySiteIdAndGroupId(siteId, Math.toIntExact((Long) results[0]));
+                settingSiteDTOs.add(settingSiteDTO);
+            }
+        }
+        return settingSiteDTOs;
     }
 
 
@@ -135,4 +143,5 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
         }
         return settingSiteDTO;
     }
+
 }
