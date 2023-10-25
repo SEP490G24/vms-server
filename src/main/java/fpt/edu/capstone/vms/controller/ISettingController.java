@@ -54,6 +54,11 @@ public interface ISettingController {
     @PreAuthorize("hasRole('r:setting:create')")
     ResponseEntity<?> createSetting(@RequestBody @Valid CreateSettingInfo settingInfo);
 
+    @PostMapping("/sms")
+    @Operation(summary = "Create new agent")
+//    @PreAuthorize("hasRole('r:setting:create')")
+    ResponseEntity<?> sendSMS();
+
     @Data
     class CreateSettingInfo {
         @NotNull
