@@ -34,7 +34,7 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
             orderByClause = orderByClause.substring(0, orderByClause.length() - 2);
         }
         String sqlCountAll = "SELECT COUNT(1) ";
-        String sqlGetData = "SELECT u.username, u.first_name as firstName, u.last_name as lastName, u.email, u.gender, u.phone_number as phoneNumber," +
+        String sqlGetData = "SELECT u.id,u.username, u.first_name as firstName, u.last_name as lastName, u.email, u.gender, u.phone_number as phoneNumber," +
             "u.dob as dateOfBirth, u.enable, u.role as roleName, d.name as departmentName, u.country_code as countryCode,  u.created_on as createdOn,  u.last_updated_on as lastUpdatedOn ";
         StringBuilder sqlConditional = new StringBuilder();
         sqlConditional.append("FROM \"user\" u ");
@@ -75,19 +75,20 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
         List<IUserController.UserFilter> listData = new ArrayList<>();
         for (Object[] object : queryResult) {
             IUserController.UserFilter userFilter = new IUserController.UserFilter();
-            userFilter.setUsername((String) object[0]);
-            userFilter.setFirstName((String) object[1]);
-            userFilter.setLastName((String) object[2]);
-            userFilter.setEmail((String) object[3]);
-            userFilter.setGender((String) object[4]);
-            userFilter.setPhoneNumber((String) object[5]);
-            userFilter.setDateOfBirth((Date) object[6]);
-            userFilter.setEnable((Boolean) object[7]);
-            userFilter.setRoleName((String) object[8]);
-            userFilter.setDepartmentName((String) object[9]);
-            userFilter.setCountryCode((String) object[10]);
-            userFilter.setCreatedOn((Date) object[11]);
-            userFilter.setLastUpdatedOn((Date) object[12]);
+            userFilter.setId((UUID) object[0]);
+            userFilter.setUsername((String) object[1]);
+            userFilter.setFirstName((String) object[2]);
+            userFilter.setLastName((String) object[3]);
+            userFilter.setEmail((String) object[4]);
+            userFilter.setGender((String) object[5]);
+            userFilter.setPhoneNumber((String) object[6]);
+            userFilter.setDateOfBirth((Date) object[7]);
+            userFilter.setEnable((Boolean) object[8]);
+            userFilter.setRoleName((String) object[9]);
+            userFilter.setDepartmentName((String) object[10]);
+            userFilter.setCountryCode((String) object[11]);
+            userFilter.setCreatedOn((Date) object[12]);
+            userFilter.setLastUpdatedOn((Date) object[13]);
             listData.add(userFilter);
         }
         Query queryCountAll = entityManager.createNativeQuery(sqlCountAll + sqlConditional);
@@ -101,7 +102,7 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
     public List<IUserController.UserFilter> filter(Collection<String> usernames, Collection<Constants.UserRole> roles, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, Boolean enable, String keyword, String departmentId) {
         Map<String, Object> queryParams = new HashMap<>();
         String orderByClause = "";
-        String sqlGetData = "SELECT u.username, u.first_name as firstName, u.last_name as lastName, u.email, u.gender, u.phone_number as phoneNumber," +
+        String sqlGetData = "SELECT u.id,u.username, u.first_name as firstName, u.last_name as lastName, u.email, u.gender, u.phone_number as phoneNumber," +
             "u.dob as dateOfBirth, u.enable, u.role as roleName, d.name as departmentName, u.country_code as countryCode, u.created_on as createdOn,  u.last_updated_on as lastUpdatedOn ";
         StringBuilder sqlConditional = new StringBuilder();
         sqlConditional.append("FROM \"user\" u ");
@@ -140,19 +141,20 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
         List<IUserController.UserFilter> listData = new ArrayList<>();
         for (Object[] object : queryResult) {
             IUserController.UserFilter userFilter = new IUserController.UserFilter();
-            userFilter.setUsername((String) object[0]);
-            userFilter.setFirstName((String) object[1]);
-            userFilter.setLastName((String) object[2]);
-            userFilter.setEmail((String) object[3]);
-            userFilter.setGender((String) object[4]);
-            userFilter.setPhoneNumber((String) object[5]);
-            userFilter.setDateOfBirth((Date) object[6]);
-            userFilter.setEnable((Boolean) object[7]);
-            userFilter.setRoleName((String) object[8]);
-            userFilter.setDepartmentName((String) object[9]);
-            userFilter.setCountryCode((String) object[10]);
-            userFilter.setCreatedOn((Date) object[11]);
-            userFilter.setLastUpdatedOn((Date) object[12]);
+            userFilter.setId((UUID) object[0]);
+            userFilter.setUsername((String) object[1]);
+            userFilter.setFirstName((String) object[2]);
+            userFilter.setLastName((String) object[3]);
+            userFilter.setEmail((String) object[4]);
+            userFilter.setGender((String) object[5]);
+            userFilter.setPhoneNumber((String) object[6]);
+            userFilter.setDateOfBirth((Date) object[7]);
+            userFilter.setEnable((Boolean) object[8]);
+            userFilter.setRoleName((String) object[9]);
+            userFilter.setDepartmentName((String) object[10]);
+            userFilter.setCountryCode((String) object[11]);
+            userFilter.setCreatedOn((Date) object[12]);
+            userFilter.setLastUpdatedOn((Date) object[13]);
             listData.add(userFilter);
         }
         return listData;
