@@ -63,7 +63,7 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
             createdOnStart,
             createdOnEnd,
             enable,
-            keyword);
+            keyword != null ? keyword.toUpperCase() : null);
     }
 
     @Override
@@ -74,7 +74,7 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
             createdOnStart,
             createdOnEnd,
             enable,
-            keyword);
+            keyword != null ? keyword.toUpperCase() : null);
     }
 
     @Override

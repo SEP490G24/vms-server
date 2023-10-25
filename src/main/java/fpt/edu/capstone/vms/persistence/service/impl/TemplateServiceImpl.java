@@ -63,7 +63,7 @@ public class TemplateServiceImpl extends GenericServiceImpl<Template, UUID> impl
             createdOnStart,
             createdOnEnd,
             enable,
-            keyword);
+            keyword != null ? keyword.toUpperCase() : null);
     }
 
     @Override
@@ -74,7 +74,7 @@ public class TemplateServiceImpl extends GenericServiceImpl<Template, UUID> impl
             createdOnStart,
             createdOnEnd,
             enable,
-            keyword);
+            keyword != null ? keyword.toUpperCase() : null);
     }
 
 }

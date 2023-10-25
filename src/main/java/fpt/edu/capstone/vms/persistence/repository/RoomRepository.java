@@ -22,11 +22,9 @@ public interface RoomRepository extends GenericRepository<Room, UUID> {
         "and ((:enable is null) or (u.enable = :enable)) " +
         "and ((cast(:siteId as string) is null) or (u.siteId = :siteId)) " +
         "and ((:keyword is null) " +
-        "or (u.name LIKE %:keyword% " +
-        "or u.code LIKE %:keyword% " +
-        "or u.description LIKE %:keyword% " +
-        "or u.createdBy LIKE %:keyword% " +
-        "or u.lastUpdatedBy LIKE %:keyword%))")
+        "or (UPPER(u.name) LIKE %:keyword% " +
+        "or UPPER(u.code) LIKE %:keyword% " +
+        "or UPPER(u.description) LIKE %:keyword% ))")
     Page<Room> filter(Pageable pageable,
                       @Param("names") @Nullable Collection<String> names,
                       @Param("siteId") @Nullable UUID siteId,
@@ -41,11 +39,9 @@ public interface RoomRepository extends GenericRepository<Room, UUID> {
         "and ((:enable is null) or (u.enable = :enable)) " +
         "and ((cast(:siteId as string) is null) or (u.siteId = :siteId)) " +
         "and ((:keyword is null) " +
-        "or (u.name LIKE %:keyword% " +
-        "or u.code LIKE %:keyword% " +
-        "or u.description LIKE %:keyword% " +
-        "or u.createdBy LIKE %:keyword% " +
-        "or u.lastUpdatedBy LIKE %:keyword%))")
+        "or ( UPPER(u.name) LIKE %:keyword% " +
+        "or UPPER(u.code) LIKE %:keyword% " +
+        "or UPPER(u.description) LIKE %:keyword% ))")
     List<Room> filter(
         @Param("names") @Nullable Collection<String> names,
         @Param("siteId") @Nullable UUID siteId,
