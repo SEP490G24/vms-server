@@ -54,10 +54,10 @@ public interface ISettingSiteMapController {
     @PreAuthorize("hasRole('r:setting-site:find')")
     ResponseEntity<List<?>> findAllBySiteId(@PathVariable String siteId);
 
-    @GetMapping("/site/groupSetting")
+    @GetMapping("/site/{siteId}/group/{settingGroupId}")
     @Operation(summary = "Find All by site id and group id")
     @PreAuthorize("hasRole('r:setting-site:find')")
-    ResponseEntity<?> findAllBySiteIdAndGroupId(String siteId, Integer settingGroupId);
+    ResponseEntity<?> findAllBySiteIdAndGroupId(@PathVariable String siteId, @PathVariable Integer settingGroupId);
 
     @Data
     class SettingSiteInfo {
