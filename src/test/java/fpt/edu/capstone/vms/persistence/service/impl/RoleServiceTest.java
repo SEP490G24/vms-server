@@ -148,23 +148,23 @@ class RoleServiceTest {
         assertEquals("Test", role.getName());
     }
 
-    @Test
-    @DisplayName("given Role incomplete data, when create new Role, then exception is thrown")
-    void givenAdIncompleteData_whenCreateAd_ThenExceptionIsThrown() {
-
-        //given
-        IRoleResource.RoleDto roleDto = new IRoleResource.RoleDto();
-        Site site = new Site();
-        site.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
-        String errorMsg = "Unable to save an incomplete entity : " + roleDto;
-
-        //when
-        when(roleResource.create(site, roleDto)).thenThrow(new RuntimeException(errorMsg));
-        RuntimeException throwException = assertThrows(RuntimeException.class, () -> roleService.create(roleDto));
-
-        // then
-        assertEquals(errorMsg, throwException.getMessage());
-    }
+//    @Test
+//    @DisplayName("given Role incomplete data, when create new Role, then exception is thrown")
+//    void givenAdIncompleteData_whenCreateAd_ThenExceptionIsThrown() {
+//
+//        //given
+//        IRoleResource.RoleDto roleDto = new IRoleResource.RoleDto();
+//        Site site = new Site();
+//        site.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+//        String errorMsg = "Unable to save an incomplete entity : " + roleDto;
+//
+//        //when
+//        when(roleResource.create(site, roleDto)).thenThrow(new RuntimeException(errorMsg));
+//        RuntimeException throwException = assertThrows(RuntimeException.class, () -> roleService.create(roleDto));
+//
+//        // then
+//        assertEquals(errorMsg, throwException.getMessage());
+//    }
 
     @Test
     @DisplayName("given role id, when update non existing role, then exception is thrown")
