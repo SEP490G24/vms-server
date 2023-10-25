@@ -22,13 +22,11 @@ public interface TemplateRepository extends GenericRepository<Template, UUID> {
         "and ((:enable is null) or (u.enable = :enable)) " +
         "and ((cast(:siteId as string) is null) or (u.siteId = :siteId)) " +
         "and ((:keyword is null) " +
-        "or (u.name LIKE %:keyword% " +
-        "or u.code LIKE %:keyword% " +
-        "or u.subject LIKE %:keyword% " +
-        "or u.body LIKE %:keyword% " +
-        "or u.description LIKE %:keyword% " +
-        "or u.createdBy LIKE %:keyword% " +
-        "or u.lastUpdatedBy LIKE %:keyword%))")
+        "or ( UPPER(u.name) LIKE %:keyword% " +
+        "or UPPER(u.code) LIKE %:keyword% " +
+        "or UPPER(u.subject) LIKE %:keyword% " +
+        "or UPPER(u.body) LIKE %:keyword% " +
+        "or UPPER(u.description) LIKE %:keyword% ))")
     Page<Template> filter(Pageable pageable,
                           @Param("names") @Nullable Collection<String> names,
                           @Param("siteId") @Nullable UUID siteId,
@@ -43,13 +41,11 @@ public interface TemplateRepository extends GenericRepository<Template, UUID> {
         "and ((:enable is null) or (u.enable = :enable)) " +
         "and ((cast(:siteId as string) is null) or (u.siteId = :siteId)) " +
         "and ((:keyword is null) " +
-        "or (u.name LIKE %:keyword% " +
-        "or u.code LIKE %:keyword% " +
-        "or u.subject LIKE %:keyword% " +
-        "or u.body LIKE %:keyword% " +
-        "or u.description LIKE %:keyword% " +
-        "or u.createdBy LIKE %:keyword% " +
-        "or u.lastUpdatedBy LIKE %:keyword%))")
+        "or ( UPPER(u.name) LIKE %:keyword% " +
+        "or UPPER(u.code) LIKE %:keyword% " +
+        "or UPPER(u.subject) LIKE %:keyword% " +
+        "or UPPER(u.body) LIKE %:keyword% " +
+        "or UPPER(u.description) LIKE %:keyword% ))")
     List<Template> filter(
         @Param("names") @Nullable Collection<String> names,
         @Param("siteId") @Nullable UUID siteId,
