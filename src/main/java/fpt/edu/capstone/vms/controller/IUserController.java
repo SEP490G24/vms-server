@@ -130,7 +130,6 @@ public interface IUserController {
         String keyword;
         String departmentId;
 
-        UUID id;
         String username;
         String firstName;
         String lastName;
