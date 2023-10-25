@@ -62,6 +62,11 @@ public class Constants {
 
     }
 
+    public enum TemplateType {
+        EMAIL,
+        SMS
+    }
+
     public enum SettingType {
         INPUT,
         SWITCH,

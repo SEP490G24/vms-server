@@ -1,17 +1,8 @@
 package fpt.edu.capstone.vms.persistence.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
 import lombok.experimental.Accessors;
 
 import java.util.UUID;
@@ -22,8 +13,9 @@ import java.util.UUID;
 @AllArgsConstructor
 @Accessors(chain = true)
 @Table(schema = "vms", name = "room_site")
+@Builder
 @EqualsAndHashCode(callSuper = true)
-public class RoomSite extends AbstractBaseEntity<UUID> {
+public class Room extends AbstractBaseEntity<UUID> {
 
     @Id
     @Column(name = "id", length = 64)
@@ -39,8 +31,8 @@ public class RoomSite extends AbstractBaseEntity<UUID> {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "status")
-    private String status;
+    @Column(name = "enable")
+    private Boolean enable;
 
     @Column(name = "site_id")
     private UUID siteId;
@@ -58,5 +50,15 @@ public class RoomSite extends AbstractBaseEntity<UUID> {
     @Override
     public void setId(UUID id) {
         this.id = id;
+    }
+
+    public Room update(Room room) {
+        if (room.name != null) this.name = room.name;
+        if (room.code != null) this.code = room.code;
+        if (room.description != null) this.description = room.description;
+        if (room.enable != null) this.enable = room.enable;
+        if (room.getCreatedBy() != null) this.setCreatedBy(room.getCreatedBy());
+        if (room.getCreatedOn() != null) this.setCreatedOn(room.getCreatedOn());
+        return this;
     }
 }

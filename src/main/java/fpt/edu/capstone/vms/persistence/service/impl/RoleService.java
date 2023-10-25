@@ -8,7 +8,6 @@ import fpt.edu.capstone.vms.oauth2.IPermissionResource;
 import fpt.edu.capstone.vms.oauth2.IRoleResource;
 import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
-import fpt.edu.capstone.vms.persistence.repository.UserRepository;
 import fpt.edu.capstone.vms.persistence.service.IRoleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +24,6 @@ import java.util.UUID;
 public class RoleService implements IRoleService {
 
     private final IRoleResource roleResource;
-    private final UserRepository userRepository;
     private final SiteRepository siteRepository;
 
     @Override
