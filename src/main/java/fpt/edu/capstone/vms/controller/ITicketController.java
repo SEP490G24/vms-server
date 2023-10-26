@@ -1,8 +1,11 @@
 package fpt.edu.capstone.vms.controller;
 
+import fpt.edu.capstone.vms.constants.Constants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
+import lombok.Builder;
 import lombok.Data;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -38,26 +41,65 @@ public interface ITicketController {
     @PostMapping()
     @Operation(summary = "Create new ticket")
     @PreAuthorize("hasRole('r:ticket:create')")
-    ResponseEntity<?> createTicket(@RequestBody @Valid createTicketInfo ticketInfo);
+    ResponseEntity<?> create(@RequestBody @Valid CreateTicketInfo ticketInfo);
 
     @Data
-    class createTicketInfo {
+    @Builder
+    class CreateTicketInfo {
+
+        @NotNull(message = "The name of the visitor cannot be null")
+        @NotEmpty(message = "The name of the visitor cannot be empty")
+        @Size(max = 50, message = "The visitor's name must not exceed 50 characters")
         private String visitor_name;
+
+        @NotNull(message = "Meeting code cannot be null")
+        @NotEmpty(message = "Meeting code cannot be empty")
+        @Size(max = 15, message = "Meeting code has a maximum length of 15 characters")
+        @Pattern(regexp = "^[a-zA-Z0-9]*$", message = "Meeting code must contain only alphanumeric characters")
         private String code;
+
+        @NotEmpty(message = "The identification number of the visitor cannot be empty")
         private Integer identificationNumber;
+
+        @NotEmpty(message = "The license plate number of the visitor cannot be empty")
         private String licensePlateNumber;
+
+        @NotNull(message = "Email cannot be null")
+        @NotEmpty(message = "Email cannot be empty")
+        @Email(message = "Email is not in the correct format")
         private String email;
+
+        @NotEmpty(message = "The phone number cannot be empty")
+        @Pattern(regexp = "^(0[2356789]\\d{8})$", message = "The phone number is not in the correct format")
         private String phoneNumber;
-        private Boolean gender;
+
+        @NotEmpty(message = "The gender cannot be empty")
+        private Constants.Gender gender;
+
+        @NotEmpty
         private String purpose;
+
+        @NotEmpty
         private String purposeOther;
-        private LocalDateTime expectedDate;
-        private String expectedTime;
+
+        @NotNull(message = "Start time cannot be null")
+        private LocalDateTime startTime;
+
+        @NotNull(message = "End time cannot be null")
         private LocalDateTime endTime;
+
         private String comment;
-        private Boolean promise;
-        private Boolean privacy;
+
         private String isBookmark;
-        private String username;
+
+        @NotNull(message = "Room cannot be null")
+        @NotEmpty(message = "Room cannot be empty")
+        private UUID roomId;
+
+        @NotEmpty(message = "Template cannot be empty")
+        private UUID templateId;
+
+        @NotNull
+        private Constants.StatusTicket status;
     }
 }
