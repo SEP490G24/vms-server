@@ -4,6 +4,7 @@ public class Constants {
 
     public static class Claims {
         public static String OrgId = "org_id";
+        public static String SiteId = "site_id";
         public static String Name = "name";
         public static String PreferredUsername = "preferred_username";
         public static String GivenName = "given_name";
@@ -71,5 +72,13 @@ public class Constants {
         INPUT,
         SWITCH,
         SELECT
+    }
+
+    public enum Purpose {
+        CONFERENCES,
+        INTERVIEW,
+        MEETING,
+        OTHERS,
+        WORKING
     }
 }

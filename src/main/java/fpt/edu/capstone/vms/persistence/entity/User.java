@@ -15,7 +15,6 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
 
@@ -35,9 +34,8 @@ public class User extends AbstractBaseEntity<String> {
     @Column(name = "openid")
     private String openid;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "role")
-    private Constants.UserRole role;
+    private String role;
 
     @Column(name = "first_name")
     private String firstName;
@@ -125,5 +123,13 @@ public class User extends AbstractBaseEntity<String> {
 
     public static boolean checkPassword(String plainPassword, String hashedPassword) {
         return BCrypt.checkpw(plainPassword, hashedPassword);
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 }

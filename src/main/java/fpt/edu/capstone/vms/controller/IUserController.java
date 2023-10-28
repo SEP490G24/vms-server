@@ -33,7 +33,7 @@ public interface IUserController {
     @PostMapping("/filter")
     @Operation(summary = "Filter")
     @PreAuthorize("hasRole('r:user:find')")
-    ResponseEntity<?> filter(@RequestBody @Valid UserFilter usernames, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
+    ResponseEntity<?> filter(@RequestBody UserFilterRequest userFilterRequest, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
     @PostMapping("")
     @Operation(summary = "Create new user")
@@ -60,7 +60,7 @@ public interface IUserController {
     @PostMapping("/export")
     @Operation(summary = "Export list of user to excel")
     @PreAuthorize("hasRole('r:user:export')")
-    ResponseEntity<?> export(UserFilter userFilter);
+    ResponseEntity<?> export(UserFilterRequest userFilterRequest);
 
     @GetMapping("/import")
     @Operation(summary = "download template import user")
@@ -77,11 +77,11 @@ public interface IUserController {
     @PreAuthorize("hasRole('r:user:find')")
     ResponseEntity<?> changePassword(@RequestBody ChangePasswordUserDto changePasswordUserDto);
 
-    @PutMapping("/{username}/role")
-    @Operation(summary = "Update role")
-    @PreAuthorize("hasRole('r:role:update')")
-    ResponseEntity<?> updateRole(@PathVariable("username") String username,
-                                 @RequestBody List<String> roles);
+//    @PutMapping("/{username}/role")
+//    @Operation(summary = "Update role")
+//    @PreAuthorize("hasRole('r:role:update')")
+//    ResponseEntity<?> updateRole(@PathVariable("username") String username,
+//                                 @RequestBody List<String> roles);
 
     @Data
     class CreateUserInfo {
@@ -104,6 +104,7 @@ public interface IUserController {
         @NotNull
         Constants.Gender gender;
         Boolean enable;
+        List<String> roles;
     }
 
     @Data
@@ -118,18 +119,22 @@ public interface IUserController {
         LocalDate dateOfBirth;
         Constants.Gender gender;
         Boolean enable;
+        List<String> roles;
     }
 
     @Data
-    class UserFilter {
-        List<Constants.UserRole> roles;
+    class UserFilterRequest {
+        String role;
         List<String> usernames;
         LocalDateTime createdOnStart;
         LocalDateTime createdOnEnd;
         Boolean enable;
         String keyword;
         String departmentId;
+    }
 
+    @Data
+    class UserFilterResponse {
         String username;
         String firstName;
         String lastName;
@@ -137,13 +142,18 @@ public interface IUserController {
         String avatar;
         String email;
         String countryCode;
+        String departmentId;
         String departmentName;
+        String siteId;
+        String siteName;
         Date dateOfBirth;
         String gender;
-        String roleName;
+        List<String> roles;
         Date createdOn;
         Date lastUpdatedOn;
+        Boolean enable;
     }
+
 
     @Data
     class UpdateState {

@@ -15,12 +15,12 @@ public interface IUserResource {
     boolean update(UserDto account);
     void changeState(String userId, boolean stateEnable);
 
-    void updateRole(String openId, List<String> roles);
+    //void updateRole(String openId, List<String> roles);
 
     void delete(String userId);
 
     void changePassword(String openId, String newPassword);
-    List<UserDto> users();
+    //List<UserDto> users();
 
     @Data
     @Accessors(chain = true)
@@ -39,7 +39,7 @@ public interface IUserResource {
         private LocalDate dateOfBirth;
         private Boolean enable;
         private Constants.Gender gender;
-        private Constants.UserRole role;
+        private List<String> roles;
         private UUID departmentId;
         @JsonIgnore
         private Boolean isCreateUserOrg;
