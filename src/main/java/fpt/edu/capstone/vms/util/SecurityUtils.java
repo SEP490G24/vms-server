@@ -1,5 +1,6 @@
 package fpt.edu.capstone.vms.util;
 
+import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -13,6 +14,7 @@ import org.springframework.web.client.HttpClientErrorException;
 
 
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_REALM_ROLE;
@@ -65,8 +67,7 @@ public class SecurityUtils {
 
     public static Boolean checkSiteAuthorization(SiteRepository siteRepository, String siteId) {
         if (SecurityUtils.getOrgId() != null) {
-            var sites = siteRepository.findAllByOrganizationId(UUID.fromString(SecurityUtils.getOrgId()));
-            var checkSite = sites.stream().anyMatch(o -> o.getId().equals(siteId));
+            var checkSite = siteRepository.existsByIdAndOrganizationId(UUID.fromString(siteId), UUID.fromString(SecurityUtils.getOrgId()));
 
             if (!checkSite) {
                 return false;
