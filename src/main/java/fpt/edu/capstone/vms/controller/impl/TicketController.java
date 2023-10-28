@@ -3,8 +3,6 @@ package fpt.edu.capstone.vms.controller.impl;
 import fpt.edu.capstone.vms.controller.ITicketController;
 import fpt.edu.capstone.vms.persistence.entity.Ticket;
 import fpt.edu.capstone.vms.persistence.service.ITicketService;
-import lombok.AllArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -12,10 +10,12 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@AllArgsConstructor
 public class TicketController implements ITicketController {
     private final ITicketService ticketService;
-    private final ModelMapper mapper;
+
+    public TicketController(ITicketService ticketService) {
+        this.ticketService = ticketService;
+    }
 
     @Override
     public ResponseEntity<Ticket> findById(UUID id) {
