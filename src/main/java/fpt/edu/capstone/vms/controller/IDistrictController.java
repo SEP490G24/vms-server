@@ -16,8 +16,8 @@ import java.util.List;
 
 
 @RestController
-@Tag(name = "District Service")
-@RequestMapping("/api/v1/district")
+@Tag(name = "Location Service")
+@RequestMapping("/api/v1/location/district")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @PreAuthorize("isAuthenticated()")
 public interface IDistrictController {

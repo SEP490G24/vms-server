@@ -15,8 +15,8 @@ import java.util.List;
 
 
 @RestController
-@Tag(name = "Commune Service")
-@RequestMapping("/api/v1/commune")
+@Tag(name = "Location Service")
+@RequestMapping("/api/v1/location/commune")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @PreAuthorize("isAuthenticated()")
 public interface ICommuneController {

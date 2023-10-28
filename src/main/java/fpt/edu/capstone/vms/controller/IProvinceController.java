@@ -15,8 +15,8 @@ import java.util.List;
 
 
 @RestController
-@Tag(name = "Province Service")
-@RequestMapping("/api/v1/province")
+@Tag(name = "Location Service")
+@RequestMapping("/api/v1/location/province")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @PreAuthorize("isAuthenticated()")
 public interface IProvinceController {
