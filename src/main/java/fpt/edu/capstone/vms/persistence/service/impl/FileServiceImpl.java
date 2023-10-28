@@ -21,6 +21,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -70,10 +72,18 @@ public class FileServiceImpl extends GenericServiceImpl<File, UUID> implements I
         // Get name extension
         String extension = originalFilename.substring(originalFilename.lastIndexOf(".") + 1);
 
+        if (!isValidImageExtension(extension)) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Invalid image file extension.");
+        }
+
         // generate url for image
         String relativeFileName = UUID.randomUUID().toString() + "." + extension;
         try {
             long fileSizeInMB = file.getSize() / (1024 * 1024);
+
+            if (fileSizeInMB > 10) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "File over 10mb");
+            }
 
             ByteArrayOutputStream thumbnailOutputStream = new ByteArrayOutputStream();
             if (fileSizeInMB > 1) {
@@ -119,5 +129,10 @@ public class FileServiceImpl extends GenericServiceImpl<File, UUID> implements I
 
         BlobContainerClient containerClient = blobServiceClient.getBlobContainerClient(containerName);
         return containerClient.getBlobClient(fileName);
+    }
+
+    public boolean isValidImageExtension(String extension) {
+        List<String> validExtensions = Arrays.asList("jpg", "jpeg", "png", "gif");
+        return validExtensions.contains(extension.toLowerCase());
     }
 }

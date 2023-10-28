@@ -15,6 +15,8 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.Map;
 import java.util.UUID;
 
 @Data
@@ -81,6 +83,11 @@ public class User extends AbstractBaseEntity<String> {
     @JoinColumn(name = "department_id", referencedColumnName = "id", insertable = false, updatable = false)
     @JsonIgnore
     private Department department;
+
+    @OneToMany(mappedBy = "userEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @MapKey(name = "userRoleMapPk.username")
+    @JsonIgnore
+    private Map<String, UserRoleMap> userRoleMaps;
 
     public User update(User userEntity) {
         if (userEntity.username != null) this.username = userEntity.username;
