@@ -10,7 +10,6 @@ import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
 import fpt.edu.capstone.vms.persistence.entity.Department;
-import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.entity.User;
 import fpt.edu.capstone.vms.persistence.repository.DepartmentRepository;
 import fpt.edu.capstone.vms.persistence.repository.FileRepository;
@@ -23,7 +22,11 @@ import fpt.edu.capstone.vms.util.SecurityUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.sf.jasperreports.engine.*;
+import net.sf.jasperreports.engine.JREmptyDataSource;
+import net.sf.jasperreports.engine.JasperCompileManager;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
 import net.sf.jasperreports.export.SimpleExporterInput;
@@ -31,7 +34,16 @@ import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.openxml4j.util.ZipSecureFile;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.modelmapper.ModelMapper;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
@@ -57,7 +69,13 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static fpt.edu.capstone.vms.persistence.entity.User.checkPassword;
 import static fpt.edu.capstone.vms.persistence.entity.User.encodePassword;
@@ -137,7 +155,7 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public Page<IUserController.UserFilterResponse> filter(Pageable pageable, List<String> usernames, String role, LocalDateTime createdOnStart,
-                                                           LocalDateTime createdOnEnd, Boolean enable, String keyword, String departmentId) {
+                                                           LocalDateTime createdOnEnd, Boolean enable, String keyword, String departmentId, String siteId) {
         return userRepository.filter(
             pageable,
             usernames,
@@ -146,12 +164,13 @@ public class UserServiceImpl implements IUserService {
             createdOnEnd,
             enable,
             keyword,
-            departmentId);
+            departmentId,
+            siteId);
     }
 
     @Override
     public List<IUserController.UserFilterResponse> filter(List<String> usernames, String role, LocalDateTime createdOnStart,
-                                                           LocalDateTime createdOnEnd, Boolean enable, String keyword, String departmentId) {
+                                                           LocalDateTime createdOnEnd, Boolean enable, String keyword, String departmentId, String siteId) {
         return userRepository.filter(
             usernames,
             role,
@@ -159,7 +178,8 @@ public class UserServiceImpl implements IUserService {
             createdOnEnd,
             enable,
             keyword,
-            departmentId);
+            departmentId,
+            siteId);
     }
 
 
@@ -305,7 +325,7 @@ public class UserServiceImpl implements IUserService {
     @Override
     public ByteArrayResource export(IUserController.UserFilterRequest userFilter) {
         Pageable pageable = PageRequest.of(0, 1000000);
-        Page<IUserController.UserFilterResponse> listData = filter(pageable, userFilter.getUsernames(), userFilter.getRole(), userFilter.getCreatedOnStart(), userFilter.getCreatedOnEnd(), userFilter.getEnable(), userFilter.getKeyword(), userFilter.getDepartmentId());
+        Page<IUserController.UserFilterResponse> listData = filter(pageable, userFilter.getUsernames(), userFilter.getRole(), userFilter.getCreatedOnStart(), userFilter.getCreatedOnEnd(), userFilter.getEnable(), userFilter.getKeyword(), userFilter.getDepartmentId(), userFilter.getSiteId());
         try {
             JasperReport jasperReport = JasperCompileManager.compileReport(getClass().getResourceAsStream(PATH_FILE));
 

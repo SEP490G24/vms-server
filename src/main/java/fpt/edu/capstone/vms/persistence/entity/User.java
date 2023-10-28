@@ -167,11 +167,4 @@ public class User extends AbstractBaseEntity<String> {
         return BCrypt.checkpw(plainPassword, hashedPassword);
     }
 
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
 }

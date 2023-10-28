@@ -2,7 +2,15 @@ package fpt.edu.capstone.vms.persistence.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import fpt.edu.capstone.vms.constants.Constants;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -37,7 +45,7 @@ public class Template extends AbstractBaseEntity<UUID> {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "body")
+    @Column(name = "body", columnDefinition = "text")
     private String body;
 
     @Enumerated(EnumType.STRING)

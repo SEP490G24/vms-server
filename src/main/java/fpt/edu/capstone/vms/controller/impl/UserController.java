@@ -41,7 +41,8 @@ public class UserController implements IUserController {
                 filter.getCreatedOnEnd(),
                 filter.getEnable(),
                 filter.getKeyword(),
-                filter.getDepartmentId())) : ResponseEntity.ok(
+                filter.getDepartmentId(),
+                filter.getSiteId())) : ResponseEntity.ok(
             userService.filter(
                 filter.getUsernames(),
                 filter.getRole(),
@@ -49,7 +50,8 @@ public class UserController implements IUserController {
                 filter.getCreatedOnEnd(),
                 filter.getEnable(),
                 filter.getKeyword(),
-                filter.getDepartmentId()));
+                filter.getDepartmentId(),
+                filter.getSiteId()));
     }
 
     @Override
@@ -67,7 +69,7 @@ public class UserController implements IUserController {
     }
 
     @Override
-    public ResponseEntity<?> updateProfile(@Valid UpdateUserInfo userInfo) throws NotFoundException {
+    public ResponseEntity<?> updateProfile(@Valid UpdateProfileUserInfo userInfo) throws NotFoundException {
         String username = SecurityUtils.loginUsername();
         User userEntity = userService.updateUser(mapper.map(userInfo, IUserResource.UserDto.class).setUsername(username));
         return ResponseEntity.ok(mapper.map(userEntity, IUserResource.UserDto.class));

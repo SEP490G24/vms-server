@@ -36,6 +36,9 @@ public interface IUserResource {
         private String phone;
         private String avatar;
         private String countryCode;
+        private Integer provinceId;
+        private Integer communeId;
+        private Integer districtId;
         private LocalDate dateOfBirth;
         private Boolean enable;
         private Constants.Gender gender;

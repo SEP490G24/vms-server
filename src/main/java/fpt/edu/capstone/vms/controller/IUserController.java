@@ -13,7 +13,14 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -47,7 +54,7 @@ public interface IUserController {
 
     @PutMapping("/profile")
     @Operation(summary = "Update my profile")
-    ResponseEntity<?> updateProfile(@RequestBody @Valid UpdateUserInfo userInfo) throws NotFoundException;
+    ResponseEntity<?> updateProfile(@RequestBody @Valid UpdateProfileUserInfo userInfo) throws NotFoundException;
 
     @PutMapping("/update-state")
     @Operation(summary = "Update my state")
@@ -103,6 +110,9 @@ public interface IUserController {
         LocalDate dateOfBirth;
         @NotNull
         Constants.Gender gender;
+        Integer provinceId;
+        Integer communeId;
+        Integer districtId;
         Boolean enable;
         List<String> roles;
     }
@@ -118,8 +128,27 @@ public interface IUserController {
         UUID departmentId;
         LocalDate dateOfBirth;
         Constants.Gender gender;
+        Integer provinceId;
+        Integer communeId;
+        Integer districtId;
         Boolean enable;
         List<String> roles;
+    }
+
+    @Data
+    class UpdateProfileUserInfo {
+        String firstName;
+        String lastName;
+        String phoneNumber;
+        String avatar;
+        String email;
+        String countryCode;
+        UUID departmentId;
+        LocalDate dateOfBirth;
+        Constants.Gender gender;
+        Integer provinceId;
+        Integer communeId;
+        Integer districtId;
     }
 
     @Data
@@ -131,6 +160,7 @@ public interface IUserController {
         Boolean enable;
         String keyword;
         String departmentId;
+        String siteId;
     }
 
     @Data
@@ -142,10 +172,16 @@ public interface IUserController {
         String avatar;
         String email;
         String countryCode;
-        String departmentId;
+        UUID departmentId;
         String departmentName;
-        String siteId;
+        UUID siteId;
         String siteName;
+        Integer provinceId;
+        Integer communeId;
+        Integer districtId;
+        String provinceName;
+        String districtName;
+        String communeName;
         Date dateOfBirth;
         String gender;
         List<String> roles;

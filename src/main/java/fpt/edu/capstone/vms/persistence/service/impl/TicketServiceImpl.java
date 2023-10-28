@@ -14,16 +14,11 @@ import fpt.edu.capstone.vms.persistence.repository.TemplateRepository;
 import fpt.edu.capstone.vms.persistence.repository.TicketRepository;
 import fpt.edu.capstone.vms.persistence.service.ITicketService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
@@ -39,7 +34,7 @@ import java.util.UUID;
 public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implements ITicketService {
 
     final ModelMapper mapper;
-    final JavaMailSender javaMailSender;
+    //    final JavaMailSender javaMailSender;
     final TicketRepository ticketRepository;
     final TemplateRepository templateRepository;
     final RoomRepository roomRepository;
@@ -48,12 +43,15 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     private static String daysEarlier = "";
     private static int number = 0;
 
-    public TicketServiceImpl(TicketRepository ticketRepository, TemplateRepository templateRepository,
-                             RoomRepository roomRepository, JavaMailSender javaMailSender, ModelMapper mapper) {
+    public TicketServiceImpl(TicketRepository ticketRepository
+        , TemplateRepository templateRepository
+        , RoomRepository roomRepository
+//        , JavaMailSender javaMailSender
+        , ModelMapper mapper) {
         this.ticketRepository = ticketRepository;
         this.roomRepository = roomRepository;
         this.templateRepository = templateRepository;
-        this.javaMailSender = javaMailSender;
+//        this.javaMailSender = javaMailSender;
         this.mapper = mapper;
         this.init(ticketRepository);
     }
@@ -71,25 +69,25 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     }
 
     public void sendMailWithAttachment(Ticket ticket, Template template, byte[] qrCodeData) {
-        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
-        MimeMessageHelper mimeMessageHelper;
-
-        try {
-            mimeMessageHelper = new MimeMessageHelper(mimeMessage, true);
-            mimeMessageHelper.setFrom(sender);
-            mimeMessageHelper.setTo("");
-            mimeMessageHelper.setText(template.getBody());
-            mimeMessageHelper.setSubject(template.getSubject());
-
-            // Đính kèm mã QR code vào email
-            ByteArrayResource qrCodeAttachment = new ByteArrayResource(qrCodeData);
-            mimeMessageHelper.addAttachment("qrcode.png", qrCodeAttachment);
-
-
-            javaMailSender.send(mimeMessage);
-        } catch (MessagingException e) {
-            throw new CustomException("Không gửi được mail");
-        }
+//        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+//        MimeMessageHelper mimeMessageHelper;
+//
+//        try {
+//            mimeMessageHelper = new MimeMessageHelper(mimeMessage, true);
+//            mimeMessageHelper.setFrom(sender);
+//            mimeMessageHelper.setTo("");
+//            mimeMessageHelper.setText(template.getBody());
+//            mimeMessageHelper.setSubject(template.getSubject());
+//
+//            // Đính kèm mã QR code vào email
+//            ByteArrayResource qrCodeAttachment = new ByteArrayResource(qrCodeData);
+//            mimeMessageHelper.addAttachment("qrcode.png", qrCodeAttachment);
+//
+//
+//            javaMailSender.send(mimeMessage);
+//        } catch (MessagingException e) {
+//            throw new CustomException("Không gửi được mail");
+//        }
     }
 
 

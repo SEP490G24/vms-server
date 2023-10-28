@@ -9,7 +9,15 @@ import lombok.Data;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -55,7 +63,7 @@ public interface ISiteController {
 
     @GetMapping("/organization/{organizationId}")
     @Operation(summary = "Get all site by organizationId")
-    @PreAuthorize("hasRole('r:site:find')")
+    @PreAuthorize("hasRole('r:organization:find')")
     ResponseEntity<List<?>> findAllByOrganizationId(@PathVariable String organizationId);
 
     @Data
@@ -110,7 +118,7 @@ public interface ISiteController {
         UUID id;
         private String name;
         private String code;
-        private String enable;
+        private Boolean enable;
         private String organizationId;
         private String organizationName;
         private String phoneNumber;

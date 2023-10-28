@@ -18,7 +18,8 @@ public interface UserRepositoryCustom {
                                                     @Param("createdOnEnd") @Nullable LocalDateTime createdOnEnd,
                                                     @Param("enable") @Nullable Boolean isEnable,
                                                     @Param("keyword") @Nullable String keyword,
-                                                    @Param("departmentId") @Nullable String departmentId);
+                                                    @Param("departmentId") @Nullable String departmentId,
+                                                    @Param("siteId") @Nullable String siteId);
 
     List<IUserController.UserFilterResponse> filter(@Param("usernames") @Nullable Collection<String> usernames,
                                                     @Param("roles") @Nullable String role,
@@ -26,5 +27,6 @@ public interface UserRepositoryCustom {
                                                     @Param("createdOnEnd") @Nullable LocalDateTime createdOnEnd,
                                                     @Param("enable") @Nullable Boolean isEnable,
                                                     @Param("keyword") @Nullable String keyword,
-                                                    @Param("departmentId") @Nullable String departmentId);
+                                                    @Param("departmentId") @Nullable String departmentId,
+                                                    @Param("siteId") @Nullable String siteId);
 }
