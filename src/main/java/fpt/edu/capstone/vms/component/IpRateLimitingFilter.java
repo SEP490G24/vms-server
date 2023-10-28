@@ -6,14 +6,11 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.GenericFilterBean;
-import org.springframework.web.filter.OncePerRequestFilter;
-
 
 import java.io.IOException;
 import java.util.Map;
@@ -23,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class IpRateLimitingFilter extends GenericFilterBean {
 
     private Map<String, IpRequestCounter> ipRequestCounters = new ConcurrentHashMap<>();
-    private final int maxCalls = 2;
+    private final int maxCalls = 7;
     private final long timeWindowInMillis = 600000; // 2 minutes
 
 
