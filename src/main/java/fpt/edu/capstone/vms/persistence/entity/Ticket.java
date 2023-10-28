@@ -2,9 +2,15 @@ package fpt.edu.capstone.vms.persistence.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import fpt.edu.capstone.vms.constants.Constants;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -28,29 +34,8 @@ public class Ticket extends AbstractBaseEntity<UUID> {
     @GeneratedValue
     private UUID id;
 
-    @Column(name = "visitor_name")
-    private String visitor_name;
-
     @Column(name = "code")
     private String code;
-
-    @Min(value = 1)
-    @Max(value = 12)
-    @Column(name = "identification_number")
-    private String identificationNumber;
-
-    @Column(name = "license_plate_number", length = 64)
-    private String licensePlateNumber;
-
-    @Column(name = "email")
-    private String email;
-
-    @Column(name = "phone_number")
-    private String phoneNumber;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "gender")
-    private Constants.Gender gender;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "purpose")

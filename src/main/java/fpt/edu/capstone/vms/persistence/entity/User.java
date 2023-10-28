@@ -5,7 +5,18 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import fpt.edu.capstone.vms.constants.Constants;
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapKey;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -74,6 +85,33 @@ public class User extends AbstractBaseEntity<String> {
     @Column(name = "country_code")
     private String countryCode;
 
+    @Column(name = "province_id")
+    private Integer provinceId;
+
+    @ManyToOne
+    @JoinColumn(name = "province_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JsonIgnore
+    private Province province;
+
+    @Column(name = "district_id")
+    private Integer districtId;
+
+    @ManyToOne
+    @JoinColumn(name = "district_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JsonIgnore
+    private District district;
+
+    @Column(name = "commune_id")
+    private Integer communeId;
+
+    @ManyToOne
+    @JoinColumn(name = "commune_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JsonIgnore
+    private Commune commune;
+
+    @Column(name = "address")
+    private String address;
+
     @Column(name = "department_id")
     private UUID departmentId;
 
@@ -101,6 +139,10 @@ public class User extends AbstractBaseEntity<String> {
         if (userEntity.countryCode != null) this.countryCode = userEntity.countryCode;
         if (userEntity.departmentId != null) this.departmentId = userEntity.departmentId;
         if (userEntity.enable != null) this.enable = userEntity.enable;
+        if (userEntity.province != null) this.province = userEntity.province;
+        if (userEntity.commune != null) this.commune = userEntity.commune;
+        if (userEntity.district != null) this.district = userEntity.district;
+        if (userEntity.address != null) this.address = userEntity.address;
         if (userEntity.getCreatedBy() != null) this.setCreatedBy(userEntity.getCreatedBy());
         if (userEntity.getCreatedOn() != null) this.setCreatedOn(userEntity.getCreatedOn());
         return this;

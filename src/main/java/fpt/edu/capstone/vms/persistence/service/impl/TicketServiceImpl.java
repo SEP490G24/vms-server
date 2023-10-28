@@ -77,7 +77,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         try {
             mimeMessageHelper = new MimeMessageHelper(mimeMessage, true);
             mimeMessageHelper.setFrom(sender);
-            mimeMessageHelper.setTo(ticket.getEmail());
+            mimeMessageHelper.setTo("");
             mimeMessageHelper.setText(template.getBody());
             mimeMessageHelper.setSubject(template.getSubject());
 
