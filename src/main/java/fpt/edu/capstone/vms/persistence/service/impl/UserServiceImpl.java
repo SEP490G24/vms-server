@@ -13,6 +13,7 @@ import fpt.edu.capstone.vms.persistence.entity.Department;
 import fpt.edu.capstone.vms.persistence.entity.User;
 import fpt.edu.capstone.vms.persistence.repository.DepartmentRepository;
 import fpt.edu.capstone.vms.persistence.repository.FileRepository;
+import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.repository.UserRepository;
 import fpt.edu.capstone.vms.persistence.service.IUserService;
 import fpt.edu.capstone.vms.util.FileUtils;
@@ -71,6 +72,7 @@ public class UserServiceImpl implements IUserService {
     private final FileRepository fileRepository;
     private final FileServiceImpl fileService;
     private final IUserResource userResource;
+    private final SiteRepository siteRepository;
     private final ModelMapper mapper;
     final DepartmentRepository departmentRepository;
 
@@ -163,7 +165,18 @@ public class UserServiceImpl implements IUserService {
     @Override
     public User createUser(IUserResource.UserDto userDto) {
         User userEntity = null;
-        Department department = departmentRepository.findById(userDto.getDepartmentId()).get();
+        Department department = departmentRepository.findById(userDto.getDepartmentId()).orElse(null);
+
+        if (ObjectUtils.isEmpty(department)) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "department is null");
+        }
+
+        String siteId = department.getSiteId().toString();
+
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "Can't create user in this site");
+        };
+
         userDto.setUsername(department.getSite().getCode().toLowerCase() + "_" + userDto.getUsername());
         userDto.setIsCreateUserOrg(false);
         // (1) Create user on Keycloak
@@ -174,7 +187,7 @@ public class UserServiceImpl implements IUserService {
                 userEntity = mapper.map(userDto, User.class).setOpenid(kcUserId);
                 String role = String.join(";", userDto.getRoles());
                 userEntity.setRole(role);
-                userEntity.setPassword(encodePassword(userEntity.getPassword()));
+//                userEntity.setPassword(encodePassword(userEntity.getPassword()));
                 userRepository.save(userEntity);
             }
         } catch (Exception e) {

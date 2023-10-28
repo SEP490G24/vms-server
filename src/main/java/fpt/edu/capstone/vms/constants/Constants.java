@@ -49,6 +49,7 @@ public class Constants {
 
     public enum FileType {
         PDF,
+        IMAGE_AVATAR,
         IMAGE,
         EXCEL,
         WORD

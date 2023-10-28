@@ -41,12 +41,12 @@ public interface IDepartmentController {
     @PostMapping()
     @Operation(summary = "Create new department")
     @PreAuthorize("hasRole('r:department:create')")
-    ResponseEntity<?> createDepartment(@RequestBody @Valid createDepartmentInfo departmentInfo);
+    ResponseEntity<?> createDepartment(@RequestBody @Valid IDepartmentController.CreateDepartmentInfo departmentInfo);
 
     @PatchMapping("/{id}")
     @Operation(summary = "Update department")
     @PreAuthorize("hasRole('r:department:update')")
-    ResponseEntity<?> updateDepartment(@RequestBody updateDepartmentInfo updateInfo, @PathVariable UUID id);
+    ResponseEntity<?> updateDepartment(@RequestBody UpdateDepartmentInfo updateInfo, @PathVariable UUID id);
 
     @PostMapping("/filter")
     @Operation(summary = "Filter department")
@@ -54,7 +54,7 @@ public interface IDepartmentController {
     ResponseEntity<?> filter(@RequestBody @Valid DepartmentFilter siteFilter, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
     @Data
-    class createDepartmentInfo {
+    class CreateDepartmentInfo {
         @NotNull
         private String name;
         @NotNull
@@ -65,7 +65,7 @@ public interface IDepartmentController {
     }
 
     @Data
-    class updateDepartmentInfo {
+    class UpdateDepartmentInfo {
         private String name;
         private String code;
         private String enable;

@@ -46,7 +46,7 @@ spring:
   jpa:
     database: POSTGRESQL
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     generate-ddl: true
     properties:
       javax:
@@ -108,3 +108,7 @@ azure:
     key: gGRLKUt4IX9QHFUNg8gqgDm0gDWcc7tkkKoinx6qM+1XG+pEp7zVEG3Kx1yIMGtlhMFJeBI/E8RN+AStXDXDnQ==
   container:
     name: vms-storage
+
+schedule:
+  cleaningImage:
+    time: 0 0 20 * * *

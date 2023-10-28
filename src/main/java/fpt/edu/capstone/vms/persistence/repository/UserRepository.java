@@ -49,4 +49,6 @@ public interface UserRepository extends JpaRepository<User, String>,UserReposito
     User findFirstByUsername(String username);
 
     List<User> findAllByEnableIsTrue();
+
+    List<User> findAllByAvatarIsNotNull();
 }

@@ -97,6 +97,8 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
     @Override
     public Site updateSite(ISiteController.UpdateSiteInfo updateSite, UUID id) {
 
+
+
         if (!StringUtils.isEmpty(updateSite.getCode())) {
             if (siteRepository.existsByCode(updateSite.getCode())) {
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code of site is exist");
@@ -107,8 +109,17 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
         var update = mapper.map(updateSite, Site.class);
         if (ObjectUtils.isEmpty(siteEntity))
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't found site by id: " + id);
-        if (!UUID.fromString(SecurityUtils.getOrgId()).equals(siteEntity.getOrganizationId())) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in organization with organizationId = " +siteEntity.getOrganization());
+
+        if (SecurityUtils.getOrgId() != null) {
+            if (!UUID.fromString(SecurityUtils.getOrgId()).equals(siteEntity.getOrganizationId())) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in organization with organizationId = " + siteEntity.getOrganization());
+            }
+        } else {
+            if (StringUtils.isEmpty(SecurityUtils.getSiteId())) throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in site with siteId = " + SecurityUtils.getSiteId());
+
+            if(!SecurityUtils.getSiteId().equals(siteEntity.getId().toString())) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in site with siteId = " + SecurityUtils.getSiteId());
+            }
         }
         siteRepository.save(siteEntity.update(update));
         return siteEntity;
