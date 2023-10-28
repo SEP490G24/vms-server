@@ -54,6 +54,7 @@ public interface ITemplateController {
 
     @Data
     class TemplateDto {
+        private UUID id;
         @NotNull
         private String code;
         @NotNull
@@ -80,7 +81,6 @@ public interface ITemplateController {
         LocalDateTime createdOnEnd;
         Boolean enable;
         String keyword;
-
 
         private String name;
         private String code;

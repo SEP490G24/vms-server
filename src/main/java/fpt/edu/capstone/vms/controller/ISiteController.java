@@ -107,6 +107,7 @@ public interface ISiteController {
 
     @Data
     class SiteFilterDTO {
+        UUID id;
         private String name;
         private String code;
         private String enable;

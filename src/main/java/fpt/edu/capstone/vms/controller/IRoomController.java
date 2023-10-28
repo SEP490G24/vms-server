@@ -59,6 +59,7 @@ public interface IRoomController {
     @AllArgsConstructor
     @NoArgsConstructor
     class RoomDto {
+        private UUID id;
         @NotNull
         private String code;
         @NotNull
@@ -82,7 +83,6 @@ public interface IRoomController {
         LocalDateTime createdOnEnd;
         Boolean enable;
         String keyword;
-
 
         private String name;
         private String code;

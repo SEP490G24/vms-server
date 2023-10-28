@@ -86,6 +86,7 @@ public interface IDepartmentController {
 
     @Data
     class DepartmentFilterDTO {
+        private UUID id;
         private String name;
         private String code;
         private String enable;

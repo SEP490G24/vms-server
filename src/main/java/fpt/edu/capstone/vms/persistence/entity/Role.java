@@ -52,6 +52,11 @@ public class Role extends AbstractBaseEntity<UUID> {
     @MapKey(name = "permissionRoleMapPk.roleId")
     private Map<UUID, PermissionRoleMap> permissionRoleMaps;
 
+    @OneToMany(mappedBy = "roleEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @MapKey(name = "userRoleMapPk.roleId")
+    @JsonIgnore
+    private Map<UUID, UserRoleMap> userRoleMaps;
+
     public Role update(Role roleEntity) {
         if (roleEntity.name != null) this.name = roleEntity.name;
         if (roleEntity.code != null) this.code = roleEntity.code;
