@@ -18,7 +18,6 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
@@ -56,8 +55,8 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         this.init(ticketRepository);
     }
 
-    @Value("${spring.mail.username}")
-    String sender;
+//    @Value("${spring.mail.username}")
+//    String sender;
 
     public byte[] getQRCodeImage(String text, int width, int height) throws WriterException, IOException {
         QRCodeWriter qrCodeWriter = new QRCodeWriter();
