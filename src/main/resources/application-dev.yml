@@ -46,7 +46,7 @@ spring:
   jpa:
     database: POSTGRESQL
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
     generate-ddl: true
     properties:
       javax:
@@ -54,9 +54,20 @@ spring:
           create-database-schemas: true
   jackson:
     default-property-inclusion: NON_NULL
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: xuantrinhxq2@gmail.com
+    password: ovawvgfjvnaouxkw
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
   #  liquibase:
-#    change-log: classpath:db/changelog-master.yml
+  #    change-log: classpath:db/changelog-master.yml
   data:
     redis:
       host: localhost

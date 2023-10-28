@@ -1,7 +1,5 @@
 package fpt.edu.capstone.vms.persistence.entity;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import fpt.edu.capstone.vms.constants.Constants;
 import jakarta.persistence.*;
@@ -12,12 +10,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import org.hibernate.annotations.Type;
-
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 @Data
@@ -43,7 +37,7 @@ public class Ticket extends AbstractBaseEntity<UUID> {
     @Min(value = 1)
     @Max(value = 12)
     @Column(name = "identification_number")
-    private Integer identificationNumber;
+    private String identificationNumber;
 
     @Column(name = "license_plate_number", length = 64)
     private String licensePlateNumber;
@@ -54,32 +48,25 @@ public class Ticket extends AbstractBaseEntity<UUID> {
     @Column(name = "phone_number")
     private String phoneNumber;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "gender")
-    private Boolean gender;
+    private Constants.Gender gender;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "purpose")
-    private String purpose;
+    private Constants.Purpose purpose;
 
-    @Column(name = "purpose_other")
+    @Column(name = "purpose_note")
     private String purposeOther;
 
-    @Column(name = "expected_date")
-    private LocalDateTime expectedDate;
-
-    @Column(name = "expected_time")
-    private String expectedTime;
+    @Column(name = "start_time")
+    private LocalDateTime startTime;
 
     @Column(name = "end_time")
     private LocalDateTime endTime;
 
     @Column(name = "comment")
     private String comment;
-
-    @Column(name = "promise")
-    private Boolean promise;
-
-    @Column(name = "privacy")
-    private Boolean privacy;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
@@ -106,6 +93,14 @@ public class Ticket extends AbstractBaseEntity<UUID> {
 
     @Column(name = "settings", length = 500)
     private String settings;
+
+    @Column(name = "template_id")
+    private UUID templateId;
+
+    @ManyToOne
+    @JoinColumn(name = "template_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JsonIgnore
+    private Template template;
 
     @Override
     public UUID getId() {
