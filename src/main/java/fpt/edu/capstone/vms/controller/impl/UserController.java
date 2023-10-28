@@ -1,7 +1,6 @@
 package fpt.edu.capstone.vms.controller.impl;
 
 
-import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.IUserController;
 import fpt.edu.capstone.vms.exception.HttpClientResponse;
 import fpt.edu.capstone.vms.exception.NotFoundException;
@@ -23,7 +22,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.List;
 
 @RestController
 @AllArgsConstructor
@@ -33,20 +31,20 @@ public class UserController implements IUserController {
     private final ModelMapper mapper;
 
     @Override
-    public ResponseEntity<?> filter(UserFilter filter,boolean isPageable,Pageable pageable) {
+    public ResponseEntity<?> filter(UserFilterRequest filter, boolean isPageable, Pageable pageable) {
         return isPageable ? ResponseEntity.ok(
-                userService.filter(
-                        pageable,
-                        filter.getUsernames(),
-                        filter.getRoles(),
-                        filter.getCreatedOnStart(),
-                        filter.getCreatedOnEnd(),
-                        filter.getEnable(),
-                        filter.getKeyword(),
-                        filter.getDepartmentId())) : ResponseEntity.ok(
+            userService.filter(
+                pageable,
+                filter.getUsernames(),
+                filter.getRole(),
+                filter.getCreatedOnStart(),
+                filter.getCreatedOnEnd(),
+                filter.getEnable(),
+                filter.getKeyword(),
+                filter.getDepartmentId())) : ResponseEntity.ok(
             userService.filter(
                 filter.getUsernames(),
-                filter.getRoles(),
+                filter.getRole(),
                 filter.getCreatedOnStart(),
                 filter.getCreatedOnEnd(),
                 filter.getEnable(),
@@ -56,8 +54,7 @@ public class UserController implements IUserController {
 
     @Override
     public ResponseEntity<?> create(CreateUserInfo userInfo) {
-        User userEntity = userService.createUser(mapper.map(userInfo, IUserResource.UserDto.class)
-                .setRole(Constants.UserRole.STAFF));
+        User userEntity = userService.createUser(mapper.map(userInfo, IUserResource.UserDto.class));
         return ResponseEntity.ok(mapper.map(userEntity, IUserResource.UserDto.class));
     }
 
@@ -92,7 +89,7 @@ public class UserController implements IUserController {
     }
 
     @Override
-    public ResponseEntity<?> export(UserFilter userFilter) {
+    public ResponseEntity<?> export(UserFilterRequest userFilter) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
         headers.setContentDispositionFormData("attachment", "danh_sach_nguoi_dung.xlsx");
@@ -114,11 +111,11 @@ public class UserController implements IUserController {
         }
     }
 
-    @Override
-    public ResponseEntity<?> updateRole(String username, List<String> roles) {
-        userService.updateRole(username, roles);
-        return ResponseEntity.ok().build();
-    }
+//    @Override
+//    public ResponseEntity<?> updateRole(String username, List<String> roles) {
+//        userService.updateRole(username, roles);
+//        return ResponseEntity.ok().build();
+//    }
 
     @Override
     public ResponseEntity<Object> importUser(MultipartFile file) {

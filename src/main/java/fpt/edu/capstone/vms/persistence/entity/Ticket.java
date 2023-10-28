@@ -37,7 +37,7 @@ public class Ticket extends AbstractBaseEntity<UUID> {
     @Min(value = 1)
     @Max(value = 12)
     @Column(name = "identification_number")
-    private Integer identificationNumber;
+    private String identificationNumber;
 
     @Column(name = "license_plate_number", length = 64)
     private String licensePlateNumber;
@@ -48,13 +48,15 @@ public class Ticket extends AbstractBaseEntity<UUID> {
     @Column(name = "phone_number")
     private String phoneNumber;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "gender")
-    private Boolean gender;
+    private Constants.Gender gender;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "purpose")
-    private String purpose;
+    private Constants.Purpose purpose;
 
-    @Column(name = "purpose_other")
+    @Column(name = "purpose_note")
     private String purposeOther;
 
     @Column(name = "start_time")

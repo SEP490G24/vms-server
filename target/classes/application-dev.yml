@@ -46,7 +46,7 @@ spring:
   jpa:
     database: POSTGRESQL
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
     generate-ddl: true
     properties:
       javax:
@@ -67,7 +67,7 @@ spring:
             enable: true
 
   #  liquibase:
-#    change-log: classpath:db/changelog-master.yml
+  #    change-log: classpath:db/changelog-master.yml
   data:
     redis:
       host: localhost

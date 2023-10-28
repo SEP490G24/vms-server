@@ -133,12 +133,12 @@ public class UserServiceImpl implements IUserService {
 
 
     @Override
-    public Page<IUserController.UserFilter> filter(Pageable pageable, List<String> usernames, List<Constants.UserRole> roles, LocalDateTime createdOnStart,
-                                                   LocalDateTime createdOnEnd, Boolean enable, String keyword, String departmentId) {
+    public Page<IUserController.UserFilterResponse> filter(Pageable pageable, List<String> usernames, String role, LocalDateTime createdOnStart,
+                                                           LocalDateTime createdOnEnd, Boolean enable, String keyword, String departmentId) {
         return userRepository.filter(
             pageable,
             usernames,
-            roles,
+            role,
             createdOnStart,
             createdOnEnd,
             enable,
@@ -147,11 +147,11 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public List<IUserController.UserFilter> filter(List<String> usernames, List<Constants.UserRole> roles, LocalDateTime createdOnStart,
-                                                   LocalDateTime createdOnEnd, Boolean enable, String keyword, String departmentId) {
+    public List<IUserController.UserFilterResponse> filter(List<String> usernames, String role, LocalDateTime createdOnStart,
+                                                           LocalDateTime createdOnEnd, Boolean enable, String keyword, String departmentId) {
         return userRepository.filter(
             usernames,
-            roles,
+            role,
             createdOnStart,
             createdOnEnd,
             enable,
@@ -172,6 +172,8 @@ public class UserServiceImpl implements IUserService {
         try {
             if (!StringUtils.isEmpty(kcUserId)) {
                 userEntity = mapper.map(userDto, User.class).setOpenid(kcUserId);
+                String role = String.join(";", userDto.getRoles());
+                userEntity.setRole(role);
                 userEntity.setPassword(encodePassword(userEntity.getPassword()));
                 userRepository.save(userEntity);
             }
@@ -197,6 +199,8 @@ public class UserServiceImpl implements IUserService {
                 }
             }
             userEntity = userEntity.update(value);
+            String role = String.join(";", userDto.getRoles());
+            userEntity.setRole(role);
             userRepository.save(userEntity);
         }
         return userEntity;
@@ -249,21 +253,21 @@ public class UserServiceImpl implements IUserService {
         return userRepository.findFirstByUsername(username);
     }
 
-    @Override
-    public void synAccountFromKeycloak() {
-        List<IUserResource.UserDto> users = userResource.users();
-
-        for (IUserResource.UserDto userDto : users) {
-            if (null != userDto.getRole()) {
-                User userEntity = userRepository.findFirstByUsername(userDto.getUsername());
-                if (null == userEntity) {
-                    userEntity = mapper.map(userDto, User.class);
-                    userRepository.save(userEntity);
-                    log.info("Create user {}", userDto.getUsername());
-                }
-            }
-        }
-    }
+//    @Override
+//    public void synAccountFromKeycloak() {
+//        List<IUserResource.UserDto> users = userResource.users();
+//
+//        for (IUserResource.UserDto userDto : users) {
+//            if (null != userDto.getRole()) {
+//                User userEntity = userRepository.findFirstByUsername(userDto.getUsername());
+//                if (null == userEntity) {
+//                    userEntity = mapper.map(userDto, User.class);
+//                    userRepository.save(userEntity);
+//                    log.info("Create user {}", userDto.getUsername());
+//                }
+//            }
+//        }
+//    }
 
     @Override
     public Boolean deleteAvatar(String oldImage, String newImage, String username) {
@@ -285,9 +289,9 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public ByteArrayResource export(IUserController.UserFilter userFilter) {
+    public ByteArrayResource export(IUserController.UserFilterRequest userFilter) {
         Pageable pageable = PageRequest.of(0, 1000000);
-        Page<IUserController.UserFilter> listData = filter(pageable, userFilter.getUsernames(), userFilter.getRoles(), userFilter.getCreatedOnStart(), userFilter.getCreatedOnEnd(), userFilter.getEnable(), userFilter.getKeyword(), userFilter.getDepartmentId());
+        Page<IUserController.UserFilterResponse> listData = filter(pageable, userFilter.getUsernames(), userFilter.getRole(), userFilter.getCreatedOnStart(), userFilter.getCreatedOnEnd(), userFilter.getEnable(), userFilter.getKeyword(), userFilter.getDepartmentId());
         try {
             JasperReport jasperReport = JasperCompileManager.compileReport(getClass().getResourceAsStream(PATH_FILE));
 
@@ -366,11 +370,11 @@ public class UserServiceImpl implements IUserService {
 
     }
 
-    @Override
-    public void updateRole(String username, List<String> roles) {
-        var userEntity = userRepository.findByUsername(username).orElse(null);
-        userResource.updateRole(userEntity.getOpenid(), roles);
-    }
+//    @Override
+//    public void updateRole(String username, List<String> roles) {
+//        var userEntity = userRepository.findByUsername(username).orElse(null);
+//        userResource.updateRole(userEntity.getOpenid(), roles);
+//    }
 
 
     @Transactional
@@ -543,7 +547,7 @@ public class UserServiceImpl implements IUserService {
 
                 //check error by current row
                 if (mapError.get(this.currentRowIndex) == null) {
-                    User entity = createUser(mapper.map(dto, IUserResource.UserDto.class).setRole(Constants.UserRole.STAFF));
+                    User entity = createUser(mapper.map(dto, IUserResource.UserDto.class));
                     listUsernameValid.add(entity.getUsername());
                     //delete message error if exist
                     if (!CollectionUtils.isEmpty(this.mapError.get(currentRowIndex))) {

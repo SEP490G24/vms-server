@@ -1,7 +1,6 @@
 package fpt.edu.capstone.vms.persistence.repository.impl;
 
 import com.nimbusds.oauth2.sdk.util.StringUtils;
-import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.IUserController;
 import fpt.edu.capstone.vms.persistence.repository.UserRepositoryCustom;
 import jakarta.persistence.EntityManager;
@@ -22,7 +21,7 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
 
 
     @Override
-    public Page<IUserController.UserFilter> filter(Pageable pageable, Collection<String> usernames, Collection<Constants.UserRole> roles, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, Boolean enable, String keyword, String departmentId) {
+    public Page<IUserController.UserFilterResponse> filter(Pageable pageable, Collection<String> usernames, String role, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, Boolean enable, String keyword, String departmentId) {
         Map<String, Object> queryParams = new HashMap<>();
         Sort sort = pageable.getSort();
         String orderByClause = "";
@@ -40,13 +39,13 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
         sqlConditional.append("FROM \"user\" u ");
         sqlConditional.append("LEFT JOIN department d ON u.department_id = d.id ");
         sqlConditional.append("WHERE 1=1 ");
-        if (usernames != null && !usernames.isEmpty() && usernames.size() > 0 ) {
+        if (usernames != null && !usernames.isEmpty() && usernames.size() > 0) {
             sqlConditional.append("AND u.username = :usernames ");
-            queryParams.put("usernames",usernames);
+            queryParams.put("usernames", usernames);
         }
-        if (roles != null && !roles.isEmpty() && roles.size() > 0 ) {
-            sqlConditional.append("AND u.role = :roles ");
-            queryParams.put("roles",roles);
+        if (role != null) {
+            sqlConditional.append("AND u.role = :role ");
+            queryParams.put("roles", "%" + role + "%");
         }
         if (createdOnStart != null && createdOnEnd != null) {
             sqlConditional.append("AND u.created_on between :createdOnStart and :createdOnEnd ");
@@ -72,9 +71,9 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
         query.setMaxResults(pageable.getPageSize());
         queryParams.forEach(query::setParameter);
         List<Object[]> queryResult = query.getResultList();
-        List<IUserController.UserFilter> listData = new ArrayList<>();
+        List<IUserController.UserFilterResponse> listData = new ArrayList<>();
         for (Object[] object : queryResult) {
-            IUserController.UserFilter userFilter = new IUserController.UserFilter();
+            IUserController.UserFilterResponse userFilter = new IUserController.UserFilterResponse();
             userFilter.setUsername((String) object[0]);
             userFilter.setFirstName((String) object[1]);
             userFilter.setLastName((String) object[2]);
@@ -83,7 +82,9 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
             userFilter.setPhoneNumber((String) object[5]);
             userFilter.setDateOfBirth((Date) object[6]);
             userFilter.setEnable((Boolean) object[7]);
-            userFilter.setRoleName((String) object[8]);
+            String roleNames = (String) object[8];
+            List<String> rolesList = Arrays.asList(roleNames.split(";"));
+            userFilter.setRoles(rolesList);
             userFilter.setDepartmentName((String) object[9]);
             userFilter.setCountryCode((String) object[10]);
             userFilter.setCreatedOn((Date) object[11]);
@@ -98,7 +99,7 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
 
 
     @Override
-    public List<IUserController.UserFilter> filter(Collection<String> usernames, Collection<Constants.UserRole> roles, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, Boolean enable, String keyword, String departmentId) {
+    public List<IUserController.UserFilterResponse> filter(Collection<String> usernames, String role, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, Boolean enable, String keyword, String departmentId) {
         Map<String, Object> queryParams = new HashMap<>();
         String orderByClause = "";
         String sqlGetData = "SELECT u.username, u.first_name as firstName, u.last_name as lastName, u.email, u.gender, u.phone_number as phoneNumber," +
@@ -107,13 +108,13 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
         sqlConditional.append("FROM \"user\" u ");
         sqlConditional.append("LEFT JOIN department d ON u.department_id = d.id ");
         sqlConditional.append("WHERE 1=1 ");
-        if (usernames != null && !usernames.isEmpty() && usernames.size() > 0 ) {
+        if (usernames != null && !usernames.isEmpty() && usernames.size() > 0) {
             sqlConditional.append("AND u.username = :usernames ");
-            queryParams.put("usernames",usernames);
+            queryParams.put("usernames", usernames);
         }
-        if (roles != null && !roles.isEmpty() && roles.size() > 0 ) {
-            sqlConditional.append("AND u.role = :roles ");
-            queryParams.put("roles",roles);
+        if (role != null) {
+            sqlConditional.append("AND u.role = :role ");
+            queryParams.put("roles", "%" + role + "%");
         }
         if (createdOnStart != null && createdOnEnd != null) {
             sqlConditional.append("AND u.created_on between :createdOnStart and :createdOnEnd ");
@@ -137,9 +138,9 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
         Query query = entityManager.createNativeQuery(sqlGetData + sqlConditional + orderByClause);
         queryParams.forEach(query::setParameter);
         List<Object[]> queryResult = query.getResultList();
-        List<IUserController.UserFilter> listData = new ArrayList<>();
+        List<IUserController.UserFilterResponse> listData = new ArrayList<>();
         for (Object[] object : queryResult) {
-            IUserController.UserFilter userFilter = new IUserController.UserFilter();
+            IUserController.UserFilterResponse userFilter = new IUserController.UserFilterResponse();
             userFilter.setUsername((String) object[0]);
             userFilter.setFirstName((String) object[1]);
             userFilter.setLastName((String) object[2]);
@@ -148,7 +149,9 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
             userFilter.setPhoneNumber((String) object[5]);
             userFilter.setDateOfBirth((Date) object[6]);
             userFilter.setEnable((Boolean) object[7]);
-            userFilter.setRoleName((String) object[8]);
+            String roleNames = (String) object[8];
+            List<String> rolesList = Arrays.asList(roleNames.split(";"));
+            userFilter.setRoles(rolesList);
             userFilter.setDepartmentName((String) object[9]);
             userFilter.setCountryCode((String) object[10]);
             userFilter.setCreatedOn((Date) object[11]);
