@@ -1,16 +1,16 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
-import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.IDepartmentController;
 import fpt.edu.capstone.vms.persistence.entity.Department;
 import fpt.edu.capstone.vms.persistence.repository.DepartmentRepository;
+import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.service.IDepartmentService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
+import fpt.edu.capstone.vms.util.SecurityUtils;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -18,6 +18,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,11 +27,12 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
 
     private final DepartmentRepository departmentRepository;
     private final ModelMapper mapper;
+    private final SiteRepository siteRepository;
 
-
-    public DepartmentServiceImpl(DepartmentRepository departmentRepository, ModelMapper mapper) {
+    public DepartmentServiceImpl(DepartmentRepository departmentRepository, ModelMapper mapper, SiteRepository siteRepository) {
         this.departmentRepository = departmentRepository;
         this.mapper = mapper;
+        this.siteRepository = siteRepository;
         this.init(departmentRepository);
     }
 
@@ -53,33 +55,52 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
         }
 
         var department = departmentRepository.findById(id).orElse(null);
+
         if (ObjectUtils.isEmpty(department))
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't found department");
+
+        String siteId = department.getSiteId().toString();
+
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "Can't create department in this site");
+        }
+
         departmentRepository.save(department.update(updateDepartmentInfo));
         return department;
     }
 
     /**
-     * The function creates a new department if the provided department information is valid and does not already exist.
+     * This Java function creates a department based on the provided department information, with various checks and
+     * validations.
      *
-     * @param departmentInfo The departmentInfo parameter is an object of type IDepartmentController.createDepartmentInfo.
-     * It contains information about the department that needs to be created, such as the department code and site ID.
+     * @param departmentInfo The parameter `departmentInfo` is an object of type
+     * `IDepartmentController.CreateDepartmentInfo`. It contains information required to create a department, such as the
+     * site ID and department code.
      * @return The method is returning a Department object.
      */
     @Override
     @Transactional
-    public Department createDepartment(IDepartmentController.createDepartmentInfo departmentInfo) {
+    public Department createDepartment(IDepartmentController.CreateDepartmentInfo departmentInfo) {
+
+        if (StringUtils.isEmpty(departmentInfo.getSiteId()))
+            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "SiteId is null");
+
+        String siteId = departmentInfo.getSiteId();
+
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "Can't update department in this site");
+        }
 
         if (StringUtils.isEmpty(departmentInfo.getCode())) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code is null");
         }
+
         if (departmentRepository.existsByCode(departmentInfo.getCode())) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code of organization is exist");
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code of department is exist");
         }
+
         if (ObjectUtils.isEmpty(departmentInfo))
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Object is empty");
-        if (StringUtils.isEmpty(departmentInfo.getSiteId()))
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "SiteId is null");
         var department = mapper.map(departmentInfo, Department.class);
         department.setEnable(true);
         departmentRepository.save(department);

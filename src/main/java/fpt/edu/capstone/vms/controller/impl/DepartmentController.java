@@ -69,7 +69,7 @@ public class DepartmentController implements IDepartmentController {
      * @return The method is returning a ResponseEntity object.
      */
     @Override
-    public ResponseEntity<?> createDepartment(createDepartmentInfo departmentInfo) {
+    public ResponseEntity<?> createDepartment(CreateDepartmentInfo departmentInfo) {
         try {
             var department = departmentService.createDepartment(departmentInfo);
             return ResponseEntity.ok(department);
@@ -89,10 +89,10 @@ public class DepartmentController implements IDepartmentController {
      * @return The method is returning a ResponseEntity object.
      */
     @Override
-    public ResponseEntity<?> updateDepartment(updateDepartmentInfo updateInfo, UUID id) {
+    public ResponseEntity<?> updateDepartment(UpdateDepartmentInfo updateInfo, UUID id) {
         try {
-            var site = departmentService.update(mapper.map(updateInfo, Department.class), id);
-            return ResponseEntity.ok(site);
+            var department = departmentService.update(mapper.map(updateInfo, Department.class), id);
+            return ResponseEntity.ok(department);
         } catch (HttpClientErrorException e) {
             return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
         }
