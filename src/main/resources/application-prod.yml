@@ -98,4 +98,4 @@ azure:
 
 schedule:
   cleaningImage:
-    time: 0 0 7 * * *
+    time: 0 20 8 * * *
