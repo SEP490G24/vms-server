@@ -2,19 +2,7 @@ package fpt.edu.capstone.vms.persistence.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import fpt.edu.capstone.vms.constants.Constants;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.MapKey;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
@@ -43,16 +31,10 @@ public class Customer extends AbstractBaseEntity<UUID> {
     @Column(name = "visitor_name")
     private String visitor_name;
 
-    @Column(name = "code")
-    private String code;
-
     @Min(value = 1)
     @Max(value = 12)
     @Column(name = "identification_number")
     private String identificationNumber;
-
-    @Column(name = "license_plate_number", length = 64)
-    private String licensePlateNumber;
 
     @Column(name = "email")
     private String email;
@@ -90,9 +72,6 @@ public class Customer extends AbstractBaseEntity<UUID> {
     @JoinColumn(name = "commune_id", referencedColumnName = "id", insertable = false, updatable = false)
     @JsonIgnore
     private Commune commune;
-
-    @Column(name = "department_id")
-    private UUID departmentId;
 
     @OneToMany(mappedBy = "customerEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     @MapKey(name = "customerTicketMapPk.customerId")

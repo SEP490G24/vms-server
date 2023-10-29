@@ -52,8 +52,9 @@ public enum ErrorApp {
     ENTITY_WAREHOUSE_CODE_DUPLICATE(137, I18n.getMessage("msg.warehouse.code.duplicate")),
     ENTITY_CAT_FEE_TRANSPORT_CODE_DUPLICATE(138, I18n.getMessage("msg.catFeeTransport.code.duplicate")),
     ENTITY_CAT_FEE_MOVE_CODE_DUPLICATE(139, I18n.getMessage("msg.catFeeMove.code.duplicate")),
-    IS_CHECK_CAT_FEE_MOVE_SHIP_FROM_AND_SHIP_TO(140, I18n.getMessage("msg.entity.is.check.catFeeMove.ShipFrom.and.ShipTo"));
-
+    IS_CHECK_CAT_FEE_MOVE_SHIP_FROM_AND_SHIP_TO(140, I18n.getMessage("msg.entity.is.check.catFeeMove.ShipFrom.and.ShipTo")),
+    EMAIL_SEND_FAILED(105, I18n.getMessage("msg.email.send.failed")),
+    ROOM_IN_USE(106, I18n.getMessage("msg.room.in.use"));
 
     private final int code;
     private final String description;

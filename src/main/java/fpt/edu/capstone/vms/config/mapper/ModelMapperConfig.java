@@ -1,17 +1,9 @@
 package fpt.edu.capstone.vms.config.mapper;
 
 
-import fpt.edu.capstone.vms.controller.IDepartmentController;
-import fpt.edu.capstone.vms.controller.IRoomController;
-import fpt.edu.capstone.vms.controller.ISiteController;
-import fpt.edu.capstone.vms.controller.ITemplateController;
-import fpt.edu.capstone.vms.controller.IUserController;
+import fpt.edu.capstone.vms.controller.*;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
-import fpt.edu.capstone.vms.persistence.entity.Department;
-import fpt.edu.capstone.vms.persistence.entity.Room;
-import fpt.edu.capstone.vms.persistence.entity.Site;
-import fpt.edu.capstone.vms.persistence.entity.Template;
-import fpt.edu.capstone.vms.persistence.entity.User;
+import fpt.edu.capstone.vms.persistence.entity.*;
 import fpt.edu.capstone.vms.persistence.repository.ProvinceRepository;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.modelmapper.ModelMapper;
@@ -72,6 +64,10 @@ public class ModelMapperConfig {
         // template => templateDto
         modelMapper.createTypeMap(Template.class, ITemplateController.TemplateDto.class)
             .addMappings(mapping -> mapping.map((template -> template.getSite().getName()), ITemplateController.TemplateDto::setSiteName));
+
+        // CreateCustomerDto => CustomerEntity
+        modelMapper.createTypeMap(ICustomerController.CreateCustomerDto.class, Customer.class)
+            .addMappings(mapping -> mapping.map(ICustomerController.CreateCustomerDto::getId, Customer::setId));
 
         return modelMapper;
     }

@@ -68,7 +68,10 @@ spring:
         jwt:
           issuer-uri: ${edu.fpt.capstone.vms.oauth2.keycloak.issuer-uri}
           jwk-set-uri: ${edu.fpt.capstone.vms.oauth2.keycloak.jwk-set-uri}
-
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
 springdoc:
   cache:
     disabled: true
@@ -95,4 +98,4 @@ azure:
 
 schedule:
   cleaningImage:
-    time: 0 0 20 * * *
+    time: 0 0 22 * * *
