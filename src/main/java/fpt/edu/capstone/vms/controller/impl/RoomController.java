@@ -76,7 +76,7 @@ public class RoomController implements IRoomController {
             filter.getEnable(),
             filter.getKeyword());
 
-        List<RoomFilterResponse> roomDtos = mapper.map(roomEntityPageable.getContent(), new TypeToken<List<RoomDto>>() {
+        List<RoomFilterResponse> roomDtos = mapper.map(roomEntityPageable.getContent(), new TypeToken<List<RoomFilterResponse>>() {
         }.getType());
 
         return isPageable ? ResponseEntity.ok(new PageImpl(roomDtos, pageable, roomDtos.size()))
