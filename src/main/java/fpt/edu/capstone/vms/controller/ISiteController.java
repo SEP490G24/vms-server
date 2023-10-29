@@ -115,7 +115,7 @@ public interface ISiteController {
 
     @Data
     class SiteFilterDTO {
-        UUID id;
+        private UUID id;
         private String name;
         private String code;
         private Boolean enable;

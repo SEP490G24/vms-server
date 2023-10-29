@@ -80,8 +80,8 @@ spring:
           jwk-set-uri: ${edu.fpt.capstone.vms.oauth2.keycloak.jwk-set-uri}
   servlet:
     multipart:
-      max-file-size: 100MB
-      max-request-size: 100MB
+      max-file-size: 20MB
+      max-request-size: 20MB
 
 
   main:
@@ -111,4 +111,4 @@ azure:
 
 schedule:
   cleaningImage:
-    time: 0 0 4 * * *
+    time: 0 0 7 * * *
