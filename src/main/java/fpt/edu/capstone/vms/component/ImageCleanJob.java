@@ -31,7 +31,7 @@ public class ImageCleanJob {
     @Scheduled(cron = "${schedule.cleaningImage.time}")
     public void scheduleCleanAvatarTrash() {
         log.info("Start clean image!!!");
-        List<File> files = fileRepository.findAllByType(Constants.FileType.IMAGE_AVATAR.name());
+        List<File> files = fileRepository.findAllByType(Constants.FileType.IMAGE_AVATAR);
         List<User> users = userRepository.findAllByAvatarIsNotNull();
         if (users.isEmpty()) {
             log.info("Cleaning {} images in database and blob", files.size());
