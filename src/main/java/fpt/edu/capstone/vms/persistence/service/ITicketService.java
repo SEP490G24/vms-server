@@ -9,4 +9,8 @@ import java.util.UUID;
 
 public interface ITicketService extends IGenericService<Ticket, UUID> {
     Ticket create(ITicketController.CreateTicketInfo ticketInfo);
+
+    Boolean updateBookMark(ITicketController.TicketBookmark ticketBookmark);
+
+    Boolean deleteTicket(String ticketId);
 }

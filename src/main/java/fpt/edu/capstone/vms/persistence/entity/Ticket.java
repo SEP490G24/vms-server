@@ -2,7 +2,19 @@ package fpt.edu.capstone.vms.persistence.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import fpt.edu.capstone.vms.constants.Constants;
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapKey;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -50,8 +62,8 @@ public class Ticket extends AbstractBaseEntity<UUID> {
     @Column(name = "status")
     private Constants.StatusTicket status;
 
-    @Column(name = "is_bookmark")
-    private String isBookmark;
+    @Column(name = "is_bookmark", nullable = false)
+    private boolean isBookmark;
 
     @Column(name = "username")
     private String username;

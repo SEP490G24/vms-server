@@ -37,8 +37,9 @@ public class Constants {
 
     public enum StatusTicket {
         DRAFT,
-        DONE,
-        PENDING
+        PENDING,
+        CHECK_IN,
+        CHECK_OUT
     }
 
     public enum Gender {

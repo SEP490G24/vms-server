@@ -9,5 +9,5 @@ import java.util.UUID;
 
 public interface ICustomerService extends IGenericService<Customer, UUID> {
 
-    Customer create(ICustomerController.CreateCustomerDto createCustomerDto);
+    Customer create(ICustomerController.NewCustomers createCustomerDto);
 }

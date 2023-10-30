@@ -1,5 +1,9 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
+import com.azure.storage.blob.BlobClient;
+import com.azure.storage.blob.BlobContainerClient;
+import com.azure.storage.blob.BlobServiceClient;
+import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.azure.storage.blob.models.BlobItem;
 import com.azure.storage.common.StorageSharedKeyCredential;
 import fpt.edu.capstone.vms.constants.Constants;
@@ -15,8 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MultipartFile;
-import com.azure.storage.blob.*;
-
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -109,6 +111,7 @@ public class FileServiceImpl extends GenericServiceImpl<File, UUID> implements I
             image.setDescription("Set avatar");
             image.setFileExtension(extension);
             image.setName(relativeFileName);
+            image.setCode("user.avatar");
             image.setStatus(true);
             image.setUrl(blobUri);
             image.setType(Constants.FileType.IMAGE_AVATAR);

@@ -6,12 +6,17 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 import lombok.Data;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,8 +37,7 @@ public interface ITicketController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete ticket")
-    @PreAuthorize("hasRole('r:ticket:delete')")
-    ResponseEntity<?> delete(@PathVariable UUID id);
+    ResponseEntity<?> delete(@PathVariable String id);
 
     @GetMapping
     @Operation(summary = "Get all ticket")
@@ -45,42 +49,62 @@ public interface ITicketController {
     @PreAuthorize("hasRole('r:ticket:create')")
     ResponseEntity<?> create(@RequestBody @Valid CreateTicketInfo ticketInfo);
 
+    @PostMapping("/bookmark")
+    @Operation(summary = "Set bookmark ticket")
+    ResponseEntity<?> updateBookmark(@RequestBody @Valid TicketBookmark ticketBookmark);
+
     @Data
     class CreateTicketInfo {
 
-        List<ICustomerController.CreateCustomerDto> createCustomerDtos;
+        private Constants.Purpose purpose;
 
-        @NotNull(message = "Meeting code cannot be null")
-        @NotEmpty(message = "Meeting code cannot be empty")
-        @Size(max = 15, message = "Meeting code has a maximum length of 15 characters")
-        @Pattern(regexp = "^[a-zA-Z0-9]*$", message = "Meeting code must contain only alphanumeric characters")
-        private String code;
+        private String purposeNote;
 
-        @NotEmpty
-        private String purpose;
-
-        @NotEmpty
-        private String purposeOther;
-
-        @NotNull(message = "Start time cannot be null")
         private LocalDateTime startTime;
 
-        @NotNull(message = "End time cannot be null")
         private LocalDateTime endTime;
 
         private String comment;
 
-        private String isBookmark;
-
-        @NotNull(message = "Room cannot be null")
-        @NotEmpty(message = "Room cannot be empty")
         private UUID roomId;
 
-        @NotEmpty(message = "Template cannot be empty")
         private UUID templateId;
 
+        List<ICustomerController.NewCustomers> newCustomers;
+
+        List<String> oldCustomers;
+
         @NotNull
-        private Constants.StatusTicket status;
+        private boolean draft;
     }
 
+    @Data
+    class TicketBookmark {
+
+        @NotNull
+        @NotEmpty
+        private String ticketId;
+
+        @NotNull
+        @NotEmpty
+        private boolean bookmark;
+    }
+
+    @Data
+    class TicketFilterDTO {
+        private UUID id;
+        private String code;
+        private Constants.Purpose purpose;
+        private String purposeNote;
+        private LocalDateTime startTime;
+        private LocalDateTime endTime;
+        private String comment;
+        private Constants.StatusTicket status;
+        private String username;
+        private UUID roomId;
+        private String createdBy;
+        private LocalDateTime createdOn;
+        private String lastUpdatedBy;
+        private LocalDateTime lastUpdatedOn;
+    }
 }

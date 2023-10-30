@@ -16,7 +16,7 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-@Table(schema = "vms", name = "user_role_map")
+@Table(schema = "vms", name = "customer_ticket_map")
 public class CustomerTicketMap extends AbstractBaseEntity<CustomerTicketMapPk> {
 
     @EmbeddedId
