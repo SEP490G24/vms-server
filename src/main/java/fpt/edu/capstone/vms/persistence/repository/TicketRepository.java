@@ -9,9 +9,9 @@ import java.util.UUID;
 @Repository
 public interface TicketRepository extends GenericRepository<Ticket, UUID> {
 
-    Integer countByRoomIdAndEndTimeGreaterThanEqualAndStartTimeLessThanEqual(UUID roomId, LocalDateTime startTime, LocalDateTime endTime);
+    Integer countByRoomIdAndEndTimeGreaterThanEqualAndStartTimeLessThanEqual(UUID roomId, LocalDateTime endTime, LocalDateTime startTime);
 
-    Integer countByUsernameAndEndTimeGreaterThanEqualAndStartTimeLessThanEqual(String username, LocalDateTime startTime, LocalDateTime endTime);
+    Integer countByUsernameAndEndTimeGreaterThanEqualAndStartTimeLessThanEqual(String username, LocalDateTime endTime, LocalDateTime startTime);
 
     Boolean existsByIdAndUsername(UUID ticketId, String username);
 
