@@ -24,7 +24,7 @@ public class CustomerServiceImpl extends GenericServiceImpl<Customer, UUID> impl
     }
 
     @Override
-    public Customer create(ICustomerController.CreateCustomerDto createCustomerDto) {
+    public Customer create(ICustomerController.NewCustomers createCustomerDto) {
         return customerRepository.save(mapper.map(createCustomerDto, Customer.class));
     }
 }

@@ -25,7 +25,7 @@ public class CustomerController implements ICustomerController {
     }
 
     @Override
-    public ResponseEntity<?> create(CreateCustomerDto createCustomerDto) {
+    public ResponseEntity<?> create(NewCustomers createCustomerDto) {
         return ResponseEntity.ok(customerService.create(createCustomerDto));
     }
 }
