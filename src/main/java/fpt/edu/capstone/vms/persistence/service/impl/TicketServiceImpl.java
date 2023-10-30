@@ -15,7 +15,6 @@ import fpt.edu.capstone.vms.persistence.repository.TemplateRepository;
 import fpt.edu.capstone.vms.persistence.repository.TicketRepository;
 import fpt.edu.capstone.vms.persistence.service.ITicketService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
-import fpt.edu.capstone.vms.util.EmailUtils;
 import fpt.edu.capstone.vms.util.QRcodeUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import lombok.AccessLevel;
@@ -244,7 +243,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             try {
                 byte[] qrCodeData = QRcodeUtils.getQRCodeImage(meetingUrl, 400, 400);
                 assert template != null;
-                EmailUtils.sendMailWithQRCode(customer.getEmail(), template.getSubject(), template.getBody(), qrCodeData);
+//                EmailUtils.sendMailWithQRCode(customer.getEmail(), template.getSubject(), template.getBody(), qrCodeData);
             } catch (WriterException e) {
                 throw new RuntimeException(e);
             } catch (IOException e) {
