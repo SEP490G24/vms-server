@@ -39,8 +39,11 @@ public class Ticket extends AbstractBaseEntity<UUID> {
     @GeneratedValue
     private UUID id;
 
-    @Column(name = "code")
+    @Column(name = "code", unique = true, updatable = false, nullable = false)
     private String code;
+
+    @Column(name = "name")
+    private String name;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "purpose")
@@ -55,14 +58,14 @@ public class Ticket extends AbstractBaseEntity<UUID> {
     @Column(name = "end_time")
     private LocalDateTime endTime;
 
-    @Column(name = "comment")
-    private String comment;
+    @Column(name = "description")
+    private String description;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private Constants.StatusTicket status;
 
-    @Column(name = "is_bookmark", nullable = false)
+    @Column(name = "is_bookmark", nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
     private boolean isBookmark;
 
     @Column(name = "username")

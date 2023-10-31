@@ -60,11 +60,13 @@ public interface ITicketController {
 
         private String purposeNote;
 
+        private String name;
+
         private LocalDateTime startTime;
 
         private LocalDateTime endTime;
 
-        private String comment;
+        private String description;
 
         private UUID roomId;
 

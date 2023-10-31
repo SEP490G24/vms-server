@@ -13,4 +13,6 @@ public interface ITicketService extends IGenericService<Ticket, UUID> {
     Boolean updateBookMark(ITicketController.TicketBookmark ticketBookmark);
 
     Boolean deleteTicket(String ticketId);
+
+    Boolean cancelTicket(String ticketId);
 }

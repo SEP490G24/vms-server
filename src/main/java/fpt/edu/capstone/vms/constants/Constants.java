@@ -39,7 +39,8 @@ public class Constants {
         DRAFT,
         PENDING,
         CHECK_IN,
-        CHECK_OUT
+        CHECK_OUT,
+        CANCEL
     }
 
     public enum Gender {

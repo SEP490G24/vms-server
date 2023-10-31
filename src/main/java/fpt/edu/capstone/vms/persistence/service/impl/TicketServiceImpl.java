@@ -15,6 +15,7 @@ import fpt.edu.capstone.vms.persistence.repository.TemplateRepository;
 import fpt.edu.capstone.vms.persistence.repository.TicketRepository;
 import fpt.edu.capstone.vms.persistence.service.ITicketService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
+import fpt.edu.capstone.vms.util.EmailUtils;
 import fpt.edu.capstone.vms.util.QRcodeUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import lombok.AccessLevel;
@@ -29,7 +30,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
@@ -45,17 +49,17 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     final TemplateRepository templateRepository;
     final CustomerRepository customerRepository;
     final CustomerTicketMapRepository customerTicketMapRepository;
+    final EmailUtils emailUtils;
 
-    private static String daysEarlier = "";
-    private static int number = 0;
 
     public TicketServiceImpl(TicketRepository ticketRepository, CustomerRepository customerRepository,
-                             TemplateRepository templateRepository, ModelMapper mapper, CustomerTicketMapRepository customerTicketMapRepository) {
+                             TemplateRepository templateRepository, ModelMapper mapper, CustomerTicketMapRepository customerTicketMapRepository, EmailUtils emailUtils) {
         this.ticketRepository = ticketRepository;
         this.templateRepository = templateRepository;
         this.customerRepository = customerRepository;
         this.mapper = mapper;
         this.customerTicketMapRepository = customerTicketMapRepository;
+        this.emailUtils = emailUtils;
         this.init(ticketRepository);
     }
 
@@ -72,29 +76,43 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     @Transactional(rollbackFor = {Exception.class, Throwable.class, NullPointerException.class})
     public Ticket create(ITicketController.CreateTicketInfo ticketInfo) {
 
+        String username = SecurityUtils.loginUsername();
         //Tạo meeting
         var ticketDto = mapper.map(ticketInfo, Ticket.class);
-        ticketDto.setCode(generateMeetingCode(ticketInfo.getPurpose()));
+        ticketDto.setCode(generateMeetingCode(ticketInfo.getPurpose(), username));
 
-        if (StringUtils.isEmpty(ticketInfo.getRoomId().toString())) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "roomId is empty");
+        LocalDateTime startTime = ticketInfo.getStartTime();
+        LocalDateTime endTime = ticketInfo.getEndTime();
+
+        if (startTime.isAfter(endTime)) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Time is not true");
         }
 
-        if (isUserHaveTicketInTime(SecurityUtils.loginUsername(), ticketInfo.getStartTime(), ticketInfo.getEndTime())) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User have meeting in this time");
+        Duration duration = Duration.between(startTime, endTime);
+        long minutes = duration.toMinutes(); // Chuyển thời gian thành phút
+
+        if (minutes < 30) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Time meeting must greater than 30 minutes");
         }
 
-        //Check trùng phòng chưa
         if (isRoomBooked(ticketInfo.getRoomId(), ticketInfo.getStartTime(), ticketInfo.getEndTime())) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Room have meeting in this time");
         }
-
+        ticketDto.setUsername(username);
         if (ticketInfo.isDraft() == true) {
             ticketDto.setStatus(Constants.StatusTicket.DRAFT);
             Ticket ticket = ticketRepository.save(ticketDto);
             setDataCustomer(ticketInfo, ticket);
             return ticket;
         } else {
+            if (StringUtils.isEmpty(ticketInfo.getRoomId().toString())) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "roomId is empty");
+            }
+
+            if (isUserHaveTicketInTime(SecurityUtils.loginUsername(), startTime, endTime)) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User have meeting in this time");
+            }
+
             if (StringUtils.isEmpty(ticketDto.getPurpose().toString())) {
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Purpose is empty");
             }
@@ -151,7 +169,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         if (oldCustomers == null && newCustomers.isEmpty()) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is null");
         }
-        if (!newCustomers.isEmpty()) {
+        if (newCustomers != null) {
             for (ICustomerController.NewCustomers customerDto : newCustomers) {
                 if (ObjectUtils.isEmpty(customerDto))
                     throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is null");
@@ -219,6 +237,30 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         return false;
     }
 
+    /**
+     * The function cancels a ticket by updating its status to "CANCEL" if the ticket exists and belongs to the currently
+     * logged in user.
+     *
+     * @param ticketId The ticketId parameter is a String that represents the unique identifier of the ticket that needs to
+     *                 be canceled.
+     * @return The method is returning a Boolean value.
+     */
+    @Override
+    @Transactional(rollbackFor = {Exception.class, Throwable.class, NullPointerException.class})
+    public Boolean cancelTicket(String ticketId) {
+        var ticket = ticketRepository.findById(UUID.fromString(ticketId)).orElse(null);
+        if (ObjectUtils.isEmpty(ticket)) {
+            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Ticket is empty");
+        }
+        if (ticketRepository.existsByIdAndUsername(UUID.fromString(ticketId), SecurityUtils.loginUsername())) {
+            ticket.setStatus(Constants.StatusTicket.CANCEL);
+            ticketRepository.save(ticket);
+//            emailUtils.sendMailWithQRCode(customer.getEmail(), template.getSubject(), template.getBody(), qrCodeData);
+            return true;
+        }
+        return false;
+    }
+
 
     /**
      * The function `sendQr` sends an email to each customer in the `customerTicketMap` list with a QR code generated from
@@ -243,7 +285,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             try {
                 byte[] qrCodeData = QRcodeUtils.getQRCodeImage(meetingUrl, 400, 400);
                 assert template != null;
-//                EmailUtils.sendMailWithQRCode(customer.getEmail(), template.getSubject(), template.getBody(), qrCodeData);
+                emailUtils.sendMailWithQRCode(customer.getEmail(), template.getSubject(), template.getBody(), qrCodeData);
             } catch (WriterException e) {
                 throw new RuntimeException(e);
             } catch (IOException e) {
@@ -283,12 +325,20 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
      * @return The method is returning a boolean value.
      */
     private boolean isRoomBooked(UUID roomId, LocalDateTime startTime, LocalDateTime endTime) {
-        int count = ticketRepository.countByRoomIdAndEndTimeGreaterThanEqualAndStartTimeLessThanEqual(roomId, endTime, startTime);
+        int count = ticketRepository.countByRoomIdAndEndTimeGreaterThanEqualAndStartTimeLessThanEqual(roomId, startTime, endTime);
         return count > 0;
     }
 
+    /**
+     * The function checks if a user has a ticket within a specified time range.
+     *
+     * @param username  The username of the user for whom we want to check if they have a ticket in the given time range.
+     * @param startTime The start time of the ticket validity period.
+     * @param endTime   The endTime parameter represents the end time of a ticket.
+     * @return The method is returning a boolean value.
+     */
     private boolean isUserHaveTicketInTime(String username, LocalDateTime startTime, LocalDateTime endTime) {
-        int count = ticketRepository.countByUsernameAndEndTimeGreaterThanEqualAndStartTimeLessThanEqual(username, endTime, startTime);
+        int count = ticketRepository.countByUsernameAndEndTimeGreaterThanEqualAndStartTimeLessThanEqual(username, startTime, endTime);
         return count > 0;
     }
 
@@ -299,7 +349,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
      *                the meeting. The possible values for purpose are CONFERENCES, INTERVIEW, MEETING, OTHERS, and WORKING.
      * @return The method is returning a String value.
      */
-    private static String generateMeetingCode(Constants.Purpose purpose) {
+    private static String generateMeetingCode(Constants.Purpose purpose, String username) {
         String per = "";
         switch (purpose) {
             case CONFERENCES -> per = "C";
@@ -311,11 +361,22 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         }
         SimpleDateFormat dateFormat = new SimpleDateFormat("ddMMyy");
         String dateCreated = dateFormat.format(new Date());
-        if (!dateCreated.equals(daysEarlier)) {
-            number = 0;
-            daysEarlier = dateCreated;
+
+        String input = username + dateCreated;
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] hash = md.digest(input.getBytes());
+
+            long randomNumber = 0;
+            for (int i = 0; i < 8; i++) {
+                randomNumber = (randomNumber << 8) | (hash[i] & 0xff);
+            }
+
+            return per + dateCreated + String.format("%04d", Math.abs(randomNumber));
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            throw new RuntimeException();
         }
-        number++;
-        return per + dateCreated + String.format("%04d", number);
+
     }
 }
