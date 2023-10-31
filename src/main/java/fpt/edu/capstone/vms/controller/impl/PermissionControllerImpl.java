@@ -7,6 +7,8 @@ import fpt.edu.capstone.vms.oauth2.IPermissionResource;
 import fpt.edu.capstone.vms.persistence.service.IPermissionService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -33,8 +35,9 @@ public class PermissionControllerImpl implements IPermissionController {
     }
 
     @Override
-    public ResponseEntity<?> filter(PermissionFilterPayload filterPayload) {
-        return null;
+    public ResponseEntity<?> filter(PermissionFilterPayload filterPayload, Pageable pageable) {
+        var permissions = permissionService.filter(filterPayload);
+        return ResponseEntity.ok(new PageImpl(permissions, pageable, permissions.size()));
     }
 
     @Override

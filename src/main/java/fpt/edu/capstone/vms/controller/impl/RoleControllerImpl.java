@@ -7,6 +7,8 @@ import fpt.edu.capstone.vms.oauth2.IRoleResource;
 import fpt.edu.capstone.vms.persistence.service.IRoleService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -30,8 +32,9 @@ public class RoleControllerImpl implements IRoleController {
     }
 
     @Override
-    public ResponseEntity<?> filter(RoleFilterPayload filterPayload) {
-        return ResponseEntity.ok(roleService.filter(filterPayload));
+    public ResponseEntity<?> filter(RoleFilterPayload filterPayload, Pageable pageable) {
+        List<IRoleResource.RoleDto> roleDtos = roleService.filter(filterPayload);
+        return ResponseEntity.ok(new PageImpl(roleDtos, pageable, roleDtos.size()));
     }
 
     @Override

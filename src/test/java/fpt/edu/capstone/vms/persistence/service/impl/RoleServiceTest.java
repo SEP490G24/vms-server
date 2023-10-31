@@ -46,9 +46,9 @@ class RoleServiceTest {
 
         //given
         IRoleResource.RoleDto role1 = new IRoleResource.RoleDto();
-        role1.setName("ROLE_ADMIN");
+        role1.setCode("ROLE_ADMIN");
         IRoleResource.RoleDto role2 = new IRoleResource.RoleDto();
-        role2.setName("ROLE_USER");
+        role2.setCode("ROLE_USER");
         List<IRoleResource.RoleDto> mockRoles = Arrays.asList(role1, role2);
 
         //when
@@ -57,8 +57,8 @@ class RoleServiceTest {
 
         //then
         assertEquals(2, roles.size());
-        assertEquals("ROLE_ADMIN", roles.get(0).getName());
-        assertEquals("ROLE_USER", roles.get(1).getName());
+        assertEquals("ROLE_ADMIN", roles.get(0).getCode());
+        assertEquals("ROLE_USER", roles.get(1).getCode());
         assertNotNull(roles);
         assertFalse(roles.isEmpty());
 
@@ -72,11 +72,11 @@ class RoleServiceTest {
     void whenFilterRoles_ThenRolesRetrieved() {
         // given
         IRoleController.RoleBasePayload roleBasePayload = new IRoleController.RoleBasePayload();
-        roleBasePayload.setName("MANAGER");
+        roleBasePayload.setCode("MANAGER");
         IRoleResource.RoleDto role1 = new IRoleResource.RoleDto();
-        role1.setName("ORG_MANAGER");
+        role1.setCode("ORG_MANAGER");
         IRoleResource.RoleDto role2 = new IRoleResource.RoleDto();
-        role2.setName("SITE_MANAGER");
+        role2.setCode("SITE_MANAGER");
         List<IRoleResource.RoleDto> mockRoles = Arrays.asList(role1, role2);
 
         // then
@@ -85,8 +85,8 @@ class RoleServiceTest {
 
         // Assert the result
         assertEquals(2, roles.size());
-        assertEquals("ORG_MANAGER", roles.get(0).getName());
-        assertEquals("SITE_MANAGER", roles.get(1).getName());
+        assertEquals("ORG_MANAGER", roles.get(0).getCode());
+        assertEquals("SITE_MANAGER", roles.get(1).getCode());
 
         // Verify
         Mockito.verify(roleResource, Mockito.times(1)).filter(roleBasePayload);
@@ -99,15 +99,15 @@ class RoleServiceTest {
         //given
         String existingRoleId = "123";
         IRoleResource.RoleDto roleDto = new IRoleResource.RoleDto();
-        roleDto.setName("Test123");
+        roleDto.setCode("Test123");
 
         //when
         when(roleResource.findById(existingRoleId)).thenReturn(roleDto);
         IRoleResource.RoleDto role = roleService.findById(existingRoleId);
 
         // then
-        assertEquals("Test123", role.getName());
-        assertNotNull(role.getName());
+        assertEquals("Test123", role.getCode());
+        assertNotNull(role.getCode());
     }
 
     @Test
@@ -133,8 +133,8 @@ class RoleServiceTest {
 
         //given
         IRoleResource.RoleDto roleDto = new IRoleResource.RoleDto();
-        roleDto.setName("Test");
-        roleDto.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        roleDto.setCode("Test");
+        //roleDto.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
         Site site = new Site();
         site.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
 
@@ -145,7 +145,7 @@ class RoleServiceTest {
         IRoleResource.RoleDto role = roleService.create(roleDto);
 
         //then
-        assertEquals("Test", role.getName());
+        assertEquals("Test", role.getCode());
     }
 
 //    @Test
@@ -173,7 +173,7 @@ class RoleServiceTest {
         //given
         String nonExistingRoleId = "A";
         IRoleResource.RoleDto roleDto = new IRoleResource.RoleDto();
-        roleDto.setName("Test");
+        roleDto.setCode("Test");
         String errorMsg = "Role Not Found : " + nonExistingRoleId;
         when(roleResource.update(nonExistingRoleId, roleDto)).thenThrow(new EntityNotFoundException(errorMsg));
 
