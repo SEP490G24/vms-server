@@ -33,8 +33,7 @@ public class RoleControllerImpl implements IRoleController {
 
     @Override
     public ResponseEntity<?> filter(RoleFilterPayload filterPayload, Pageable pageable) {
-        List<IRoleResource.RoleDto> roleDtos = roleService.filter(filterPayload);
-        return ResponseEntity.ok(new PageImpl(roleDtos, pageable, roleDtos.size()));
+        return ResponseEntity.ok(roleService.filter(filterPayload,pageable));
     }
 
     @Override

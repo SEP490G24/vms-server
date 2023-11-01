@@ -6,6 +6,8 @@ import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.persistence.entity.Site;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Map;
@@ -26,7 +28,7 @@ public interface IRoleResource {
      *
      * @return List<RoleDto>
      */
-    List<RoleDto> filter(IRoleController.RoleBasePayload roleBasePayload);
+    Page<RoleDto> filter(IRoleController.RoleBasePayload roleBasePayload, Pageable pageable);
 
     /**
      * Find role by id (Keycloak: role is realm role)
