@@ -140,13 +140,13 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
     }
 
     @Override
-    public List<Site> filter( List<String> names, UUID orgId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, String createBy, String lastUpdatedBy, Boolean enable, String keyword) {
+    public List<Site> filter(List<String> names, UUID orgId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, String createdBy, String lastUpdatedBy, Boolean enable, String keyword) {
         return siteRepository.filter(
             names,
             orgId,
             createdOnStart,
             createdOnEnd,
-            createBy,
+            createdBy,
             lastUpdatedBy,
             enable,
             keyword);

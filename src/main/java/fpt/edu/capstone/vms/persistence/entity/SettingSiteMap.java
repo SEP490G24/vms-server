@@ -11,8 +11,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-
-import java.time.LocalDateTime;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Data
 @Entity
@@ -28,11 +28,13 @@ public class SettingSiteMap extends AbstractBaseEntity<SettingSiteMapPk> {
     @ManyToOne
     @JoinColumn(name = "setting_id", referencedColumnName = "id", insertable = false, updatable = false)
     @JsonIgnore
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Setting settingEntity;
 
     @ManyToOne
     @JoinColumn(name = "site_id", referencedColumnName = "id", insertable = false, updatable = false)
     @JsonIgnore
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Site siteEntity;
 
     @Column(name = "description")

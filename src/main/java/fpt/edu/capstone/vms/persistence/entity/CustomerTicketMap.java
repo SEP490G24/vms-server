@@ -10,6 +10,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Data
 @Entity
@@ -25,11 +27,13 @@ public class CustomerTicketMap extends AbstractBaseEntity<CustomerTicketMapPk> {
     @ManyToOne
     @JoinColumn(name = "customer_id", referencedColumnName = "id", insertable = false, updatable = false)
     @JsonIgnore
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Customer customerEntity;
 
     @ManyToOne
     @JoinColumn(name = "ticket_id", referencedColumnName = "id", insertable = false, updatable = false)
     @JsonIgnore
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Ticket ticketEntity;
 
     public CustomerTicketMap update(CustomerTicketMap customerTicketMap) {
