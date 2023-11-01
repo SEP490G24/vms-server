@@ -10,7 +10,9 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import jakarta.ws.rs.QueryParam;
 import lombok.Data;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -21,9 +23,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -45,16 +45,26 @@ public interface ICustomerController {
     @PreAuthorize("hasRole('r:customer:create')")
     ResponseEntity<?> create(@RequestBody @Valid NewCustomers createCustomerDto);
 
+    @PostMapping("/filter")
+    @Operation(summary = "Filter customer")
+    ResponseEntity<?> filter(@RequestBody @Valid CustomerFilter filter, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
+
+    @GetMapping("/organization")
+    @Operation(summary = "Find all by organization id")
+    ResponseEntity<?> findByOrganzationId();
+
+
     @Data
     class NewCustomers {
 
         @NotNull(message = "The name of the visitor cannot be null")
         @NotEmpty(message = "The name of the visitor cannot be empty")
         @Size(max = 50, message = "The visitor's name must not exceed 50 characters")
-        private String visitor_name;
+        private String visitorName;
 
         @NotEmpty(message = "The identification number of the visitor cannot be empty")
-        private Integer identificationNumber;
+        @Pattern(regexp = "\\d{12}", message = "The phone number is not in the correct format")
+        private String identificationNumber;
 
         @NotNull(message = "Email cannot be null")
         @NotEmpty(message = "Email cannot be empty")
@@ -62,7 +72,7 @@ public interface ICustomerController {
         private String email;
 
         @NotEmpty(message = "The phone number cannot be empty")
-        @Pattern(regexp = "^(0[2356789]\\d{8})$", message = "The phone number is not in the correct format")
+        @Pattern(regexp = "^(0[2356789]\\d{10})$", message = "The phone number is not in the correct format")
         private String phoneNumber;
 
         @NotEmpty(message = "The gender cannot be empty")
@@ -79,112 +89,31 @@ public interface ICustomerController {
 
     @Data
     class CustomerInfo {
-
         private UUID id;
-
-        private String visitor_name;
-
-        private Integer identificationNumber;
-
+        private String visitorName;
+        private String identificationNumber;
         private String email;
-
+        private String organizationId;
         private String phoneNumber;
-
         private Constants.Gender gender;
-
         private String description;
-
         private Integer provinceId;
-
         private Integer districtId;
-
         private Integer communeId;
+        private String provinceName;
+        private String districtName;
+        private String communeName;
     }
 
     @Data
-    class UpdateUserInfo {
-        String firstName;
-        String lastName;
-        String phoneNumber;
-        String avatar;
-        String email;
-        String countryCode;
-        UUID departmentId;
-        LocalDate dateOfBirth;
-        Constants.Gender gender;
-        Boolean enable;
-        List<String> roles;
-    }
-
-    @Data
-    class UserFilterRequest {
-        String role;
-        List<String> usernames;
+    class CustomerFilter {
+        List<String> names;
         LocalDateTime createdOnStart;
         LocalDateTime createdOnEnd;
-        Boolean enable;
+        String createBy;
+        String lastUpdatedBy;
         String keyword;
-        String departmentId;
-    }
-
-    @Data
-    class UserFilterResponse {
-        String username;
-        String firstName;
-        String lastName;
-        String phoneNumber;
-        String avatar;
-        String email;
-        String countryCode;
-        String departmentId;
-        String departmentName;
-        String siteId;
-        String siteName;
-        Date dateOfBirth;
-        String gender;
-        List<String> roles;
-        Date createdOn;
-        Date lastUpdatedOn;
-        Boolean enable;
-    }
-
-
-    @Data
-    class UpdateState {
-        @NotNull
-        String username;
-        @NotNull
-        Boolean enable;
-    }
-
-    @Data
-    class ChangePasswordUserDto {
-        @NotNull
-        String oldPassword;
-        @NotNull
-        String newPassword;
-    }
-
-    @Data
-    class ImportUserInfo {
-        @NotNull
-        String username;
-        @NotNull
-        String password;
-        @NotNull
-        String firstName;
-        @NotNull
-        String lastName;
-        @NotNull
-        String phoneNumber;
-        @NotNull
-        String email;
-        @NotNull
-        String departmentCode;
-        LocalDate dateOfBirth;
-        @NotNull
-        Constants.Gender gender;
-        @NotNull
-        Boolean enable;
+        String organizationId;
+        String identificationNumber;
     }
 }

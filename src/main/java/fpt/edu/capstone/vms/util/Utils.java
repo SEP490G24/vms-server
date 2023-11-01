@@ -9,6 +9,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Component
@@ -46,5 +48,12 @@ public class Utils {
             }
         }
         return null;
+    }
+
+    public static boolean isCCCDValid(String cccd) {
+        String regex = "\\d{12}";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(cccd);
+        return matcher.matches();
     }
 }
