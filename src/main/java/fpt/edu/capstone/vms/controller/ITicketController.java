@@ -53,6 +53,11 @@ public interface ITicketController {
     @Operation(summary = "Set bookmark ticket")
     ResponseEntity<?> updateBookmark(@RequestBody @Valid TicketBookmark ticketBookmark);
 
+    @PostMapping("/cancel/{ticketId}")
+    @Operation(summary = "Cancel meeting ticket")
+    ResponseEntity<?> cancelMeeting(@PathVariable String ticketId);
+
+
     @Data
     class CreateTicketInfo {
 
@@ -108,5 +113,6 @@ public interface ITicketController {
         private LocalDateTime createdOn;
         private String lastUpdatedBy;
         private LocalDateTime lastUpdatedOn;
+        List<ICustomerController.CustomerInfo> Customers;
     }
 }

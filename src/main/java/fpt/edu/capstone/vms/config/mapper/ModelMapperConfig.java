@@ -1,10 +1,20 @@
 package fpt.edu.capstone.vms.config.mapper;
 
 
-import fpt.edu.capstone.vms.controller.*;
 import fpt.edu.capstone.vms.oauth2.IRoleResource;
+import fpt.edu.capstone.vms.controller.ICustomerController;
+import fpt.edu.capstone.vms.controller.IDepartmentController;
+import fpt.edu.capstone.vms.controller.IRoomController;
+import fpt.edu.capstone.vms.controller.ISiteController;
+import fpt.edu.capstone.vms.controller.ITemplateController;
+import fpt.edu.capstone.vms.controller.IUserController;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
-import fpt.edu.capstone.vms.persistence.entity.*;
+import fpt.edu.capstone.vms.persistence.entity.Customer;
+import fpt.edu.capstone.vms.persistence.entity.Department;
+import fpt.edu.capstone.vms.persistence.entity.Room;
+import fpt.edu.capstone.vms.persistence.entity.Site;
+import fpt.edu.capstone.vms.persistence.entity.Template;
+import fpt.edu.capstone.vms.persistence.entity.User;
 import fpt.edu.capstone.vms.persistence.repository.ProvinceRepository;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
@@ -58,6 +68,12 @@ public class ModelMapperConfig {
             .addMappings(mapping -> mapping.map(site -> site.getProvince().getName(), ISiteController.SiteFilterDTO::setProvinceName))
             .addMappings(mapping -> mapping.map(site -> site.getDistrict().getName(), ISiteController.SiteFilterDTO::setDistrictName))
             .addMappings(mapping -> mapping.map(site -> site.getCommune().getName(), ISiteController.SiteFilterDTO::setCommuneName));
+
+        // customer => customerFilterDTO
+        modelMapper.createTypeMap(Customer.class, ICustomerController.CustomerInfo.class)
+            .addMappings(mapping -> mapping.map(site -> site.getProvince().getName(), ICustomerController.CustomerInfo::setProvinceName))
+            .addMappings(mapping -> mapping.map(site -> site.getDistrict().getName(), ICustomerController.CustomerInfo::setDistrictName))
+            .addMappings(mapping -> mapping.map(site -> site.getCommune().getName(), ICustomerController.CustomerInfo::setCommuneName));
 
         // room => roomDto
         modelMapper.createTypeMap(Room.class, IRoomController.RoomFilterResponse.class)

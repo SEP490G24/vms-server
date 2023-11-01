@@ -48,4 +48,9 @@ public class TicketController implements ITicketController {
         return ResponseEntity.ok(ticketService.updateBookMark(ticketBookmark));
     }
 
+    @Override
+    public ResponseEntity<?> cancelMeeting(String ticketId) {
+        return ResponseEntity.ok(ticketService.cancelTicket(ticketId));
+    }
+
 }
