@@ -17,7 +17,6 @@ public interface ICustomerService extends IGenericService<Customer, UUID> {
 
     Page<Customer> filter(Pageable pageable,
                           List<String> names,
-                          String orgId,
                           LocalDateTime createdOnStart,
                           LocalDateTime createdOnEnd,
                           String createBy,
@@ -27,7 +26,6 @@ public interface ICustomerService extends IGenericService<Customer, UUID> {
 
     List<Customer> filter(
         List<String> names,
-        String orgId,
         LocalDateTime createdOnStart,
         LocalDateTime createdOnEnd,
         String createBy,

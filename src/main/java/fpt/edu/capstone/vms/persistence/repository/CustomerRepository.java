@@ -27,7 +27,6 @@ public interface CustomerRepository extends GenericRepository<Customer, UUID> {
         "and ((:createBy is null) or (u.createdBy in :createBy)) " +
         "and ((:lastUpdatedBy is null) or (u.lastUpdatedBy in :lastUpdatedBy)) " +
         "and ((:identificationNumber is null) or (u.identificationNumber in :identificationNumber)) " +
-        "and ((:orgId is null) or (u.organizationId = :orgId)) " +
         "and ((:keyword is null) " +
         "or (u.visitorName LIKE %:keyword% " +
         "or u.phoneNumber LIKE %:keyword% " +
@@ -35,7 +34,6 @@ public interface CustomerRepository extends GenericRepository<Customer, UUID> {
         "or u.identificationNumber LIKE %:keyword% ))")
     List<Customer> filter(
         @Param("names") @Nullable Collection<String> names,
-        @Param("orgId") @Nullable String orgId,
         @Param("createdOnStart") @Nullable LocalDateTime createdOnStart,
         @Param("createdOnEnd") @Nullable LocalDateTime createdOnEnd,
         @Param("createBy") @Nullable String createBy,
@@ -49,7 +47,6 @@ public interface CustomerRepository extends GenericRepository<Customer, UUID> {
         "and ((:createBy is null) or (u.createdBy in :createBy)) " +
         "and ((:lastUpdatedBy is null) or (u.lastUpdatedBy in :lastUpdatedBy)) " +
         "and ((:identificationNumber is null) or (u.identificationNumber in :identificationNumber)) " +
-        "and ((:orgId is null) or (u.organizationId = :orgId)) " +
         "and ((:keyword is null) " +
         "or (u.phoneNumber LIKE %:keyword% " +
         "or u.visitorName LIKE %:keyword% " +
@@ -57,7 +54,6 @@ public interface CustomerRepository extends GenericRepository<Customer, UUID> {
         "or u.identificationNumber LIKE %:keyword% ))")
     Page<Customer> filter(Pageable pageable,
                           @Param("names") @Nullable Collection<String> names,
-                          @Param("orgId") @Nullable String orgId,
                           @Param("createdOnStart") @Nullable LocalDateTime createdOnStart,
                           @Param("createdOnEnd") @Nullable LocalDateTime createdOnEnd,
                           @Param("createBy") @Nullable String createBy,

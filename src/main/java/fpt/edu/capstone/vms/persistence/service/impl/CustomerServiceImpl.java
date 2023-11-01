@@ -41,11 +41,10 @@ public class CustomerServiceImpl extends GenericServiceImpl<Customer, UUID> impl
     }
 
     @Override
-    public Page<Customer> filter(Pageable pageable, List<String> names, String orgId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, String createBy, String lastUpdatedBy, String identificationNumber, String keyword) {
+    public Page<Customer> filter(Pageable pageable, List<String> names, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, String createBy, String lastUpdatedBy, String identificationNumber, String keyword) {
         return customerRepository.filter(
             pageable,
             names,
-            orgId,
             createdOnStart,
             createdOnEnd,
             createBy,
@@ -55,10 +54,9 @@ public class CustomerServiceImpl extends GenericServiceImpl<Customer, UUID> impl
     }
 
     @Override
-    public List<Customer> filter(List<String> names, String orgId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, String createBy, String lastUpdatedBy, String identificationNumber, String keyword) {
+    public List<Customer> filter(List<String> names, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, String createBy, String lastUpdatedBy, String identificationNumber, String keyword) {
         return customerRepository.filter(
             names,
-            orgId,
             createdOnStart,
             createdOnEnd,
             createBy,

@@ -39,7 +39,6 @@ public class CustomerController implements ICustomerController {
     public ResponseEntity<?> filter(CustomerFilter filter, boolean isPageable, Pageable pageable) {
         var customerEntity = customerService.filter(
             filter.getNames(),
-            filter.getOrganizationId(),
             filter.getCreatedOnStart(),
             filter.getCreatedOnEnd(),
             filter.getCreateBy(),
@@ -49,7 +48,6 @@ public class CustomerController implements ICustomerController {
         var customerEntityPageable = customerService.filter(
             pageable,
             filter.getNames(),
-            filter.getOrganizationId(),
             filter.getCreatedOnStart(),
             filter.getCreatedOnEnd(),
             filter.getCreateBy(),

@@ -113,7 +113,6 @@ public interface ICustomerController {
         String createBy;
         String lastUpdatedBy;
         String keyword;
-        String organizationId;
         String identificationNumber;
     }
 }
