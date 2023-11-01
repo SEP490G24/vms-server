@@ -80,12 +80,16 @@ public class KeycloakRealmRoleResource implements IRoleResource {
             })
             .toList();
 
+
         var results = (List<RoleDto>) mapper.map(filteredRoles, new TypeToken<List<RoleDto>>() {
         }.getType());
 
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), filteredRoles.size());
+        List<RoleDto> pageRoles = results.subList(start, end);
         results.forEach(this::updatePermission4Role);
-
-        return new PageImpl(results,pageable,results.size());
+        pageRoles.forEach(this::updatePermission4Role);
+        return new PageImpl<>(pageRoles, pageable, filteredRoles.size());
     }
 
 
