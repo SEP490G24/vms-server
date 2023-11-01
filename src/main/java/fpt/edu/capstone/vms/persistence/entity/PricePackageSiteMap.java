@@ -11,6 +11,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
 
@@ -28,11 +30,13 @@ public class PricePackageSiteMap extends AbstractBaseEntity<PricePackageSiteMapP
     @ManyToOne
     @JoinColumn(name = "price_package_id", referencedColumnName = "id", insertable = false, updatable = false)
     @JsonIgnore
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private PricePackage pricePackageEntity;
 
     @ManyToOne
     @JoinColumn(name = "site_id", referencedColumnName = "id", insertable = false, updatable = false)
     @JsonIgnore
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Site siteEntity;
 
     @Column(name = "description")

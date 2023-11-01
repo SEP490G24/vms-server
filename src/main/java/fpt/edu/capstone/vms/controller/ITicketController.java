@@ -6,7 +6,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.QueryParam;
 import lombok.Data;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -57,6 +59,15 @@ public interface ITicketController {
     @Operation(summary = "Cancel meeting ticket")
     ResponseEntity<?> cancelMeeting(@PathVariable String ticketId);
 
+    @PostMapping("/filter")
+    @Operation(summary = "Filter ticket")
+    ResponseEntity<?> filter(@RequestBody @Valid TicketFilterUser ticketFilterUser, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
+
+    @PostMapping("/filter/site")
+    @Operation(summary = "Filter ticket in site for admin")
+    @PreAuthorize("hasRole('r:ticket:find')")
+    ResponseEntity<?> filterAllBySites(@RequestBody @Valid TicketFilterSite ticketFilterSite, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
+
 
     @Data
     class CreateTicketInfo {
@@ -101,6 +112,7 @@ public interface ITicketController {
     class TicketFilterDTO {
         private UUID id;
         private String code;
+        private String name;
         private Constants.Purpose purpose;
         private String purposeNote;
         private LocalDateTime startTime;
@@ -114,5 +126,40 @@ public interface ITicketController {
         private String lastUpdatedBy;
         private LocalDateTime lastUpdatedOn;
         List<ICustomerController.CustomerInfo> Customers;
+    }
+
+    @Data
+    class TicketFilterSite {
+        List<String> names;
+        String username;
+        UUID roomId;
+        Constants.StatusTicket status;
+        Constants.Purpose purpose;
+        LocalDateTime createdOnStart;
+        LocalDateTime createdOnEnd;
+        LocalDateTime startTimeStart;
+        LocalDateTime startTimeEnd;
+        LocalDateTime endTimeStart;
+        LocalDateTime endTimeEnd;
+        String createdBy;
+        String lastUpdatedBy;
+        String keyword;
+    }
+
+    @Data
+    class TicketFilterUser {
+        List<String> names;
+        UUID roomId;
+        Constants.StatusTicket status;
+        Constants.Purpose purpose;
+        LocalDateTime createdOnStart;
+        LocalDateTime createdOnEnd;
+        LocalDateTime startTimeStart;
+        LocalDateTime startTimeEnd;
+        LocalDateTime endTimeStart;
+        LocalDateTime endTimeEnd;
+        String createdBy;
+        String lastUpdatedBy;
+        String keyword;
     }
 }

@@ -13,6 +13,7 @@ import fpt.edu.capstone.vms.persistence.entity.Template;
 import fpt.edu.capstone.vms.persistence.entity.Ticket;
 import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
 import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
+import fpt.edu.capstone.vms.persistence.repository.OrganizationRepository;
 import fpt.edu.capstone.vms.persistence.repository.RoomRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.repository.TemplateRepository;
@@ -29,6 +30,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +43,7 @@ import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -55,18 +59,20 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     final TemplateRepository templateRepository;
     final CustomerRepository customerRepository;
     final SiteRepository siteRepository;
+    final OrganizationRepository organizationRepository;
     final CustomerTicketMapRepository customerTicketMapRepository;
     final EmailUtils emailUtils;
 
 
     public TicketServiceImpl(TicketRepository ticketRepository, CustomerRepository customerRepository,
-                             TemplateRepository templateRepository, ModelMapper mapper, RoomRepository roomRepository, SiteRepository siteRepository, CustomerTicketMapRepository customerTicketMapRepository, EmailUtils emailUtils) {
+                             TemplateRepository templateRepository, ModelMapper mapper, RoomRepository roomRepository, SiteRepository siteRepository, OrganizationRepository organizationRepository, CustomerTicketMapRepository customerTicketMapRepository, EmailUtils emailUtils) {
         this.ticketRepository = ticketRepository;
         this.templateRepository = templateRepository;
         this.customerRepository = customerRepository;
         this.mapper = mapper;
         this.roomRepository = roomRepository;
         this.siteRepository = siteRepository;
+        this.organizationRepository = organizationRepository;
         this.customerTicketMapRepository = customerTicketMapRepository;
         this.emailUtils = emailUtils;
         this.init(ticketRepository);
@@ -316,6 +322,145 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         return false;
     }
 
+    @Override
+    public Page<Ticket> filter(Pageable pageable
+        , List<String> names
+        , UUID roomId
+        , Constants.StatusTicket status
+        , Constants.Purpose purpose
+        , LocalDateTime createdOnStart
+        , LocalDateTime createdOnEnd
+        , LocalDateTime startTimeStart
+        , LocalDateTime startTimeEnd
+        , LocalDateTime endTimeStart
+        , LocalDateTime endTimeEnd
+        , String createdBy
+        , String lastUpdatedBy
+        , String keyword) {
+
+        return ticketRepository.filter(pageable
+            , names
+            , null
+            , SecurityUtils.loginUsername()
+            , roomId
+            , status
+            , purpose
+            , createdOnStart
+            , createdOnEnd
+            , startTimeStart
+            , startTimeEnd
+            , endTimeStart
+            , endTimeEnd
+            , createdBy
+            , lastUpdatedBy
+            , keyword);
+    }
+
+    @Override
+    public Page<Ticket> filterAllBySite(Pageable pageable
+        , List<String> names, String username
+        , UUID roomId, Constants.StatusTicket status
+        , Constants.Purpose purpose, LocalDateTime createdOnStart
+        , LocalDateTime createdOnEnd, LocalDateTime startTimeStart
+        , LocalDateTime startTimeEnd, LocalDateTime endTimeStart
+        , LocalDateTime endTimeEnd, String createdBy
+        , String lastUpdatedBy, String keyword) {
+        return ticketRepository.filter(pageable
+            , names
+            , getListSite()
+            , username
+            , roomId
+            , status
+            , purpose
+            , createdOnStart
+            , createdOnEnd
+            , startTimeStart
+            , startTimeEnd
+            , endTimeStart
+            , endTimeEnd
+            , createdBy
+            , lastUpdatedBy
+            , keyword);
+    }
+
+    @Override
+    public List<Ticket> filter(List<String> names
+        , UUID roomId
+        , Constants.StatusTicket status
+        , Constants.Purpose purpose
+        , LocalDateTime createdOnStart
+        , LocalDateTime createdOnEnd
+        , LocalDateTime startTimeStart
+        , LocalDateTime startTimeEnd
+        , LocalDateTime endTimeStart
+        , LocalDateTime endTimeEnd
+        , String createdBy
+        , String lastUpdatedBy
+        , String keyword) {
+        return ticketRepository.filter(names
+            , null
+            , SecurityUtils.loginUsername()
+            , roomId
+            , status
+            , purpose
+            , createdOnStart
+            , createdOnEnd
+            , startTimeStart
+            , startTimeEnd
+            , endTimeStart
+            , endTimeEnd
+            , createdBy
+            , lastUpdatedBy
+            , keyword);
+    }
+
+    @Override
+    public List<Ticket> filterAllBySite(List<String> names
+        , String username, UUID roomId
+        , Constants.StatusTicket status
+        , Constants.Purpose purpose
+        , LocalDateTime createdOnStart
+        , LocalDateTime createdOnEnd
+        , LocalDateTime startTimeStart
+        , LocalDateTime startTimeEnd
+        , LocalDateTime endTimeStart
+        , LocalDateTime endTimeEnd
+        , String createdBy
+        , String lastUpdatedBy
+        , String keyword) {
+        return ticketRepository.filter(names
+            , getListSite()
+            , username
+            , roomId
+            , status
+            , purpose
+            , createdOnStart
+            , createdOnEnd
+            , startTimeStart
+            , startTimeEnd
+            , endTimeStart
+            , endTimeEnd
+            , createdBy
+            , lastUpdatedBy
+            , keyword);
+    }
+
+    private List<UUID> getListSite() {
+        List<UUID> sites = new ArrayList<>();
+
+        if (SecurityUtils.getOrgId() == null) {
+            Site site = siteRepository.findById(UUID.fromString(SecurityUtils.getSiteId())).orElse(null);
+            if (ObjectUtils.isEmpty(site)) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "site is flase");
+            }
+            sites.add(UUID.fromString(SecurityUtils.getSiteId()));
+        } else {
+            siteRepository.findAllByOrganizationId(UUID.fromString(SecurityUtils.getOrgId())).forEach(o -> {
+                sites.add(o.getId());
+            });
+        }
+        return sites;
+    }
 
     /**
      * The function `sendQr` sends an email to each customer in the `customerTicketMap` list with a QR code generated from

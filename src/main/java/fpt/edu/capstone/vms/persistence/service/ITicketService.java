@@ -1,9 +1,14 @@
 package fpt.edu.capstone.vms.persistence.service;
 
+import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ITicketController;
 import fpt.edu.capstone.vms.persistence.entity.Ticket;
 import fpt.edu.capstone.vms.persistence.service.generic.IGenericService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 
@@ -15,4 +20,64 @@ public interface ITicketService extends IGenericService<Ticket, UUID> {
     Boolean deleteTicket(String ticketId);
 
     Boolean cancelTicket(String ticketId);
+
+    Page<Ticket> filter(Pageable pageable,
+                        List<String> names,
+                        UUID roomId,
+                        Constants.StatusTicket status,
+                        Constants.Purpose purpose,
+                        LocalDateTime createdOnStart,
+                        LocalDateTime createdOnEnd,
+                        LocalDateTime startTimeStart,
+                        LocalDateTime startTimeEnd,
+                        LocalDateTime endTimeStart,
+                        LocalDateTime endTimeEnd,
+                        String createdBy,
+                        String lastUpdatedBy,
+                        String keyword);
+
+    Page<Ticket> filterAllBySite(Pageable pageable,
+                                 List<String> names,
+                                 String username,
+                                 UUID roomId,
+                                 Constants.StatusTicket status,
+                                 Constants.Purpose purpose,
+                                 LocalDateTime createdOnStart,
+                                 LocalDateTime createdOnEnd,
+                                 LocalDateTime startTimeStart,
+                                 LocalDateTime startTimeEnd,
+                                 LocalDateTime endTimeStart,
+                                 LocalDateTime endTimeEnd,
+                                 String createdBy,
+                                 String lastUpdatedBy,
+                                 String keyword);
+
+    List<Ticket> filter(List<String> names,
+                        UUID roomId,
+                        Constants.StatusTicket status,
+                        Constants.Purpose purpose,
+                        LocalDateTime createdOnStart,
+                        LocalDateTime createdOnEnd,
+                        LocalDateTime startTimeStart,
+                        LocalDateTime startTimeEnd,
+                        LocalDateTime endTimeStart,
+                        LocalDateTime endTimeEnd,
+                        String createdBy,
+                        String lastUpdatedBy,
+                        String keyword);
+
+    List<Ticket> filterAllBySite(List<String> names,
+                                 String username,
+                                 UUID roomId,
+                                 Constants.StatusTicket status,
+                                 Constants.Purpose purpose,
+                                 LocalDateTime createdOnStart,
+                                 LocalDateTime createdOnEnd,
+                                 LocalDateTime startTimeStart,
+                                 LocalDateTime startTimeEnd,
+                                 LocalDateTime endTimeStart,
+                                 LocalDateTime endTimeEnd,
+                                 String createdBy,
+                                 String lastUpdatedBy,
+                                 String keyword);
 }

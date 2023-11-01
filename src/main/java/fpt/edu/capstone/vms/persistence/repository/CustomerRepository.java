@@ -30,6 +30,8 @@ public interface CustomerRepository extends GenericRepository<Customer, UUID> {
         "and ((:keyword is null) " +
         "or (u.visitorName LIKE %:keyword% " +
         "or u.phoneNumber LIKE %:keyword% " +
+        "or u.lastUpdatedBy LIKE %:keyword% " +
+        "or u.createdBy LIKE %:keyword% " +
         "or u.email LIKE %:keyword% " +
         "or u.identificationNumber LIKE %:keyword% ))")
     List<Customer> filter(
@@ -50,6 +52,8 @@ public interface CustomerRepository extends GenericRepository<Customer, UUID> {
         "and ((:keyword is null) " +
         "or (u.phoneNumber LIKE %:keyword% " +
         "or u.visitorName LIKE %:keyword% " +
+        "or u.lastUpdatedBy LIKE %:keyword% " +
+        "or u.createdBy LIKE %:keyword% " +
         "or u.email LIKE %:keyword% " +
         "or u.identificationNumber LIKE %:keyword% ))")
     Page<Customer> filter(Pageable pageable,
