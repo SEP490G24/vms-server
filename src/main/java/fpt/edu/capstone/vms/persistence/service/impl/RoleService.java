@@ -44,7 +44,8 @@ public class RoleService implements IRoleService {
 
     @Override
     public IRoleResource.RoleDto create(IRoleResource.RoleDto dto) {
-        Site site = siteRepository.findById(UUID.fromString(dto.getSiteId())).orElse(null);
+        String siteId = dto.getAttributes().get("site_id").get(0);
+        Site site = siteRepository.findById(UUID.fromString(siteId)).orElse(null);
         if (ObjectUtils.isEmpty(site)) throw new CustomException(ErrorApp.BAD_REQUEST);
         return roleResource.create(site, dto);
     }

@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -34,8 +35,8 @@ public interface IRoleController {
 
     @PostMapping("/filter")
     @Operation(summary = "Filter role")
-        @PreAuthorize("hasRole('r:role:find')")
-    ResponseEntity<?> filter(@RequestBody RoleFilterPayload filterPayload);
+    @PreAuthorize("hasRole('r:role:find')")
+    ResponseEntity<?> filter(@RequestBody RoleFilterPayload filterPayload, Pageable pageable);
 
     @PostMapping("")
     @Operation(summary = "Create role")
@@ -66,8 +67,7 @@ public interface IRoleController {
 
     @Data
     class RoleBasePayload {
-        private String siteId;
-        private String name;
+        private String code;
         private Map<String, List<String>> attributes;
         private String description;
     }

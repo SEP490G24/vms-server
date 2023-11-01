@@ -1,7 +1,6 @@
 package fpt.edu.capstone.vms.persistence.service;
 
 
-
 import fpt.edu.capstone.vms.controller.IRoleController;
 import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.oauth2.IPermissionResource;

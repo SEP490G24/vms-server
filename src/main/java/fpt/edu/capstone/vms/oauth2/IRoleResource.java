@@ -74,8 +74,7 @@ public interface IRoleResource {
     @Data
     @Accessors(chain = true)
     class RoleDto {
-        private String siteId;
-        private String name;
+        private String code;
         private String description;
         private Map<String, List<String>> attributes;
         private Set<IPermissionResource.PermissionDto> permissionDtos;

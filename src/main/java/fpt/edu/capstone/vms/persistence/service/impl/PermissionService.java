@@ -1,5 +1,6 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
+import fpt.edu.capstone.vms.controller.IPermissionController;
 import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.oauth2.IPermissionResource;
 import fpt.edu.capstone.vms.persistence.service.IPermissionService;
@@ -50,5 +51,10 @@ public class PermissionService implements IPermissionService {
     @Override
     public void delete(String moduleId, String permissionId) {
         permissionResource.delete(moduleId, permissionId);
+    }
+
+    @Override
+    public List<IPermissionResource.PermissionDto> filter(IPermissionController.PermissionFilterPayload filterPayload) {
+        return permissionResource.filter(filterPayload);
     }
 }

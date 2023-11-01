@@ -19,8 +19,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import static fpt.edu.capstone.vms.constants.Constants.IGNORE_ROLE_REALM_KEYCLOAK;
-
 
 @Slf4j
 @Component
@@ -45,7 +43,7 @@ public class KeycloakRealmRoleResource implements IRoleResource {
     @Override
     public List<RoleDto> findAll() {
         /* fetch all role */
-        var roles = this.rolesResource.list().stream()
+        var roles = this.rolesResource.list(false).stream()
             .filter(roleRepresentation -> !Arrays.asList(ignoreDefaultRoles).contains(roleRepresentation.getName()))
             .toList();
         var results = (List<RoleDto>) mapper.map(roles, new TypeToken<List<RoleDto>>() {
@@ -59,25 +57,34 @@ public class KeycloakRealmRoleResource implements IRoleResource {
 
     @Override
     public List<RoleDto> filter(IRoleController.RoleBasePayload roleBasePayload) {
-
         List<RoleRepresentation> roles = this.rolesResource.list(false);
 
-        var role = roles.stream()
+        var filteredRoles = roles.stream()
             .filter(roleRepresentation -> {
-
-                if (roleRepresentation.getName().toUpperCase().contains(roleBasePayload.getName().toUpperCase())) {
-                    return true;
+                if (roleBasePayload.getCode() == null || roleRepresentation.getName().contains(roleBasePayload.getCode())) {
+                    List<String> siteIds = roleBasePayload.getAttributes() != null ? roleBasePayload.getAttributes().get("site_id") : null;
+                    List<String> names = roleBasePayload.getAttributes() != null ? roleBasePayload.getAttributes().get("name") : null;
+                    return (siteIds == null || siteIds.isEmpty() ||
+                        siteIds.stream().anyMatch(siteId ->
+                            roleRepresentation.getAttributes().get("site_id") != null &&
+                                roleRepresentation.getAttributes().get("site_id").contains(siteId)))
+                        && (names == null || names.isEmpty() ||
+                        names.stream().anyMatch(name ->
+                            roleRepresentation.getAttributes().get("name") != null &&
+                                roleRepresentation.getAttributes().get("name").get(0).contains(name)));
                 }
                 return false;
-            }).toList();
+            })
+            .toList();
 
-        var results = (List<RoleDto>) mapper.map(role, new TypeToken<List<RoleDto>>() {
+        var results = (List<RoleDto>) mapper.map(filteredRoles, new TypeToken<List<RoleDto>>() {
         }.getType());
 
         results.forEach(this::updatePermission4Role);
 
         return results;
     }
+
 
     @Override
     public RoleDto findById(String roleName) {
@@ -91,8 +98,7 @@ public class KeycloakRealmRoleResource implements IRoleResource {
     @Override
     public RoleDto create(Site site, RoleDto value) {
         var roleInsert = new RoleRepresentation();
-        roleInsert.setName(site.getCode() + "_" + value.getName());
-        value.getAttributes().put("site_id", List.of(site.getId().toString()));
+        roleInsert.setName(site.getCode() + "_" + value.getCode());
         roleInsert.setAttributes(value.getAttributes());
         roleInsert.setDescription(value.getDescription());
         this.rolesResource.create(roleInsert);
@@ -100,8 +106,8 @@ public class KeycloakRealmRoleResource implements IRoleResource {
     }
 
     @Override
-    public RoleDto update(String roleName, RoleDto value) throws NotFoundException {
-        var roleUpdate = this.rolesResource.get(roleName);
+    public RoleDto update(String roleCode, RoleDto value) throws NotFoundException {
+        var roleUpdate = this.rolesResource.get(roleCode);
         if (roleUpdate == null) throw new NotFoundException();
         var role = roleUpdate.toRepresentation();
         role.setAttributes(value.getAttributes());
@@ -111,8 +117,8 @@ public class KeycloakRealmRoleResource implements IRoleResource {
     }
 
     @Override
-    public RoleDto updatePermission(String roleName, IPermissionResource.PermissionDto permissionDto, boolean state) {
-        var roleUpdate = this.rolesResource.get(roleName);
+    public RoleDto updatePermission(String roleCode, IPermissionResource.PermissionDto permissionDto, boolean state) {
+        var roleUpdate = this.rolesResource.get(roleCode);
         if (state)
             roleUpdate.addComposites(Collections.singletonList(mapper.map(permissionDto, RoleRepresentation.class)));
         else
@@ -121,8 +127,8 @@ public class KeycloakRealmRoleResource implements IRoleResource {
     }
 
     @Override
-    public void delete(String roleName) {
-        this.rolesResource.deleteRole(roleName);
+    public void delete(String roleCode) {
+        this.rolesResource.deleteRole(roleCode);
     }
 
     @Override
@@ -148,7 +154,7 @@ public class KeycloakRealmRoleResource implements IRoleResource {
     }
 
     private void updatePermission4Role(RoleDto role) {
-        var roleResource = this.rolesResource.get(role.getName());
+        var roleResource = this.rolesResource.get(role.getCode());
         role.setPermissionDtos(mapper.map(roleResource.getRoleComposites(), new TypeToken<Set<IPermissionResource.PermissionDto>>() {
         }.getType()));
     }

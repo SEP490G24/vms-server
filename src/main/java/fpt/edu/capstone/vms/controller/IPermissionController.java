@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.ws.rs.QueryParam;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -40,7 +41,7 @@ public interface IPermissionController {
     @PostMapping("/permission/filter")
     @Operation(summary = "Filter permission")
     @PreAuthorize("hasRole('r:permission:find')")
-    ResponseEntity<?> filter(@RequestBody PermissionFilterPayload filterPayload);
+    ResponseEntity<?> filter(@RequestBody PermissionFilterPayload filterPayload, Pageable pageable);
 
     @PostMapping("/{mId}/permission")
     @Operation(summary = "Create permission")
@@ -92,7 +93,7 @@ public interface IPermissionController {
 
     @Data
     class PermissionFilterPayload {
-
+        String name;
     }
 
 
