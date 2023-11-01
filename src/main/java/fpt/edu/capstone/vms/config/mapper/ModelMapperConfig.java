@@ -1,6 +1,7 @@
 package fpt.edu.capstone.vms.config.mapper;
 
 
+import fpt.edu.capstone.vms.oauth2.IRoleResource;
 import fpt.edu.capstone.vms.controller.ICustomerController;
 import fpt.edu.capstone.vms.controller.IDepartmentController;
 import fpt.edu.capstone.vms.controller.IRoomController;
@@ -15,6 +16,7 @@ import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.entity.Template;
 import fpt.edu.capstone.vms.persistence.entity.User;
 import fpt.edu.capstone.vms.persistence.repository.ProvinceRepository;
+import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
@@ -80,6 +82,10 @@ public class ModelMapperConfig {
         // template => templateDto
         modelMapper.createTypeMap(Template.class, ITemplateController.TemplateDto.class)
             .addMappings(mapping -> mapping.map((template -> template.getSite().getName()), ITemplateController.TemplateDto::setSiteName));
+
+        // RoleRepresentation => RoleDto
+        modelMapper.createTypeMap(RoleRepresentation.class, IRoleResource.RoleDto.class)
+            .addMappings(mapping -> mapping.map(RoleRepresentation::getName, IRoleResource.RoleDto::setCode));
 
         return modelMapper;
     }
