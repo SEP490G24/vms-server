@@ -12,6 +12,8 @@ import fpt.edu.capstone.vms.persistence.service.IRoleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,8 +34,8 @@ public class RoleService implements IRoleService {
     }
 
     @Override
-    public List<IRoleResource.RoleDto> filter(IRoleController.RoleBasePayload roleBasePayload) {
-        return roleResource.filter(roleBasePayload);
+    public Page<IRoleResource.RoleDto> filter(IRoleController.RoleBasePayload roleBasePayload, Pageable pageable) {
+        return roleResource.filter(roleBasePayload,pageable);
     }
 
 

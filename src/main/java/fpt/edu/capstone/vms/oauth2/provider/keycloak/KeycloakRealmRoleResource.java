@@ -12,6 +12,9 @@ import org.keycloak.representations.idm.RoleRepresentation;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -56,7 +59,7 @@ public class KeycloakRealmRoleResource implements IRoleResource {
     }
 
     @Override
-    public List<RoleDto> filter(IRoleController.RoleBasePayload roleBasePayload) {
+    public Page<RoleDto> filter(IRoleController.RoleBasePayload roleBasePayload, Pageable pageable) {
         List<RoleRepresentation> roles = this.rolesResource.list(false);
 
         var filteredRoles = roles.stream()
@@ -82,7 +85,7 @@ public class KeycloakRealmRoleResource implements IRoleResource {
 
         results.forEach(this::updatePermission4Role);
 
-        return results;
+        return new PageImpl(results,pageable,results.size());
     }
 
 

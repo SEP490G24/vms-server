@@ -5,6 +5,8 @@ import fpt.edu.capstone.vms.controller.IRoleController;
 import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.oauth2.IPermissionResource;
 import fpt.edu.capstone.vms.oauth2.IRoleResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -12,7 +14,7 @@ import java.util.List;
 public interface IRoleService {
     List<IRoleResource.RoleDto> findAll();
 
-    List<IRoleResource.RoleDto> filter(IRoleController.RoleBasePayload roleBasePayload);
+    Page<IRoleResource.RoleDto> filter(IRoleController.RoleBasePayload roleBasePayload, Pageable pageable);
 
     IRoleResource.RoleDto findById(String id);
 
