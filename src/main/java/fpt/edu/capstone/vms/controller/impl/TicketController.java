@@ -82,6 +82,7 @@ public class TicketController implements ITicketController {
             filter.getEndTimeEnd(),
             filter.getCreatedBy(),
             filter.getLastUpdatedBy(),
+            filter.getBookmark(),
             filter.getKeyword());
 
         var ticketEntityPageable = ticketService.filter(
@@ -98,6 +99,7 @@ public class TicketController implements ITicketController {
             filter.getEndTimeEnd(),
             filter.getCreatedBy(),
             filter.getLastUpdatedBy(),
+            filter.getBookmark(),
             filter.getKeyword());
 
 
