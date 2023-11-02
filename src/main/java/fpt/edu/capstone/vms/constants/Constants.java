@@ -12,6 +12,19 @@ public class Constants {
         public static String Email = "email";
     }
 
+    public static class SettingCode {
+        public static String MAIL_HOST = "mail.host";
+        public static String MAIL_PORT = "mail.port";
+        public static String MAIL_SMTP_AUTH = "mail.smtp.auth";
+        public static String MAIL_DEBUG = "mail.debug";
+        public static String MAIL_PROTOCOL = "mail.protocol";
+        public static String MAIL_TYPE = "mail.type";
+        public static String MAIL_USERNAME = "mail.username";
+        public static String MAIL_PASSWORD = "mail.password";
+        public static String MAIL_SMTP_STARTTLS_ENABLE = "mail.smtp.starttls.enable";
+
+    }
+
     public static final String[] IGNORE_CLIENT_ID_KEYCLOAK = new String[]{"account", "account-console", "admin-cli", "broker",
         "realm-management", "realm-management", "security-admin-console"};
 
