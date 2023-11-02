@@ -99,6 +99,9 @@ public class Ticket extends AbstractBaseEntity<UUID> {
     @JsonIgnore
     private Map<UUID, CustomerTicketMap> customerTicketMaps;
 
+    @Column(name = "site_id")
+    private String siteId;
+
     @Override
     public UUID getId() {
         return id;

@@ -88,6 +88,8 @@ public interface ITicketController {
 
         private UUID templateId;
 
+        private String siteId;
+
         List<ICustomerController.NewCustomers> newCustomers;
 
         List<String> oldCustomers;

@@ -27,11 +27,8 @@ public interface TicketRepository extends GenericRepository<Ticket, UUID> {
 
 
     @Query(value = "select u from Ticket u " +
-        "left join User a on u.username = a.username " +
-        "left join Department d on d.id = a.departmentId " +
-        "left join Site s on s.id = d.siteId " +
         "where ((coalesce(:names) is null) or (u.name in :names))" +
-        "and ((coalesce(:sites) is null) or (s.id in :sites))" +
+        "and ((coalesce(:sites) is null) or (u.siteId in :sites))" +
         "and (((cast(:createdOnStart as date) is null ) or (cast(:createdOnEnd as date) is null )) or (u.createdOn between :createdOnStart and :createdOnEnd)) " +
         "and ((:createdBy is null) or (u.createdBy in :createdBy)) " +
         "and ((:bookmark is null) or (u.isBookmark = :bookmark)) " +
@@ -48,7 +45,7 @@ public interface TicketRepository extends GenericRepository<Ticket, UUID> {
         "or u.createdBy LIKE %:keyword% ))")
     Page<Ticket> filter(Pageable pageable,
                         @Param("names") @Nullable Collection<String> names,
-                        @Param("sites") @Nullable Collection<UUID> sites,
+                        @Param("sites") @Nullable Collection<String> sites,
                         @Param("username") @Nullable String username,
                         @Param("roomId") @Nullable UUID roomId,
                         @Param("status") @Nullable Constants.StatusTicket status,
@@ -65,11 +62,8 @@ public interface TicketRepository extends GenericRepository<Ticket, UUID> {
                         @Param("keyword") @Nullable String keyword);
 
     @Query(value = "select u from Ticket u " +
-        "left join User a on u.username = a.username " +
-        "left join Department d on d.id = a.departmentId " +
-        "left join Site s on s.id = d.siteId " +
         "where ((coalesce(:names) is null) or (u.name in :names))" +
-        "and ((coalesce(:sites) is null) or (s.id in :sites))" +
+        "and ((coalesce(:sites) is null) or (u.siteId in :sites))" +
         "and (((cast(:createdOnStart as date) is null ) or (cast(:createdOnEnd as date) is null )) or (u.createdOn between :createdOnStart and :createdOnEnd)) " +
         "and ((:createdBy is null) or (u.createdBy in :createdBy)) " +
         "and ((:bookmark is null) or (u.isBookmark = :bookmark)) " +
@@ -85,7 +79,7 @@ public interface TicketRepository extends GenericRepository<Ticket, UUID> {
         "or u.name LIKE %:keyword% " +
         "or u.createdBy LIKE %:keyword% ))")
     List<Ticket> filter(@Param("names") @Nullable Collection<String> names,
-                        @Param("sites") @Nullable Collection<UUID> sites,
+                        @Param("sites") @Nullable Collection<String> sites,
                         @Param("username") @Nullable String username,
                         @Param("roomId") @Nullable UUID roomId,
                         @Param("status") @Nullable Constants.StatusTicket status,

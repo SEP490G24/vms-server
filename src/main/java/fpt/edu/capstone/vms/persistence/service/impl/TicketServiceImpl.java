@@ -106,18 +106,26 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         Duration duration = Duration.between(startTime, endTime);
         long minutes = duration.toMinutes(); // Chuyển thời gian thành phút
 
-        if (minutes < 30) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Time meeting must greater than 30 minutes");
+        if (minutes < 15) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Time meeting must greater than 15 minutes");
+        }
+
+        if (SecurityUtils.getOrgId() != null) {
+            if (StringUtils.isEmpty(ticketInfo.getSiteId().trim()))
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SiteId is null");
+            ticketDto.setSiteId(ticketInfo.getSiteId());
+        } else {
+            ticketDto.setSiteId(SecurityUtils.getSiteId());
+
         }
 
         Room room = roomRepository.findById(ticketInfo.getRoomId()).orElse(null);
 
+        if (!room.getSiteId().equals(ticketDto.getSiteId()))
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User can not create meeting in this room");
+
         if (ObjectUtils.isEmpty(room)) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Room is null");
-        }
-
-        if (!SecurityUtils.checkSiteAuthorization(siteRepository, room.getSiteId().toString())) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User can not create meeting in this room");
         }
 
         if (isRoomBooked(ticketInfo.getRoomId(), ticketInfo.getStartTime(), ticketInfo.getEndTime())) {
@@ -126,15 +134,26 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
 
 
         ticketDto.setUsername(username);
+
         if (ticketInfo.isDraft() == true) {
             ticketDto.setStatus(Constants.StatusTicket.DRAFT);
             Ticket ticket = ticketRepository.save(ticketDto);
             setDataCustomer(ticketInfo, ticket);
             return ticket;
         } else {
-            if (StringUtils.isEmpty(ticketInfo.getRoomId().toString())) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "roomId is empty");
+
+            if (StringUtils.isEmpty(ticketInfo.getTemplateId().toString())) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "TemplateId is empty");
             }
+
+            Template template = templateRepository.findById(ticketDto.getTemplateId()).orElse(null);
+
+            if (ObjectUtils.isEmpty(template)) {
+                throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't not found ticket");
+            }
+
+            if (!template.getSiteId().equals(ticketDto.getSiteId()))
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User can not create meeting in this template");
 
             if (isUserHaveTicketInTime(SecurityUtils.loginUsername(), startTime, endTime)) {
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User have meeting in this time");
@@ -158,18 +177,9 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "End time is empty");
             }
 
-            if (StringUtils.isEmpty(ticketInfo.getTemplateId().toString())) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "TemplateId is empty");
-            }
-
             ticketDto.setStatus(Constants.StatusTicket.PENDING);
             Ticket ticket = ticketRepository.save(ticketDto);
 
-            Template template = templateRepository.findById(ticket.getTemplateId()).orElse(null);
-
-            if (ObjectUtils.isEmpty(template)) {
-                throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't not found ticket");
-            }
             setDataCustomer(ticketInfo, ticket);
             var customerTicketMaps = customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(ticket.getId());
             if (customerTicketMaps.isEmpty())
@@ -451,18 +461,18 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             , keyword);
     }
 
-    private List<UUID> getListSite() {
-        List<UUID> sites = new ArrayList<>();
+    private List<String> getListSite() {
+        List<String> sites = new ArrayList<>();
 
         if (SecurityUtils.getOrgId() == null) {
             Site site = siteRepository.findById(UUID.fromString(SecurityUtils.getSiteId())).orElse(null);
             if (ObjectUtils.isEmpty(site)) {
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "site is flase");
             }
-            sites.add(UUID.fromString(SecurityUtils.getSiteId()));
+            sites.add(SecurityUtils.getSiteId());
         } else {
             siteRepository.findAllByOrganizationId(UUID.fromString(SecurityUtils.getOrgId())).forEach(o -> {
-                sites.add(o.getId());
+                sites.add(o.getId().toString());
             });
         }
         return sites;
