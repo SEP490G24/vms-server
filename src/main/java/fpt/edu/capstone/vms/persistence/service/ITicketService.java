@@ -34,6 +34,7 @@ public interface ITicketService extends IGenericService<Ticket, UUID> {
                         LocalDateTime endTimeEnd,
                         String createdBy,
                         String lastUpdatedBy,
+                        Boolean bookmark,
                         String keyword);
 
     Page<Ticket> filterAllBySite(Pageable pageable,
@@ -64,6 +65,7 @@ public interface ITicketService extends IGenericService<Ticket, UUID> {
                         LocalDateTime endTimeEnd,
                         String createdBy,
                         String lastUpdatedBy,
+                        Boolean bookmark,
                         String keyword);
 
     List<Ticket> filterAllBySite(List<String> names,

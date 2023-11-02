@@ -336,6 +336,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         , LocalDateTime endTimeEnd
         , String createdBy
         , String lastUpdatedBy
+        , Boolean bookmark
         , String keyword) {
 
         return ticketRepository.filter(pageable
@@ -353,6 +354,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             , endTimeEnd
             , createdBy
             , lastUpdatedBy
+            , bookmark
             , keyword);
     }
 
@@ -380,6 +382,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             , endTimeEnd
             , createdBy
             , lastUpdatedBy
+            , null
             , keyword);
     }
 
@@ -396,6 +399,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         , LocalDateTime endTimeEnd
         , String createdBy
         , String lastUpdatedBy
+        , Boolean bookmark
         , String keyword) {
         return ticketRepository.filter(names
             , null
@@ -411,6 +415,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             , endTimeEnd
             , createdBy
             , lastUpdatedBy
+            , bookmark
             , keyword);
     }
 
@@ -442,6 +447,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             , endTimeEnd
             , createdBy
             , lastUpdatedBy
+            , null
             , keyword);
     }
 

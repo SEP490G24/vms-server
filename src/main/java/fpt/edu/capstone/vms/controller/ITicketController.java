@@ -160,6 +160,7 @@ public interface ITicketController {
         LocalDateTime endTimeEnd;
         String createdBy;
         String lastUpdatedBy;
+        Boolean bookmark;
         String keyword;
     }
 }

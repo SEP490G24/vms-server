@@ -34,6 +34,7 @@ public interface TicketRepository extends GenericRepository<Ticket, UUID> {
         "and ((coalesce(:sites) is null) or (s.id in :sites))" +
         "and (((cast(:createdOnStart as date) is null ) or (cast(:createdOnEnd as date) is null )) or (u.createdOn between :createdOnStart and :createdOnEnd)) " +
         "and ((:createdBy is null) or (u.createdBy in :createdBy)) " +
+        "and ((:bookmark is null) or (u.isBookmark = :bookmark)) " +
         "and ((:lastUpdatedBy is null) or (u.lastUpdatedBy in :lastUpdatedBy)) " +
         "and (((cast(:startTimeStart as date) is null ) or (cast(:startTimeEnd as date) is null )) or (u.startTime between :startTimeStart and :startTimeEnd)) " +
         "and (((cast(:endTimeStart as date) is null ) or (cast(:endTimeEnd as date) is null )) or (u.endTime between :endTimeStart and :endTimeEnd)) " +
@@ -60,6 +61,7 @@ public interface TicketRepository extends GenericRepository<Ticket, UUID> {
                         @Param("endTimeEnd") @Nullable LocalDateTime endTimeEnd,
                         @Param("createdBy") @Nullable String createdBy,
                         @Param("lastUpdatedBy") @Nullable String lastUpdatedBy,
+                        @Param("bookmark") @Nullable Boolean bookmark,
                         @Param("keyword") @Nullable String keyword);
 
     @Query(value = "select u from Ticket u " +
@@ -70,6 +72,7 @@ public interface TicketRepository extends GenericRepository<Ticket, UUID> {
         "and ((coalesce(:sites) is null) or (s.id in :sites))" +
         "and (((cast(:createdOnStart as date) is null ) or (cast(:createdOnEnd as date) is null )) or (u.createdOn between :createdOnStart and :createdOnEnd)) " +
         "and ((:createdBy is null) or (u.createdBy in :createdBy)) " +
+        "and ((:bookmark is null) or (u.isBookmark = :bookmark)) " +
         "and ((:lastUpdatedBy is null) or (u.lastUpdatedBy in :lastUpdatedBy)) " +
         "and (((cast(:startTimeStart as date) is null ) or (cast(:startTimeEnd as date) is null )) or (u.startTime between :startTimeStart and :startTimeEnd)) " +
         "and (((cast(:endTimeStart as date) is null ) or (cast(:endTimeEnd as date) is null )) or (u.endTime between :endTimeStart and :endTimeEnd)) " +
@@ -95,5 +98,6 @@ public interface TicketRepository extends GenericRepository<Ticket, UUID> {
                         @Param("endTimeEnd") @Nullable LocalDateTime endTimeEnd,
                         @Param("createdBy") @Nullable String createdBy,
                         @Param("lastUpdatedBy") @Nullable String lastUpdatedBy,
+                        @Param("bookmark") @Nullable Boolean bookmark,
                         @Param("keyword") @Nullable String keyword);
 }
