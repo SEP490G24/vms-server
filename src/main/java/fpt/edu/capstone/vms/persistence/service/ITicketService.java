@@ -19,7 +19,7 @@ public interface ITicketService extends IGenericService<Ticket, UUID> {
 
     Boolean deleteTicket(String ticketId);
 
-    Boolean cancelTicket(String ticketId);
+    Boolean cancelTicket(ITicketController.CancelTicket cancelTicket);
 
     Page<Ticket> filter(Pageable pageable,
                         List<String> names,

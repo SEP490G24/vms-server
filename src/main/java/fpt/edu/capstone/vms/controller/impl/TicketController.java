@@ -63,8 +63,8 @@ public class TicketController implements ITicketController {
     }
 
     @Override
-    public ResponseEntity<?> cancelMeeting(String ticketId) {
-        return ResponseEntity.ok(ticketService.cancelTicket(ticketId));
+    public ResponseEntity<?> cancelMeeting(CancelTicket cancelTicket) {
+        return ResponseEntity.ok(ticketService.cancelTicket(cancelTicket));
     }
 
     @Override

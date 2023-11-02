@@ -81,7 +81,9 @@ public class Constants {
 
     public enum TemplateType {
         EMAIL,
-        SMS
+        SMS,
+        CANCEL_MEETING,
+        REFUSE_MEETING
     }
 
     public enum SettingType {
@@ -96,5 +98,15 @@ public class Constants {
         MEETING,
         OTHERS,
         WORKING
+    }
+
+    public enum Reason {
+        URGENT_ISSUE,
+        SCHEDULE_CONFLICT,
+        KEY_PARTICIPANTS_UNAVAILABLE,
+        NOT_PREPARED,
+        BAD_WEATHER,
+        OVERCROWDED,
+        TECHNICAL_ISSUES;
     }
 }
