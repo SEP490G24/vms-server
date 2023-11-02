@@ -113,6 +113,8 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         if (SecurityUtils.getOrgId() != null) {
             if (StringUtils.isEmpty(ticketInfo.getSiteId().trim()))
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SiteId is null");
+            if (siteRepository.existsByIdAndOrganizationId(UUID.fromString(ticketInfo.getSiteId()), UUID.fromString(SecurityUtils.getOrgId())))
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SiteId is not in organization");
             ticketDto.setSiteId(ticketInfo.getSiteId());
         } else {
             ticketDto.setSiteId(SecurityUtils.getSiteId());
