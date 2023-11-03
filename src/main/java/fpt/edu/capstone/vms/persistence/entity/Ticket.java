@@ -102,6 +102,20 @@ public class Ticket extends AbstractBaseEntity<UUID> {
     @Column(name = "site_id")
     private String siteId;
 
+    public Ticket update(Ticket ticketEntity) {
+        if (ticketEntity.name != null) this.name = ticketEntity.name;
+        if (ticketEntity.code != null) this.code = ticketEntity.code;
+        if (ticketEntity.purpose != null) this.purpose = ticketEntity.purpose;
+        if (ticketEntity.purposeNote != null) this.purposeNote = ticketEntity.purposeNote;
+        if (ticketEntity.startTime != null) this.startTime = ticketEntity.startTime;
+        if (ticketEntity.endTime != null) this.endTime = ticketEntity.endTime;
+        if (ticketEntity.description != null) this.description = ticketEntity.description;
+        if (ticketEntity.roomId != null) this.roomId = ticketEntity.roomId;
+        if (ticketEntity.getCreatedBy() != null) this.setCreatedBy(ticketEntity.getCreatedBy());
+        if (ticketEntity.getCreatedOn() != null) this.setCreatedOn(ticketEntity.getCreatedOn());
+        return this;
+    }
+
     @Override
     public UUID getId() {
         return id;

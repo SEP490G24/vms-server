@@ -68,6 +68,15 @@ public class TicketController implements ITicketController {
     }
 
     @Override
+    public ResponseEntity<?> updateMeeting(UpdateTicketInfo updateTicketInfo) {
+        try {
+            return ResponseEntity.ok((ticketService.updateTicket(updateTicketInfo)));
+        } catch (HttpClientErrorException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
+        }
+    }
+
+    @Override
     public ResponseEntity<?> filter(TicketFilterUser filter, boolean isPageable, Pageable pageable) {
         var ticketEntity = ticketService.filter(
             filter.getNames(),

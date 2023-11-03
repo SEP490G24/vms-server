@@ -4,8 +4,20 @@ import com.google.zxing.WriterException;
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ICustomerController;
 import fpt.edu.capstone.vms.controller.ITicketController;
-import fpt.edu.capstone.vms.persistence.entity.*;
-import fpt.edu.capstone.vms.persistence.repository.*;
+import fpt.edu.capstone.vms.persistence.entity.Customer;
+import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMap;
+import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMapPk;
+import fpt.edu.capstone.vms.persistence.entity.Room;
+import fpt.edu.capstone.vms.persistence.entity.Site;
+import fpt.edu.capstone.vms.persistence.entity.Template;
+import fpt.edu.capstone.vms.persistence.entity.Ticket;
+import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
+import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
+import fpt.edu.capstone.vms.persistence.repository.OrganizationRepository;
+import fpt.edu.capstone.vms.persistence.repository.RoomRepository;
+import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
+import fpt.edu.capstone.vms.persistence.repository.TemplateRepository;
+import fpt.edu.capstone.vms.persistence.repository.TicketRepository;
 import fpt.edu.capstone.vms.persistence.service.ITicketService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import fpt.edu.capstone.vms.util.EmailUtils;
@@ -15,6 +27,7 @@ import fpt.edu.capstone.vms.util.Utils;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
@@ -31,7 +44,11 @@ import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -84,42 +101,22 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         LocalDateTime startTime = ticketInfo.getStartTime();
         LocalDateTime endTime = ticketInfo.getEndTime();
 
-        if (startTime.isAfter(endTime)) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Time is not true");
-        }
-
-        Duration duration = Duration.between(startTime, endTime);
-        long minutes = duration.toMinutes(); // Chuyển thời gian thành phút
-
-        if (minutes < 15) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Time meeting must greater than 15 minutes");
-        }
+        //check time
+        checkTimeForTicket(startTime, endTime);
+        BooleanUtils.toBooleanDefaultIfNull(ticketInfo.isDraft(), false);
 
         if (SecurityUtils.getOrgId() != null) {
             if (StringUtils.isEmpty(ticketInfo.getSiteId().trim()))
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SiteId is null");
-            if (siteRepository.existsByIdAndOrganizationId(UUID.fromString(ticketInfo.getSiteId()), UUID.fromString(SecurityUtils.getOrgId())))
+            if (!siteRepository.existsByIdAndOrganizationId(UUID.fromString(ticketInfo.getSiteId()), UUID.fromString(SecurityUtils.getOrgId())))
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SiteId is not in organization");
             ticketDto.setSiteId(ticketInfo.getSiteId());
         } else {
             ticketDto.setSiteId(SecurityUtils.getSiteId());
-
         }
 
-        Room room = roomRepository.findById(ticketInfo.getRoomId()).orElse(null);
-
-        if (!room.getSiteId().equals(UUID.fromString(ticketDto.getSiteId())))
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User can not create meeting in this room");
-
-        if (ObjectUtils.isEmpty(room)) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Room is null");
-        }
-
-        if (isRoomBooked(ticketInfo.getRoomId(), ticketInfo.getStartTime(), ticketInfo.getEndTime())) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Room have meeting in this time");
-        }
-
-
+        //check room
+        checkRoom(ticketInfo, ticketDto);
         ticketDto.setUsername(username);
 
         if (ticketInfo.isDraft() == true) {
@@ -129,6 +126,15 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             return ticket;
         } else {
 
+            if (startTime == null || startTime.toString().trim().isEmpty()) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Start time is empty");
+            }
+
+            if (endTime == null || endTime.toString().trim().isEmpty()) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "End time is empty");
+            }
+
+            // check template
             if (StringUtils.isEmpty(ticketInfo.getTemplateId().toString())) {
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "TemplateId is empty");
             }
@@ -142,10 +148,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             if (!template.getSiteId().equals(UUID.fromString(ticketDto.getSiteId())))
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User can not create meeting in this template");
 
-            if (isUserHaveTicketInTime(SecurityUtils.loginUsername(), startTime, endTime)) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User have meeting in this time");
-            }
-
+            //check purpose
             if (StringUtils.isEmpty(ticketDto.getPurpose().toString())) {
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Purpose is empty");
             }
@@ -154,14 +157,6 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                 if (StringUtils.isEmpty(ticketInfo.getPurposeNote())) {
                     throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Purpose other is empty");
                 }
-            }
-
-            if (ticketInfo.getStartTime() == null || ticketInfo.getStartTime().toString().trim().isEmpty()) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Start time is empty");
-            }
-
-            if (ticketInfo.getEndTime() == null || ticketInfo.getEndTime().toString().trim().isEmpty()) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "End time is empty");
             }
 
             ticketDto.setStatus(Constants.StatusTicket.PENDING);
@@ -175,6 +170,48 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             return ticket;
         }
 
+    }
+
+    /**
+     * The function `checkRoom` checks if a room is available for booking based on the provided ticket information.
+     *
+     * @param ticketInfo The `ticketInfo` parameter is an object of type `ITicketController.CreateTicketInfo`. It contains
+     *                   information about the ticket being created, such as the room ID, start time, and end time.
+     * @param ticket     The "ticket" parameter is an instance of the Ticket class. It represents the ticket for creating a
+     *                   meeting in a room.
+     */
+    private void checkRoom(ITicketController.CreateTicketInfo ticketInfo, Ticket ticket) {
+        Room room = roomRepository.findById(ticketInfo.getRoomId()).orElse(null);
+
+        if (!room.getSiteId().equals(UUID.fromString(ticket.getSiteId())))
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User can not create meeting in this room");
+
+        if (ObjectUtils.isEmpty(room)) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Room is null");
+        }
+
+        if (isRoomBooked(ticketInfo.getRoomId(), ticketInfo.getStartTime(), ticketInfo.getEndTime())) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Room have meeting in this time");
+        }
+
+    }
+
+    private void checkTimeForTicket(LocalDateTime startTime, LocalDateTime endTime) {
+
+        if (startTime.isAfter(endTime)) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Time is not true");
+        }
+
+        Duration duration = Duration.between(startTime, endTime);
+        long minutes = duration.toMinutes(); // Chuyển thời gian thành phút
+
+        if (minutes < 15) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Time meeting must greater than 15 minutes");
+        }
+
+        if (isUserHaveTicketInTime(SecurityUtils.loginUsername(), startTime, endTime)) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User have meeting in this time");
+        }
     }
 
     /**
@@ -280,11 +317,11 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     }
 
     /**
-     * The function cancels a ticket by updating its status to "CANCEL" if the ticket exists and belongs to the currently
-     * logged in user.
+     * The function cancels a ticket if it exists and meets the cancellation criteria, and sends an email to the customer
+     * with a QR code if applicable.
      *
-     * @param ticketId The ticketId parameter is a String that represents the unique identifier of the ticket that needs to
-     *                 be canceled.
+     * @param cancelTicket The `cancelTicket` parameter is an object of type `ITicketController.CancelTicket`. It contains
+     *                     the following properties:
      * @return The method is returning a Boolean value.
      */
     @Override
@@ -318,13 +355,114 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                     Map<String, String> parameterMap = Map.of("ten_nguoi_nhan", customer.getVisitorName());
                     String replacedTemplate = emailUtils.replaceEmailParameters(template.getBody(), parameterMap);
 
-                    emailUtils.sendMailWithQRCode(customer.getEmail(), template.getSubject(), replacedTemplate, null);
+                    emailUtils.sendMailWithQRCode(customer.getEmail(), template.getSubject(), replacedTemplate, null, ticket.getSiteId());
                 });
 
             }
             return true;
         }
         return false;
+    }
+
+    @Override
+    @Transactional(rollbackFor = {Exception.class, Throwable.class, NullPointerException.class})
+    public Ticket updateTicket(ITicketController.UpdateTicketInfo ticketInfo) {
+        if (StringUtils.isEmpty(ticketInfo.getTicketId()))
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "TicketId is null");
+
+        Ticket ticketMap = mapper.map(ticketInfo, Ticket.class);
+        LocalDateTime updateStartTime = ticketMap.getStartTime();
+        LocalDateTime updateEndTime = ticketMap.getStartTime();
+
+        Ticket ticket = ticketRepository.findById(UUID.fromString(ticketInfo.getTicketId())).orElse(null);
+
+        if (ObjectUtils.isEmpty(ticket)) {
+            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't found ticket by id " + ticketInfo.getTicketId());
+        }
+
+        if (StringUtils.isNotEmpty(ticketMap.getRoomId().toString())) {
+            if (ticketInfo.getRoomId().equals(ticket.getRoomId())) {
+                Room room = roomRepository.findById(ticketInfo.getRoomId()).orElse(null);
+
+                if (!room.getSiteId().equals(UUID.fromString(ticket.getSiteId())))
+                    throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User can not create meeting in this room");
+
+                if (ObjectUtils.isEmpty(room)) {
+                    throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Room is null");
+                }
+
+                if (isRoomBooked(ticketInfo.getRoomId(), ticketInfo.getStartTime(), ticketInfo.getEndTime())) {
+                    throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Room have meeting in this time");
+                }
+            }
+        }
+
+        if (updateStartTime != null) {
+            LocalDateTime startTime = ticket.getStartTime();
+            LocalDateTime endTime = ticket.getEndTime();
+
+            if (!updateStartTime.equals(startTime)) {
+                checkTimeForTicket(updateStartTime, endTime);
+            }
+        }
+
+        if (updateEndTime != null) {
+            LocalDateTime startTime = ticket.getStartTime();
+            LocalDateTime endTime = ticket.getEndTime();
+
+            if (!updateEndTime.equals(endTime)) {
+                checkTimeForTicket(startTime, updateEndTime);
+            }
+        }
+
+        if (updateStartTime != null && updateEndTime != null) {
+            checkTimeForTicket(updateStartTime, updateEndTime);
+        }
+
+        if (StringUtils.isNotEmpty(ticketMap.getPurpose().toString())) {
+            if (!ticketMap.getPurpose().equals(Constants.Purpose.OTHERS) && ticketMap.getPurposeNote() != null) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Purpose Note must be note when Purpose is other");
+            }
+        }
+
+        ticketRepository.save(ticket.update(ticketMap));
+
+        if (ticketInfo.getNewCustomers() != null) {
+            checkNewCustomers(ticketInfo.getNewCustomers(), ticket);
+        }
+        return ticket;
+    }
+
+    private void checkNewCustomers(List<ICustomerController.NewCustomers> newCustomers, Ticket ticket) {
+        String orgId;
+        if (SecurityUtils.getOrgId() == null) {
+            Site site = siteRepository.findById(UUID.fromString(SecurityUtils.getSiteId())).orElse(null);
+            if (ObjectUtils.isEmpty(site)) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "site is flase");
+            }
+            orgId = String.valueOf(site.getOrganizationId());
+        } else {
+            orgId = SecurityUtils.getOrgId();
+        }
+
+        if (newCustomers != null) {
+            for (ICustomerController.NewCustomers customerDto : newCustomers) {
+                if (ObjectUtils.isEmpty(customerDto))
+                    throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is null");
+                if (!Utils.isCCCDValid(customerDto.getIdentificationNumber())) {
+                    throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "IdentificationNumber is incorrect");
+                }
+                Customer customerExist = customerRepository.findByIdentificationNumberAndOrganizationId(customerDto.getIdentificationNumber(), orgId);
+                if (ObjectUtils.isEmpty(customerExist)) {
+                    Customer customer = customerRepository.save(mapper.map(customerDto, Customer.class).setOrganizationId(orgId));
+                    createCustomerTicket(ticket, customer.getId());
+                    sendEmail(customer, ticket, ticket.getTemplate());
+                } else {
+                    createCustomerTicket(ticket, customerExist.getId());
+                    sendEmail(customerExist, ticket, ticket.getTemplate());
+                }
+            }
+        }
     }
 
     @Override
@@ -474,41 +612,55 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     }
 
     /**
-     * The function `sendQr` sends an email to each customer in the `customerTicketMap` list with a QR code generated from
-     * the `meetingUrl` using the `EmailUtils` class.
+     * The `sendQr` function sends an email to each customer in the `customerTicketMap` list, containing a QR code
+     * generated from a meeting URL, along with other relevant information.
      *
      * @param customerTicketMap customerTicketMap is a list of objects of type CustomerTicketMap. Each CustomerTicketMap
      *                          object represents a mapping between a customer and a ticket.
-     * @param ticket            The "ticket" parameter is an object of type "Ticket". It represents a ticket that is associated with
-     *                          the customer.
-     * @param template          The `template` parameter is an object of type `Template` which contains the subject and body of an
-     *                          email template.
+     * @param ticket            The `ticket` parameter is an object of type `Ticket`. It represents a ticket that is associated with
+     *                          the QR code being sent.
+     * @param template          The `template` parameter is an object of type `Template`. It contains the email template that will
+     *                          be used to send the email to the customer. The template object has properties such as `subject` and `body`, which
+     *                          represent the subject and content of the email respectively.
      */
     private void sendQr(List<CustomerTicketMap> customerTicketMap, Ticket ticket, Template template) {
         customerTicketMap.forEach(o -> {
-            String meetingUrl = "https://web-vms.azurewebsites.net/ticket/" + ticket.getId().toString() + "/customer/" + o.getCustomerTicketMapPk().getCustomerId().toString();
-
             var customer = customerRepository.findById(o.getCustomerTicketMapPk().getCustomerId()).orElse(null);
-            if (ObjectUtils.isEmpty(customer))
-                throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Customer is empty");
-
-            // Tạo mã QR code
-            try {
-                byte[] qrCodeData = QRcodeUtils.getQRCodeImage(meetingUrl, 400, 400);
-                assert template != null;
-
-                Map<String, String> parameterMap = Map.of("ten_nguoi_nhan", customer.getVisitorName());
-                String replacedTemplate = emailUtils.replaceEmailParameters(template.getBody(), parameterMap);
-
-                emailUtils.sendMailWithQRCode(customer.getEmail(), template.getSubject(), replacedTemplate, qrCodeData);
-            } catch (WriterException e) {
-                throw new RuntimeException(e);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-
+            sendEmail(customer, ticket, template);
         });
+    }
 
+    /**
+     * The function `sendEmail` sends an email to a customer with a QR code image generated from a given URL.
+     *
+     * @param customer The customer object contains information about the customer, such as their name, email, and visitor
+     *                 name.
+     * @param ticket   The `ticket` parameter is an object of the `Ticket` class. It contains information about a ticket,
+     *                 such as its ID and site ID.
+     * @param template The `template` parameter is an object of type `Template`. It contains the email template that will
+     *                 be used to send the email. The `Template` class likely has properties such as `subject` and `body`, which store the
+     *                 subject and body of the email template, respectively.
+     */
+    private void sendEmail(Customer customer, Ticket ticket, Template template) {
+        String meetingUrl = "https://web-vms.azurewebsites.net/ticket/" + ticket.getId().toString() + "/customer/" + customer.getId().toString();
+
+        if (ObjectUtils.isEmpty(customer))
+            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Customer is empty");
+
+        // Tạo mã QR code
+        try {
+            byte[] qrCodeData = QRcodeUtils.getQRCodeImage(meetingUrl, 800, 800);
+            assert template != null;
+
+            Map<String, String> parameterMap = Map.of("ten_nguoi_nhan", customer.getVisitorName());
+            String replacedTemplate = emailUtils.replaceEmailParameters(template.getBody(), parameterMap);
+
+            emailUtils.sendMailWithQRCode(customer.getEmail(), template.getSubject(), replacedTemplate, qrCodeData, ticket.getSiteId());
+        } catch (WriterException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**

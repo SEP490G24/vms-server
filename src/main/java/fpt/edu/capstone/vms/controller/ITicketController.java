@@ -11,7 +11,14 @@ import lombok.Data;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -51,6 +58,10 @@ public interface ITicketController {
     @PostMapping("/cancel")
     @Operation(summary = "Cancel meeting ticket")
     ResponseEntity<?> cancelMeeting(@RequestBody @Valid CancelTicket cancelTicket);
+
+    @PostMapping("/update")
+    @Operation(summary = "Update meeting ticket")
+    ResponseEntity<?> updateMeeting(@RequestBody @Valid UpdateTicketInfo updateTicketInfo);
 
     @PostMapping("/filter")
     @Operation(summary = "Filter ticket")
@@ -161,10 +172,22 @@ public interface ITicketController {
 
     @Data
     class CancelTicket {
-
         private UUID reason;
         private String reasonNote;
         private UUID ticketId;
         private UUID templateId;
+    }
+
+    @Data
+    class UpdateTicketInfo {
+        private String ticketId;
+        private Constants.Purpose purpose;
+        private String purposeNote;
+        private String name;
+        private LocalDateTime startTime;
+        private LocalDateTime endTime;
+        private String description;
+        private UUID roomId;
+        List<ICustomerController.NewCustomers> newCustomers;
     }
 }

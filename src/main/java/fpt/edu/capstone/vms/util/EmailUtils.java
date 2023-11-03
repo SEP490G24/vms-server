@@ -8,12 +8,18 @@ import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.mail.javamail.MimeMessagePreparator;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
 import java.util.Properties;
 
-import static fpt.edu.capstone.vms.constants.Constants.SettingCode.*;
+import static fpt.edu.capstone.vms.constants.Constants.SettingCode.MAIL_HOST;
+import static fpt.edu.capstone.vms.constants.Constants.SettingCode.MAIL_PASSWORD;
+import static fpt.edu.capstone.vms.constants.Constants.SettingCode.MAIL_PORT;
+import static fpt.edu.capstone.vms.constants.Constants.SettingCode.MAIL_SMTP_AUTH;
+import static fpt.edu.capstone.vms.constants.Constants.SettingCode.MAIL_SMTP_STARTTLS_ENABLE;
+import static fpt.edu.capstone.vms.constants.Constants.SettingCode.MAIL_USERNAME;
 
 @Service
 @AllArgsConstructor
@@ -22,27 +28,31 @@ public class EmailUtils {
 
     private final SettingUtils settingUtils;
 
-    private static final String sender = "xuantrinhxq2@gmail.com";
+    private JavaMailSenderImpl configEmail(String siteId) {
+        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
 
-    public void sendMailWithQRCode(String to, String subject, String body, byte[] qrCodeData) {
+        settingUtils.loadSettingsSite(siteId);
+
+        mailSender.setHost(settingUtils.getOrDefault(MAIL_HOST));
+        mailSender.setPort(settingUtils.getInteger(MAIL_PORT, null));
+        mailSender.setUsername(settingUtils.getOrDefault(MAIL_USERNAME));
+        mailSender.setPassword(settingUtils.getOrDefault(MAIL_PASSWORD));
+
+        Properties properties = mailSender.getJavaMailProperties();
+        properties.put(MAIL_SMTP_AUTH, settingUtils.getBoolean(MAIL_SMTP_AUTH));
+        properties.put(MAIL_SMTP_STARTTLS_ENABLE, settingUtils.getBoolean(MAIL_SMTP_STARTTLS_ENABLE));
+
+        return mailSender;
+    }
+
+    @Async
+    public void sendMailWithQRCode(String to, String subject, String body, byte[] qrCodeData, String siteId) {
         try {
-            JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
 
-            settingUtils.loadSettingsSite("2134d4df-7e2e-4c1a-822a-f2032022a69f");
-
-
-            mailSender.setHost(settingUtils.getOrDefault(MAIL_HOST));
-            mailSender.setPort(settingUtils.getInteger(MAIL_PORT, null));
-            mailSender.setUsername(settingUtils.getOrDefault(MAIL_USERNAME));
-            mailSender.setPassword(settingUtils.getOrDefault(MAIL_PASSWORD));
-
-            Properties properties = mailSender.getJavaMailProperties();
-            properties.put(MAIL_SMTP_AUTH, settingUtils.getBoolean(MAIL_SMTP_AUTH));
-            properties.put(MAIL_SMTP_STARTTLS_ENABLE, settingUtils.getBoolean(MAIL_SMTP_STARTTLS_ENABLE));
 
             MimeMessagePreparator messagePreparatory = mimeMessage -> {
                 MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-                messageHelper.setFrom(sender);
+                messageHelper.setFrom(configEmail(siteId).getUsername());
                 messageHelper.setTo(to);
                 messageHelper.setSubject(subject);
                 messageHelper.setText(body, true);
@@ -53,7 +63,7 @@ public class EmailUtils {
             };
 
 
-            mailSender.send(messagePreparatory);
+            configEmail(siteId).send(messagePreparatory);
             log.info("Activation email sent!!");
         } catch (MailException e) {
             log.error("Exception occurred when sending mail", e);

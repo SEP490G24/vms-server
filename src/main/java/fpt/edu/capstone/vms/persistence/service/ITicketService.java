@@ -21,6 +21,8 @@ public interface ITicketService extends IGenericService<Ticket, UUID> {
 
     Boolean cancelTicket(ITicketController.CancelTicket cancelTicket);
 
+    Ticket updateTicket(ITicketController.UpdateTicketInfo ticketInfo);
+
     Page<Ticket> filter(Pageable pageable,
                         List<String> names,
                         UUID roomId,
