@@ -119,6 +119,7 @@ public interface ITicketController {
         private UUID id;
         private String code;
         private String name;
+        private String roomName;
         private Constants.Purpose purpose;
         private String purposeNote;
         private LocalDateTime startTime;

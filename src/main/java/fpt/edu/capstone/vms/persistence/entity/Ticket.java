@@ -13,6 +13,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKey;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -101,6 +102,17 @@ public class Ticket extends AbstractBaseEntity<UUID> {
 
     @Column(name = "site_id")
     private String siteId;
+
+    @Column(name = "reason_id")
+    private UUID reasonId;
+
+    @OneToOne
+    @JoinColumn(name = "reason_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JsonIgnore
+    private Reason reason;
+
+    @Column(name = "reason_note")
+    private String reasonNote;
 
     public Ticket update(Ticket ticketEntity) {
         if (ticketEntity.name != null) this.name = ticketEntity.name;
