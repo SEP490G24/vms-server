@@ -1,19 +1,21 @@
 package fpt.edu.capstone.vms.config.mapper;
 
 
-import fpt.edu.capstone.vms.oauth2.IRoleResource;
 import fpt.edu.capstone.vms.controller.ICustomerController;
 import fpt.edu.capstone.vms.controller.IDepartmentController;
 import fpt.edu.capstone.vms.controller.IRoomController;
 import fpt.edu.capstone.vms.controller.ISiteController;
 import fpt.edu.capstone.vms.controller.ITemplateController;
+import fpt.edu.capstone.vms.controller.ITicketController;
 import fpt.edu.capstone.vms.controller.IUserController;
+import fpt.edu.capstone.vms.oauth2.IRoleResource;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
 import fpt.edu.capstone.vms.persistence.entity.Customer;
 import fpt.edu.capstone.vms.persistence.entity.Department;
 import fpt.edu.capstone.vms.persistence.entity.Room;
 import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.entity.Template;
+import fpt.edu.capstone.vms.persistence.entity.Ticket;
 import fpt.edu.capstone.vms.persistence.entity.User;
 import fpt.edu.capstone.vms.persistence.repository.ProvinceRepository;
 import org.keycloak.representations.idm.RoleRepresentation;
@@ -86,6 +88,10 @@ public class ModelMapperConfig {
         // RoleRepresentation => RoleDto
         modelMapper.createTypeMap(RoleRepresentation.class, IRoleResource.RoleDto.class)
             .addMappings(mapping -> mapping.map(RoleRepresentation::getName, IRoleResource.RoleDto::setCode));
+
+        // ticket => TicketFilterDTO
+        modelMapper.createTypeMap(Ticket.class, ITicketController.TicketFilterDTO.class)
+            .addMappings(mapping -> mapping.map((ticket -> ticket.getRoom().getName()), ITicketController.TicketFilterDTO::setRoomName));
 
         return modelMapper;
     }
