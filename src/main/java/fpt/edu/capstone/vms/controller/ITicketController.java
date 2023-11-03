@@ -180,7 +180,7 @@ public interface ITicketController {
 
     @Data
     class UpdateTicketInfo {
-        private String ticketId;
+        private UUID id;
         private Constants.Purpose purpose;
         private String purposeNote;
         private String name;

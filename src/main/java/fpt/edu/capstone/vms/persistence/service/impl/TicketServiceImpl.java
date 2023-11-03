@@ -367,17 +367,21 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     @Override
     @Transactional(rollbackFor = {Exception.class, Throwable.class, NullPointerException.class})
     public Ticket updateTicket(ITicketController.UpdateTicketInfo ticketInfo) {
-        if (StringUtils.isEmpty(ticketInfo.getTicketId()))
+        if (StringUtils.isEmpty(ticketInfo.getId().toString()))
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "TicketId is null");
 
         Ticket ticketMap = mapper.map(ticketInfo, Ticket.class);
         LocalDateTime updateStartTime = ticketMap.getStartTime();
-        LocalDateTime updateEndTime = ticketMap.getStartTime();
+        LocalDateTime updateEndTime = ticketMap.getEndTime();
 
-        Ticket ticket = ticketRepository.findById(UUID.fromString(ticketInfo.getTicketId())).orElse(null);
+        Ticket ticket = ticketRepository.findById(ticketInfo.getId()).orElse(null);
+
+        if (!ticket.getUsername().equals(SecurityUtils.loginUsername())) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Ticket is not for you!!");
+        }
 
         if (ObjectUtils.isEmpty(ticket)) {
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't found ticket by id " + ticketInfo.getTicketId());
+            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't found ticket by id " + ticketInfo.getId());
         }
 
         if (StringUtils.isNotEmpty(ticketMap.getRoomId().toString())) {
@@ -397,25 +401,14 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             }
         }
 
-        if (updateStartTime != null) {
-            LocalDateTime startTime = ticket.getStartTime();
-            LocalDateTime endTime = ticket.getEndTime();
+        LocalDateTime startTime = ticket.getStartTime();
+        LocalDateTime endTime = ticket.getEndTime();
 
-            if (!updateStartTime.equals(startTime)) {
-                checkTimeForTicket(updateStartTime, endTime);
-            }
-        }
-
-        if (updateEndTime != null) {
-            LocalDateTime startTime = ticket.getStartTime();
-            LocalDateTime endTime = ticket.getEndTime();
-
-            if (!updateEndTime.equals(endTime)) {
-                checkTimeForTicket(startTime, updateEndTime);
-            }
-        }
-
-        if (updateStartTime != null && updateEndTime != null) {
+        if (updateStartTime != null && updateEndTime == null && !updateStartTime.isEqual(startTime)) {
+            checkTimeForTicket(updateStartTime, endTime);
+        } else if (updateEndTime != null && updateEndTime == null && !updateEndTime.isEqual(endTime)) {
+            checkTimeForTicket(startTime, updateEndTime);
+        } else if (updateStartTime != null && updateEndTime != null) {
             checkTimeForTicket(updateStartTime, updateEndTime);
         }
 
