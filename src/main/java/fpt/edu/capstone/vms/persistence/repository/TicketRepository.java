@@ -25,6 +25,8 @@ public interface TicketRepository extends GenericRepository<Ticket, UUID> {
 
     List<Ticket> findAllByCreatedOnBeforeAndStatus(LocalDateTime dateTime, Constants.StatusTicket statusTicket);
 
+    List<Ticket> findAllByStartTimeBetweenAndStatus(LocalDateTime currentTime, LocalDateTime meetingStartTime, Constants.StatusTicket statusTicket);
+
 
     @Query(value = "select u from Ticket u " +
         "where ((coalesce(:names) is null) or (u.name in :names))" +
