@@ -4,20 +4,8 @@ import com.google.zxing.WriterException;
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ICustomerController;
 import fpt.edu.capstone.vms.controller.ITicketController;
-import fpt.edu.capstone.vms.persistence.entity.Customer;
-import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMap;
-import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMapPk;
-import fpt.edu.capstone.vms.persistence.entity.Room;
-import fpt.edu.capstone.vms.persistence.entity.Site;
-import fpt.edu.capstone.vms.persistence.entity.Template;
-import fpt.edu.capstone.vms.persistence.entity.Ticket;
-import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
-import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
-import fpt.edu.capstone.vms.persistence.repository.OrganizationRepository;
-import fpt.edu.capstone.vms.persistence.repository.RoomRepository;
-import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
-import fpt.edu.capstone.vms.persistence.repository.TemplateRepository;
-import fpt.edu.capstone.vms.persistence.repository.TicketRepository;
+import fpt.edu.capstone.vms.persistence.entity.*;
+import fpt.edu.capstone.vms.persistence.repository.*;
 import fpt.edu.capstone.vms.persistence.service.ITicketService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import fpt.edu.capstone.vms.util.EmailUtils;
@@ -44,11 +32,7 @@ import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -587,6 +571,32 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             , keyword);
     }
 
+    @Override
+    public ITicketController.TicketByQRCodeResponseDTO findByQRCode(UUID ticketId, UUID customerId) {
+        CustomerTicketMap customerTicketMap = customerTicketMapRepository.findByCustomerTicketMapPk_TicketIdAndCustomerTicketMapPk_CustomerId(ticketId, customerId);
+        return ITicketController.TicketByQRCodeResponseDTO.builder()
+            .ticketId(customerTicketMap.getTicketEntity().getId())
+            .ticketCode(customerTicketMap.getTicketEntity().getCode())
+            .ticketName(customerTicketMap.getTicketEntity().getName())
+            .purpose(customerTicketMap.getTicketEntity().getPurpose())
+            .startTime(customerTicketMap.getTicketEntity().getStartTime())
+            .endTime(customerTicketMap.getTicketEntity().getEndTime())
+            .createBy(customerTicketMap.getTicketEntity().getUsername())
+            .roomId(customerTicketMap.getTicketEntity().getRoom().getId())
+            .roomName(customerTicketMap.getTicketEntity().getRoom().getName())
+            .customerInfo(mapper.map(customerTicketMap.getCustomerEntity(), ICustomerController.CustomerInfo.class))
+            .build();
+    }
+
+    @Override
+    public void updateStatusTicketOfCustomer(ITicketController.UpdateStatusTicketOfCustomer updateStatusTicketOfCustomer) {
+        CustomerTicketMap customerTicketMap = customerTicketMapRepository.findByCustomerTicketMapPk_TicketIdAndCustomerTicketMapPk_CustomerId(updateStatusTicketOfCustomer.getTicketId(), updateStatusTicketOfCustomer.getCustomerId());
+        customerTicketMap.setStatus(updateStatusTicketOfCustomer.getStatus());
+        customerTicketMap.setReasonId(updateStatusTicketOfCustomer.getReasonId());
+        customerTicketMap.setReasonNote(updateStatusTicketOfCustomer.getReasonNote());
+        customerTicketMapRepository.save(customerTicketMap);
+    }
+
     private List<String> getListSite() {
         List<String> sites = new ArrayList<>();
 
@@ -671,6 +681,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         pk.setTicketId(ticket.getId());
         pk.setCustomerId(customerId);
         customerTicketMap.setCustomerTicketMapPk(pk);
+        customerTicketMap.setStatus(Constants.StatusTicket.PENDING);
         customerTicketMapRepository.save(customerTicketMap);
     }
 

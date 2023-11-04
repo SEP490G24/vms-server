@@ -1,13 +1,8 @@
 package fpt.edu.capstone.vms.persistence.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Column;
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import fpt.edu.capstone.vms.constants.Constants;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -51,9 +46,16 @@ public class CustomerTicketMap extends AbstractBaseEntity<CustomerTicketMapPk> {
     @Column(name = "reason_note")
     private String reasonNote;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private Constants.StatusTicket status;
+
     public CustomerTicketMap update(CustomerTicketMap customerTicketMap) {
         if (customerTicketMap.getCreatedBy() != null) this.setCreatedBy(customerTicketMap.getCreatedBy());
         if (customerTicketMap.getCreatedOn() != null) this.setCreatedOn(customerTicketMap.getCreatedOn());
+        if (customerTicketMap.status != null) this.status = customerTicketMap.status;
+        if (customerTicketMap.reason != null) this.reason = customerTicketMap.reason;
+        if (customerTicketMap.reasonNote != null) this.reasonNote = customerTicketMap.reasonNote;
         return this;
     }
 

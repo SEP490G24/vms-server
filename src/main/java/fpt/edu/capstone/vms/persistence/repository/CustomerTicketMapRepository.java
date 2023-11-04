@@ -12,4 +12,7 @@ import java.util.UUID;
 public interface CustomerTicketMapRepository extends GenericRepository<CustomerTicketMap, CustomerTicketMapPk> {
 
     List<CustomerTicketMap> findAllByCustomerTicketMapPk_TicketId(UUID ticketId);
+
+    CustomerTicketMap findByCustomerTicketMapPk_TicketIdAndCustomerTicketMapPk_CustomerId(UUID ticketId, UUID customerId);
+
 }

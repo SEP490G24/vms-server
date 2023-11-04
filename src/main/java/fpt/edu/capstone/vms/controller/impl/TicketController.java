@@ -174,6 +174,17 @@ public class TicketController implements ITicketController {
             : ResponseEntity.ok(ticketFilterDTOS);
     }
 
+    @Override
+    public ResponseEntity<?> findByQRCode(UUID ticketId, UUID customerId) {
+        return ResponseEntity.ok(ticketService.findByQRCode(ticketId, customerId));
+    }
+
+    @Override
+    public ResponseEntity<?> updateState(UpdateStatusTicketOfCustomer updateStatusTicketOfCustomer) {
+        ticketService.updateStatusTicketOfCustomer(updateStatusTicketOfCustomer);
+        return ResponseEntity.ok().build();
+    }
+
     private void setCustomer(List<TicketFilterDTO> ticketFilterDTOS) {
         ticketFilterDTOS.forEach(o -> {
             List<ICustomerController.CustomerInfo> customerInfos = new ArrayList<>();

@@ -7,18 +7,12 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.QueryParam;
+import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -72,6 +66,14 @@ public interface ITicketController {
     @PreAuthorize("hasRole('r:ticket:find')")
     ResponseEntity<?> filterAllBySites(@RequestBody @Valid TicketFilterSite ticketFilterSite, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
+    @GetMapping("/{ticketId}/customer/{customerId}")
+    @Operation(summary = "Find ticket by qrcode")
+    @PreAuthorize("hasRole('r:ticket:findQRCode')")
+    ResponseEntity<?> findByQRCode(@PathVariable UUID ticketId, @PathVariable UUID customerId);
+
+    @PutMapping("/update-status")
+    @Operation(summary = "Update status of ticket")
+    ResponseEntity<?> updateState(@RequestBody @Valid UpdateStatusTicketOfCustomer updateStatusTicketOfCustomer);
 
     @Data
     class CreateTicketInfo {
@@ -191,4 +193,42 @@ public interface ITicketController {
         private UUID roomId;
         List<ICustomerController.NewCustomers> newCustomers;
     }
+
+    @Data
+    @Builder
+    class TicketByQRCodeResponseDTO {
+        //Ticket Info
+        private UUID ticketId;
+        private String ticketCode;
+        private String ticketName;
+        private Constants.Purpose purpose;
+        private LocalDateTime startTime;
+        private LocalDateTime endTime;
+        private String createBy;
+
+        //Info Room
+        private UUID roomId;
+        private String roomName;
+
+        //Info customer
+        ICustomerController.CustomerInfo customerInfo;
+    }
+
+    @Data
+    @Builder
+    class UpdateStatusTicketOfCustomer {
+
+        @NotNull
+        private UUID ticketId;
+
+        @NotNull
+        private UUID customerId;
+
+        @NotNull
+        private Constants.StatusTicket status;
+
+        private UUID reasonId;
+        private String reasonNote;
+    }
+
 }
