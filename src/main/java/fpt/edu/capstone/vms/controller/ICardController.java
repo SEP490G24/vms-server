@@ -32,7 +32,7 @@ public interface ICardController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete")
-    @PreAuthorize("hasRole('r:room:delete')")
+    @PreAuthorize("hasRole('r:card:delete')")
     ResponseEntity<?> delete(@PathVariable UUID id);
 
     @GetMapping
@@ -40,13 +40,13 @@ public interface ICardController {
     ResponseEntity<List<?>> findAll();
 
     @PostMapping()
-    @Operation(summary = "Create new agent")
-    @PreAuthorize("hasRole('r:room:create')")
+    @Operation(summary = "Create new card")
+    @PreAuthorize("hasRole('r:card:create')")
     ResponseEntity<?> create(@RequestBody @Valid CardDto cardDto);
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update room")
-    @PreAuthorize("hasRole('r:room:update')")
+    @Operation(summary = "Update card")
+    @PreAuthorize("hasRole('r:card:update')")
     ResponseEntity<?> update(@RequestBody CardDto cardDto, @PathVariable UUID id);
 
     @PostMapping("/filter")
@@ -54,7 +54,7 @@ public interface ICardController {
     ResponseEntity<?> filter(@RequestBody @Valid CardFilterDTO cardFilterDTO, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
     @GetMapping("/site/{siteId}")
-    @Operation(summary = "Get all room by siteId")
+    @Operation(summary = "Get all card by siteId")
     ResponseEntity<List<?>> findAllBySiteId(@PathVariable UUID siteId);
 
     @Data
@@ -63,6 +63,8 @@ public interface ICardController {
     @NoArgsConstructor
     class CardDto {
         private UUID id;
+        @NotNull
+        private UUID cardId;
         @NotNull
         private UUID customerId;
         @NotNull
@@ -90,6 +92,7 @@ public interface ICardController {
     @Data
     class CardFilterResponse {
         private UUID id;
+        private UUID cardId;
         private UUID meetingId;
         private String meetingName;
         private UUID customerId;

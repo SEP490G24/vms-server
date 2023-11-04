@@ -29,6 +29,9 @@ public class Card extends AbstractBaseEntity<UUID> {
     @GeneratedValue
     private UUID id;
 
+    @Column(name = "card_id")
+    private UUID cardId;
+
     @Column(name = "customer_id")
     private UUID customerId;
 
@@ -46,6 +49,9 @@ public class Card extends AbstractBaseEntity<UUID> {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
     private LocalDateTime readingTime;
 
+    @Column(name = "enable")
+    private Boolean enable;
+
     @Column(name = "site_id")
     private UUID siteId;
 
@@ -54,16 +60,17 @@ public class Card extends AbstractBaseEntity<UUID> {
     @JsonIgnore
     private Site site;
 
-//    public Card update(Card roleEntity) {
-//        if (roleEntity.name != null) this.name = roleEntity.name;
-//        if (roleEntity.code != null) this.code = roleEntity.code;
-//        if (roleEntity.isStaticRole != null) this.isStaticRole = roleEntity.isStaticRole;
-//        if (roleEntity.description != null) this.description = roleEntity.description;
-//        if (roleEntity.enable != null) this.enable = roleEntity.enable;
-//        if (roleEntity.getCreatedBy() != null) this.setCreatedBy(roleEntity.getCreatedBy());
-//        if (roleEntity.getCreatedOn() != null) this.setCreatedOn(roleEntity.getCreatedOn());
-//        return this;
-//    }
+    public Card update(Card cardEntity) {
+        if (cardEntity.cardId != null) this.cardId = cardEntity.cardId;
+        if (cardEntity.customerId != null) this.customerId = cardEntity.customerId;
+        if (cardEntity.meetingId != null) this.meetingId = cardEntity.meetingId;
+        if (cardEntity.readingTime != null) this.readingTime = cardEntity.readingTime;
+        if (cardEntity.recordingTime != null) this.recordingTime = cardEntity.recordingTime;
+        if (cardEntity.enable != null) this.enable = cardEntity.enable;
+        if (cardEntity.getCreatedBy() != null) this.setCreatedBy(cardEntity.getCreatedBy());
+        if (cardEntity.getCreatedOn() != null) this.setCreatedOn(cardEntity.getCreatedOn());
+        return this;
+    }
 
     @Override
     public UUID getId() {

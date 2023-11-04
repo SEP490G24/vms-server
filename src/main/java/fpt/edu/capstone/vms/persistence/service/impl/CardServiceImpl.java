@@ -37,7 +37,7 @@ public class CardServiceImpl extends GenericServiceImpl<Card, UUID> implements I
         var card = cardRepository.findById(id).orElse(null);
         if (ObjectUtils.isEmpty(card))
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't found card");
-        //cardRepository.save(card.update(cardInfo));
+        cardRepository.save(card.update(cardInfo));
         return card;
     }
 
