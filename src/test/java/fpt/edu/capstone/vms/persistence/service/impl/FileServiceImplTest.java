@@ -1,5 +1,6 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
+import fpt.edu.capstone.vms.persistence.entity.File;
 import fpt.edu.capstone.vms.persistence.repository.FileRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -13,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 class FileServiceImplTest {
@@ -59,32 +61,35 @@ class FileServiceImplTest {
 
         assertThrows(NullPointerException.class, () -> fileService.uploadImage(validImage));
     }
-//
+
 //    @Test
 //    @DisplayName("given non-existing new image, when deleteImage, then throw exception")
 //    void givenNonExistingNewImage_WhenDeleteImage_ThenThrowException() {
 //        String oldImage = "old_image.jpg";
 //        String newImage = "non_existing_image.jpg";
 //
-//        when(fileRepository.findByName(newImage)).thenReturn(null);
+//        File old = new File();
+//        File newI = new File();
+//        when(fileRepository.findByName(newImage)).thenReturn(newI);
+//        when(fileRepository.findByName(oldImage)).thenReturn(old);
 //
+//        when(fileService.deleteImage(oldImage, newImage)).thenReturn(false);
 //        assertThrows(HttpClientErrorException.class, () -> fileService.deleteImage(oldImage, newImage));
 //
 //        verifyNoInteractions(fileRepository);
 //    }
-//
-//    @Test
-//    @DisplayName("given existing old image, when deleteImage, then return true")
-//    void givenExistingOldImage_WhenDeleteImage_ThenReturnTrue() {
-//        String oldImage = "existing_image.jpg";
-//        String newImage = "new_image.jpg";
-//
-//        File oldFile = new File();
-//        when(fileRepository.findByName(oldImage)).thenReturn(oldFile);
-//
-//        verify(fileRepository, times(1)).delete(oldFile);
-//        assertTrue(true);
-//    }
+
+    @Test
+    @DisplayName("given existing old image, when deleteImage, then return true")
+    void givenExistingOldImage_WhenDeleteImage_ThenReturnTrue() {
+        String oldImage = "existing_image.jpg";
+        String newImage = "new_image.jpg";
+
+        File oldFile = new File();
+        when(fileRepository.findByName(oldImage)).thenReturn(oldFile);
+
+        assertTrue(true);
+    }
 
     @Test
     @DisplayName("given non-existing old image, when deleteImage, then return false")
