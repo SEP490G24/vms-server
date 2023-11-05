@@ -4,20 +4,8 @@ import com.google.zxing.WriterException;
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ICustomerController;
 import fpt.edu.capstone.vms.controller.ITicketController;
-import fpt.edu.capstone.vms.persistence.entity.Customer;
-import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMap;
-import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMapPk;
-import fpt.edu.capstone.vms.persistence.entity.Room;
-import fpt.edu.capstone.vms.persistence.entity.Site;
-import fpt.edu.capstone.vms.persistence.entity.Template;
-import fpt.edu.capstone.vms.persistence.entity.Ticket;
-import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
-import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
-import fpt.edu.capstone.vms.persistence.repository.OrganizationRepository;
-import fpt.edu.capstone.vms.persistence.repository.RoomRepository;
-import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
-import fpt.edu.capstone.vms.persistence.repository.TemplateRepository;
-import fpt.edu.capstone.vms.persistence.repository.TicketRepository;
+import fpt.edu.capstone.vms.persistence.entity.*;
+import fpt.edu.capstone.vms.persistence.repository.*;
 import fpt.edu.capstone.vms.persistence.service.ITicketService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import fpt.edu.capstone.vms.util.EmailUtils;
@@ -44,11 +32,7 @@ import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -65,9 +49,10 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     final CustomerTicketMapRepository customerTicketMapRepository;
     final EmailUtils emailUtils;
 
-
     public TicketServiceImpl(TicketRepository ticketRepository, CustomerRepository customerRepository,
-                             TemplateRepository templateRepository, ModelMapper mapper, RoomRepository roomRepository, SiteRepository siteRepository, OrganizationRepository organizationRepository, CustomerTicketMapRepository customerTicketMapRepository, EmailUtils emailUtils) {
+                             TemplateRepository templateRepository, ModelMapper mapper, RoomRepository roomRepository,
+                             SiteRepository siteRepository, OrganizationRepository organizationRepository,
+                             CustomerTicketMapRepository customerTicketMapRepository, EmailUtils emailUtils) {
         this.ticketRepository = ticketRepository;
         this.templateRepository = templateRepository;
         this.customerRepository = customerRepository;
@@ -590,14 +575,20 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     @Override
     public ITicketController.TicketByQRCodeResponseDTO findByQRCode(UUID ticketId, UUID customerId) {
         CustomerTicketMap customerTicketMap = customerTicketMapRepository.findByCustomerTicketMapPk_TicketIdAndCustomerTicketMapPk_CustomerId(ticketId, customerId);
+        String site = SecurityUtils.getSiteId();
+        if (!site.equals(customerTicketMap.getTicketEntity().getSiteId())) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Ticket can not found in site");
+        }
         return ITicketController.TicketByQRCodeResponseDTO.builder()
             .ticketId(customerTicketMap.getTicketEntity().getId())
             .ticketCode(customerTicketMap.getTicketEntity().getCode())
             .ticketName(customerTicketMap.getTicketEntity().getName())
             .purpose(customerTicketMap.getTicketEntity().getPurpose())
             .startTime(customerTicketMap.getTicketEntity().getStartTime())
+            .status(customerTicketMap.getTicketEntity().getStatus())
             .endTime(customerTicketMap.getTicketEntity().getEndTime())
             .createBy(customerTicketMap.getTicketEntity().getUsername())
+            .createdOn(customerTicketMap.getTicketEntity().getCreatedOn())
             .roomId(customerTicketMap.getTicketEntity().getRoom().getId())
             .roomName(customerTicketMap.getTicketEntity().getRoom().getName())
             .customerInfo(mapper.map(customerTicketMap.getCustomerEntity(), ICustomerController.CustomerInfo.class))
@@ -647,6 +638,42 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             }
             return mapper.map(ticket, ITicketController.TicketFilterDTO.class);
         }
+    }
+
+    @Override
+    public Page<ITicketController.TicketByQRCodeResponseDTO> filterTicketAndCustomer(Pageable pageable
+        , List<String> names
+        , UUID roomId
+        , Constants.StatusTicket status
+        , Constants.Purpose purpose
+        , LocalDateTime createdOnStart
+        , LocalDateTime createdOnEnd
+        , LocalDateTime startTimeStart
+        , LocalDateTime startTimeEnd
+        , LocalDateTime endTimeStart
+        , LocalDateTime endTimeEnd
+        , String createdBy
+        , String lastUpdatedBy
+        , Boolean bookmark
+        , String keyword) {
+        /*return customerTicketMapRepository.filterTicketAndCustomer(pageable
+            , names
+            , null
+            , SecurityUtils.loginUsername()
+            , roomId
+            , status
+            , purpose
+            , createdOnStart
+            , createdOnEnd
+            , startTimeStart
+            , startTimeEnd
+            , endTimeStart
+            , endTimeEnd
+            , createdBy
+            , lastUpdatedBy
+            , bookmark
+            , keyword);*/
+        return null;
     }
 
     private List<String> getListSite() {
@@ -707,8 +734,26 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             byte[] qrCodeData = QRcodeUtils.getQRCodeImage(meetingUrl, 800, 800);
             assert template != null;
 
-            Map<String, String> parameterMap = Map.of("ten_nguoi_nhan", customer.getVisitorName());
+            //template email
+            String siteId = ticket.getSiteId();
+            Site site = siteRepository.findById(UUID.fromString(siteId)).orElse(null);
+
+            Map<String, String> parameterMap = new HashMap<>();
+            parameterMap.put("customer_name", customer.getVisitorName());
+            parameterMap.put("meeting_name", ticket.getRoom().getName());
+            parameterMap.put("start_time", ticket.getStartTime().toString());
+            parameterMap.put("end_time", ticket.getEndTime().toString());
+            parameterMap.put("address", site.getAddress());
+            parameterMap.put("room_name", ticket.getRoom().getName());
             String replacedTemplate = emailUtils.replaceEmailParameters(template.getBody(), parameterMap);
+
+            if (ticket.isPassGuard() && ticket.isPassReceptionist()) {
+                replacedTemplate += "<p style='color: red;'>Lưu ý: Bạn sẽ phải đi qua cổng bảo vệ và chỗ lễ tân.</p>";
+            } else if (ticket.isPassGuard()) {
+                replacedTemplate += "<p style='color: red;'>Lưu ý: Bạn sẽ phải đi qua cổng bảo vệ.</p>";
+            } else if (ticket.isPassReceptionist()) {
+                replacedTemplate += "<p style='color: red;'>Lưu ý: Bạn sẽ phải đi qua cổng lễ tân.</p>";
+            }
 
             emailUtils.sendMailWithQRCode(customer.getEmail(), template.getSubject(), replacedTemplate, qrCodeData, ticket.getSiteId());
         } catch (WriterException e) {

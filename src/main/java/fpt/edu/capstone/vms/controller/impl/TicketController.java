@@ -196,6 +196,27 @@ public class TicketController implements ITicketController {
     }
 
     @Override
+    public ResponseEntity<?> filterTicketAndCustomer(TicketFilterUser filter, Pageable pageable) {
+        return ResponseEntity.ok(ticketService.filterTicketAndCustomer(
+            pageable,
+            filter.getNames(),
+            filter.getRoomId(),
+            filter.getStatus(),
+            filter.getPurpose(),
+            filter.getCreatedOnStart(),
+            filter.getCreatedOnEnd(),
+            filter.getStartTimeStart(),
+            filter.getStartTimeEnd(),
+            filter.getEndTimeStart(),
+            filter.getEndTimeEnd(),
+            filter.getCreatedBy(),
+            filter.getLastUpdatedBy(),
+            filter.getBookmark(),
+            filter.getKeyword()));
+
+    }
+
+    @Override
     public ResponseEntity<?> findByIdForUser(UUID ticketId) {
         try {
             TicketFilterDTO ticketFilterDTO = ticketService.findByTicketForUser(ticketId);

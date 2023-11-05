@@ -92,4 +92,22 @@ public interface ITicketService extends IGenericService<Ticket, UUID> {
     ITicketController.TicketFilterDTO findByTicketForUser(UUID ticketId);
 
     ITicketController.TicketFilterDTO findByTicketForAdmin(UUID ticketId);
+
+    Page<ITicketController.TicketByQRCodeResponseDTO> filterTicketAndCustomer(
+        Pageable pageable,
+        List<String> names,
+        UUID roomId,
+        Constants.StatusTicket status,
+        Constants.Purpose purpose,
+        LocalDateTime createdOnStart,
+        LocalDateTime createdOnEnd,
+        LocalDateTime startTimeStart,
+        LocalDateTime startTimeEnd,
+        LocalDateTime endTimeStart,
+        LocalDateTime endTimeEnd,
+        String createdBy,
+        String lastUpdatedBy,
+        Boolean bookmark,
+        String keyword
+    );
 }

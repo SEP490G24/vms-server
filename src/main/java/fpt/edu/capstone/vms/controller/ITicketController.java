@@ -12,15 +12,7 @@ import lombok.Data;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -76,7 +68,7 @@ public interface ITicketController {
 
     @GetMapping("/{ticketId}/customer/{customerId}")
     @Operation(summary = "Find ticket by qrcode")
-    @PreAuthorize("hasRole('r:ticket:findQRCode')")
+        //@PreAuthorize("hasRole('r:ticket:findQRCode')")
     ResponseEntity<?> findByQRCode(@PathVariable UUID ticketId, @PathVariable UUID customerId);
 
     @PutMapping("/update-status")
@@ -91,6 +83,11 @@ public interface ITicketController {
     @Operation(summary = "Find ticket by id for admin")
     @PreAuthorize("hasRole('r:ticket:viewTicketDetail')")
     ResponseEntity<?> findByIdForAdmin(@PathVariable UUID ticketId);
+
+    @PostMapping("-and-customer/filter")
+    @Operation(summary = "Filter ticket and customer ")
+        //@PreAuthorize("hasRole('r:ticket:findQRCode')")
+    ResponseEntity<?> filterTicketAndCustomer(@RequestBody @Valid TicketFilterUser ticketFilterUser, Pageable pageable);
 
     @Data
     class CreateTicketInfo {
@@ -119,6 +116,12 @@ public interface ITicketController {
 
         @NotNull
         private boolean draft;
+
+        @NotNull
+        private boolean isPassGuard;
+
+        @NotNull
+        private boolean isPassReceptionist;
     }
 
     @Data
@@ -219,9 +222,11 @@ public interface ITicketController {
         private String ticketCode;
         private String ticketName;
         private Constants.Purpose purpose;
+        private Constants.StatusTicket status;
         private LocalDateTime startTime;
         private LocalDateTime endTime;
         private String createBy;
+        private LocalDateTime createdOn;
 
         //Info Room
         private UUID roomId;

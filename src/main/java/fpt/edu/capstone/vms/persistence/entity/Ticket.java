@@ -2,19 +2,7 @@ package fpt.edu.capstone.vms.persistence.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import fpt.edu.capstone.vms.constants.Constants;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.MapKey;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -113,6 +101,12 @@ public class Ticket extends AbstractBaseEntity<UUID> {
 
     @Column(name = "reason_note")
     private String reasonNote;
+
+    @Column(name = "is_pass_guard", nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
+    private boolean isPassGuard;
+
+    @Column(name = "is_pass_receptionist", nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
+    private boolean isPassReceptionist;
 
     public Ticket update(Ticket ticketEntity) {
         if (ticketEntity.name != null) this.name = ticketEntity.name;
