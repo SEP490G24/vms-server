@@ -40,24 +40,24 @@ public final class KeycloakRoleMapper {
 
     private static Map<String, List<String>> mergeMap(Map<String, List<String>> source, Map<String, List<String>> destination) {
         return Stream.of(source, destination)
-                .flatMap(map -> map.entrySet().stream())
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        Map.Entry::getValue,
-                        (sourceValue, destinationValue) -> sourceValue));
+            .flatMap(map -> map.entrySet().stream())
+            .collect(Collectors.toMap(
+                Map.Entry::getKey,
+                Map.Entry::getValue,
+                (sourceValue, destinationValue) -> sourceValue));
     }
 
     private static Map<String, List<String>> generateAttributes(Map<String, KeycloakRoleAttribute> roleDetailMap) {
         Map<String, List<String>> attributes = new HashMap<>();
+        attributes.put(RoleAttributes.GROUP.getValue(), Collections.singletonList(roleDetailMap.get(LanguageCode.VN.getValue()).getFeature()));
         Stream.of(LanguageCode.values()).forEach(languageCode -> {
             attributes.put(RoleAttributes.FEATURE.getValue() + ":" + languageCode.getValue(), Collections.singletonList(roleDetailMap.get(languageCode.getValue()).getFeature()));
-            attributes.put(RoleAttributes.MODULE.getValue() + ":" + languageCode.getValue(), Collections.singletonList(roleDetailMap.get(languageCode.getValue()).getModule()));
             attributes.put(RoleAttributes.NAME.getValue() + ":" + languageCode.getValue(), Collections.singletonList(roleDetailMap.get(languageCode.getValue()).getName()));
         });
         return attributes;
     }
 
-    public static Map<String, KeycloakRoleAttribute> convert2RoleMap(String role, String module, Map<String, Map<String, KeycloakRoleAttribute>> oldRoles) {
+    public static Map<String, KeycloakRoleAttribute> convert2RoleMap(String role, Map<String, Map<String, KeycloakRoleAttribute>> oldRoles) {
         String[] roleDetails = role.trim().split(":");
         Map<String, KeycloakRoleAttribute> results = new HashMap<>();
         if (!roleDetails[0].equalsIgnoreCase("r")) {
@@ -71,7 +71,6 @@ public final class KeycloakRoleMapper {
             return roleMap;
         } else {
             keycloakRoleAttribute.setDescription(role);
-            keycloakRoleAttribute.setModule(module);
             keycloakRoleAttribute.setFeature(roleDetails[1]);
             keycloakRoleAttribute.setName(roleDetails[2]);
 
@@ -83,7 +82,7 @@ public final class KeycloakRoleMapper {
         }
     }
 
-    public static Map<String, KeycloakRoleAttribute> convert2RoleMap(String role, String module) {
+    public static Map<String, KeycloakRoleAttribute> convert2RoleMap(String role) {
         String[] roleDetails = role.trim().split(":");
         Map<String, KeycloakRoleAttribute> results = new HashMap<>();
         if (!roleDetails[0].equalsIgnoreCase("p")) {
@@ -91,8 +90,7 @@ public final class KeycloakRoleMapper {
         }
         KeycloakRoleAttribute keycloakRoleAttribute = new KeycloakRoleAttribute();
         keycloakRoleAttribute.setDescription(role);
-        keycloakRoleAttribute.setModule(module);
-        keycloakRoleAttribute.setFeature(module);
+        keycloakRoleAttribute.setFeature("pages");
         keycloakRoleAttribute.setName(roleDetails[1]);
 
         Stream.of(LanguageCode.values()).forEach(languageCode -> {

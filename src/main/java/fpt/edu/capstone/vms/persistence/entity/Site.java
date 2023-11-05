@@ -1,24 +1,10 @@
 package fpt.edu.capstone.vms.persistence.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.MapKey;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
 
@@ -34,6 +20,7 @@ import java.util.UUID;
 @Table(schema = "vms", name = "site")
 @EqualsAndHashCode(callSuper = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Builder
 public class Site extends AbstractBaseEntity<UUID> {
 
     @Id
@@ -44,7 +31,7 @@ public class Site extends AbstractBaseEntity<UUID> {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "code")
+    @Column(name = "code", unique = true, updatable = false, nullable = false)
     private String code;
 
     @Column(name = "organization_id")
@@ -60,14 +47,29 @@ public class Site extends AbstractBaseEntity<UUID> {
     @Max(value = 10)
     private String phoneNumber;
 
-    @Column(name = "province")
-    private String province;
+    @Column(name = "province_id")
+    private Integer provinceId;
 
-    @Column(name = "district")
-    private String district;
+    @ManyToOne
+    @JoinColumn(name = "province_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JsonIgnore
+    private Province province;
 
-    @Column(name = "ward")
-    private String ward;
+    @Column(name = "district_id")
+    private Integer districtId;
+
+    @ManyToOne
+    @JoinColumn(name = "district_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JsonIgnore
+    private District district;
+
+    @Column(name = "commune_id")
+    private Integer communeId;
+
+    @ManyToOne
+    @JoinColumn(name = "commune_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JsonIgnore
+    private Commune commune;
 
     @Column(name = "address")
     private String address;
@@ -82,12 +84,12 @@ public class Site extends AbstractBaseEntity<UUID> {
     private Boolean enable;
 
     @OneToMany(mappedBy = "siteEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
-    @MapKey(name = "templateSiteMapPk.siteId")
-    private Map<UUID, TemplateSiteMap> templateSiteMaps;
-
-    @OneToMany(mappedBy = "siteEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     @MapKey(name = "pricePackageSiteMapPk.siteId")
     private Map<UUID, PricePackageSiteMap> pricePackageSiteMaps;
+
+    @OneToMany(mappedBy = "siteEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @MapKey(name = "settingSiteMapPk.siteId")
+    private Map<UUID, SettingSiteMap> settingSiteMaps;
 
     public Site update(Site siteEntity) {
         if (siteEntity.name != null) this.name = siteEntity.name;
@@ -95,7 +97,7 @@ public class Site extends AbstractBaseEntity<UUID> {
         if (siteEntity.organizationId != null) this.organizationId = siteEntity.organizationId;
         if (siteEntity.phoneNumber != null) this.phoneNumber = siteEntity.phoneNumber;
         if (siteEntity.province != null) this.province = siteEntity.province;
-        if (siteEntity.ward != null) this.ward = siteEntity.ward;
+        if (siteEntity.commune != null) this.commune = siteEntity.commune;
         if (siteEntity.district != null) this.district = siteEntity.district;
         if (siteEntity.address != null) this.address = siteEntity.address;
         if (siteEntity.taxCode != null) this.taxCode = siteEntity.taxCode;

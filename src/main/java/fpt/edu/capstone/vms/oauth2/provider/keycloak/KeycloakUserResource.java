@@ -1,13 +1,18 @@
 package fpt.edu.capstone.vms.oauth2.provider.keycloak;
 
 import fpt.edu.capstone.vms.constants.Constants;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
-import fpt.edu.capstone.vms.util.SecurityUtils;
+import fpt.edu.capstone.vms.persistence.entity.Department;
+import fpt.edu.capstone.vms.persistence.repository.DepartmentRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.keycloak.admin.client.CreatedResponseUtil;
 import org.keycloak.admin.client.Keycloak;
-import org.keycloak.admin.client.resource.*;
+import org.keycloak.admin.client.resource.RealmResource;
+import org.keycloak.admin.client.resource.RolesResource;
+import org.keycloak.admin.client.resource.UserResource;
+import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
@@ -19,7 +24,6 @@ import org.springframework.stereotype.Component;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -31,11 +35,13 @@ public class KeycloakUserResource implements IUserResource {
     private final String REALM;
     private final UsersResource usersResource;
     private final RolesResource rolesResource;
+    private final DepartmentRepository departmentRepository;
 
 
     public KeycloakUserResource(
         Keycloak keycloak,
-        ModelMapper mapper, @Value("${edu.fpt.capstone.vms.oauth2.keycloak.realm}") String realm
+        ModelMapper mapper, @Value("${edu.fpt.capstone.vms.oauth2.keycloak.realm}") String realm,
+        DepartmentRepository departmentRepository
     ) {
         this.keycloak = keycloak;
         this.mapper = mapper;
@@ -43,13 +49,21 @@ public class KeycloakUserResource implements IUserResource {
         RealmResource realmResource = keycloak.realm(REALM);
         this.usersResource = realmResource.users();
         this.rolesResource = realmResource.roles();
+        this.departmentRepository = departmentRepository;
     }
 
     @Override
     public String create(UserDto userDto) {
 
         Map<String, List<String>> attributes = new HashMap<>();
-        attributes.put(Constants.Claims.OrgId, List.of(SecurityUtils.getOrgId()));
+        if (userDto.getIsCreateUserOrg()) {
+            attributes.put(Constants.Claims.OrgId, List.of(userDto.getOrgId()));
+        } else {
+            Department department = departmentRepository.findById(userDto.getDepartmentId()).orElse(null);
+            String siteId = department.getSite().getId().toString();
+            attributes.put(Constants.Claims.SiteId, List.of(siteId));
+        }
+
 
         /* Define password credential */
         var passwordCred = new CredentialRepresentation();
@@ -64,7 +78,7 @@ public class KeycloakUserResource implements IUserResource {
         user.setEmail(userDto.getEmail());
         user.setEnabled(userDto.getEnable());
         user.setEmailVerified(false);
-
+        user.setAttributes(attributes);
         user.setCredentials(List.of(passwordCred));
 
         try (var response = usersResource.create(user)) {
@@ -72,9 +86,17 @@ public class KeycloakUserResource implements IUserResource {
             String userId = CreatedResponseUtil.getCreatedId(response);
 
             // assign role
-            RoleRepresentation roleRepresentation = rolesResource.get(userDto.getRole().toString()).toRepresentation();
-            usersResource.get(userId).roles().realmLevel().add(List.of(roleRepresentation));
+            for (String role : userDto.getRoles()
+            ) {
+                //Tìm role xem có không
 
+                //Assign role
+                RoleRepresentation roleRepresentation = rolesResource.get(role).toRepresentation();
+                if (roleRepresentation == null) {
+                    throw new CustomException("Role: " + role + " không tồn tại");
+                }
+                usersResource.get(userId).roles().realmLevel().add(List.of(roleRepresentation));
+            }
             return userId;
         }
     }
@@ -89,6 +111,9 @@ public class KeycloakUserResource implements IUserResource {
         modifiedUser.setFirstName(userDto.getFirstName());
         modifiedUser.setLastName(userDto.getLastName());
         if (userDto.getEnable() != null) modifiedUser.setEnabled(userDto.getEnable());
+
+        //update role
+        updateRole(userDto.getOpenid(), userDto.getRoles());
         userResource.update(modifiedUser);
 
         return true;
@@ -104,6 +129,7 @@ public class KeycloakUserResource implements IUserResource {
             modifiedUser.setCredentials(List.of(passwordCred));
         }
     }
+
     @Override
     public void changeState(String userId, boolean stateEnable) {
         RealmResource realmResource = keycloak.realm(REALM);
@@ -112,6 +138,22 @@ public class KeycloakUserResource implements IUserResource {
         modifiedUser.setEnabled(stateEnable);
 
         realmResource.users().get(userId).update(modifiedUser);
+    }
+
+
+    public void updateRole(String openId, List<String> roles) {
+        // Get the user's existing roles
+        List<RoleRepresentation> existingRoles = usersResource.get(openId).roles().realmLevel().listAll();
+
+        // Remove the old roles
+        for (RoleRepresentation existingRole : existingRoles) {
+            usersResource.get(openId).roles().realmLevel().remove(List.of(existingRole));
+        }
+        for (String role : roles
+        ) {
+            RoleRepresentation roleRepresentation = rolesResource.get(role).toRepresentation();
+            usersResource.get(openId).roles().realmLevel().add(List.of(roleRepresentation));
+        }
     }
 
 
@@ -129,28 +171,28 @@ public class KeycloakUserResource implements IUserResource {
         userResource.update(modifiedUser);
     }
 
-    @Override
-    public List<UserDto> users() {
-        UsersResource usersResource = keycloak.realm(REALM).users();
-
-
-        return usersResource.list()
-            .stream()
-            .map(u -> {
-                Constants.UserRole userRole = null;
-                RoleScopeResource roleScopeResource = usersResource.get(u.getId()).roles().realmLevel();
-                List<RoleRepresentation> roles = roleScopeResource.listAll();
-                for (RoleRepresentation role : roles) {
-                    try {
-                        userRole = Constants.UserRole.valueOf(role.getName());
-                        break;
-                    } catch (Exception e) {
-                    }
-                }
-
-                return mapper.map(u, UserDto.class)
-                    .setRole(userRole);
-            })
-            .collect(Collectors.toList());
-    }
+//    @Override
+//    public List<UserDto> users() {
+//        UsersResource usersResource = keycloak.realm(REALM).users();
+//
+//
+//        return usersResource.list()
+//            .stream()
+//            .map(u -> {
+//                Constants.UserRole userRole = null;
+//                RoleScopeResource roleScopeResource = usersResource.get(u.getId()).roles().realmLevel();
+//                List<RoleRepresentation> roles = roleScopeResource.listAll();
+//                for (RoleRepresentation role : roles) {
+//                    try {
+//                        userRole = Constants.UserRole.valueOf(role.getName());
+//                        break;
+//                    } catch (Exception e) {
+//                    }
+//                }
+//
+//                return mapper.map(u, UserDto.class)
+//                    .setRole(userRole);
+//            })
+//            .collect(Collectors.toList());
+//    }
 }

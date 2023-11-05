@@ -1,14 +1,23 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
+import fpt.edu.capstone.vms.constants.ErrorApp;
+import fpt.edu.capstone.vms.controller.IRoleController;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.oauth2.IPermissionResource;
 import fpt.edu.capstone.vms.oauth2.IRoleResource;
+import fpt.edu.capstone.vms.persistence.entity.Site;
+import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.service.IRoleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 
 @Slf4j
@@ -17,11 +26,18 @@ import java.util.List;
 public class RoleService implements IRoleService {
 
     private final IRoleResource roleResource;
+    private final SiteRepository siteRepository;
 
     @Override
     public List<IRoleResource.RoleDto> findAll() {
         return roleResource.findAll();
     }
+
+    @Override
+    public Page<IRoleResource.RoleDto> filter(IRoleController.RoleBasePayload roleBasePayload, Pageable pageable) {
+        return roleResource.filter(roleBasePayload,pageable);
+    }
+
 
     @Override
     public IRoleResource.RoleDto findById(String id) {
@@ -30,7 +46,10 @@ public class RoleService implements IRoleService {
 
     @Override
     public IRoleResource.RoleDto create(IRoleResource.RoleDto dto) {
-        return roleResource.create(dto);
+        String siteId = dto.getAttributes().get("site_id").get(0);
+        Site site = siteRepository.findById(UUID.fromString(siteId)).orElse(null);
+        if (ObjectUtils.isEmpty(site)) throw new CustomException(ErrorApp.BAD_REQUEST);
+        return roleResource.create(site, dto);
     }
 
     @Override
@@ -46,5 +65,10 @@ public class RoleService implements IRoleService {
     @Override
     public void delete(String id) {
         roleResource.delete(id);
+    }
+
+    @Override
+    public List<IRoleResource.RoleDto> getBySites(List<String> sites) {
+        return roleResource.getBySites(sites);
     }
 }

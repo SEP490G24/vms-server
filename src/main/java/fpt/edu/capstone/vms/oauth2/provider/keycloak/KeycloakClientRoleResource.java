@@ -1,5 +1,6 @@
 package fpt.edu.capstone.vms.oauth2.provider.keycloak;
 
+import fpt.edu.capstone.vms.controller.IPermissionController;
 import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.oauth2.IPermissionResource;
 import lombok.extern.slf4j.Slf4j;
@@ -51,14 +52,14 @@ public class KeycloakClientRoleResource implements IPermissionResource {
         var permissions = this.realmResource.clients().get(cId).roles().list(false);
         var permissionDtos = (List<PermissionDto>) mapper.map(permissions, new TypeToken<List<PermissionDto>>() {
         }.getType());
-        permissionDtos.forEach(PermissionDto::updateLabel);
+        permissionDtos.forEach(PermissionDto::initMetadata);
         return permissionDtos;
     }
 
     @Override
     public PermissionDto findById(String cId, String roleName) {
         var permission = this.realmResource.clients().get(cId).roles().get(roleName).toRepresentation();
-        return mapper.map(permission, PermissionDto.class).updateLabel();
+        return mapper.map(permission, PermissionDto.class).initMetadata();
     }
 
     @Override
@@ -93,6 +94,11 @@ public class KeycloakClientRoleResource implements IPermissionResource {
     @Override
     public void delete(String cId, String roleName) {
         this.realmResource.clients().get(cId).roles().deleteRole(roleName);
+    }
+
+    @Override
+    public List filter(IPermissionController.PermissionFilterPayload filterPayload) {
+        return null;
     }
 
 }

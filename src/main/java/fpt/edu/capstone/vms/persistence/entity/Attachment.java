@@ -48,21 +48,13 @@ public class Attachment extends AbstractBaseEntity<UUID> {
     @Column(name = "type_file", length = 64)
     private String typeFile;
 
-    @Column(name = "ticket_id")
-    private UUID ticketId;
+    @Column(name = "customer_id")
+    private UUID customerId;
 
     @ManyToOne
-    @JoinColumn(name = "ticket_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JoinColumn(name = "customer_id", referencedColumnName = "id", insertable = false, updatable = false)
     @JsonIgnore
-    private Ticket ticket;
-
-    @Column(name = "companion_id")
-    private UUID companionId;
-
-    @ManyToOne
-    @JoinColumn(name = "companion_id", referencedColumnName = "id", insertable = false, updatable = false)
-    @JsonIgnore
-    private Companion companion;
+    private Customer customer;
 
     @Override
     public UUID getId() {

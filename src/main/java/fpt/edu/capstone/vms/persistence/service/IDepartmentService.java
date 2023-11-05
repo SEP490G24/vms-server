@@ -13,7 +13,7 @@ import java.util.UUID;
 
 public interface IDepartmentService extends IGenericService<Department, UUID> {
 
-    Department createDepartment(IDepartmentController.createDepartmentInfo departmentInfo);
+    Department createDepartment(IDepartmentController.CreateDepartmentInfo departmentInfo);
 
     Page<Department> filter(Pageable pageable,
                       List<String> names,

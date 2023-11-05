@@ -4,21 +4,29 @@ package fpt.edu.capstone.vms.persistence.service.impl;
 import com.azure.storage.blob.BlobClient;
 import com.monitorjbl.xlsx.StreamingReader;
 import fpt.edu.capstone.vms.constants.Constants;
+import fpt.edu.capstone.vms.constants.ErrorApp;
 import fpt.edu.capstone.vms.controller.IUserController;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
 import fpt.edu.capstone.vms.persistence.entity.Department;
 import fpt.edu.capstone.vms.persistence.entity.User;
 import fpt.edu.capstone.vms.persistence.repository.DepartmentRepository;
 import fpt.edu.capstone.vms.persistence.repository.FileRepository;
+import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.repository.UserRepository;
 import fpt.edu.capstone.vms.persistence.service.IUserService;
 import fpt.edu.capstone.vms.util.FileUtils;
+import fpt.edu.capstone.vms.util.ResponseUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.sf.jasperreports.engine.*;
+import net.sf.jasperreports.engine.JREmptyDataSource;
+import net.sf.jasperreports.engine.JasperCompileManager;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
 import net.sf.jasperreports.export.SimpleExporterInput;
@@ -26,9 +34,17 @@ import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.openxml4j.util.ZipSecureFile;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
@@ -53,7 +69,13 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static fpt.edu.capstone.vms.persistence.entity.User.checkPassword;
 import static fpt.edu.capstone.vms.persistence.entity.User.encodePassword;
@@ -69,6 +91,7 @@ public class UserServiceImpl implements IUserService {
     private final FileRepository fileRepository;
     private final FileServiceImpl fileService;
     private final IUserResource userResource;
+    private final SiteRepository siteRepository;
     private final ModelMapper mapper;
     final DepartmentRepository departmentRepository;
 
@@ -130,48 +153,62 @@ public class UserServiceImpl implements IUserService {
     }
 
 
-
     @Override
-    public Page<IUserController.UserFilter> filter(Pageable pageable, List<String> usernames, List<Constants.UserRole> roles, LocalDateTime createdOnStart,
-                                                   LocalDateTime createdOnEnd, Boolean enable, String keyword, String departmentId) {
+    public Page<IUserController.UserFilterResponse> filter(Pageable pageable, List<String> usernames, String role, LocalDateTime createdOnStart,
+                                                           LocalDateTime createdOnEnd, Boolean enable, String keyword, String departmentId, String siteId) {
         return userRepository.filter(
             pageable,
             usernames,
-            roles,
+            role,
             createdOnStart,
             createdOnEnd,
             enable,
             keyword,
-            departmentId);
+            departmentId,
+            siteId);
     }
 
     @Override
-    public List<IUserController.UserFilter> filter(List<String> usernames, List<Constants.UserRole> roles, LocalDateTime createdOnStart,
-                                                   LocalDateTime createdOnEnd, Boolean enable, String keyword, String departmentId) {
+    public List<IUserController.UserFilterResponse> filter(List<String> usernames, String role, LocalDateTime createdOnStart,
+                                                           LocalDateTime createdOnEnd, Boolean enable, String keyword, String departmentId, String siteId) {
         return userRepository.filter(
             usernames,
-            roles,
+            role,
             createdOnStart,
             createdOnEnd,
             enable,
             keyword,
-            departmentId);
+            departmentId,
+            siteId);
     }
 
 
     @Override
     public User createUser(IUserResource.UserDto userDto) {
         User userEntity = null;
+        Department department = departmentRepository.findById(userDto.getDepartmentId()).orElse(null);
 
+        if (ObjectUtils.isEmpty(department)) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "department is null");
+        }
+
+        String siteId = department.getSiteId().toString();
+
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "Can't create user in this site");
+        };
+
+        userDto.setUsername(department.getSite().getCode().toLowerCase() + "_" + userDto.getUsername());
+        userDto.setIsCreateUserOrg(false);
         // (1) Create user on Keycloak
         String kcUserId = userResource.create(userDto);
 
         try {
             if (!StringUtils.isEmpty(kcUserId)) {
                 userEntity = mapper.map(userDto, User.class).setOpenid(kcUserId);
-                userEntity.setPassword(encodePassword(userEntity.getPassword()));
-                if (userEntity.getDepartmentId() == null)
-                    throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SiteId not null");
+                String role = String.join(";", userDto.getRoles());
+                userEntity.setRole(role);
+//                userEntity.setPassword(encodePassword(userEntity.getPassword()));
                 userRepository.save(userEntity);
             }
         } catch (Exception e) {
@@ -196,6 +233,8 @@ public class UserServiceImpl implements IUserService {
                 }
             }
             userEntity = userEntity.update(value);
+            String role = String.join(";", userDto.getRoles());
+            userEntity.setRole(role);
             userRepository.save(userEntity);
         }
         return userEntity;
@@ -248,21 +287,21 @@ public class UserServiceImpl implements IUserService {
         return userRepository.findFirstByUsername(username);
     }
 
-    @Override
-    public void synAccountFromKeycloak() {
-        List<IUserResource.UserDto> users = userResource.users();
-
-        for (IUserResource.UserDto userDto : users) {
-            if (null != userDto.getRole()) {
-                User userEntity = userRepository.findFirstByUsername(userDto.getUsername());
-                if (null == userEntity) {
-                    userEntity = mapper.map(userDto, User.class);
-                    userRepository.save(userEntity);
-                    log.info("Create user {}", userDto.getUsername());
-                }
-            }
-        }
-    }
+//    @Override
+//    public void synAccountFromKeycloak() {
+//        List<IUserResource.UserDto> users = userResource.users();
+//
+//        for (IUserResource.UserDto userDto : users) {
+//            if (null != userDto.getRole()) {
+//                User userEntity = userRepository.findFirstByUsername(userDto.getUsername());
+//                if (null == userEntity) {
+//                    userEntity = mapper.map(userDto, User.class);
+//                    userRepository.save(userEntity);
+//                    log.info("Create user {}", userDto.getUsername());
+//                }
+//            }
+//        }
+//    }
 
     @Override
     public Boolean deleteAvatar(String oldImage, String newImage, String username) {
@@ -284,9 +323,9 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public ByteArrayResource export(IUserController.UserFilter userFilter) {
+    public ByteArrayResource export(IUserController.UserFilterRequest userFilter) {
         Pageable pageable = PageRequest.of(0, 1000000);
-        Page<IUserController.UserFilter> listData = filter(pageable, userFilter.getUsernames(), userFilter.getRoles(), userFilter.getCreatedOnStart(), userFilter.getCreatedOnEnd(), userFilter.getEnable(), userFilter.getKeyword(), userFilter.getDepartmentId());
+        Page<IUserController.UserFilterResponse> listData = filter(pageable, userFilter.getUsernames(), userFilter.getRole(), userFilter.getCreatedOnStart(), userFilter.getCreatedOnEnd(), userFilter.getEnable(), userFilter.getKeyword(), userFilter.getDepartmentId(), userFilter.getSiteId());
         try {
             JasperReport jasperReport = JasperCompileManager.compileReport(getClass().getResourceAsStream(PATH_FILE));
 
@@ -313,10 +352,10 @@ public class UserServiceImpl implements IUserService {
     @Override
     public ResponseEntity<Object> importUser(MultipartFile file) {
         if (!FileUtils.isValidFileUpload(file, "xls", "xlsx", "XLS", "XLSX")) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The file is not in the correct format");
+            throw new CustomException(ErrorApp.FILE_NOT_FORMAT);
         }
         if (file.isEmpty()) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Empty file");
+            throw new CustomException(ErrorApp.FILE_EMPTY);
         }
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             Workbook workbook = importExcel(file);
@@ -337,9 +376,12 @@ public class UserServiceImpl implements IUserService {
             headers.setContentDispositionFormData("attachment", "Thong-tin-loi-danh-sach-nguoi-dung.xlsx");
             return ResponseEntity.status(HttpStatus.OK).headers(headers).body(byteData);
 
+        } catch (CustomException e) {
+            log.error("Lỗi xảy ra trong quá trình import", e);
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (Exception e) {
             log.error("Lỗi xảy ra trong quá trình import", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseUtils.getResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -361,6 +403,12 @@ public class UserServiceImpl implements IUserService {
         }
 
     }
+
+//    @Override
+//    public void updateRole(String username, List<String> roles) {
+//        var userEntity = userRepository.findByUsername(username).orElse(null);
+//        userResource.updateRole(userEntity.getOpenid(), roles);
+//    }
 
 
     @Transactional
@@ -410,7 +458,7 @@ public class UserServiceImpl implements IUserService {
             workbookRead.close();
 
             if (isAllRowBlank) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Empty file");
+                throw new CustomException(ErrorApp.FILE_EMPTY);
             }
 
 
@@ -533,7 +581,7 @@ public class UserServiceImpl implements IUserService {
 
                 //check error by current row
                 if (mapError.get(this.currentRowIndex) == null) {
-                    User entity = createUser(mapper.map(dto, IUserResource.UserDto.class).setRole(Constants.UserRole.STAFF));
+                    User entity = createUser(mapper.map(dto, IUserResource.UserDto.class));
                     listUsernameValid.add(entity.getUsername());
                     //delete message error if exist
                     if (!CollectionUtils.isEmpty(this.mapError.get(currentRowIndex))) {

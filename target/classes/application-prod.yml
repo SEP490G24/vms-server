@@ -7,14 +7,14 @@ edu:
           provider: keycloak
           keycloak:
             realm: ${KEYCLOAK_REALM}
-            issuer-uri: http://${KEYCLOAK_HOST}/realms/${edu.fpt.capstone.vms.oauth2.keycloak.realm}
+            issuer-uri: ${KEYCLOAK_SCHEMA}://${KEYCLOAK_HOST}/realms/${edu.fpt.capstone.vms.oauth2.keycloak.realm}
             jwk-set-uri: ${edu.fpt.capstone.vms.oauth2.keycloak.issuer-uri}/protocol/openid-connect/certs
             client-id: vms-api
             principal-attribute: preferred_username
             credentials-secret: ${KEYCLOAK_CREDENTIALS}
             admin-username: ${KEYCLOAK_REALM_ADMIN_USER}
             admin-password: ${KEYCLOAK_REALM_ADMIN_PASS}
-            ignore-default-roles: default-roles-${com.saltlux.livechat.oauth2.keycloak.realm},offline_access,uma_authorization
+            ignore-default-roles: default-roles-${edu.fpt.capstone.vms.oauth2.keycloak.realm},offline_access,uma_authorization
 
 management:
   endpoint:
@@ -40,13 +40,13 @@ spring:
     name: vms-service
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}
-    username: ${POSTGRES_USER}
-    password: ${POSTGRES_PASSWORD}
+    url: jdbc:postgresql://vms-db.postgres.database.azure.com:5432/vms-db
+    username: vms
+    password: Password123
   jpa:
     database: POSTGRESQL
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     generate-ddl: true
     properties:
       javax:
@@ -56,6 +56,8 @@ spring:
 
 #  liquibase:
 #    change-log: classpath:db/changelog-master.yml
+  main:
+    allow-bean-definition-overriding: true
   data:
     redis:
       host: ${REDIS_HOST}
@@ -66,7 +68,10 @@ spring:
         jwt:
           issuer-uri: ${edu.fpt.capstone.vms.oauth2.keycloak.issuer-uri}
           jwk-set-uri: ${edu.fpt.capstone.vms.oauth2.keycloak.jwk-set-uri}
-
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
 springdoc:
   cache:
     disabled: true
@@ -84,5 +89,13 @@ logging:
   file:
     name: ./logs/info.log
 
-images:
-  folder: C:\image
+azure:
+  account:
+    name: vmspersonalstorage
+    key: gGRLKUt4IX9QHFUNg8gqgDm0gDWcc7tkkKoinx6qM+1XG+pEp7zVEG3Kx1yIMGtlhMFJeBI/E8RN+AStXDXDnQ==
+  container:
+    name: vms-storage
+
+schedule:
+  cleaningImage:
+    time: 0 0 22 * * *

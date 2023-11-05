@@ -5,7 +5,18 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import fpt.edu.capstone.vms.constants.Constants;
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapKey;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -15,6 +26,7 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
 
 @Data
@@ -33,9 +45,8 @@ public class User extends AbstractBaseEntity<String> {
     @Column(name = "openid")
     private String openid;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "role")
-    private Constants.UserRole role;
+    private String role;
 
     @Column(name = "first_name")
     private String firstName;
@@ -74,6 +85,33 @@ public class User extends AbstractBaseEntity<String> {
     @Column(name = "country_code")
     private String countryCode;
 
+    @Column(name = "province_id")
+    private Integer provinceId;
+
+    @ManyToOne
+    @JoinColumn(name = "province_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JsonIgnore
+    private Province province;
+
+    @Column(name = "district_id")
+    private Integer districtId;
+
+    @ManyToOne
+    @JoinColumn(name = "district_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JsonIgnore
+    private District district;
+
+    @Column(name = "commune_id")
+    private Integer communeId;
+
+    @ManyToOne
+    @JoinColumn(name = "commune_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JsonIgnore
+    private Commune commune;
+
+    @Column(name = "address")
+    private String address;
+
     @Column(name = "department_id")
     private UUID departmentId;
 
@@ -81,6 +119,11 @@ public class User extends AbstractBaseEntity<String> {
     @JoinColumn(name = "department_id", referencedColumnName = "id", insertable = false, updatable = false)
     @JsonIgnore
     private Department department;
+
+    @OneToMany(mappedBy = "userEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @MapKey(name = "userRoleMapPk.username")
+    @JsonIgnore
+    private Map<String, UserRoleMap> userRoleMaps;
 
     public User update(User userEntity) {
         if (userEntity.username != null) this.username = userEntity.username;
@@ -96,6 +139,10 @@ public class User extends AbstractBaseEntity<String> {
         if (userEntity.countryCode != null) this.countryCode = userEntity.countryCode;
         if (userEntity.departmentId != null) this.departmentId = userEntity.departmentId;
         if (userEntity.enable != null) this.enable = userEntity.enable;
+        if (userEntity.province != null) this.province = userEntity.province;
+        if (userEntity.commune != null) this.commune = userEntity.commune;
+        if (userEntity.district != null) this.district = userEntity.district;
+        if (userEntity.address != null) this.address = userEntity.address;
         if (userEntity.getCreatedBy() != null) this.setCreatedBy(userEntity.getCreatedBy());
         if (userEntity.getCreatedOn() != null) this.setCreatedOn(userEntity.getCreatedOn());
         return this;
@@ -119,4 +166,5 @@ public class User extends AbstractBaseEntity<String> {
     public static boolean checkPassword(String plainPassword, String hashedPassword) {
         return BCrypt.checkpw(plainPassword, hashedPassword);
     }
+
 }

@@ -90,7 +90,7 @@ public final class KeycloakRoleExtractorHelper {
 
         /* Convert role string to roles map details */
         roleStrings.forEach(role -> {
-            roles.put(role, KeycloakRoleMapper.convert2RoleMap(role, args.getModule(), oldRoles));
+            roles.put(role, KeycloakRoleMapper.convert2RoleMap(role, oldRoles));
         });
 
         keycloakRoleExtractResults.setRoles(roles);

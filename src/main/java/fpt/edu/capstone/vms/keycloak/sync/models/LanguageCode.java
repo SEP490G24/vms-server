@@ -5,8 +5,7 @@ import lombok.Getter;
 @Getter
 public enum LanguageCode {
     VN("vi"),
-    EN("en"),
-    KO("ko");
+    EN("en");
 
     private final String value;
 

@@ -33,19 +33,18 @@ public class PermissionExtractorMain {
                 .build();
 
         /* Adapter roles path web to permission keycloak*/
-        KeycloakRoleExtractorHelper.adaptRolePaths2File(new File(rolesPathsInput), CLIENT_APP, rolesPathsOutput);
+//        KeycloakRoleExtractorHelper.adaptRolePaths2File(new File(rolesPathsInput), CLIENT_APP, rolesPathsOutput);
 
         /* Extract roles server to permission keycloak*/
         KeycloakRoleExtractorHelper.extract2File(KeycloakRoleExtractConfig.builder()
                 .startWith("fpt.edu.capstone.vms.controller")
                 .endWith("controller")
-                .module("api-server")
                 .cleanup("true").build(), extractPathsOutput);
 
 
         var keyCloakRoleSyncHelper = new KeyCloakRoleSyncHelper(keycloak, KeycloakConstants.REALM);
 
-        keyCloakRoleSyncHelper.startToSync(new File(rolesPathsOutput), CLIENT_APP);
+//        keyCloakRoleSyncHelper.startToSync(new File(rolesPathsOutput), CLIENT_APP);
 
         keyCloakRoleSyncHelper.startToSync(new File(extractPathsOutput), CLIENT_API);
     }

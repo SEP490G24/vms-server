@@ -39,5 +39,6 @@ public interface OrganizationRepository extends GenericRepository<Organization, 
                       @Param("enable") @Nullable Boolean isEnable,
                       @Param("keyword") @Nullable String keyword);
 
+    boolean existsByCode(String code);
 
 }

@@ -7,14 +7,14 @@ edu:
           provider: keycloak
           keycloak:
             realm: vms
-            issuer-uri: http://localhost:9080/realms/${edu.fpt.capstone.vms.oauth2.keycloak.realm}
+            issuer-uri: https://idm-vms.azurewebsites.net/realms/${edu.fpt.capstone.vms.oauth2.keycloak.realm}
             jwk-set-uri: ${edu.fpt.capstone.vms.oauth2.keycloak.issuer-uri}/protocol/openid-connect/certs
             client-id: vms-api
             principal-attribute: preferred_username
             credentials-secret: uq9MroK6qI2gs77wEIKG6ZroKCnzgZMt
             admin-username: admin
             admin-password: admin
-            ignore-default-roles: default-roles-${com.saltlux.livechat.oauth2.keycloak.realm},offline_access,uma_authorization
+            ignore-default-roles: default-roles-${edu.fpt.capstone.vms.oauth2.keycloak.realm},offline_access,uma_authorization
 
 management:
   endpoint:
@@ -40,13 +40,13 @@ spring:
     name: vms-service
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://vmsdbserver.postgres.database.azure.com:5432/vms-db
+    url: jdbc:postgresql://vms-db.postgres.database.azure.com:5432/vms-db
     username: vms
     password: Password123
   jpa:
     database: POSTGRESQL
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     generate-ddl: true
     properties:
       javax:
@@ -55,8 +55,9 @@ spring:
   jackson:
     default-property-inclusion: NON_NULL
 
+
   #  liquibase:
-#    change-log: classpath:db/changelog-master.yml
+  #    change-log: classpath:db/changelog-master.yml
   data:
     redis:
       host: localhost
@@ -69,10 +70,12 @@ spring:
           jwk-set-uri: ${edu.fpt.capstone.vms.oauth2.keycloak.jwk-set-uri}
   servlet:
     multipart:
-      max-file-size: 100MB
-      max-request-size: 100MB
+      max-file-size: 20MB
+      max-request-size: 20MB
 
-springdoc:
+
+  main:
+    allow-bean-definition-overriding: true
   cache:
     disabled: true
   swagger-ui:
@@ -91,7 +94,11 @@ logging:
 
 azure:
   account:
-    name: vmsprostorage
-    key: zXF1eR1XfyuGINFS7uRsCw07Y+jvhP2zGSTRRttlzd+jnpWTsk5h+SCw614gsvAEzfAvy9Y5cvMc+AStuOfESw==
+    name: vmspersonalstorage
+    key: gGRLKUt4IX9QHFUNg8gqgDm0gDWcc7tkkKoinx6qM+1XG+pEp7zVEG3Kx1yIMGtlhMFJeBI/E8RN+AStXDXDnQ==
   container:
-    name: vmsfiles
+    name: vms-storage
+
+schedule:
+  cleaningImage:
+    time: 0 0 22 * * *

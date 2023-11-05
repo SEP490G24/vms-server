@@ -1,8 +1,7 @@
 package fpt.edu.capstone.vms.persistence.repository;
 
-import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.persistence.entity.Site;
-import fpt.edu.capstone.vms.persistence.entity.User;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
@@ -28,10 +27,7 @@ public interface SiteRepository extends GenericRepository<Site, UUID> {
         "and ((:keyword is null) " +
         "or (u.name LIKE %:keyword% " +
         "or u.address LIKE %:keyword% " +
-        "or u.district LIKE %:keyword% " +
-        "or u.province LIKE %:keyword% " +
         "or u.taxCode LIKE %:keyword% " +
-        "or u.ward LIKE %:keyword% " +
         "or u.lastUpdatedBy LIKE %:keyword% " +
         "or u.createdBy LIKE %:keyword% " +
         "or u.phoneNumber LIKE %:keyword% ))")
@@ -56,10 +52,7 @@ public interface SiteRepository extends GenericRepository<Site, UUID> {
         "and ((:keyword is null) " +
         "or (u.name LIKE %:keyword% " +
         "or u.address LIKE %:keyword% " +
-        "or u.district LIKE %:keyword% " +
-        "or u.province LIKE %:keyword% " +
         "or u.taxCode LIKE %:keyword% " +
-        "or u.ward LIKE %:keyword% " +
         "or u.lastUpdatedBy LIKE %:keyword% " +
         "or u.createdBy LIKE %:keyword% " +
         "or u.phoneNumber LIKE %:keyword% ))")
@@ -74,4 +67,6 @@ public interface SiteRepository extends GenericRepository<Site, UUID> {
                       @Param("keyword") @Nullable String keyword);
 
     List<Site> findAllByOrganizationId(UUID organizationId);
+    boolean existsByIdAndOrganizationId(UUID siteId, UUID organizationId);
+    boolean existsByCode(String code);
 }

@@ -8,7 +8,16 @@ import jakarta.ws.rs.QueryParam;
 import lombok.Data;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,49 +28,58 @@ import java.util.UUID;
 @Tag(name = "Site Service")
 @RequestMapping("/api/v1/site")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
+@PreAuthorize("isAuthenticated()")
 public interface ISiteController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Find by id")
+    @PreAuthorize("hasRole('r:site:find')")
     ResponseEntity<?> findById(@PathVariable UUID id);
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete")
+    @Operation(summary = "Delete site")
+    @PreAuthorize("hasRole('r:site:delete')")
     ResponseEntity<?> delete(@PathVariable UUID id);
 
     @GetMapping
     @Operation(summary = "Get all")
+    @PreAuthorize("hasRole('r:site:find')")
     ResponseEntity<List<?>> findAll();
 
     @PostMapping()
-    @Operation(summary = "Create new agent")
-//    @PreAuthorize("hasRole('r:user:create')")
+    @Operation(summary = "Create new site")
+    @PreAuthorize("hasRole('r:site:create')")
     ResponseEntity<?> createSite(@RequestBody @Valid CreateSiteInfo siteInfo);
 
     @PutMapping("/{id}")
     @Operation(summary = "Update site")
+    @PreAuthorize("hasRole('r:site:update')")
     ResponseEntity<?> updateSite(@RequestBody UpdateSiteInfo updateSiteInfo, @PathVariable UUID id);
 
     @PostMapping("/filter")
-    @Operation(summary = "Filter")
-//    @PreAuthorize("hasRole('r:user:find')")
+    @Operation(summary = "Filter site")
+    @PreAuthorize("hasRole('r:site:find')")
     ResponseEntity<?> filter(@RequestBody @Valid SiteFilter siteFilter, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
     @GetMapping("/organization/{organizationId}")
     @Operation(summary = "Get all site by organizationId")
+    @PreAuthorize("hasRole('r:organization:find')")
     ResponseEntity<List<?>> findAllByOrganizationId(@PathVariable String organizationId);
+
     @Data
     class CreateSiteInfo {
         @NotNull
         private String name;
         @NotNull
+        private String code;
+        @NotNull
         private String phoneNumber;
         @NotNull
-        private String province;
+        private Integer provinceId;
         @NotNull
-        private String district;
+        private Integer districtId;
         @NotNull
-        private String ward;
+        private Integer communeId;
         @NotNull
         private String address;
         @NotNull
@@ -72,10 +90,11 @@ public interface ISiteController {
     @Data
     class UpdateSiteInfo {
         private String name;
+        private String code;
         private String phoneNumber;
-        private String province;
-        private String district;
-        private String ward;
+        private Integer provinceId;
+        private Integer districtId;
+        private Integer communeId;
         private String address;
         private String taxCode;
         private String description;
@@ -92,5 +111,29 @@ public interface ISiteController {
         Boolean enable;
         String keyword;
         UUID organizationId;
+    }
+
+    @Data
+    class SiteFilterDTO {
+        private UUID id;
+        private String name;
+        private String code;
+        private Boolean enable;
+        private String organizationId;
+        private String organizationName;
+        private String phoneNumber;
+        private Integer provinceId;
+        private Integer communeId;
+        private Integer districtId;
+        private String provinceName;
+        private String districtName;
+        private String communeName;
+        private String address;
+        private String taxCode;
+        private String description;
+        private String createdBy;
+        private String lastUpdatedBy;
+        private LocalDateTime lastUpdatedOn;
+        private LocalDateTime createdOn;
     }
 }

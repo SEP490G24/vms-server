@@ -5,8 +5,8 @@ import lombok.Getter;
 @Getter
 public enum RoleAttributes {
     FEATURE("feature"),
-    MODULE("module"),
-    NAME("name");
+    NAME("name"),
+    GROUP("group");
 
     private final String value;
 

@@ -1,9 +1,13 @@
 package fpt.edu.capstone.vms.oauth2;
 
 
+import fpt.edu.capstone.vms.controller.IRoleController;
 import fpt.edu.capstone.vms.exception.NotFoundException;
+import fpt.edu.capstone.vms.persistence.entity.Site;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Map;
@@ -18,6 +22,14 @@ public interface IRoleResource {
      */
     List<RoleDto> findAll();
 
+
+    /**
+     * Filter role (Keycloak: role is realm role)
+     *
+     * @return List<RoleDto>
+     */
+    Page<RoleDto> filter(IRoleController.RoleBasePayload roleBasePayload, Pageable pageable);
+
     /**
      * Find role by id (Keycloak: role is realm role)
      *
@@ -31,7 +43,7 @@ public interface IRoleResource {
      *
      * @param dto DTO for role
      */
-    RoleDto create(RoleDto dto);
+    RoleDto create(Site site, RoleDto dto);
 
     /**
      * Update role (Keycloak: role is realm role)
@@ -58,11 +70,14 @@ public interface IRoleResource {
      */
     void delete(String id);
 
+    List<RoleDto> getBySites(List<String> sites);
+
 
     @Data
     @Accessors(chain = true)
     class RoleDto {
-        private String name;
+        private String code;
+        private String description;
         private Map<String, List<String>> attributes;
         private Set<IPermissionResource.PermissionDto> permissionDtos;
     }

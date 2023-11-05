@@ -2,17 +2,7 @@ package fpt.edu.capstone.vms.persistence.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import fpt.edu.capstone.vms.constants.Constants;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -20,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
 
 @Data
@@ -36,59 +27,34 @@ public class Ticket extends AbstractBaseEntity<UUID> {
     @GeneratedValue
     private UUID id;
 
-    @Column(name = "visitor_name")
-    private String visitor_name;
-
-    @Column(name = "code")
+    @Column(name = "code", unique = true, updatable = false, nullable = false)
     private String code;
 
-    @Min(value = 1)
-    @Max(value = 12)
-    @Column(name = "identification_number")
-    private Integer identificationNumber;
+    @Column(name = "name")
+    private String name;
 
-    @Column(name = "license_plate_number", length = 64)
-    private String licensePlateNumber;
-
-    @Column(name = "email")
-    private String email;
-
-    @Column(name = "phone_number")
-    private String phoneNumber;
-
-    @Column(name = "gender")
-    private Boolean gender;
-
+    @Enumerated(EnumType.STRING)
     @Column(name = "purpose")
-    private String purpose;
+    private Constants.Purpose purpose;
 
-    @Column(name = "purpose_other")
-    private String purposeOther;
+    @Column(name = "purpose_note")
+    private String purposeNote;
 
-    @Column(name = "expected_date")
-    private LocalDateTime expectedDate;
-
-    @Column(name = "expected_time")
-    private String expectedTime;
+    @Column(name = "start_time")
+    private LocalDateTime startTime;
 
     @Column(name = "end_time")
     private LocalDateTime endTime;
 
-    @Column(name = "comment")
-    private String comment;
-
-    @Column(name = "promise")
-    private Boolean promise;
-
-    @Column(name = "privacy")
-    private Boolean privacy;
+    @Column(name = "description")
+    private String description;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private Constants.StatusTicket status;
 
-    @Column(name = "is_bookmark")
-    private String isBookmark;
+    @Column(name = "is_bookmark", nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
+    private boolean isBookmark;
 
     @Column(name = "username")
     private String username;
@@ -104,7 +70,57 @@ public class Ticket extends AbstractBaseEntity<UUID> {
     @ManyToOne
     @JoinColumn(name = "room_id", referencedColumnName = "id", insertable = false, updatable = false)
     @JsonIgnore
-    private RoomSite roomSite;
+    private Room room;
+
+    @Column(name = "settings", length = 500)
+    private String settings;
+
+    @Column(name = "template_id")
+    private UUID templateId;
+
+    @ManyToOne
+    @JoinColumn(name = "template_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JsonIgnore
+    private Template template;
+
+    @OneToMany(mappedBy = "ticketEntity", cascade = CascadeType.REMOVE)
+    @MapKey(name = "customerTicketMapPk.ticketId")
+    @JsonIgnore
+    private Map<UUID, CustomerTicketMap> customerTicketMaps;
+
+    @Column(name = "site_id")
+    private String siteId;
+
+    @Column(name = "reason_id")
+    private UUID reasonId;
+
+    @OneToOne
+    @JoinColumn(name = "reason_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JsonIgnore
+    private Reason reason;
+
+    @Column(name = "reason_note")
+    private String reasonNote;
+
+    @Column(name = "is_pass_guard", nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
+    private boolean isPassGuard;
+
+    @Column(name = "is_pass_receptionist", nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
+    private boolean isPassReceptionist;
+
+    public Ticket update(Ticket ticketEntity) {
+        if (ticketEntity.name != null) this.name = ticketEntity.name;
+        if (ticketEntity.code != null) this.code = ticketEntity.code;
+        if (ticketEntity.purpose != null) this.purpose = ticketEntity.purpose;
+        if (ticketEntity.purposeNote != null) this.purposeNote = ticketEntity.purposeNote;
+        if (ticketEntity.startTime != null) this.startTime = ticketEntity.startTime;
+        if (ticketEntity.endTime != null) this.endTime = ticketEntity.endTime;
+        if (ticketEntity.description != null) this.description = ticketEntity.description;
+        if (ticketEntity.roomId != null) this.roomId = ticketEntity.roomId;
+        if (ticketEntity.getCreatedBy() != null) this.setCreatedBy(ticketEntity.getCreatedBy());
+        if (ticketEntity.getCreatedOn() != null) this.setCreatedOn(ticketEntity.getCreatedOn());
+        return this;
+    }
 
     @Override
     public UUID getId() {

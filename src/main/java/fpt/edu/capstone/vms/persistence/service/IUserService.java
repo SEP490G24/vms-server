@@ -1,7 +1,6 @@
 package fpt.edu.capstone.vms.persistence.service;
 
 
-import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.IUserController;
 import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
@@ -11,32 +10,32 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.core.io.ByteArrayResource;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 
 public interface IUserService {
 
-    Page<IUserController.UserFilter> filter(Pageable pageable,
-                                            List<String> usernames,
-                                            List<Constants.UserRole> roles,
-                                            LocalDateTime createdOnStart,
-                                            LocalDateTime createdOnEnd,
-                                            Boolean enable,
-                                            String keyword,
-                                            String department);
+    Page<IUserController.UserFilterResponse> filter(Pageable pageable,
+                                                    List<String> usernames,
+                                                    String role,
+                                                    LocalDateTime createdOnStart,
+                                                    LocalDateTime createdOnEnd,
+                                                    Boolean enable,
+                                                    String keyword,
+                                                    String department,
+                                                    String siteId);
 
-    List<IUserController.UserFilter> filter(
-                                            List<String> usernames,
-                                            List<Constants.UserRole> roles,
-                                            LocalDateTime createdOnStart,
-                                            LocalDateTime createdOnEnd,
-                                            Boolean enable,
-                                            String keyword,
-                                            String department);
+    List<IUserController.UserFilterResponse> filter(
+        List<String> usernames,
+        String role,
+        LocalDateTime createdOnStart,
+        LocalDateTime createdOnEnd,
+        Boolean enable,
+        String keyword,
+        String department,
+        String siteId);
 
     User createUser(IUserResource.UserDto userDto);
 
@@ -52,13 +51,15 @@ public interface IUserService {
 
     User findByUsername(String username);
 
-    void synAccountFromKeycloak();
+    //void synAccountFromKeycloak();
 
-    ByteArrayResource export(IUserController.UserFilter userFilter);
+    ByteArrayResource export(IUserController.UserFilterRequest userFilter);
 
     Boolean deleteAvatar(String name, String newImage, String username);
 
     ResponseEntity<Object> importUser(MultipartFile file);
 
     ResponseEntity<ByteArrayResource> downloadExcel() throws IOException;
+
+    //void updateRole(String username, List<String> roles);
 }

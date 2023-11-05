@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -35,16 +36,16 @@ public interface IRoleController {
     @PostMapping("/filter")
     @Operation(summary = "Filter role")
     @PreAuthorize("hasRole('r:role:find')")
-    ResponseEntity<?> filter(@RequestBody RoleFilterPayload filterPayload);
+    ResponseEntity<?> filter(@RequestBody RoleFilterPayload filterPayload, Pageable pageable);
 
     @PostMapping("")
     @Operation(summary = "Create role")
-    @PreAuthorize("hasRole('r:role:create')")
+        @PreAuthorize("hasRole('r:role:create')")
     ResponseEntity<?> create(@RequestBody CreateRolePayload payload);
 
     @PutMapping("/{id}")
     @Operation(summary = "Update role")
-    @PreAuthorize("hasRole('r:role:update')")
+        @PreAuthorize("hasRole('r:role:update')")
     ResponseEntity<?> update(@PathVariable("id") String id,
                              @RequestBody UpdateRolePayload payload) throws NotFoundException;
 
@@ -56,13 +57,19 @@ public interface IRoleController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete role")
-    @PreAuthorize("hasRole('r:role:delete')")
+        @PreAuthorize("hasRole('r:role:delete')")
     ResponseEntity<?> delete(@PathVariable("id") String id);
+
+    @PostMapping("/site")
+    @Operation(summary = "Get role by sites")
+        @PreAuthorize("hasRole('r:role:find')")
+    ResponseEntity<?> getBySites(@RequestBody List<String> sites);
 
     @Data
     class RoleBasePayload {
-        private String name;
+        private String code;
         private Map<String, List<String>> attributes;
+        private String description;
     }
 
     @EqualsAndHashCode(callSuper = true)
@@ -84,7 +91,7 @@ public interface IRoleController {
     }
 
     @Data
-    class RoleFilterPayload {
+    class RoleFilterPayload extends RoleBasePayload {
 
     }
 
