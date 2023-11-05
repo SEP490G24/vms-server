@@ -1,0 +1,23 @@
+version: 3
+services:
+  api-server:
+    image: vmsacr.azurecr.io/api-vms:$(Build.BuildId)
+    ports:
+      - 8000:8000
+    container_name: api-vms
+    restart: always
+    environment:
+      - SERVER_PORT=8000
+      - KEYCLOAK_SCHEMA=https
+      - KEYCLOAK_HOST=idm-vms.azurewebsites.net
+      - KEYCLOAK_REALM=vms
+      - KEYCLOAK_REALM_ADMIN_PASS=admin
+      - KEYCLOAK_REALM_ADMIN_USER=admin
+      - KEYCLOAK_CREDENTIALS=uq9MroK6qI2gs77wEIKG6ZroKCnzgZMt
+      - POSTGRES_HOST=vms-db.postgres.database.azure.com
+      - POSTGRES_PORT=5432
+      - POSTGRES_DATABASE=vms-db
+      - POSTGRES_USER=vms
+      - POSTGRES_PASSWORD=Password123
+      - REDIS_HOST=localhost
+      - REDIS_PORT=6379
