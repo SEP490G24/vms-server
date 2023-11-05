@@ -4,8 +4,20 @@ import com.google.zxing.WriterException;
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ICustomerController;
 import fpt.edu.capstone.vms.controller.ITicketController;
-import fpt.edu.capstone.vms.persistence.entity.*;
-import fpt.edu.capstone.vms.persistence.repository.*;
+import fpt.edu.capstone.vms.persistence.entity.Customer;
+import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMap;
+import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMapPk;
+import fpt.edu.capstone.vms.persistence.entity.Room;
+import fpt.edu.capstone.vms.persistence.entity.Site;
+import fpt.edu.capstone.vms.persistence.entity.Template;
+import fpt.edu.capstone.vms.persistence.entity.Ticket;
+import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
+import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
+import fpt.edu.capstone.vms.persistence.repository.OrganizationRepository;
+import fpt.edu.capstone.vms.persistence.repository.RoomRepository;
+import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
+import fpt.edu.capstone.vms.persistence.repository.TemplateRepository;
+import fpt.edu.capstone.vms.persistence.repository.TicketRepository;
 import fpt.edu.capstone.vms.persistence.service.ITicketService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import fpt.edu.capstone.vms.util.EmailUtils;
@@ -32,7 +44,11 @@ import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -219,7 +235,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         if (SecurityUtils.getOrgId() == null) {
             Site site = siteRepository.findById(UUID.fromString(SecurityUtils.getSiteId())).orElse(null);
             if (ObjectUtils.isEmpty(site)) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "site is flase");
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "site is null");
             }
             orgId = String.valueOf(site.getOrganizationId());
         } else {
@@ -595,6 +611,42 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         customerTicketMap.setReasonId(updateStatusTicketOfCustomer.getReasonId());
         customerTicketMap.setReasonNote(updateStatusTicketOfCustomer.getReasonNote());
         customerTicketMapRepository.save(customerTicketMap);
+    }
+
+    @Override
+    public ITicketController.TicketFilterDTO findByTicketForUser(UUID ticketId) {
+        Ticket ticket = ticketRepository.findById(ticketId).orElse(null);
+        if (ObjectUtils.isEmpty(ticket)) {
+            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't not found ticket");
+        }
+        if (!ticket.getUsername().equals(SecurityUtils.loginUsername())) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Can't not view this ticket");
+        }
+        ITicketController.TicketFilterDTO ticketFilterDTO = mapper.map(ticket, ITicketController.TicketFilterDTO.class);
+        return ticketFilterDTO;
+    }
+
+    @Override
+    public ITicketController.TicketFilterDTO findByTicketForAdmin(UUID ticketId) {
+        Ticket ticket = ticketRepository.findById(ticketId).orElse(null);
+        if (ObjectUtils.isEmpty(ticket)) {
+            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't not found ticket");
+        }
+        if (SecurityUtils.getOrgId() != null) {
+            Site site = siteRepository.findById(UUID.fromString(SecurityUtils.getSiteId())).orElse(null);
+            if (ObjectUtils.isEmpty(site)) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "site is null");
+            }
+            if (!site.getOrganizationId().equals(SecurityUtils.getOrgId())) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "This admin can't view this ticket of customer");
+            }
+            return mapper.map(ticket, ITicketController.TicketFilterDTO.class);
+        } else {
+            if (!ticket.getSiteId().equals(SecurityUtils.getSiteId())) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "This admin can't view this ticket of customer");
+            }
+            return mapper.map(ticket, ITicketController.TicketFilterDTO.class);
+        }
     }
 
     private List<String> getListSite() {

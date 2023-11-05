@@ -114,11 +114,17 @@ public class TicketController implements ITicketController {
 
         List<TicketFilterDTO> ticketFilterPageDTOS = mapper.map(ticketEntityPageable.getContent(), new TypeToken<List<TicketFilterDTO>>() {
         }.getType());
-        setCustomer(ticketFilterPageDTOS);
+        ticketFilterPageDTOS.forEach(o -> {
+            setCustomer(o);
+
+        });
 
         List<TicketFilterDTO> ticketFilterDTOS = mapper.map(ticketEntity, new TypeToken<List<TicketFilterDTO>>() {
         }.getType());
-        setCustomer(ticketFilterDTOS);
+        ticketFilterDTOS.forEach(o -> {
+            setCustomer(o);
+
+        });
 
         return isPageable ?
             ResponseEntity.ok(new PageImpl(ticketFilterPageDTOS, pageable, ticketFilterPageDTOS.size()))
@@ -163,12 +169,16 @@ public class TicketController implements ITicketController {
 
         List<TicketFilterDTO> ticketFilterPageDTOS = mapper.map(ticketEntityPageable.getContent(), new TypeToken<List<TicketFilterDTO>>() {
         }.getType());
-        setCustomer(ticketFilterPageDTOS);
+        ticketFilterPageDTOS.forEach(o -> {
+            setCustomer(o);
 
+        });
         List<TicketFilterDTO> ticketFilterDTOS = mapper.map(ticketEntity, new TypeToken<List<TicketFilterDTO>>() {
         }.getType());
-        setCustomer(ticketFilterDTOS);
+        ticketFilterDTOS.forEach(o -> {
+            setCustomer(o);
 
+        });
         return isPageable ?
             ResponseEntity.ok(new PageImpl(ticketFilterPageDTOS, pageable, ticketFilterPageDTOS.size()))
             : ResponseEntity.ok(ticketFilterDTOS);
@@ -185,13 +195,33 @@ public class TicketController implements ITicketController {
         return ResponseEntity.ok().build();
     }
 
-    private void setCustomer(List<TicketFilterDTO> ticketFilterDTOS) {
-        ticketFilterDTOS.forEach(o -> {
-            List<ICustomerController.CustomerInfo> customerInfos = new ArrayList<>();
-            customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(o.getId()).forEach(a -> {
-                customerInfos.add(mapper.map(customerRepository.findById(a.getCustomerTicketMapPk().getCustomerId()).orElse(null), ICustomerController.CustomerInfo.class));
-            });
-            o.setCustomers(customerInfos);
+    @Override
+    public ResponseEntity<?> findByIdForUser(UUID ticketId) {
+        try {
+            TicketFilterDTO ticketFilterDTO = ticketService.findByTicketForUser(ticketId);
+            setCustomer(ticketFilterDTO);
+            return ResponseEntity.ok(ticketFilterDTO);
+        } catch (HttpClientErrorException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> findByIdForAdmin(UUID ticketId) {
+        try {
+            TicketFilterDTO ticketFilterDTO = ticketService.findByTicketForAdmin(ticketId);
+            setCustomer(ticketFilterDTO);
+            return ResponseEntity.ok(ticketFilterDTO);
+        } catch (HttpClientErrorException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
+        }
+    }
+
+    private void setCustomer(TicketFilterDTO ticketFilterDTO) {
+        List<ICustomerController.CustomerInfo> customerInfos = new ArrayList<>();
+        customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(ticketFilterDTO.getId()).forEach(a -> {
+            customerInfos.add(mapper.map(customerRepository.findById(a.getCustomerTicketMapPk().getCustomerId()).orElse(null), ICustomerController.CustomerInfo.class));
         });
+        ticketFilterDTO.setCustomers(customerInfos);
     }
 }
