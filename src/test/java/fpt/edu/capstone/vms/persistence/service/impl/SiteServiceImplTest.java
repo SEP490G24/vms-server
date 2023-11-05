@@ -208,7 +208,7 @@ class SiteServiceImplTest {
 
         when(siteRepository.findById(id)).thenReturn(Optional.empty());
 
-        assertThrows(NullPointerException.class, () -> siteService.save(updateSite));
+        assertThrows(HttpClientErrorException.class, () -> siteService.save(updateSite));
     }
 
     @Test
