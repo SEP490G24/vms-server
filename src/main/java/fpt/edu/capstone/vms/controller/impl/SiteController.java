@@ -47,7 +47,7 @@ public class SiteController implements ISiteController {
     @Override
     public ResponseEntity<?> delete(UUID id) {
         try {
-            return siteService.deleteSite(id);
+            return ResponseEntity.ok(siteService.deleteSite(id));
         } catch (HttpClientErrorException e) {
             return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
         }

@@ -96,7 +96,7 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
             createSettingSite.setDescription(settingSiteInfo.getDescription());
             createSettingSite.setStatus(true);
 
-            auditLogRepository.save(new AuditLog(siteId
+            auditLogRepository.save(new AuditLog(siteId.toString()
                 , site.get().getOrganizationId().toString()
                 , siteId.toString()
                 , SETTING_SITE_TABLE_NAME
