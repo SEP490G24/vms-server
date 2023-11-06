@@ -4,6 +4,7 @@ import com.google.zxing.WriterException;
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ICustomerController;
 import fpt.edu.capstone.vms.controller.ITicketController;
+import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.entity.Customer;
 import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMap;
 import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMapPk;
@@ -11,6 +12,7 @@ import fpt.edu.capstone.vms.persistence.entity.Room;
 import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.entity.Template;
 import fpt.edu.capstone.vms.persistence.entity.Ticket;
+import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
 import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
 import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
 import fpt.edu.capstone.vms.persistence.repository.OrganizationRepository;
@@ -66,6 +68,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     final CustomerTicketMapRepository customerTicketMapRepository;
     final EmailUtils emailUtils;
     final AuditLogServiceImpl auditLogService;
+    final AuditLogRepository auditLogRepository;
     private static final String TICKET_TABLE_NAME = "Ticket";
     private static final String CUSTOMER_TICKET_TABLE_NAME = "CustomerTicketMap";
 
@@ -73,7 +76,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     public TicketServiceImpl(TicketRepository ticketRepository, CustomerRepository customerRepository,
                              TemplateRepository templateRepository, ModelMapper mapper, RoomRepository roomRepository,
                              SiteRepository siteRepository, OrganizationRepository organizationRepository,
-                             CustomerTicketMapRepository customerTicketMapRepository, EmailUtils emailUtils, AuditLogServiceImpl auditLogService) {
+                             CustomerTicketMapRepository customerTicketMapRepository, EmailUtils emailUtils, AuditLogServiceImpl auditLogService, AuditLogRepository auditLogRepository) {
         this.ticketRepository = ticketRepository;
         this.templateRepository = templateRepository;
         this.customerRepository = customerRepository;
@@ -84,6 +87,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         this.customerTicketMapRepository = customerTicketMapRepository;
         this.emailUtils = emailUtils;
         this.auditLogService = auditLogService;
+        this.auditLogRepository = auditLogRepository;
         this.init(ticketRepository);
     }
 
@@ -175,13 +179,13 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is null");
             sendQr(customerTicketMaps, ticket, template);
 
-            auditLogService.logAudit(Constants.AuditType.CREATE
-                , ticket.getSiteId()
+            auditLogRepository.save(new AuditLog(ticket.getSiteId()
                 , siteRepository.findById(UUID.fromString(ticket.getSiteId())).orElse(null).getOrganizationId().toString()
                 , ticket.getId().toString()
                 , TICKET_TABLE_NAME
+                , Constants.AuditType.CREATE
                 , null
-                , ticket.toString());
+                , ticket.toString()));
 
             return ticket;
         }
@@ -305,13 +309,13 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         if (ticketRepository.existsByIdAndUsername(UUID.fromString(ticketBookmark.getTicketId()), SecurityUtils.loginUsername())) {
             Ticket oldValue = ticket;
             ticketRepository.save(ticket.setBookmark(true));
-            auditLogService.logAudit(Constants.AuditType.UPDATE
-                , ticket.getSiteId()
+            auditLogRepository.save(new AuditLog(ticket.getSiteId()
                 , siteRepository.findById(UUID.fromString(ticket.getSiteId())).orElse(null).getOrganizationId().toString()
                 , ticket.getId().toString()
                 , TICKET_TABLE_NAME
+                , Constants.AuditType.UPDATE
                 , oldValue.toString()
-                , ticket.toString());
+                , ticket.toString()));
 
             return true;
         }
@@ -335,14 +339,14 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Ticket is empty");
         }
         if (ticketRepository.existsByIdAndUsername(UUID.fromString(ticketId), SecurityUtils.loginUsername())) {
-            ticketRepository.delete(ticket);
-            auditLogService.logAudit(Constants.AuditType.DELETE
-                , ticket.getSiteId()
+            auditLogRepository.save(new AuditLog(ticket.getSiteId()
                 , siteRepository.findById(UUID.fromString(ticket.getSiteId())).orElse(null).getOrganizationId().toString()
                 , ticket.getId().toString()
                 , TICKET_TABLE_NAME
+                , Constants.AuditType.DELETE
                 , ticket.toString()
-                , null);
+                , null));
+            ticketRepository.delete(ticket);
             return true;
         }
         return false;
@@ -392,13 +396,13 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                 });
 
             }
-            auditLogService.logAudit(Constants.AuditType.UPDATE
-                , ticket.getSiteId()
+            auditLogRepository.save(new AuditLog(ticket.getSiteId()
                 , siteRepository.findById(UUID.fromString(ticket.getSiteId())).orElse(null).getOrganizationId().toString()
                 , ticket.getId().toString()
                 , TICKET_TABLE_NAME
+                , Constants.AuditType.UPDATE
                 , oldValue.toString()
-                , ticket.toString());
+                , ticket.toString()));
             return true;
         }
         return false;
@@ -464,13 +468,14 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         if (ticketInfo.getNewCustomers() != null) {
             checkNewCustomers(ticketInfo.getNewCustomers(), ticket);
         }
-        auditLogService.logAudit(Constants.AuditType.UPDATE
-            , ticket.getSiteId()
+        auditLogRepository.save(new AuditLog(ticket.getSiteId()
             , siteRepository.findById(UUID.fromString(ticket.getSiteId())).orElse(null).getOrganizationId().toString()
             , ticket.getId().toString()
             , TICKET_TABLE_NAME
+            , Constants.AuditType.UPDATE
             , oldValue.toString()
-            , ticket.toString());
+            , ticket.toString()));
+
         return ticket;
     }
 
@@ -667,13 +672,14 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         customerTicketMap.setReasonNote(updateStatusTicketOfCustomer.getReasonNote());
         customerTicketMapRepository.save(customerTicketMap);
         Ticket ticket = ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId()).orElse(null);
-        auditLogService.logAudit(Constants.AuditType.CREATE
-            , ticket.getSiteId()
+
+        auditLogRepository.save(new AuditLog(ticket.getSiteId()
             , siteRepository.findById(UUID.fromString(ticket.getSiteId())).orElse(null).getOrganizationId().toString()
             , customerTicketMap.getId().toString()
-            , TICKET_TABLE_NAME
+            , CUSTOMER_TICKET_TABLE_NAME
+            , Constants.AuditType.CREATE
             , null
-            , customerTicketMap.toString());
+            , customerTicketMap.toString()));
     }
 
     @Override

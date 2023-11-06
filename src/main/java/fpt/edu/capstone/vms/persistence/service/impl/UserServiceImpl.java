@@ -9,9 +9,11 @@ import fpt.edu.capstone.vms.controller.IUserController;
 import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
+import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.entity.Department;
 import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.entity.User;
+import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
 import fpt.edu.capstone.vms.persistence.repository.DepartmentRepository;
 import fpt.edu.capstone.vms.persistence.repository.FileRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
@@ -96,7 +98,7 @@ public class UserServiceImpl implements IUserService {
     private final SiteRepository siteRepository;
     private final ModelMapper mapper;
     final DepartmentRepository departmentRepository;
-    private final AuditLogServiceImpl auditLogService;
+    private final AuditLogRepository auditLogRepository;
 
 
     Integer currentRowIndex;
@@ -217,13 +219,13 @@ public class UserServiceImpl implements IUserService {
                 userEntity.setRole(role);
 //                userEntity.setPassword(encodePassword(userEntity.getPassword()));
                 User user = userRepository.save(userEntity);
-                auditLogService.logAudit(Constants.AuditType.CREATE
-                    , siteId
+                auditLogRepository.save(new AuditLog(siteId
                     , site.getOrganizationId().toString()
                     , user.getId()
                     , USER_TABLE_NAME
+                    , Constants.AuditType.CREATE
                     , null
-                    , user.toString());
+                    , user.toString()));
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -253,13 +255,13 @@ public class UserServiceImpl implements IUserService {
             String role = String.join(";", userDto.getRoles());
             userEntity.setRole(role);
             userRepository.save(userEntity);
-            auditLogService.logAudit(Constants.AuditType.UPDATE
-                , userEntity.getDepartment().getSiteId().toString()
+            auditLogRepository.save(new AuditLog(userEntity.getDepartment().getSiteId().toString()
                 , site.getOrganizationId().toString()
                 , userEntity.getId()
                 , USER_TABLE_NAME
+                , Constants.AuditType.UPDATE
                 , oldValue.toString()
-                , userEntity.toString());
+                , userEntity.toString()));
         }
         return userEntity;
     }

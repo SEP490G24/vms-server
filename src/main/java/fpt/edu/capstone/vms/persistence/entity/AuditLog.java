@@ -14,6 +14,10 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.UUID;
 
 @Data
@@ -55,6 +59,17 @@ public class AuditLog extends AbstractBaseEntity<UUID> {
     @Column(name = "new_value")
     private String newValue;
 
+    public AuditLog(String siteId, String organizationId, String primaryKey, String tableName, Constants.AuditType auditType, String oldValue, String newValue) {
+        this.code = generateAuditLogCode(auditType);
+        this.siteId = siteId;
+        this.organizationId = organizationId;
+        this.primaryKey = primaryKey;
+        this.tableName = tableName;
+        this.auditType = auditType;
+        this.oldValue = oldValue;
+        this.newValue = newValue;
+    }
+
     @Override
     public UUID getId() {
         return id;
@@ -63,5 +78,34 @@ public class AuditLog extends AbstractBaseEntity<UUID> {
     @Override
     public void setId(UUID id) {
         this.id = id;
+    }
+
+    private static String generateAuditLogCode(Constants.AuditType auditType) {
+        String code = "";
+        switch (auditType) {
+            case CREATE -> code = "C";
+            case UPDATE -> code = "U";
+            case DELETE -> code = "D";
+            case NONE -> code = "N";
+            default -> code = "A";
+        }
+        SimpleDateFormat dateFormat = new SimpleDateFormat("ddMMyy");
+        String dateCreated = dateFormat.format(new Date());
+
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] hash = md.digest(dateCreated.getBytes());
+
+            long randomNumber = 0;
+            for (int i = 0; i < 8; i++) {
+                randomNumber = (randomNumber << 8) | (hash[i] & 0xff);
+            }
+
+            return code + dateCreated + String.format("%04d", Math.abs(randomNumber));
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            throw new RuntimeException();
+        }
+
     }
 }
