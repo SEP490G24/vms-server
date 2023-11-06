@@ -34,11 +34,6 @@ import java.util.UUID;
 @PreAuthorize("isAuthenticated()")
 public interface ITicketController {
 
-    @GetMapping("/{id}")
-    @Operation(summary = "Find by id ticket")
-    @PreAuthorize("hasRole('r:ticket:find')")
-    ResponseEntity<?> findById(@PathVariable UUID id);
-
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete ticket")
     ResponseEntity<?> delete(@PathVariable String id);

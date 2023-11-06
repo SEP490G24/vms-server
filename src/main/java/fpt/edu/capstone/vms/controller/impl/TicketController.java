@@ -3,7 +3,6 @@ package fpt.edu.capstone.vms.controller.impl;
 import fpt.edu.capstone.vms.controller.ICustomerController;
 import fpt.edu.capstone.vms.controller.ITicketController;
 import fpt.edu.capstone.vms.exception.HttpClientResponse;
-import fpt.edu.capstone.vms.persistence.entity.Ticket;
 import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
 import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
 import fpt.edu.capstone.vms.persistence.service.ITicketService;
@@ -31,11 +30,6 @@ public class TicketController implements ITicketController {
         this.customerTicketMapRepository = customerTicketMapRepository;
         this.customerRepository = customerRepository;
         this.mapper = mapper;
-    }
-
-    @Override
-    public ResponseEntity<Ticket> findById(UUID id) {
-        return ResponseEntity.ok(ticketService.findById(id));
     }
 
     @Override

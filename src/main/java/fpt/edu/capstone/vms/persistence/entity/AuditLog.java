@@ -1,7 +1,10 @@
 package fpt.edu.capstone.vms.persistence.entity;
 
+import fpt.edu.capstone.vms.constants.Constants;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -27,14 +30,30 @@ public class AuditLog extends AbstractBaseEntity<UUID> {
     @GeneratedValue
     private UUID id;
 
-    @Column(name = "name")
-    private String name;
-
     @Column(name = "code")
     private String code;
 
-    @Column(name = "description")
-    private String description;
+    @Column(name = "site_id")
+    private String siteId;
+
+    @Column(name = "organization_id")
+    private String organizationId;
+
+    @Column(name = "primary_key")
+    private String primaryKey;
+
+    @Column(name = "table_name")
+    private String tableName;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "audit_type")
+    private Constants.AuditType auditType;
+
+    @Column(name = "old_value")
+    private String oldValue;
+
+    @Column(name = "new_value")
+    private String newValue;
 
     @Override
     public UUID getId() {

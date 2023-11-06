@@ -10,6 +10,7 @@ import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
 import fpt.edu.capstone.vms.persistence.entity.Department;
+import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.entity.User;
 import fpt.edu.capstone.vms.persistence.repository.DepartmentRepository;
 import fpt.edu.capstone.vms.persistence.repository.FileRepository;
@@ -76,6 +77,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import static fpt.edu.capstone.vms.persistence.entity.User.checkPassword;
 import static fpt.edu.capstone.vms.persistence.entity.User.encodePassword;
@@ -94,6 +96,7 @@ public class UserServiceImpl implements IUserService {
     private final SiteRepository siteRepository;
     private final ModelMapper mapper;
     final DepartmentRepository departmentRepository;
+    private final AuditLogServiceImpl auditLogService;
 
 
     Integer currentRowIndex;
@@ -136,6 +139,8 @@ public class UserServiceImpl implements IUserService {
     public static final String PHONE_NUMBER_REGEX = "^(0[2356789]\\d{8})$";
     public static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@(.+)$";
     public static final String SPECIAL_CHARACTERS_REGEX = "^[a-zA-Z0-9]*$";
+
+    private static final String USER_TABLE_NAME = "User";
 
     Map<Integer, List<String>> mapError;
 
@@ -184,6 +189,7 @@ public class UserServiceImpl implements IUserService {
 
 
     @Override
+    @Transactional
     public User createUser(IUserResource.UserDto userDto) {
         User userEntity = null;
         Department department = departmentRepository.findById(userDto.getDepartmentId()).orElse(null);
@@ -198,6 +204,7 @@ public class UserServiceImpl implements IUserService {
             throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "Can't create user in this site");
         };
 
+        Site site = siteRepository.findById(UUID.fromString(siteId)).orElse(null);
         userDto.setUsername(department.getSite().getCode().toLowerCase() + "_" + userDto.getUsername());
         userDto.setIsCreateUserOrg(false);
         // (1) Create user on Keycloak
@@ -209,7 +216,14 @@ public class UserServiceImpl implements IUserService {
                 String role = String.join(";", userDto.getRoles());
                 userEntity.setRole(role);
 //                userEntity.setPassword(encodePassword(userEntity.getPassword()));
-                userRepository.save(userEntity);
+                User user = userRepository.save(userEntity);
+                auditLogService.logAudit(Constants.AuditType.CREATE
+                    , siteId
+                    , site.getOrganizationId().toString()
+                    , user.getId()
+                    , USER_TABLE_NAME
+                    , null
+                    , user.toString());
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -232,10 +246,20 @@ public class UserServiceImpl implements IUserService {
                     userEntity.setAvatar(value.getAvatar());
                 }
             }
+            Site site = siteRepository.findById(userEntity.getDepartment().getSiteId()).orElse(null);
+
+            User oldValue = userEntity;
             userEntity = userEntity.update(value);
             String role = String.join(";", userDto.getRoles());
             userEntity.setRole(role);
             userRepository.save(userEntity);
+            auditLogService.logAudit(Constants.AuditType.UPDATE
+                , userEntity.getDepartment().getSiteId().toString()
+                , site.getOrganizationId().toString()
+                , userEntity.getId()
+                , USER_TABLE_NAME
+                , oldValue.toString()
+                , userEntity.toString());
         }
         return userEntity;
     }
@@ -304,6 +328,7 @@ public class UserServiceImpl implements IUserService {
 //    }
 
     @Override
+    @Transactional
     public Boolean deleteAvatar(String oldImage, String newImage, String username) {
         var oldFile = fileRepository.findByName(oldImage);
         var newFile = fileRepository.findByName(newImage);
