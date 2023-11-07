@@ -7,20 +7,14 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.QueryParam;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -87,7 +81,7 @@ public interface ITicketController {
     @PreAuthorize("hasRole('r:ticket:viewTicketDetail')")
     ResponseEntity<?> findByIdForAdmin(@PathVariable UUID ticketId);
 
-    @PostMapping("-and-customer/filter")
+    @PostMapping("/customer/filter")
     @Operation(summary = "Filter ticket and customer ")
         //@PreAuthorize("hasRole('r:ticket:findQRCode')")
     ResponseEntity<?> filterTicketAndCustomer(@RequestBody @Valid TicketFilterUser ticketFilterUser, Pageable pageable);
@@ -219,13 +213,16 @@ public interface ITicketController {
 
     @Data
     @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
     class TicketByQRCodeResponseDTO {
         //Ticket Info
         private UUID ticketId;
         private String ticketCode;
         private String ticketName;
         private Constants.Purpose purpose;
-        private Constants.StatusTicket status;
+        private Constants.StatusTicket ticketStatus;
+        private Constants.StatusTicket ticketCustomerStatus;
         private LocalDateTime startTime;
         private LocalDateTime endTime;
         private String createBy;

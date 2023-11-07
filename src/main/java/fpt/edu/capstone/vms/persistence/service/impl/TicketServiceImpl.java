@@ -4,20 +4,8 @@ import com.google.zxing.WriterException;
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ICustomerController;
 import fpt.edu.capstone.vms.controller.ITicketController;
-import fpt.edu.capstone.vms.persistence.entity.Customer;
-import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMap;
-import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMapPk;
-import fpt.edu.capstone.vms.persistence.entity.Room;
-import fpt.edu.capstone.vms.persistence.entity.Site;
-import fpt.edu.capstone.vms.persistence.entity.Template;
-import fpt.edu.capstone.vms.persistence.entity.Ticket;
-import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
-import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
-import fpt.edu.capstone.vms.persistence.repository.OrganizationRepository;
-import fpt.edu.capstone.vms.persistence.repository.RoomRepository;
-import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
-import fpt.edu.capstone.vms.persistence.repository.TemplateRepository;
-import fpt.edu.capstone.vms.persistence.repository.TicketRepository;
+import fpt.edu.capstone.vms.persistence.entity.*;
+import fpt.edu.capstone.vms.persistence.repository.*;
 import fpt.edu.capstone.vms.persistence.service.ITicketService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import fpt.edu.capstone.vms.util.EmailUtils;
@@ -31,7 +19,9 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -44,12 +34,7 @@ import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -596,20 +581,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         if (!site.equals(customerTicketMap.getTicketEntity().getSiteId())) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Ticket can not found in site");
         }
-        return ITicketController.TicketByQRCodeResponseDTO.builder()
-            .ticketId(customerTicketMap.getTicketEntity().getId())
-            .ticketCode(customerTicketMap.getTicketEntity().getCode())
-            .ticketName(customerTicketMap.getTicketEntity().getName())
-            .purpose(customerTicketMap.getTicketEntity().getPurpose())
-            .startTime(customerTicketMap.getTicketEntity().getStartTime())
-            .status(customerTicketMap.getTicketEntity().getStatus())
-            .endTime(customerTicketMap.getTicketEntity().getEndTime())
-            .createBy(customerTicketMap.getTicketEntity().getUsername())
-            .createdOn(customerTicketMap.getTicketEntity().getCreatedOn())
-            .roomId(customerTicketMap.getTicketEntity().getRoom().getId())
-            .roomName(customerTicketMap.getTicketEntity().getRoom().getName())
-            .customerInfo(mapper.map(customerTicketMap.getCustomerEntity(), ICustomerController.CustomerInfo.class))
-            .build();
+        return mapper.map(customerTicketMap, ITicketController.TicketByQRCodeResponseDTO.class);
     }
 
     @Override
@@ -673,24 +645,15 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         , String lastUpdatedBy
         , Boolean bookmark
         , String keyword) {
-        /*return customerTicketMapRepository.filterTicketAndCustomer(pageable
-            , names
-            , null
-            , SecurityUtils.loginUsername()
+        Page<CustomerTicketMap> customerTicketMaps = customerTicketMapRepository.filter(pageable
             , roomId
             , status
             , purpose
-            , createdOnStart
-            , createdOnEnd
-            , startTimeStart
-            , startTimeEnd
-            , endTimeStart
-            , endTimeEnd
-            , createdBy
-            , lastUpdatedBy
-            , bookmark
-            , keyword);*/
-        return null;
+            , keyword);
+        List<ITicketController.TicketByQRCodeResponseDTO> ticketByQRCodeResponseDTOS = mapper.map(customerTicketMaps.getContent(), new TypeToken<List<ITicketController.TicketByQRCodeResponseDTO>>() {
+        }.getType());
+
+        return new PageImpl(ticketByQRCodeResponseDTOS, pageable, ticketByQRCodeResponseDTOS.size());
     }
 
     private List<String> getListSite() {
