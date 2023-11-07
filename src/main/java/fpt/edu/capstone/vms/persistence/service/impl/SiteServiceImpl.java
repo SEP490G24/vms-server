@@ -109,6 +109,7 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
      * @return The method is returning a Site object.
      */
     @Override
+    @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
     public Site updateSite(ISiteController.UpdateSiteInfo updateSite, UUID id) {
 
         if (!StringUtils.isEmpty(updateSite.getCode())) {
@@ -178,6 +179,7 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
     }
 
     @Override
+    @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
     public Boolean deleteSite(UUID siteId) {
         var siteEntity = siteRepository.findById(siteId).orElse(null);
         if (ObjectUtils.isEmpty(siteEntity))
@@ -185,7 +187,7 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
 
         if (SecurityUtils.getOrgId() != null) {
             if (!UUID.fromString(SecurityUtils.getOrgId()).equals(siteEntity.getOrganizationId())) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in organization with organizationId = " + siteEntity.getOrganization());
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in organization with organizationId ");
             }
         } else {
             if (StringUtils.isEmpty(SecurityUtils.getSiteId()))

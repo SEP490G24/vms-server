@@ -17,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.HttpClientErrorException;
 
@@ -56,6 +57,7 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
      * @return The method is returning a `SettingSiteMap` object.
      */
     @Override
+    @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
     public SettingSiteMap createOrUpdateSettingSiteMap(ISettingSiteMapController.SettingSiteInfo settingSiteInfo) {
 
         if (ObjectUtils.isEmpty(settingSiteInfo)) {
@@ -105,6 +107,13 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
                 , site.toString()));
             return settingSiteMapRepository.save(createSettingSite);
         } else {
+            auditLogRepository.save(new AuditLog(siteId.toString()
+                , site.get().getOrganizationId().toString()
+                , siteId.toString()
+                , SETTING_SITE_TABLE_NAME
+                , Constants.AuditType.UPDATE
+                , null
+                , site.toString()));
             return settingSiteMapRepository.save(settingSiteMap.update(mapper.map(settingSiteInfo, SettingSiteMap.class)));
         }
     }

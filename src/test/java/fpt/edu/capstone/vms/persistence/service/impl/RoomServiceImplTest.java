@@ -2,9 +2,16 @@ package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.controller.IRoomController;
 import fpt.edu.capstone.vms.persistence.entity.Room;
+import fpt.edu.capstone.vms.persistence.entity.Site;
+import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
 import fpt.edu.capstone.vms.persistence.repository.RoomRepository;
+import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import jakarta.persistence.EntityNotFoundException;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -22,10 +29,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @TestInstance(PER_CLASS)
 @ActiveProfiles("test")
@@ -37,12 +50,18 @@ class RoomServiceImplTest {
     RoomRepository roomRepository;
     RoomServiceImpl roomService;
     Pageable pageable;
+    AuditLogRepository auditLogRepository;
+    SiteRepository siteRepository;
+    ModelMapper mapper;
+
 
     @BeforeAll
     public void init() {
         pageable = mock(Pageable.class);
         roomRepository = mock(RoomRepository.class);
-        roomService = new RoomServiceImpl(roomRepository, new ModelMapper());
+        siteRepository = mock(SiteRepository.class);
+        auditLogRepository = mock(AuditLogRepository.class);
+        roomService = new RoomServiceImpl(roomRepository, new ModelMapper(), auditLogRepository, siteRepository);
     }
 
     @Test
@@ -108,7 +127,11 @@ class RoomServiceImplTest {
         Room room = Room.builder().name("Room2").code("R2").description("aaaalala").enable(true).siteId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08")).build();
         IRoomController.RoomDto roomDto = IRoomController.RoomDto.builder().name("Room2").code("R2").description("aaaalala").enable(true).siteId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08")).build();
 
+        room.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+        Site site = new Site();
+        site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
         //when
+        when(siteRepository.findById(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"))).thenReturn(Optional.of(site));
         when(roomRepository.save(any(Room.class))).thenReturn(room);
         Room roomActual = roomService.create(roomDto);
 
@@ -151,9 +174,15 @@ class RoomServiceImplTest {
         // Given
         UUID roomId = UUID.fromString("63139e5c-3d0b-46d3-8167-fe59cf46d3d5");
         Room roomInfo = new Room();
+        roomInfo.setSiteId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
         Room existingRoom = new Room();
         when(roomRepository.findById(roomId)).thenReturn(Optional.of(existingRoom));
         when(roomRepository.save(any(Room.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        existingRoom.setId(roomId);
+        Site site = new Site();
+        site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+        //when
+        when(siteRepository.findById(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"))).thenReturn(Optional.of(site));
 
         // When
         Room updatedRoom = roomService.update(roomInfo, roomId);

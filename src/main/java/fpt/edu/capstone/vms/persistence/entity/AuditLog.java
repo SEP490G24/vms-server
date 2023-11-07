@@ -53,10 +53,10 @@ public class AuditLog extends AbstractBaseEntity<UUID> {
     @Column(name = "audit_type")
     private Constants.AuditType auditType;
 
-    @Column(name = "old_value")
+    @Column(name = "old_value", length = 10000)
     private String oldValue;
 
-    @Column(name = "new_value")
+    @Column(name = "new_value", length = 10000)
     private String newValue;
 
     public AuditLog(String siteId, String organizationId, String primaryKey, String tableName, Constants.AuditType auditType, String oldValue, String newValue) {
