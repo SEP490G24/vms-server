@@ -31,7 +31,6 @@ public class TicketController implements ITicketController {
         this.customerRepository = customerRepository;
         this.mapper = mapper;
     }
-
     @Override
     public ResponseEntity<?> delete(String id) {
         return ResponseEntity.ok(ticketService.deleteTicket(id));
