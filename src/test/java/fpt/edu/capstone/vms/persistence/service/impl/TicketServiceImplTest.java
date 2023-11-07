@@ -2,10 +2,14 @@ package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ITicketController;
+import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMap;
+import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMapPk;
 import fpt.edu.capstone.vms.persistence.entity.Room;
+import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.entity.Template;
 import fpt.edu.capstone.vms.persistence.entity.Ticket;
+import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
 import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
 import fpt.edu.capstone.vms.persistence.repository.RoomRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
@@ -44,7 +48,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class TicketServiceImplTest {
@@ -54,6 +60,8 @@ class TicketServiceImplTest {
 
     @Mock
     private TicketRepository ticketRepository;
+    @Mock
+    private AuditLogRepository auditLogRepository;
 
     @Mock
     private TemplateRepository templateRepository;
@@ -286,9 +294,29 @@ class TicketServiceImplTest {
         SecurityContextHolder.setContext(securityContext);
 
         Ticket mockTicket = new Ticket();
+        mockTicket.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c06");
+        mockTicket.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c06"));
         when(ticketRepository.findById(UUID.fromString(ticketBookmark.getTicketId()))).thenReturn(Optional.of(mockTicket));
         when(ticketRepository.existsByIdAndUsername(UUID.fromString(ticketBookmark.getTicketId()), "mocked_username")).thenReturn(true);
         when(ticketRepository.save(Mockito.any(Ticket.class))).thenReturn(mockTicket);
+
+        Site site = new Site();
+        site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+
+        when(ticketRepository.findById(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c06"))).thenReturn(Optional.of(mockTicket));
+        when(siteRepository.findById(UUID.fromString(mockTicket.getSiteId()))).thenReturn(Optional.of(site));
+        when(auditLogRepository.save(any(AuditLog.class))).thenAnswer(invocation -> {
+            AuditLog auditLog = invocation.getArgument(0);
+            assertEquals("06eb43a7-6ea8-4744-8231-760559fe2c06", auditLog.getSiteId());
+            assertEquals("06eb43a7-6ea8-4744-8231-760559fe2c08", auditLog.getOrganizationId());
+            assertEquals(mockTicket.getId().toString(), auditLog.getPrimaryKey());
+            assertEquals("Ticket", auditLog.getTableName());
+            assertEquals(Constants.AuditType.UPDATE, auditLog.getAuditType());
+            assertEquals(mockTicket.toString(), auditLog.getOldValue());
+            assertEquals(mockTicket.toString(), auditLog.getNewValue());
+            return auditLog;
+        });
+
 
         boolean result = ticketService.updateBookMark(ticketBookmark);
 
@@ -352,8 +380,10 @@ class TicketServiceImplTest {
     @Test
     @DisplayName("Given Existing Ticket, When Deleting, Then Delete Ticket")
     public void givenExistingTicket_WhenDeleting_ThenDeleteTicket() {
-        String ticketId = "06eb43a7-6ea8-4744-8231-760559fe2c06";
+        String ticketId = "06eb43a7-6ea8-4744-8231-760559fe2c08";
         Ticket mockTicket = new Ticket();
+        mockTicket.setSiteId(ticketId);
+        mockTicket.setId(UUID.fromString(ticketId));
 
         when(ticketRepository.findById(UUID.fromString(ticketId))).thenReturn(Optional.of(mockTicket));
 
@@ -369,10 +399,27 @@ class TicketServiceImplTest {
 
         when(ticketRepository.existsByIdAndUsername(UUID.fromString(ticketId), "mocked_username")).thenReturn(true);
 
+        Site site = new Site();
+        site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+
+        when(ticketRepository.findById(UUID.fromString(ticketId))).thenReturn(Optional.of(mockTicket));
+        when(siteRepository.findById(UUID.fromString(mockTicket.getSiteId()))).thenReturn(Optional.of(site));
+        when(auditLogRepository.save(any(AuditLog.class))).thenAnswer(invocation -> {
+            AuditLog auditLog = invocation.getArgument(0);
+            assertEquals("06eb43a7-6ea8-4744-8231-760559fe2c08", auditLog.getSiteId());
+            assertEquals("06eb43a7-6ea8-4744-8231-760559fe2c08", auditLog.getOrganizationId());
+            assertEquals(mockTicket.getId().toString(), auditLog.getPrimaryKey());
+            assertEquals("Ticket", auditLog.getTableName());
+            assertEquals(Constants.AuditType.DELETE, auditLog.getAuditType());
+            assertEquals(mockTicket.toString(), auditLog.getOldValue());
+            assertEquals(null, auditLog.getNewValue());
+            return auditLog;
+        });
+
         boolean result = ticketService.deleteTicket(ticketId);
 
         assertTrue(result);
-        Mockito.verify(ticketRepository, Mockito.times(1)).delete(mockTicket);
+        verify(ticketRepository, Mockito.times(1)).delete(mockTicket);
     }
 
     @Test
@@ -408,7 +455,7 @@ class TicketServiceImplTest {
         boolean result = ticketService.deleteTicket(ticketId);
 
         assertFalse(result);
-        Mockito.verify(ticketRepository, Mockito.never()).delete(mockTicket);
+        verify(ticketRepository, Mockito.never()).delete(mockTicket);
     }
 
     @Test
@@ -429,6 +476,8 @@ class TicketServiceImplTest {
         cancelTicket.setTemplateId(UUID.randomUUID());
 
         Ticket mockTicket = new Ticket();
+        mockTicket.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        mockTicket.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c06"));
         mockTicket.setStartTime(LocalDateTime.now().plusHours(3)); // Start time is after 2 hours
         when(ticketRepository.findById(cancelTicket.getTicketId())).thenReturn(Optional.of(mockTicket));
 
@@ -446,11 +495,28 @@ class TicketServiceImplTest {
         when(templateRepository.findById(cancelTicket.getTemplateId())).thenReturn(Optional.of(new Template()));
         when(customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(mockTicket.getId())).thenReturn(new ArrayList<>());
 
+        Site site = new Site();
+        site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+
+        when(ticketRepository.findById(UUID.fromString(String.valueOf(mockTicket.getId())))).thenReturn(Optional.of(mockTicket));
+        when(siteRepository.findById(UUID.fromString(mockTicket.getSiteId()))).thenReturn(Optional.of(site));
+        when(auditLogRepository.save(any(AuditLog.class))).thenAnswer(invocation -> {
+            AuditLog auditLog = invocation.getArgument(0);
+            assertEquals("06eb43a7-6ea8-4744-8231-760559fe2c08", auditLog.getSiteId());
+            assertEquals("06eb43a7-6ea8-4744-8231-760559fe2c08", auditLog.getOrganizationId());
+            assertEquals(mockTicket.getId().toString(), auditLog.getPrimaryKey());
+            assertEquals("Ticket", auditLog.getTableName());
+            assertEquals(Constants.AuditType.UPDATE, auditLog.getAuditType());
+            assertEquals(mockTicket.toString(), auditLog.getOldValue());
+            assertEquals(mockTicket.toString(), auditLog.getNewValue());
+            return auditLog;
+        });
+
         boolean result = ticketService.cancelTicket(cancelTicket);
 
         assertTrue(result);
         assertEquals(Constants.StatusTicket.CANCEL, mockTicket.getStatus());
-        Mockito.verify(ticketRepository, Mockito.times(1)).save(mockTicket);
+        verify(ticketRepository, Mockito.times(1)).save(mockTicket);
     }
 
     @Test
@@ -505,7 +571,7 @@ class TicketServiceImplTest {
         boolean result = ticketService.cancelTicket(cancelTicket);
 
         assertFalse(result);
-        Mockito.verify(ticketRepository, Mockito.never()).save(mockTicket);
+        verify(ticketRepository, Mockito.never()).save(mockTicket);
     }
 
     @Test
@@ -532,6 +598,26 @@ class TicketServiceImplTest {
 
         when(ticketRepository.existsByIdAndUsername(cancelTicket.getTicketId(), "mocked_username")).thenReturn(true);
         when(templateRepository.findById(cancelTicket.getTemplateId())).thenReturn(Optional.empty());
+
+        Site site = new Site();
+        mockTicket.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c06");
+        mockTicket.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c06"));
+        site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+
+        when(ticketRepository.findById(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c06"))).thenReturn(Optional.of(mockTicket));
+        when(siteRepository.findById(UUID.fromString(mockTicket.getSiteId()))).thenReturn(Optional.of(site));
+        when(auditLogRepository.save(any(AuditLog.class))).thenAnswer(invocation -> {
+            AuditLog auditLog = invocation.getArgument(0);
+            assertEquals("06eb43a7-6ea8-4744-8231-760559fe2c06", auditLog.getSiteId());
+            assertEquals("06eb43a7-6ea8-4744-8231-760559fe2c08", auditLog.getOrganizationId());
+            assertEquals(mockTicket.getId().toString(), auditLog.getPrimaryKey());
+            assertEquals("Ticket", auditLog.getTableName());
+            assertEquals(Constants.AuditType.UPDATE, auditLog.getAuditType());
+            assertEquals(mockTicket.toString(), auditLog.getOldValue());
+            assertEquals(mockTicket.toString(), auditLog.getNewValue());
+            return auditLog;
+        });
+
 
         assertTrue(ticketService.cancelTicket(cancelTicket));
     }
@@ -788,10 +874,34 @@ class TicketServiceImplTest {
         updateStatusTicketOfCustomer.setReasonNote("ReasonNote");
 
         CustomerTicketMap customerTicketMap = new CustomerTicketMap();
+        customerTicketMap.setCustomerTicketMapPk(new CustomerTicketMapPk(UUID.randomUUID(), UUID.randomUUID()));
 
         // Mock repository behavior
         Mockito.when(customerTicketMapRepository.findByCustomerTicketMapPk_TicketIdAndCustomerTicketMapPk_CustomerId(updateStatusTicketOfCustomer.getTicketId(), updateStatusTicketOfCustomer.getCustomerId()))
             .thenReturn(customerTicketMap);
+
+        Site site = new Site();
+        site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+        Ticket ticket = new Ticket();
+        ticket.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        when(ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId())).thenReturn(Optional.of(ticket));
+        when(siteRepository.findById(UUID.fromString(ticket.getSiteId()))).thenReturn(Optional.of(site));
+
+        when(ticketRepository.findById(UUID.fromString(ticket.getSiteId()))).thenReturn(Optional.of(ticket));
+        when(siteRepository.findById(UUID.fromString(ticket.getSiteId()))).thenReturn(Optional.of(site));
+        when(auditLogRepository.save(any(AuditLog.class))).thenAnswer(invocation -> {
+            AuditLog auditLog = invocation.getArgument(0);
+            // Kiểm tra giá trị của auditLog nếu cần
+            assertEquals("06eb43a7-6ea8-4744-8231-760559fe2c08", auditLog.getSiteId());
+            assertEquals("06eb43a7-6ea8-4744-8231-760559fe2c08", auditLog.getOrganizationId());
+            assertEquals(customerTicketMap.getId().toString(), auditLog.getPrimaryKey());
+            assertEquals("CustomerTicketMap", auditLog.getTableName());
+            assertEquals(Constants.AuditType.CREATE, auditLog.getAuditType());
+            assertEquals(null, auditLog.getOldValue());
+            assertEquals(customerTicketMap.toString(), auditLog.getNewValue());
+            return auditLog;
+        });
+
 
         // Call the method under test
         ticketService.updateStatusTicketOfCustomer(updateStatusTicketOfCustomer);
@@ -802,6 +912,7 @@ class TicketServiceImplTest {
         assertEquals(updateStatusTicketOfCustomer.getReasonNote(), customerTicketMap.getReasonNote());
 
         // Verify that the customerTicketMapRepository.save() has been called
-        Mockito.verify(customerTicketMapRepository).save(customerTicketMap);
+        verify(customerTicketMapRepository).save(customerTicketMap);
+
     }
 }

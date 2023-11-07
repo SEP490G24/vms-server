@@ -1,8 +1,11 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
+import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ISettingSiteMapController;
+import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.entity.SettingSiteMap;
 import fpt.edu.capstone.vms.persistence.entity.SettingSiteMapPk;
+import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
 import fpt.edu.capstone.vms.persistence.repository.SettingRepository;
 import fpt.edu.capstone.vms.persistence.repository.SettingSiteMapRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
@@ -14,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.HttpClientErrorException;
 
@@ -30,14 +34,16 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
     private final SettingRepository settingRepository;
     private final SiteRepository siteRepository;
     private final UserRepository userRepository;
+    private final AuditLogRepository auditLogRepository;
     private final ModelMapper mapper;
+    private static final String SETTING_SITE_TABLE_NAME = "Setting Site Map";
 
-
-    public SettingSiteMapServiceImpl(SettingSiteMapRepository settingSiteMapRepository, SettingRepository settingRepository, SiteRepository siteRepository, UserRepository userRepository, ModelMapper mapper) {
+    public SettingSiteMapServiceImpl(SettingSiteMapRepository settingSiteMapRepository, SettingRepository settingRepository, SiteRepository siteRepository, UserRepository userRepository, AuditLogRepository auditLogRepository, ModelMapper mapper) {
         this.settingSiteMapRepository = settingSiteMapRepository;
         this.settingRepository = settingRepository;
         this.siteRepository = siteRepository;
         this.userRepository = userRepository;
+        this.auditLogRepository = auditLogRepository;
         this.mapper = mapper;
         this.init(this.settingSiteMapRepository);
     }
@@ -51,6 +57,7 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
      * @return The method is returning a `SettingSiteMap` object.
      */
     @Override
+    @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
     public SettingSiteMap createOrUpdateSettingSiteMap(ISettingSiteMapController.SettingSiteInfo settingSiteInfo) {
 
         if (ObjectUtils.isEmpty(settingSiteInfo)) {
@@ -90,8 +97,23 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
             createSettingSite.setValue(settingSiteInfo.getValue());
             createSettingSite.setDescription(settingSiteInfo.getDescription());
             createSettingSite.setStatus(true);
+
+            auditLogRepository.save(new AuditLog(siteId.toString()
+                , site.get().getOrganizationId().toString()
+                , siteId.toString()
+                , SETTING_SITE_TABLE_NAME
+                , Constants.AuditType.CREATE
+                , null
+                , site.toString()));
             return settingSiteMapRepository.save(createSettingSite);
         } else {
+            auditLogRepository.save(new AuditLog(siteId.toString()
+                , site.get().getOrganizationId().toString()
+                , siteId.toString()
+                , SETTING_SITE_TABLE_NAME
+                , Constants.AuditType.UPDATE
+                , null
+                , site.toString()));
             return settingSiteMapRepository.save(settingSiteMap.update(mapper.map(settingSiteInfo, SettingSiteMap.class)));
         }
     }

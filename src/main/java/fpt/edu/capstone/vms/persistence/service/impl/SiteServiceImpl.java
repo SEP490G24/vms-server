@@ -1,9 +1,12 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
+import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ISiteController;
+import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.entity.SettingSiteMap;
 import fpt.edu.capstone.vms.persistence.entity.SettingSiteMapPk;
 import fpt.edu.capstone.vms.persistence.entity.Site;
+import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
 import fpt.edu.capstone.vms.persistence.repository.CommuneRepository;
 import fpt.edu.capstone.vms.persistence.repository.DistrictRepository;
 import fpt.edu.capstone.vms.persistence.repository.ProvinceRepository;
@@ -36,20 +39,24 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
     private final CommuneRepository communeRepository;
     private final SettingSiteMapRepository settingSiteMapRepository;
     private final SettingRepository settingRepository;
+    private final AuditLogRepository auditLogRepository;
     private final ModelMapper mapper;
+
+    private static final String SITE_TABLE_NAME = "Site";
 
     public SiteServiceImpl(SiteRepository siteRepository
         , ProvinceRepository provinceRepository
         , DistrictRepository districtRepository
         , CommuneRepository communeRepository
         , SettingSiteMapRepository settingSiteMapRepository
-        , SettingRepository settingRepository, ModelMapper mapper) {
+        , SettingRepository settingRepository, AuditLogRepository auditLogRepository, ModelMapper mapper) {
         this.siteRepository = siteRepository;
         this.provinceRepository = provinceRepository;
         this.districtRepository = districtRepository;
         this.communeRepository = communeRepository;
         this.settingSiteMapRepository = settingSiteMapRepository;
         this.settingRepository = settingRepository;
+        this.auditLogRepository = auditLogRepository;
         this.mapper = mapper;
         this.init(siteRepository);
     }
@@ -79,6 +86,13 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
             entity.setOrganizationId(UUID.fromString(SecurityUtils.getOrgId()));
             entity.setEnable(true);
             var site = siteRepository.save(entity);
+            auditLogRepository.save(new AuditLog(site.getId().toString()
+                , site.getOrganizationId().toString()
+                , site.getId().toString()
+                , SITE_TABLE_NAME
+                , Constants.AuditType.CREATE
+                , null
+                , site.toString()));
 //            if (!ObjectUtils.isEmpty(site)) addSettingForSite(site.getId());
             return site;
         } catch (HttpClientErrorException e) {
@@ -95,9 +109,8 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
      * @return The method is returning a Site object.
      */
     @Override
+    @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
     public Site updateSite(ISiteController.UpdateSiteInfo updateSite, UUID id) {
-
-
 
         if (!StringUtils.isEmpty(updateSite.getCode())) {
             if (siteRepository.existsByCode(updateSite.getCode())) {
@@ -115,13 +128,21 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in organization with organizationId = " + siteEntity.getOrganization());
             }
         } else {
-            if (StringUtils.isEmpty(SecurityUtils.getSiteId())) throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in site with siteId = " + SecurityUtils.getSiteId());
+            if (StringUtils.isEmpty(SecurityUtils.getSiteId()))
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in site with siteId = " + SecurityUtils.getSiteId());
 
-            if(!SecurityUtils.getSiteId().equals(siteEntity.getId().toString())) {
+            if (!SecurityUtils.getSiteId().equals(siteEntity.getId().toString())) {
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in site with siteId = " + SecurityUtils.getSiteId());
             }
         }
-        siteRepository.save(siteEntity.update(update));
+        var updateS = siteRepository.save(siteEntity.update(update));
+        auditLogRepository.save(new AuditLog(siteEntity.getId().toString()
+            , siteEntity.getOrganizationId().toString()
+            , siteEntity.getId().toString()
+            , SITE_TABLE_NAME
+            , Constants.AuditType.UPDATE
+            , siteEntity.toString()
+            , updateS.toString()));
         return siteEntity;
     }
 
@@ -155,6 +176,37 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
     @Override
     public List<Site> findAllByOrganizationId(String organizationId) {
         return siteRepository.findAllByOrganizationId(UUID.fromString(organizationId));
+    }
+
+    @Override
+    @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
+    public Boolean deleteSite(UUID siteId) {
+        var siteEntity = siteRepository.findById(siteId).orElse(null);
+        if (ObjectUtils.isEmpty(siteEntity))
+            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't found site by id: " + siteId);
+
+        if (SecurityUtils.getOrgId() != null) {
+            if (!UUID.fromString(SecurityUtils.getOrgId()).equals(siteEntity.getOrganizationId())) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in organization with organizationId ");
+            }
+        } else {
+            if (StringUtils.isEmpty(SecurityUtils.getSiteId()))
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in site with siteId = " + SecurityUtils.getSiteId());
+
+            if (!SecurityUtils.getSiteId().equals(siteEntity.getId().toString())) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in site with siteId = " + SecurityUtils.getSiteId());
+            }
+        }
+
+        auditLogRepository.save(new AuditLog(siteEntity.getId().toString()
+            , siteEntity.getOrganizationId().toString()
+            , siteEntity.getId().toString()
+            , SITE_TABLE_NAME
+            , Constants.AuditType.DELETE
+            , siteEntity.toString()
+            , null));
+        siteRepository.delete(siteEntity);
+        return true;
     }
 
 
@@ -211,5 +263,6 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
             });
         }
     }
+
 
 }

@@ -111,4 +111,16 @@ public class Constants {
         OVERCROWDED,
         TECHNICAL_ISSUES;
     }
+
+    public enum AuditType {
+        CREATE,
+        UPDATE,
+        DELETE,
+        NONE
+    }
+
+    public enum StatusAction {
+        DONE,
+        ERROR
+    }
 }

@@ -1,19 +1,17 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
-import fpt.edu.capstone.vms.persistence.entity.Organization;
 import fpt.edu.capstone.vms.persistence.entity.Setting;
 import fpt.edu.capstone.vms.persistence.repository.SettingRepository;
 import fpt.edu.capstone.vms.persistence.service.ISettingService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
-import fpt.edu.capstone.vms.util.SecurityUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
-import java.util.UUID;
 
 @Service
 public class SettingServiceImpl extends GenericServiceImpl<Setting, Long> implements ISettingService {
@@ -35,6 +33,7 @@ public class SettingServiceImpl extends GenericServiceImpl<Setting, Long> implem
      * @return The method is returning a Setting object.
      */
     @Override
+    @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
     public Setting update(Setting entity, Long id) {
         if (!StringUtils.isEmpty(entity.getCode())) {
             if (settingRepository.existsByCode(entity.getCode())) {

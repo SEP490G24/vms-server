@@ -7,4 +7,5 @@ import java.util.UUID;
 
 
 public interface IAuditLogService extends IGenericService<AuditLog, UUID> {
+
 }
