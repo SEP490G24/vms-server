@@ -119,22 +119,26 @@ public class SiteController implements ISiteController {
     public ResponseEntity<?> filter(SiteFilter filter, boolean isPageable, Pageable pageable) {
         var siteEntity = siteService.filter(
             filter.getNames(),
-            filter.getOrganizationId(),
             filter.getCreatedOnStart(),
             filter.getCreatedOnEnd(),
             filter.getCreateBy(),
             filter.getLastUpdatedBy(),
             filter.getEnable(),
+            filter.getProvinceId(),
+            filter.getDistrictId(),
+            filter.getCommuneId(),
             filter.getKeyword());
         var siteEntityPageable = siteService.filter(
             pageable,
             filter.getNames(),
-            filter.getOrganizationId(),
             filter.getCreatedOnStart(),
             filter.getCreatedOnEnd(),
             filter.getCreateBy(),
             filter.getLastUpdatedBy(),
             filter.getEnable(),
+            filter.getProvinceId(),
+            filter.getDistrictId(),
+            filter.getCommuneId(),
             filter.getKeyword());
 
 

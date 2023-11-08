@@ -9,6 +9,7 @@ import fpt.edu.capstone.vms.persistence.repository.CommuneRepository;
 import fpt.edu.capstone.vms.persistence.repository.DistrictRepository;
 import fpt.edu.capstone.vms.persistence.repository.ProvinceRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
+import fpt.edu.capstone.vms.util.SecurityUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -215,25 +216,35 @@ class SiteServiceImplTest {
     void filter() {
         // Given
         List<String> names = Arrays.asList("Site1", "Site2");
-        UUID orgId = UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08");
         LocalDateTime createdOnStart = LocalDateTime.now().minusDays(7);
         LocalDateTime createdOnEnd = LocalDateTime.now();
         Boolean enable = true;
         String createBy = "admin";
         String lastUpdatedBy = "admin";
+        Integer provinceId = 1;
+        Integer districtId = 2;
+        Integer communeId = 70;
+
+        Jwt jwt = mock(Jwt.class);
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
 
         String keyword = "example";
 
         List<Site> expectedSites = List.of();
-        when(siteRepository.filter(names, orgId, createdOnStart, createdOnEnd, createBy, lastUpdatedBy, enable, keyword.toUpperCase())).thenReturn(expectedSites);
+        when(siteRepository.filter(names, UUID.fromString(SecurityUtils.getOrgId()), createdOnStart, createdOnEnd, createBy, lastUpdatedBy, enable, provinceId, districtId, communeId, keyword.toUpperCase())).thenReturn(expectedSites);
 
         // When
-        List<Site> filteredSites = siteService.filter(names, orgId, createdOnStart, createdOnEnd, createBy, lastUpdatedBy, enable, keyword.toUpperCase());
+        List<Site> filteredSites = siteService.filter(names, createdOnStart, createdOnEnd, createBy, lastUpdatedBy, enable, provinceId, districtId, communeId, keyword.toUpperCase());
 
         // Then
         assertNotNull(filteredSites);
         // Add assertions to check the content of the filteredRooms, depending on the expected behavior
-        verify(siteRepository, times(1)).filter(names, orgId, createdOnStart, createdOnEnd, createBy, lastUpdatedBy, enable, keyword.toUpperCase());
+        verify(siteRepository, times(1)).filter(names, UUID.fromString(SecurityUtils.getOrgId()), createdOnStart, createdOnEnd, createBy, lastUpdatedBy, enable, provinceId, districtId, communeId, keyword.toUpperCase());
     }
 
     @Test
@@ -248,17 +259,20 @@ class SiteServiceImplTest {
         String lastUpdatedBy = "admin";
 
         String keyword = "example";
+        Integer provinceId = 1;
+        Integer districtId = 2;
+        Integer communeId = 70;
 
         Page<Site> expectedSitePage = new PageImpl<>(List.of());
-        when(siteRepository.filter(pageable, names, orgId, createdOnStart, createdOnEnd, createBy, lastUpdatedBy, enable, keyword.toUpperCase())).thenReturn(expectedSitePage);
+        when(siteRepository.filter(pageable, names, UUID.fromString(SecurityUtils.getOrgId()), createdOnStart, createdOnEnd, createBy, lastUpdatedBy, enable, provinceId, districtId, communeId, keyword.toUpperCase())).thenReturn(expectedSitePage);
 
         // When
-        Page<Site> filteredSites = siteService.filter(pageable, names, orgId, createdOnStart, createdOnEnd, createBy, lastUpdatedBy, enable, keyword.toUpperCase());
+        Page<Site> filteredSites = siteService.filter(pageable, names, createdOnStart, createdOnEnd, createBy, lastUpdatedBy, enable, provinceId, districtId, communeId, keyword.toUpperCase());
 
         // Then
         assertNotNull(filteredSites);
         // Add assertions to check the content of the filteredRooms, depending on the expected behavior
-        verify(siteRepository, times(1)).filter(pageable, names, orgId, createdOnStart, createdOnEnd, createBy, lastUpdatedBy, enable, keyword.toUpperCase());
+        verify(siteRepository, times(1)).filter(pageable, names, UUID.fromString(SecurityUtils.getOrgId()), createdOnStart, createdOnEnd, createBy, lastUpdatedBy, enable, provinceId, districtId, communeId, keyword.toUpperCase());
 
     }
 }

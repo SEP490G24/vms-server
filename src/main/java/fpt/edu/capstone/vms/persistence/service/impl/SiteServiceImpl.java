@@ -147,29 +147,54 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
     }
 
     @Override
-    public Page<Site> filter(Pageable pageable, List<String> names, UUID orgId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, String createBy, String lastUpdatedBy, Boolean enable, String keyword) {
+    public Page<Site> filter(Pageable pageable
+        , List<String> names
+        , LocalDateTime createdOnStart
+        , LocalDateTime createdOnEnd
+        , String createBy
+        , String lastUpdatedBy
+        , Boolean enable
+        , Integer provinceId
+        , Integer districtId
+        , Integer communeId
+        , String keyword) {
         return siteRepository.filter(
             pageable,
             names,
-            orgId,
+            UUID.fromString(SecurityUtils.getOrgId()),
             createdOnStart,
             createdOnEnd,
             createBy,
             lastUpdatedBy,
             enable,
+            provinceId,
+            districtId,
+            communeId,
             keyword);
     }
 
     @Override
-    public List<Site> filter(List<String> names, UUID orgId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, String createdBy, String lastUpdatedBy, Boolean enable, String keyword) {
+    public List<Site> filter(List<String> names
+        , LocalDateTime createdOnStart
+        , LocalDateTime createdOnEnd
+        , String createdBy
+        , String lastUpdatedBy
+        , Boolean enable
+        , Integer provinceId
+        , Integer districtId
+        , Integer communeId
+        , String keyword) {
         return siteRepository.filter(
             names,
-            orgId,
+            UUID.fromString(SecurityUtils.getOrgId()),
             createdOnStart,
             createdOnEnd,
             createdBy,
             lastUpdatedBy,
             enable,
+            provinceId,
+            districtId,
+            communeId,
             keyword);
     }
 
