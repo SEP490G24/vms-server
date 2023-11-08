@@ -61,6 +61,12 @@ public interface IDepartmentController {
     @PreAuthorize("hasRole('r:department:find')")
     ResponseEntity<?> filter(@RequestBody @Valid DepartmentFilter siteFilter, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
+    @PostMapping("/site")
+    @Operation(summary = "Find all department by site")
+    @PreAuthorize("hasRole('r:department:find')")
+    ResponseEntity<?> findAllBySite();
+
+
     @Data
     class CreateDepartmentInfo {
         @NotNull

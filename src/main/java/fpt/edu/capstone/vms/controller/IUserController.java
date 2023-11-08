@@ -159,8 +159,11 @@ public interface IUserController {
         LocalDateTime createdOnEnd;
         Boolean enable;
         String keyword;
-        String departmentId;
-        String siteId;
+        List<String> departmentIds;
+        List<String> siteId;
+        Integer provinceId;
+        Integer districtId;
+        Integer communeId;
     }
 
     @Data

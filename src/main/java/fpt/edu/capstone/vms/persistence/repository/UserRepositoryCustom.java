@@ -9,6 +9,7 @@ import org.springframework.lang.Nullable;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 public interface UserRepositoryCustom {
     Page<IUserController.UserFilterResponse> filter(Pageable pageable,
@@ -18,8 +19,10 @@ public interface UserRepositoryCustom {
                                                     @Param("createdOnEnd") @Nullable LocalDateTime createdOnEnd,
                                                     @Param("enable") @Nullable Boolean isEnable,
                                                     @Param("keyword") @Nullable String keyword,
-                                                    @Param("departmentId") @Nullable String departmentId,
-                                                    @Param("siteId") @Nullable String siteId);
+                                                    @Param("departmentId") @Nullable Collection<UUID> departmentIds,
+                                                    @Param("provinceId") @Nullable Integer provinceId,
+                                                    @Param("districtId") @Nullable Integer districtId,
+                                                    @Param("communeId") @Nullable Integer communeId);
 
     List<IUserController.UserFilterResponse> filter(@Param("usernames") @Nullable Collection<String> usernames,
                                                     @Param("roles") @Nullable String role,
@@ -27,6 +30,8 @@ public interface UserRepositoryCustom {
                                                     @Param("createdOnEnd") @Nullable LocalDateTime createdOnEnd,
                                                     @Param("enable") @Nullable Boolean isEnable,
                                                     @Param("keyword") @Nullable String keyword,
-                                                    @Param("departmentId") @Nullable String departmentId,
-                                                    @Param("siteId") @Nullable String siteId);
+                                                    @Param("departmentId") @Nullable Collection<UUID> departmentIds,
+                                                    @Param("provinceId") @Nullable Integer provinceId,
+                                                    @Param("districtId") @Nullable Integer districtId,
+                                                    @Param("communeId") @Nullable Integer communeId);
 }

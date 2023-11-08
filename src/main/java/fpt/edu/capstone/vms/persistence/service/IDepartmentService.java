@@ -34,4 +34,6 @@ public interface IDepartmentService extends IGenericService<Department, UUID> {
         String lastUpdatedBy,
         Boolean enable,
         String keyword);
+
+    List<IDepartmentController.DepartmentFilterDTO> FindAllBySiteId();
 }

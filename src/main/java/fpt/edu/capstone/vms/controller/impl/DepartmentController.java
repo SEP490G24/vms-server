@@ -141,4 +141,9 @@ public class DepartmentController implements IDepartmentController {
             : ResponseEntity.ok(mapper.map(departmentEntity, new TypeToken<List<DepartmentFilterDTO>>() {
         }.getType()));
     }
+
+    @Override
+    public ResponseEntity<?> findAllBySite() {
+        return ResponseEntity.ok(departmentService.FindAllBySiteId());
+    }
 }

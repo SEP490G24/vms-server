@@ -10,6 +10,7 @@ import fpt.edu.capstone.vms.util.SecurityUtils;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -69,13 +70,21 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
         return department;
     }
 
+    @Override
+    public List<IDepartmentController.DepartmentFilterDTO> FindAllBySiteId() {
+
+        var departments = departmentRepository.findAllBySiteId(UUID.fromString(SecurityUtils.getSiteId()));
+        return mapper.map(departments, new TypeToken<List<IDepartmentController.DepartmentFilterDTO>>() {
+        }.getType());
+    }
+
     /**
      * This Java function creates a department based on the provided department information, with various checks and
      * validations.
      *
      * @param departmentInfo The parameter `departmentInfo` is an object of type
-     * `IDepartmentController.CreateDepartmentInfo`. It contains information required to create a department, such as the
-     * site ID and department code.
+     *                       `IDepartmentController.CreateDepartmentInfo`. It contains information required to create a department, such as the
+     *                       site ID and department code.
      * @return The method is returning a Department object.
      */
     @Override
