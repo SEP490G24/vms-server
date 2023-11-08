@@ -201,7 +201,8 @@ class DepartmentServiceImplTest {
         SecurityContextHolder.setContext(securityContext);
 
         List<String> names = Arrays.asList("Department1", "Department2");
-        List<String> sites = Arrays.asList("06eb43a7-6ea8-4744-8231-760559fe2c08", "06eb43a7-6ea8-4744-8231-760559fe2c09");
+        List<String> siteId = Arrays.asList("06eb43a7-6ea8-4744-8231-760559fe2c08", "06eb43a7-6ea8-4744-8231-760559fe2c09");
+        List<UUID> sites = Arrays.asList(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"), UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c09"));
         when(SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c08")).thenReturn(true);
         when(SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c09")).thenReturn(true);
 
@@ -217,7 +218,7 @@ class DepartmentServiceImplTest {
         when(departmentRepository.filter(names, sites, createdOnStart, createdOnEnd, createBy, lastUpdatedBy, enable, keyword.toUpperCase())).thenReturn(departmentList);
 
         // When
-        List<Department> filteredSites = departmentService.filter(names, sites, createdOnStart, createdOnEnd, createBy, lastUpdatedBy, enable, keyword.toUpperCase());
+        List<Department> filteredSites = departmentService.filter(names, siteId, createdOnStart, createdOnEnd, createBy, lastUpdatedBy, enable, keyword.toUpperCase());
 
         // Then
         assertNotNull(filteredSites);
@@ -237,7 +238,8 @@ class DepartmentServiceImplTest {
         SecurityContextHolder.setContext(securityContext);
 
         List<String> names = Arrays.asList("Department1", "Department2");
-        List<String> sites = Arrays.asList("06eb43a7-6ea8-4744-8231-760559fe2c08", "06eb43a7-6ea8-4744-8231-760559fe2c09");
+        List<String> siteId = Arrays.asList("06eb43a7-6ea8-4744-8231-760559fe2c08", "06eb43a7-6ea8-4744-8231-760559fe2c09");
+        List<UUID> sites = Arrays.asList(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"), UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c09"));
         when(SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c08")).thenReturn(true);
         when(SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c09")).thenReturn(true);
 
@@ -253,7 +255,7 @@ class DepartmentServiceImplTest {
         when(departmentRepository.filter(pageable, names, sites, createdOnStart, createdOnEnd, createBy, lastUpdatedBy, enable, keyword.toUpperCase())).thenReturn(expectedSitePage);
 
         // When
-        Page<Department> filteredSites = departmentService.filter(pageable, names, sites, createdOnStart, createdOnEnd, createBy, lastUpdatedBy, enable, keyword.toUpperCase());
+        Page<Department> filteredSites = departmentService.filter(pageable, names, siteId, createdOnStart, createdOnEnd, createBy, lastUpdatedBy, enable, keyword.toUpperCase());
 
         // Then
         assertNotNull(filteredSites);

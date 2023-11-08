@@ -2,13 +2,19 @@ package fpt.edu.capstone.vms.persistence.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import fpt.edu.capstone.vms.constants.Constants;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.UUID;
 
@@ -26,13 +32,11 @@ public class CustomerTicketMap extends AbstractBaseEntity<CustomerTicketMapPk> {
     @ManyToOne
     @JoinColumn(name = "customer_id", referencedColumnName = "id", insertable = false, updatable = false)
     @JsonIgnore
-    @OnDelete(action = OnDeleteAction.CASCADE)
     private Customer customerEntity;
 
     @ManyToOne
     @JoinColumn(name = "ticket_id", referencedColumnName = "id", insertable = false, updatable = false)
     @JsonIgnore
-    @OnDelete(action = OnDeleteAction.CASCADE)
     private Ticket ticketEntity;
 
     @Column(name = "reason_id")

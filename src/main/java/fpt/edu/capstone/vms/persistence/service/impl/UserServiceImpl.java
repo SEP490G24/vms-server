@@ -240,10 +240,17 @@ public class UserServiceImpl implements IUserService {
      * @param siteId        The `siteId` parameter is a String representing the ID of a site.
      */
     private void addDepartmentToListFilter(List<String> departmentIds, List<UUID> departments, String siteId) {
-        if (departmentIds.size() < 0) {
-            departmentRepository.findAllBySiteId(UUID.fromString(siteId)).forEach(a -> {
-                departments.add(a.getId());
-            });
+        if (departmentIds == null) {
+            var departmentss = departmentRepository.findAllBySiteId(UUID.fromString(siteId));
+            if (departmentss != null) {
+                departmentss.forEach(a -> {
+                    departments.add(a.getId());
+                });
+            } else {
+                siteRepository.findAllByOrganizationId(UUID.fromString(SecurityUtils.getOrgId())).forEach(o -> {
+                    addDepartmentToListFilter(departmentIds, departments, o.getId().toString());
+                });
+            }
         } else {
             departmentIds.forEach(e -> {
                 if (!SecurityUtils.checkDepartmentInSite(departmentRepository, e, siteId)) {

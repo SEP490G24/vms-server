@@ -143,7 +143,7 @@ public class DepartmentController implements IDepartmentController {
     }
 
     @Override
-    public ResponseEntity<?> findAllBySite() {
-        return ResponseEntity.ok(departmentService.FindAllBySiteId());
+    public ResponseEntity<?> findAllBySite(String siteId) {
+        return ResponseEntity.ok(departmentService.FindAllBySiteId(siteId));
     }
 }

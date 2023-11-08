@@ -35,5 +35,5 @@ public interface IDepartmentService extends IGenericService<Department, UUID> {
         Boolean enable,
         String keyword);
 
-    List<IDepartmentController.DepartmentFilterDTO> FindAllBySiteId();
+    List<IDepartmentController.DepartmentFilterDTO> FindAllBySiteId(String siteId);
 }

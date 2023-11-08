@@ -28,6 +28,7 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -111,12 +112,6 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
     @Override
     @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
     public Site updateSite(ISiteController.UpdateSiteInfo updateSite, UUID id) {
-
-        if (!StringUtils.isEmpty(updateSite.getCode())) {
-            if (siteRepository.existsByCode(updateSite.getCode())) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code of site is exist");
-            }
-        }
 
         var siteEntity = siteRepository.findById(id).orElse(null);
         var update = mapper.map(updateSite, Site.class);
@@ -259,7 +254,7 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can not found district");
         }
 
-        if (district.getProvinceId() != province.getId()) {
+        if (!Objects.equals(district.getProvinceId(), province.getId())) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "the district not in province please check it again");
         }
 
@@ -269,7 +264,7 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can not found commune");
         }
 
-        if (commune.getDistrictId() != district.getId()) {
+        if (!Objects.equals(commune.getDistrictId(), district.getId())) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "the commune not in district please check it again");
         }
     }

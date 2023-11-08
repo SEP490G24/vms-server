@@ -31,7 +31,7 @@ public interface DepartmentRepository extends GenericRepository<Department, UUID
         "or u.lastUpdatedBy LIKE %:keyword%))")
     Page<Department> filter(Pageable pageable,
                             @Param("names") @Nullable Collection<String> names,
-                            @Param("siteId") @Nullable Collection<String> siteId,
+                            @Param("siteId") @Nullable Collection<UUID> siteId,
                             @Param("createdOnStart") @Nullable LocalDateTime createdOnStart,
                             @Param("createdOnEnd") @Nullable LocalDateTime createdOnEnd,
                             @Param("createBy") @Nullable String createBy,
@@ -54,7 +54,7 @@ public interface DepartmentRepository extends GenericRepository<Department, UUID
         "or u.lastUpdatedBy LIKE %:keyword%))")
     List<Department> filter(
         @Param("names") @Nullable Collection<String> names,
-        @Param("siteId") @Nullable Collection<String> siteId,
+        @Param("siteId") @Nullable Collection<UUID> siteId,
         @Param("createdOnStart") @Nullable LocalDateTime createdOnStart,
         @Param("createdOnEnd") @Nullable LocalDateTime createdOnEnd,
         @Param("createBy") @Nullable String createBy,

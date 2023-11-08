@@ -71,9 +71,12 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
     }
 
     @Override
-    public List<IDepartmentController.DepartmentFilterDTO> FindAllBySiteId() {
+    public List<IDepartmentController.DepartmentFilterDTO> FindAllBySiteId(String siteId) {
 
-        var departments = departmentRepository.findAllBySiteId(UUID.fromString(SecurityUtils.getSiteId()));
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "Not permission");
+        }
+        var departments = departmentRepository.findAllBySiteId(UUID.fromString(siteId));
         return mapper.map(departments, new TypeToken<List<IDepartmentController.DepartmentFilterDTO>>() {
         }.getType());
     }
@@ -140,7 +143,7 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
      */
     @Override
     public Page<Department> filter(Pageable pageable, List<String> names, List<String> siteId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, String createBy, String lastUpdatedBy, Boolean enable, String keyword) {
-        List<String> sites = getListSite(siteId);
+        List<UUID> sites = getListSite(siteId);
         return departmentRepository.filter(
             pageable,
             names,
@@ -175,7 +178,7 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
      */
     @Override
     public List<Department> filter(List<String> names, List<String> siteId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, String createBy, String lastUpdatedBy, Boolean enable, String keyword) {
-        List<String> sites = getListSite(siteId);
+        List<UUID> sites = getListSite(siteId);
         return departmentRepository.filter(
             names,
             sites,
@@ -187,27 +190,27 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
             keyword);
     }
 
-    private List<String> getListSite(List<String> siteId) {
+    private List<UUID> getListSite(List<String> siteId) {
 
         if (SecurityUtils.getOrgId() == null && siteId != null) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "You don't have permission to do this.");
         }
-        List<String> sites = new ArrayList<>();
+        List<UUID> sites = new ArrayList<>();
         if (SecurityUtils.getOrgId() != null) {
             if (siteId == null) {
                 siteRepository.findAllByOrganizationId(UUID.fromString(SecurityUtils.getOrgId())).forEach(o -> {
-                    sites.add(o.getId().toString());
+                    sites.add(o.getId());
                 });
             } else {
                 siteId.forEach(o -> {
                     if (!SecurityUtils.checkSiteAuthorization(siteRepository, o)) {
                         throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "You don't have permission to do this.");
                     }
-                    sites.add(o);
+                    sites.add(UUID.fromString(o));
                 });
             }
         } else {
-            sites.add(SecurityUtils.getSiteId());
+            sites.add(UUID.fromString(SecurityUtils.getSiteId()));
         }
 
         return sites;

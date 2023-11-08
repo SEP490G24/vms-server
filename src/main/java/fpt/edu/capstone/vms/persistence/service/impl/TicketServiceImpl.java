@@ -346,10 +346,26 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                 , Constants.AuditType.DELETE
                 , ticket.toString()
                 , null));
+            deleteTicketCustomerMap(ticket);
             ticketRepository.delete(ticket);
             return true;
         }
         return false;
+    }
+
+    private void deleteTicketCustomerMap(Ticket ticket) {
+        var customerTicketMaps = customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(ticket.getId());
+        if (customerTicketMaps != null) {
+            customerTicketMaps.forEach(o -> {
+                auditLogRepository.save(new AuditLog(ticket.getSiteId()
+                    , siteRepository.findById(UUID.fromString(ticket.getSiteId())).orElse(null).getOrganizationId().toString()
+                    , o.getId().toString()
+                    , CUSTOMER_TICKET_TABLE_NAME
+                    , Constants.AuditType.DELETE
+                    , o.toString()
+                    , null));
+            });
+        }
     }
 
     /**

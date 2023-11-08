@@ -90,7 +90,6 @@ public interface ISiteController {
     @Data
     class UpdateSiteInfo {
         private String name;
-        private String code;
         private String phoneNumber;
         private Integer provinceId;
         private Integer districtId;
