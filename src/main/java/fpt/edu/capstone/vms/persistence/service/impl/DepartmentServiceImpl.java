@@ -2,7 +2,6 @@ package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.controller.IDepartmentController;
 import fpt.edu.capstone.vms.persistence.entity.Department;
-import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.repository.DepartmentRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.service.IDepartmentService;
@@ -11,6 +10,7 @@ import fpt.edu.capstone.vms.util.SecurityUtils;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -19,7 +19,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -70,13 +70,21 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
         return department;
     }
 
+    @Override
+    public List<IDepartmentController.DepartmentFilterDTO> FindAllBySiteId() {
+
+        var departments = departmentRepository.findAllBySiteId(UUID.fromString(SecurityUtils.getSiteId()));
+        return mapper.map(departments, new TypeToken<List<IDepartmentController.DepartmentFilterDTO>>() {
+        }.getType());
+    }
+
     /**
      * This Java function creates a department based on the provided department information, with various checks and
      * validations.
      *
      * @param departmentInfo The parameter `departmentInfo` is an object of type
-     * `IDepartmentController.CreateDepartmentInfo`. It contains information required to create a department, such as the
-     * site ID and department code.
+     *                       `IDepartmentController.CreateDepartmentInfo`. It contains information required to create a department, such as the
+     *                       site ID and department code.
      * @return The method is returning a Department object.
      */
     @Override
@@ -131,11 +139,12 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
      * @return The method is returning a Page object containing a list of Department objects.
      */
     @Override
-    public Page<Department> filter(Pageable pageable, List<String> names, UUID siteId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, String createBy, String lastUpdatedBy, Boolean enable, String keyword) {
+    public Page<Department> filter(Pageable pageable, List<String> names, List<String> siteId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, String createBy, String lastUpdatedBy, Boolean enable, String keyword) {
+        List<String> sites = getListSite(siteId);
         return departmentRepository.filter(
             pageable,
             names,
-            siteId,
+            sites,
             createdOnStart,
             createdOnEnd,
             createBy,
@@ -145,38 +154,62 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
     }
 
     /**
-     * The function filters a list of departments based on various criteria such as names, site ID, creation date, creator,
-     * last updater, enable status, and keyword.
+     * The function filters a list of departments based on various criteria such as names, site IDs, creation dates,
+     * creators, last updaters, enable status, and keywords.
      *
-     * @param names A list of department names to filter by.
-     * @param siteId The siteId parameter is a unique identifier for a specific site or location. It is used to filter
-     * departments based on the site they belong to.
-     * @param createdOnStart The parameter "createdOnStart" is a LocalDateTime object that represents the start date and
-     * time for filtering departments based on their creation date.
-     * @param createdOnEnd The "createdOnEnd" parameter is used to specify the end date and time for filtering departments
-     * based on their creation date. It is a LocalDateTime object that represents the date and time in the format
-     * "yyyy-MM-dd HH:mm:ss".
-     * @param createBy The "createBy" parameter is used to filter the departments based on the user who created them. It is
-     * a string that represents the username or ID of the user who created the departments.
-     * @param lastUpdatedBy The `lastUpdatedBy` parameter is used to filter the departments based on the user who last
-     * updated them. It is a string that represents the username or ID of the user.
-     * @param enable The "enable" parameter is a boolean value that indicates whether the department is enabled or not. If
-     * it is set to true, it means that the department is enabled. If it is set to false, it means that the department is
-     * disabled.
-     * @param keyword The "keyword" parameter is used to search for departments that contain a specific keyword in their
-     * name or description.
+     * @param names          A list of department names to filter by.
+     * @param siteId         A list of site IDs to filter the departments by.
+     * @param createdOnStart The start date and time for filtering departments based on their creation date.
+     * @param createdOnEnd   The "createdOnEnd" parameter is a LocalDateTime object that represents the end date and time for
+     *                       filtering departments based on their creation date.
+     * @param createBy       The "createBy" parameter is a string that represents the user who created the department. It is used
+     *                       as a filter criterion to search for departments created by a specific user.
+     * @param lastUpdatedBy  The parameter "lastUpdatedBy" is a String that represents the username of the user who last
+     *                       updated the department.
+     * @param enable         The "enable" parameter is a boolean value that indicates whether the department is enabled or not. If
+     *                       it is set to true, it means the department is enabled. If it is set to false, it means the department is disabled.
+     * @param keyword        The "keyword" parameter is a string that is used to filter the departments based on a specific
+     *                       keyword. It can be used to search for departments that have a specific name, description, or any other relevant
+     *                       information.
      * @return The method is returning a List of Department objects.
      */
     @Override
-    public List<Department> filter( List<String> names, UUID siteId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, String createBy, String lastUpdatedBy, Boolean enable, String keyword) {
+    public List<Department> filter(List<String> names, List<String> siteId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, String createBy, String lastUpdatedBy, Boolean enable, String keyword) {
+        List<String> sites = getListSite(siteId);
         return departmentRepository.filter(
             names,
-            siteId,
+            sites,
             createdOnStart,
             createdOnEnd,
             createBy,
             lastUpdatedBy,
             enable,
             keyword);
+    }
+
+    private List<String> getListSite(List<String> siteId) {
+
+        if (SecurityUtils.getOrgId() == null && siteId != null) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "You don't have permission to do this.");
+        }
+        List<String> sites = new ArrayList<>();
+        if (SecurityUtils.getOrgId() != null) {
+            if (siteId == null) {
+                siteRepository.findAllByOrganizationId(UUID.fromString(SecurityUtils.getOrgId())).forEach(o -> {
+                    sites.add(o.getId().toString());
+                });
+            } else {
+                siteId.forEach(o -> {
+                    if (!SecurityUtils.checkSiteAuthorization(siteRepository, o)) {
+                        throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "You don't have permission to do this.");
+                    }
+                    sites.add(o);
+                });
+            }
+        } else {
+            sites.add(SecurityUtils.getSiteId());
+        }
+
+        return sites;
     }
 }

@@ -23,14 +23,13 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserRepositoryCustomImpl implements UserRepositoryCustom {
 
-
     final EntityManager entityManager;
-
 
     @Override
     public Page<IUserController.UserFilterResponse> filter(Pageable pageable, Collection<String> usernames
         , String role, LocalDateTime createdOnStart, LocalDateTime createdOnEnd
-        , Boolean enable, String keyword, String departmentId, String siteId) {
+        , Boolean enable, String keyword, Collection<UUID> departmentIds
+        , Integer provinceId, Integer districtId, Integer communeId) {
         Map<String, Object> queryParams = new HashMap<>();
         Sort sort = pageable.getSort();
         String orderByClause = "";
@@ -55,7 +54,7 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
         sqlConditional.append("LEFT JOIN commune c ON u.commune_id = c.id ");
         sqlConditional.append("WHERE 1=1 ");
         if (usernames != null && !usernames.isEmpty() && usernames.size() > 0) {
-            sqlConditional.append("AND u.username = :usernames ");
+            sqlConditional.append("AND u.username IN :usernames ");
             queryParams.put("usernames", usernames);
         }
         if (role != null) {
@@ -72,20 +71,31 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
             queryParams.put("keyword", "%" + keyword + "%");
         }
 
-        if (!StringUtils.isBlank(departmentId)) {
-            sqlConditional.append("AND d.id = :departmentId ");
-            queryParams.put("departmentId", departmentId);
-        }
-
-        if (!StringUtils.isBlank(siteId)) {
-            sqlConditional.append("AND s.id = :siteId ");
-            queryParams.put("siteId", UUID.fromString(siteId));
+        if (departmentIds != null && !departmentIds.isEmpty() && departmentIds.size() > 0) {
+            sqlConditional.append("AND d.id IN :departmentIds ");
+            queryParams.put("departmentIds", departmentIds);
         }
 
         if (enable != null) {
             sqlConditional.append("AND u.enable = :enable ");
             queryParams.put("enable", enable);
         }
+
+        if (provinceId != null) {
+            sqlConditional.append("AND u.province_id = :provinceId ");
+            queryParams.put("provinceId", provinceId);
+        }
+
+        if (districtId != null) {
+            sqlConditional.append("AND u.district_id = :districtId ");
+            queryParams.put("districtId", districtId);
+        }
+
+        if (communeId != null) {
+            sqlConditional.append("AND u.commune_id = :communeId ");
+            queryParams.put("communeId", communeId);
+        }
+
 
         Query query = entityManager.createNativeQuery(sqlGetData + sqlConditional + orderByClause);
         query.setFirstResult((int) pageable.getOffset());
@@ -130,7 +140,8 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
 
     @Override
     public List<IUserController.UserFilterResponse> filter(Collection<String> usernames, String role
-        , LocalDateTime createdOnStart, LocalDateTime createdOnEnd, Boolean enable, String keyword, String departmentId, String siteId) {
+        , LocalDateTime createdOnStart, LocalDateTime createdOnEnd, Boolean enable, String keyword
+        , Collection<UUID> departmentIds, Integer provinceId, Integer districtId, Integer communeId) {
         Map<String, Object> queryParams = new HashMap<>();
         String orderByClause = "";
         String sqlGetData = "SELECT u.username, u.first_name as firstName, u.last_name as lastName, u.email, u.gender, u.phone_number as phoneNumber," +
@@ -146,7 +157,7 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
         sqlConditional.append("LEFT JOIN commune c ON u.commune_id = c.id ");
         sqlConditional.append("WHERE 1=1 ");
         if (usernames != null && !usernames.isEmpty() && usernames.size() > 0) {
-            sqlConditional.append("AND u.username = :usernames ");
+            sqlConditional.append("AND u.username IN :usernames ");
             queryParams.put("usernames", usernames);
         }
         if (role != null) {
@@ -163,19 +174,29 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
             queryParams.put("keyword", "%" + keyword + "%");
         }
 
-        if (!StringUtils.isBlank(departmentId)) {
-            sqlConditional.append("AND d.id = :departmentId ");
-            queryParams.put("departmentId", UUID.fromString(departmentId));
-        }
-
-        if (!StringUtils.isBlank(siteId)) {
-            sqlConditional.append("AND s.id = :siteId ");
-            queryParams.put("siteId", UUID.fromString(siteId));
+        if (departmentIds != null && !departmentIds.isEmpty() && departmentIds.size() > 0) {
+            sqlConditional.append("AND d.id IN :departmentIds ");
+            queryParams.put("departmentIds", departmentIds);
         }
 
         if (enable != null) {
             sqlConditional.append("AND u.enable = :enable ");
             queryParams.put("enable", enable);
+        }
+
+        if (provinceId != null) {
+            sqlConditional.append("AND u.province_id = :provinceId ");
+            queryParams.put("provinceId", provinceId);
+        }
+
+        if (districtId != null) {
+            sqlConditional.append("AND u.district_id = :districtId ");
+            queryParams.put("districtId", districtId);
+        }
+
+        if (communeId != null) {
+            sqlConditional.append("AND u.commune_id = :communeId ");
+            queryParams.put("communeId", communeId);
         }
 
         Query query = entityManager.createNativeQuery(sqlGetData + sqlConditional + orderByClause);

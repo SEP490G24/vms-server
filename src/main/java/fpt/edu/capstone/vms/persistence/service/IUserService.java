@@ -24,8 +24,11 @@ public interface IUserService {
                                                     LocalDateTime createdOnEnd,
                                                     Boolean enable,
                                                     String keyword,
-                                                    String department,
-                                                    String siteId);
+                                                    List<String> departmentIds,
+                                                    List<String> siteIds,
+                                                    Integer provinceId,
+                                                    Integer districtId,
+                                                    Integer communeId);
 
     List<IUserController.UserFilterResponse> filter(
         List<String> usernames,
@@ -34,8 +37,11 @@ public interface IUserService {
         LocalDateTime createdOnEnd,
         Boolean enable,
         String keyword,
-        String department,
-        String siteId);
+        List<String> departmentIds,
+        List<String> siteIds,
+        Integer provinceId,
+        Integer districtId,
+        Integer communeId);
 
     User createUser(IUserResource.UserDto userDto);
 

@@ -9,7 +9,15 @@ import lombok.Data;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -53,6 +61,12 @@ public interface IDepartmentController {
     @PreAuthorize("hasRole('r:department:find')")
     ResponseEntity<?> filter(@RequestBody @Valid DepartmentFilter siteFilter, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
+    @PostMapping("/site")
+    @Operation(summary = "Find all department by site")
+    @PreAuthorize("hasRole('r:department:find')")
+    ResponseEntity<?> findAllBySite();
+
+
     @Data
     class CreateDepartmentInfo {
         @NotNull
@@ -75,6 +89,7 @@ public interface IDepartmentController {
     @Data
     class DepartmentFilter {
         List<String> names;
+        List<String> SiteIds;
         LocalDateTime createdOnStart;
         LocalDateTime createdOnEnd;
         String createBy;

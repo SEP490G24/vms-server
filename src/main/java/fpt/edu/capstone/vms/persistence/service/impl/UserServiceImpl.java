@@ -161,8 +161,11 @@ public class UserServiceImpl implements IUserService {
 
 
     @Override
-    public Page<IUserController.UserFilterResponse> filter(Pageable pageable, List<String> usernames, String role, LocalDateTime createdOnStart,
-                                                           LocalDateTime createdOnEnd, Boolean enable, String keyword, String departmentId, String siteId) {
+    public Page<IUserController.UserFilterResponse> filter(Pageable pageable, List<String> usernames
+        , String role, LocalDateTime createdOnStart
+        , LocalDateTime createdOnEnd, Boolean enable
+        , String keyword, List<String> departmentIds, List<String> siteIds, Integer provinceId, Integer districtId, Integer communeId) {
+        List<UUID> departments = getListDepartments(siteIds, departmentIds);
         return userRepository.filter(
             pageable,
             usernames,
@@ -171,13 +174,17 @@ public class UserServiceImpl implements IUserService {
             createdOnEnd,
             enable,
             keyword,
-            departmentId,
-            siteId);
+            departments,
+            provinceId,
+            districtId,
+            communeId);
     }
 
     @Override
-    public List<IUserController.UserFilterResponse> filter(List<String> usernames, String role, LocalDateTime createdOnStart,
-                                                           LocalDateTime createdOnEnd, Boolean enable, String keyword, String departmentId, String siteId) {
+    public List<IUserController.UserFilterResponse> filter(List<String> usernames, String role
+        , LocalDateTime createdOnStart, LocalDateTime createdOnEnd
+        , Boolean enable, String keyword, List<String> departmentIds, List<String> siteIds, Integer provinceId, Integer districtId, Integer communeId) {
+        List<UUID> departments = getListDepartments(siteIds, departmentIds);
         return userRepository.filter(
             usernames,
             role,
@@ -185,10 +192,67 @@ public class UserServiceImpl implements IUserService {
             createdOnEnd,
             enable,
             keyword,
-            departmentId,
-            siteId);
+            departments,
+            provinceId,
+            districtId,
+            communeId);
     }
 
+
+    /**
+     * The function getListDepartments retrieves a list of department UUIDs based on site and department IDs, with
+     * permission checks.
+     *
+     * @param siteIds       A list of site IDs.
+     * @param departmentIds A list of department IDs as strings.
+     * @return The method is returning a List of UUIDs.
+     */
+    private List<UUID> getListDepartments(List<String> siteIds, List<String> departmentIds) {
+
+        if (SecurityUtils.getOrgId() == null && siteIds != null) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "You don't have permission to do this.");
+        }
+        List<UUID> departments = new ArrayList<>();
+        if (SecurityUtils.getOrgId() != null) {
+            if (siteIds == null) {
+                siteRepository.findAllByOrganizationId(UUID.fromString(SecurityUtils.getOrgId())).forEach(o -> {
+                    addDepartmentToListFilter(departmentIds, departments, o.getId().toString());
+                });
+            } else {
+                siteIds.forEach(o -> {
+                    if (!SecurityUtils.checkSiteAuthorization(siteRepository, o)) {
+                        throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "You don't have permission to do this.");
+                    }
+                    addDepartmentToListFilter(departmentIds, departments, o);
+                });
+            }
+        } else {
+            addDepartmentToListFilter(departmentIds, departments, SecurityUtils.getSiteId());
+        }
+        return departments;
+    }
+
+    /**
+     * The function adds department IDs to a list based on certain conditions and checks for permission before adding.
+     *
+     * @param departmentIds A list of department IDs as strings.
+     * @param departments   A list of UUIDs representing departments.
+     * @param siteId        The `siteId` parameter is a String representing the ID of a site.
+     */
+    private void addDepartmentToListFilter(List<String> departmentIds, List<UUID> departments, String siteId) {
+        if (departmentIds.size() < 0) {
+            departmentRepository.findAllBySiteId(UUID.fromString(siteId)).forEach(a -> {
+                departments.add(a.getId());
+            });
+        } else {
+            departmentIds.forEach(e -> {
+                if (!SecurityUtils.checkDepartmentInSite(departmentRepository, e, siteId)) {
+                    throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "You don't have permission to do this.");
+                }
+                departments.add(UUID.fromString(e));
+            });
+        }
+    }
 
     @Override
     @Transactional
@@ -352,7 +416,7 @@ public class UserServiceImpl implements IUserService {
     @Override
     public ByteArrayResource export(IUserController.UserFilterRequest userFilter) {
         Pageable pageable = PageRequest.of(0, 1000000);
-        Page<IUserController.UserFilterResponse> listData = filter(pageable, userFilter.getUsernames(), userFilter.getRole(), userFilter.getCreatedOnStart(), userFilter.getCreatedOnEnd(), userFilter.getEnable(), userFilter.getKeyword(), userFilter.getDepartmentId(), userFilter.getSiteId());
+        Page<IUserController.UserFilterResponse> listData = filter(pageable, userFilter.getUsernames(), userFilter.getRole(), userFilter.getCreatedOnStart(), userFilter.getCreatedOnEnd(), userFilter.getEnable(), userFilter.getKeyword(), userFilter.getDepartmentIds(), userFilter.getSiteId(), userFilter.getProvinceId(), userFilter.getDistrictId(), userFilter.getCommuneId());
         try {
             JasperReport jasperReport = JasperCompileManager.compileReport(getClass().getResourceAsStream(PATH_FILE));
 

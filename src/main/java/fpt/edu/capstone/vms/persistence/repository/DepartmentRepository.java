@@ -30,14 +30,14 @@ public interface DepartmentRepository extends GenericRepository<Department, UUID
         "or u.createdBy LIKE %:keyword% " +
         "or u.lastUpdatedBy LIKE %:keyword%))")
     Page<Department> filter(Pageable pageable,
-                      @Param("names") @Nullable Collection<String> names,
-                      @Param("siteId") @Nullable UUID siteId,
-                      @Param("createdOnStart") @Nullable LocalDateTime createdOnStart,
-                      @Param("createdOnEnd") @Nullable LocalDateTime createdOnEnd,
-                      @Param("createBy") @Nullable String createBy,
-                      @Param("lastUpdatedBy") @Nullable String lastUpdatedBy,
-                      @Param("enable") @Nullable Boolean isEnable,
-                      @Param("keyword") @Nullable String keyword);
+                            @Param("names") @Nullable Collection<String> names,
+                            @Param("siteId") @Nullable Collection<String> siteId,
+                            @Param("createdOnStart") @Nullable LocalDateTime createdOnStart,
+                            @Param("createdOnEnd") @Nullable LocalDateTime createdOnEnd,
+                            @Param("createBy") @Nullable String createBy,
+                            @Param("lastUpdatedBy") @Nullable String lastUpdatedBy,
+                            @Param("enable") @Nullable Boolean isEnable,
+                            @Param("keyword") @Nullable String keyword);
 
     @Query(value = "select u from Department u " +
         "where ((coalesce(:names) is null) or (u.name in :names)) " +
@@ -53,16 +53,21 @@ public interface DepartmentRepository extends GenericRepository<Department, UUID
         "or u.createdBy LIKE %:keyword% " +
         "or u.lastUpdatedBy LIKE %:keyword%))")
     List<Department> filter(
-                            @Param("names") @Nullable Collection<String> names,
-                            @Param("siteId") @Nullable UUID siteId,
-                            @Param("createdOnStart") @Nullable LocalDateTime createdOnStart,
-                            @Param("createdOnEnd") @Nullable LocalDateTime createdOnEnd,
-                            @Param("createBy") @Nullable String createBy,
-                            @Param("lastUpdatedBy") @Nullable String lastUpdatedBy,
-                            @Param("enable") @Nullable Boolean isEnable,
-                            @Param("keyword") @Nullable String keyword);
+        @Param("names") @Nullable Collection<String> names,
+        @Param("siteId") @Nullable Collection<String> siteId,
+        @Param("createdOnStart") @Nullable LocalDateTime createdOnStart,
+        @Param("createdOnEnd") @Nullable LocalDateTime createdOnEnd,
+        @Param("createBy") @Nullable String createBy,
+        @Param("lastUpdatedBy") @Nullable String lastUpdatedBy,
+        @Param("enable") @Nullable Boolean isEnable,
+        @Param("keyword") @Nullable String keyword);
 
     List<Department> findAllByEnableIsTrue();
+
     boolean existsByCode(String code);
+
+    List<Department> findAllBySiteId(UUID siteId);
+
+    boolean existsByIdAndSiteId(UUID id, UUID siteId);
 
 }

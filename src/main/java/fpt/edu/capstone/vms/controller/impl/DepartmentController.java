@@ -115,7 +115,7 @@ public class DepartmentController implements IDepartmentController {
     public ResponseEntity<?> filter(DepartmentFilter filter, boolean isPageable, Pageable pageable) {
         var departmentEntity = departmentService.filter(
             filter.getNames(),
-            filter.getSiteId(),
+            filter.getSiteIds(),
             filter.getCreatedOnStart(),
             filter.getCreatedOnEnd(),
             filter.getCreateBy(),
@@ -126,7 +126,7 @@ public class DepartmentController implements IDepartmentController {
         var departmentEntityPageable = departmentService.filter(
             pageable,
             filter.getNames(),
-            filter.getSiteId(),
+            filter.getSiteIds(),
             filter.getCreatedOnStart(),
             filter.getCreatedOnEnd(),
             filter.getCreateBy(),
@@ -140,5 +140,10 @@ public class DepartmentController implements IDepartmentController {
         return isPageable ? ResponseEntity.ok(new PageImpl(departmentFilterDTOS, pageable, departmentFilterDTOS.size()))
             : ResponseEntity.ok(mapper.map(departmentEntity, new TypeToken<List<DepartmentFilterDTO>>() {
         }.getType()));
+    }
+
+    @Override
+    public ResponseEntity<?> findAllBySite() {
+        return ResponseEntity.ok(departmentService.FindAllBySiteId());
     }
 }

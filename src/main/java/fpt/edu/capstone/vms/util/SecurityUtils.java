@@ -1,20 +1,16 @@
 package fpt.edu.capstone.vms.util;
 
-import fpt.edu.capstone.vms.persistence.entity.Site;
+import fpt.edu.capstone.vms.constants.Constants.Claims;
+import fpt.edu.capstone.vms.persistence.repository.DepartmentRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import lombok.Data;
 import lombok.experimental.Accessors;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
-import fpt.edu.capstone.vms.constants.Constants.Claims;
-import org.springframework.web.client.HttpClientErrorException;
-
 
 import java.util.Collection;
-import java.util.List;
 import java.util.UUID;
 
 import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_REALM_ROLE;
@@ -78,6 +74,15 @@ public class SecurityUtils {
             if (!SecurityUtils.getSiteId().equals(siteId)) {
                 return false;
             }
+        }
+        return true;
+    }
+
+    public static Boolean checkDepartmentInSite(DepartmentRepository departmentRepository, String existsBySiteId, String siteId) {
+        var checkDepartment = departmentRepository.existsByIdAndSiteId(UUID.fromString(existsBySiteId), UUID.fromString(siteId));
+
+        if (!checkDepartment) {
+            return false;
         }
         return true;
     }

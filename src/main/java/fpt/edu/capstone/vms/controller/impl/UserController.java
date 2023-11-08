@@ -41,8 +41,11 @@ public class UserController implements IUserController {
                 filter.getCreatedOnEnd(),
                 filter.getEnable(),
                 filter.getKeyword(),
-                filter.getDepartmentId(),
-                filter.getSiteId())) : ResponseEntity.ok(
+                filter.getDepartmentIds(),
+                filter.getSiteId(),
+                filter.getProvinceId(),
+                filter.getDistrictId(),
+                filter.getCommuneId())) : ResponseEntity.ok(
             userService.filter(
                 filter.getUsernames(),
                 filter.getRole(),
@@ -50,8 +53,11 @@ public class UserController implements IUserController {
                 filter.getCreatedOnEnd(),
                 filter.getEnable(),
                 filter.getKeyword(),
-                filter.getDepartmentId(),
-                filter.getSiteId()));
+                filter.getDepartmentIds(),
+                filter.getSiteId(),
+                filter.getProvinceId(),
+                filter.getDistrictId(),
+                filter.getCommuneId()));
     }
 
     @Override
