@@ -108,7 +108,6 @@ public class Site extends AbstractBaseEntity<UUID> {
 
     public Site update(Site siteEntity) {
         if (siteEntity.name != null) this.name = siteEntity.name;
-        if (siteEntity.code != null) this.code = siteEntity.code;
         if (siteEntity.organizationId != null) this.organizationId = siteEntity.organizationId;
         if (siteEntity.phoneNumber != null) this.phoneNumber = siteEntity.phoneNumber;
         if (siteEntity.provinceId != null) this.provinceId = siteEntity.provinceId;
