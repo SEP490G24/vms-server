@@ -4,6 +4,8 @@ import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.IDepartmentController;
 import fpt.edu.capstone.vms.persistence.entity.Department;
 import fpt.edu.capstone.vms.persistence.repository.DepartmentRepository;
+import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
+import fpt.edu.capstone.vms.util.SecurityUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,6 +16,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,6 +24,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -30,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -43,6 +48,8 @@ class DepartmentServiceImplTest {
 
     @Mock
     private DepartmentRepository departmentRepository;
+    @Mock
+    private SiteRepository siteRepository;
 
     @InjectMocks
     private ModelMapper mapper;
@@ -185,8 +192,19 @@ class DepartmentServiceImplTest {
     @Test
     void filter() {
         // Given
+        Jwt jwt = mock(Jwt.class);
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
         List<String> names = Arrays.asList("Department1", "Department2");
-        UUID orgId = UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        List<String> sites = Arrays.asList("06eb43a7-6ea8-4744-8231-760559fe2c08", "06eb43a7-6ea8-4744-8231-760559fe2c09");
+        when(SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c08")).thenReturn(true);
+        when(SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c09")).thenReturn(true);
+
         LocalDateTime createdOnStart = LocalDateTime.now().minusDays(7);
         LocalDateTime createdOnEnd = LocalDateTime.now();
         Boolean enable = true;
@@ -196,22 +214,33 @@ class DepartmentServiceImplTest {
         String keyword = "example";
 
         List<Department> departmentList = List.of();
-        when(departmentRepository.filter(names, orgId, createdOnStart, createdOnEnd, createBy, lastUpdatedBy, enable, keyword.toUpperCase())).thenReturn(departmentList);
+        when(departmentRepository.filter(names, sites, createdOnStart, createdOnEnd, createBy, lastUpdatedBy, enable, keyword.toUpperCase())).thenReturn(departmentList);
 
         // When
-        List<Department> filteredSites = departmentService.filter(names, orgId, createdOnStart, createdOnEnd, createBy, lastUpdatedBy, enable, keyword.toUpperCase());
+        List<Department> filteredSites = departmentService.filter(names, sites, createdOnStart, createdOnEnd, createBy, lastUpdatedBy, enable, keyword.toUpperCase());
 
         // Then
         assertNotNull(filteredSites);
         // Add assertions to check the content of the filteredRooms, depending on the expected behavior
-        verify(departmentRepository, times(1)).filter(names, orgId, createdOnStart, createdOnEnd, createBy, lastUpdatedBy, enable, keyword.toUpperCase());
+        verify(departmentRepository, times(1)).filter(names, sites, createdOnStart, createdOnEnd, createBy, lastUpdatedBy, enable, keyword.toUpperCase());
     }
 
     @Test
     void filterPageable() {
 
+        Jwt jwt = mock(Jwt.class);
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
         List<String> names = Arrays.asList("Department1", "Department2");
-        UUID orgId = UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        List<String> sites = Arrays.asList("06eb43a7-6ea8-4744-8231-760559fe2c08", "06eb43a7-6ea8-4744-8231-760559fe2c09");
+        when(SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c08")).thenReturn(true);
+        when(SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c09")).thenReturn(true);
+
         LocalDateTime createdOnStart = LocalDateTime.now().minusDays(7);
         LocalDateTime createdOnEnd = LocalDateTime.now();
         Boolean enable = true;
@@ -221,15 +250,54 @@ class DepartmentServiceImplTest {
         String keyword = "example";
 
         Page<Department> expectedSitePage = new PageImpl<>(List.of());
-        when(departmentRepository.filter(pageable, names, orgId, createdOnStart, createdOnEnd, createBy, lastUpdatedBy, enable, keyword.toUpperCase())).thenReturn(expectedSitePage);
+        when(departmentRepository.filter(pageable, names, sites, createdOnStart, createdOnEnd, createBy, lastUpdatedBy, enable, keyword.toUpperCase())).thenReturn(expectedSitePage);
 
         // When
-        Page<Department> filteredSites = departmentService.filter(pageable, names, orgId, createdOnStart, createdOnEnd, createBy, lastUpdatedBy, enable, keyword.toUpperCase());
+        Page<Department> filteredSites = departmentService.filter(pageable, names, sites, createdOnStart, createdOnEnd, createBy, lastUpdatedBy, enable, keyword.toUpperCase());
 
         // Then
         assertNotNull(filteredSites);
         // Add assertions to check the content of the filteredRooms, depending on the expected behavior
-        verify(departmentRepository, times(1)).filter(pageable, names, orgId, createdOnStart, createdOnEnd, createBy, lastUpdatedBy, enable, keyword.toUpperCase());
+        verify(departmentRepository, times(1)).filter(pageable, names, sites, createdOnStart, createdOnEnd, createBy, lastUpdatedBy, enable, keyword.toUpperCase());
 
     }
+
+    @Test
+    public void testFilterWithNoOrgIdAndNonNullSiteId() {
+        Jwt jwt = mock(Jwt.class);
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn(null);
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        List<String> siteId = new ArrayList<>();
+        try {
+            departmentService.filter(new ArrayList<>(), siteId, null, null, null, null, null, null);
+        } catch (HttpClientErrorException ex) {
+            assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+            assertEquals("400 You don't have permission to do this.", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void testFilterWithOrgIdAndNullSiteId() {
+        Jwt jwt = mock(Jwt.class);
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        when(siteRepository.findAllByOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"))).thenReturn(new ArrayList<>());
+        List<Department> departments = new ArrayList<>();
+        when(departmentRepository.filter(any(), any(), any(), any(), any(), any(), any(), any()))
+            .thenReturn(departments);
+
+        List<Department> result = departmentService.filter(new ArrayList<>(), null, null, null, null, null, null, null);
+        assertEquals(departments, result);
+    }
+
 }

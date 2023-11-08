@@ -16,8 +16,8 @@ public interface IDepartmentService extends IGenericService<Department, UUID> {
     Department createDepartment(IDepartmentController.CreateDepartmentInfo departmentInfo);
 
     Page<Department> filter(Pageable pageable,
-                      List<String> names,
-                            UUID siteId,
+                            List<String> names,
+                            List<String> siteId,
                             LocalDateTime createdOnStart,
                             LocalDateTime createdOnEnd,
                             String createBy,
@@ -26,12 +26,12 @@ public interface IDepartmentService extends IGenericService<Department, UUID> {
                             String keyword);
 
     List<Department> filter(
-                            List<String> names,
-                            UUID siteId,
-                            LocalDateTime createdOnStart,
-                            LocalDateTime createdOnEnd,
-                            String createBy,
-                            String lastUpdatedBy,
-                            Boolean enable,
-                            String keyword);
+        List<String> names,
+        List<String> siteId,
+        LocalDateTime createdOnStart,
+        LocalDateTime createdOnEnd,
+        String createBy,
+        String lastUpdatedBy,
+        Boolean enable,
+        String keyword);
 }
