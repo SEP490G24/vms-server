@@ -110,7 +110,9 @@ public interface ISiteController {
         String lastUpdatedBy;
         Boolean enable;
         String keyword;
-        UUID organizationId;
+        Integer provinceId;
+        Integer districtId;
+        Integer communeId;
     }
 
     @Data
