@@ -242,7 +242,7 @@ public class UserServiceImpl implements IUserService {
     private void addDepartmentToListFilter(List<String> departmentIds, List<UUID> departments, String siteId) {
         if (departmentIds == null) {
             var departmentss = departmentRepository.findAllBySiteId(UUID.fromString(siteId));
-            if (departmentss != null) {
+            if (departmentss.isEmpty()) {
                 departmentss.forEach(a -> {
                     departments.add(a.getId());
                 });
