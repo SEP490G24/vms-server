@@ -17,7 +17,7 @@ public interface IRoomService extends IGenericService<Room, UUID> {
 
     Page<Room> filter(Pageable pageable,
                       List<String> names,
-                      UUID siteId,
+                      List<String> siteIds,
                       LocalDateTime createdOnStart,
                       LocalDateTime createdOnEnd,
                       Boolean enable,
@@ -25,11 +25,11 @@ public interface IRoomService extends IGenericService<Room, UUID> {
 
     List<Room> filter(
         List<String> names,
-        UUID siteId,
+        List<String> siteIds,
         LocalDateTime createdOnStart,
         LocalDateTime createdOnEnd,
         Boolean enable,
         String keyword);
 
-    List<Room> finAllBySiteId(UUID siteId);
+    List<Room> finAllBySiteId(String siteId);
 }

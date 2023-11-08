@@ -9,6 +9,7 @@ import fpt.edu.capstone.vms.persistence.repository.RoomRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.service.IRoomService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
+import fpt.edu.capstone.vms.util.SecurityUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -20,6 +21,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -64,6 +66,9 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
     @Override
     @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
     public Room create(IRoomController.RoomDto roomDto) {
+        if (SecurityUtils.checkSiteAuthorization(siteRepository, roomDto.getSiteId().toString())) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+        }
         if (ObjectUtils.isEmpty(roomDto))
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Object is empty");
         if (StringUtils.isEmpty(roomDto.getSiteId().toString()))
@@ -86,11 +91,12 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
     }
 
     @Override
-    public Page<Room> filter(Pageable pageable, List<String> names, UUID siteId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, Boolean enable, String keyword) {
+    public Page<Room> filter(Pageable pageable, List<String> names, List<String> siteId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, Boolean enable, String keyword) {
+        List<UUID> sites = getListSite(siteId);
         return roomRepository.filter(
             pageable,
             names,
-            siteId,
+            sites,
             createdOnStart,
             createdOnEnd,
             enable,
@@ -98,18 +104,48 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
     }
 
     @Override
-    public List<Room> filter(List<String> names, UUID siteId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, Boolean enable, String keyword) {
+    public List<Room> filter(List<String> names, List<String> siteId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, Boolean enable, String keyword) {
+        List<UUID> sites = getListSite(siteId);
         return roomRepository.filter(
             names,
-            siteId,
+            sites,
             createdOnStart,
             createdOnEnd,
             enable,
             keyword != null ? keyword.toUpperCase() : null);
     }
 
+    private List<UUID> getListSite(List<String> siteId) {
+
+        if (SecurityUtils.getOrgId() == null && siteId != null) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+        }
+        List<UUID> sites = new ArrayList<>();
+        if (SecurityUtils.getOrgId() != null) {
+            if (siteId == null) {
+                siteRepository.findAllByOrganizationId(UUID.fromString(SecurityUtils.getOrgId())).forEach(o -> {
+                    sites.add(o.getId());
+                });
+            } else {
+                siteId.forEach(o -> {
+                    if (!SecurityUtils.checkSiteAuthorization(siteRepository, o)) {
+                        throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+                    }
+                    sites.add(UUID.fromString(o));
+                });
+            }
+        } else {
+            sites.add(UUID.fromString(SecurityUtils.getSiteId()));
+        }
+
+        return sites;
+    }
+
     @Override
-    public List<Room> finAllBySiteId(UUID siteId) {
-        return roomRepository.findAllBySiteIdAndEnableIsTrue(siteId);
+    public List<Room> finAllBySiteId(String siteId) {
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "Not permission");
+        }
+        return roomRepository.findAllBySiteIdAndEnableIsTrue(UUID.fromString(siteId));
     }
 }

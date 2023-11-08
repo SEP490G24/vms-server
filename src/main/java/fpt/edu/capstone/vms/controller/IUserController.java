@@ -159,7 +159,7 @@ public interface IUserController {
         LocalDateTime createdOnEnd;
         Boolean enable;
         String keyword;
-        List<String> departmentIds;
+        List<String> departmentId;
         List<String> siteId;
         Integer provinceId;
         Integer districtId;

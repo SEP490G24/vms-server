@@ -3,12 +3,15 @@ package fpt.edu.capstone.vms.controller.impl;
 import fpt.edu.capstone.vms.controller.IRoomController;
 import fpt.edu.capstone.vms.exception.HttpClientResponse;
 import fpt.edu.capstone.vms.persistence.entity.Room;
+import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.service.IRoomService;
+import fpt.edu.capstone.vms.util.SecurityUtils;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
@@ -20,6 +23,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class RoomController implements IRoomController {
     private final IRoomService roomService;
+    private final SiteRepository siteRepository;
     private final ModelMapper mapper;
 
     @Override
@@ -85,7 +89,10 @@ public class RoomController implements IRoomController {
     }
 
     @Override
-    public ResponseEntity<List<?>> findAllBySiteId(UUID siteId) {
+    public ResponseEntity<List<?>> findAllBySiteId(String siteId) {
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "Not permission");
+        }
         return ResponseEntity.ok(roomService.finAllBySiteId(siteId));
     }
 

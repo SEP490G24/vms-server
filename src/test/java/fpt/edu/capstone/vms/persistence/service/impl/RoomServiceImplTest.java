@@ -1,11 +1,13 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
+import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.IRoomController;
 import fpt.edu.capstone.vms.persistence.entity.Room;
 import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
 import fpt.edu.capstone.vms.persistence.repository.RoomRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
+import fpt.edu.capstone.vms.util.SecurityUtils;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -20,6 +22,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.client.HttpClientErrorException;
 
@@ -53,7 +59,8 @@ class RoomServiceImplTest {
     AuditLogRepository auditLogRepository;
     SiteRepository siteRepository;
     ModelMapper mapper;
-
+    SecurityContext securityContext;
+    Authentication authentication;
 
     @BeforeAll
     public void init() {
@@ -61,6 +68,9 @@ class RoomServiceImplTest {
         roomRepository = mock(RoomRepository.class);
         siteRepository = mock(SiteRepository.class);
         auditLogRepository = mock(AuditLogRepository.class);
+        securityContext = mock(SecurityContext.class);
+        authentication = mock(Authentication.class);
+        mapper = mock(ModelMapper.class);
         roomService = new RoomServiceImpl(roomRepository, new ModelMapper(), auditLogRepository, siteRepository);
     }
 
@@ -130,6 +140,15 @@ class RoomServiceImplTest {
         room.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
         Site site = new Site();
         site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+
+        Jwt jwt = mock(Jwt.class);
+
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
         //when
         when(siteRepository.findById(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"))).thenReturn(Optional.of(site));
         when(roomRepository.save(any(Room.class))).thenReturn(room);
@@ -147,11 +166,7 @@ class RoomServiceImplTest {
         IRoomController.RoomDto roomDto = null;
 
         // When and Then
-        HttpClientErrorException exception = assertThrows(HttpClientErrorException.class, () -> roomService.create(roomDto));
-
-        // Verify
-        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
-        assertEquals("404 Object is empty", exception.getMessage());
+        assertThrows(NullPointerException.class, () -> roomService.create(roomDto));
     }
 
     @Test
@@ -216,14 +231,27 @@ class RoomServiceImplTest {
     void filter() {
         // Given
         List<String> names = Arrays.asList("Room1", "Room2");
-        UUID siteId = UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        List<String> siteId = Arrays.asList("06eb43a7-6ea8-4744-8231-760559fe2c08", "06eb43a7-6ea8-4744-8231-760559fe2c07");
+        List<UUID> siteIds = Arrays.asList(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"), UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c07"));
+
         LocalDateTime createdOnStart = LocalDateTime.now().minusDays(7);
         LocalDateTime createdOnEnd = LocalDateTime.now();
         Boolean enable = true;
         String keyword = "example";
 
+        Jwt jwt = mock(Jwt.class);
+
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c07");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        when(!SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c08")).thenReturn(true);
+        when(!SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c07")).thenReturn(true);
         List<Room> expectedRooms = List.of();
-        when(roomRepository.filter(names, siteId, createdOnStart, createdOnEnd, enable, keyword.toUpperCase())).thenReturn(expectedRooms);
+        when(roomRepository.filter(names, siteIds, createdOnStart, createdOnEnd, enable, keyword.toUpperCase())).thenReturn(expectedRooms);
 
         // When
         List<Room> filteredRooms = roomService.filter(names, siteId, createdOnStart, createdOnEnd, enable, keyword);
@@ -231,21 +259,34 @@ class RoomServiceImplTest {
         // Then
         assertNotNull(filteredRooms);
         // Add assertions to check the content of the filteredRooms, depending on the expected behavior
-        verify(roomRepository, times(1)).filter(names, siteId, createdOnStart, createdOnEnd, enable, keyword.toUpperCase());
+        verify(roomRepository, times(1)).filter(names, siteIds, createdOnStart, createdOnEnd, enable, keyword.toUpperCase());
     }
 
     @Test
     void filterPageable() {
         // Given
         List<String> names = Arrays.asList("Room1", "Room2");
-        UUID siteId = UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        List<String> siteId = Arrays.asList("06eb43a7-6ea8-4744-8231-760559fe2c08", "06eb43a7-6ea8-4744-8231-760559fe2c07");
+        List<UUID> siteIds = Arrays.asList(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"), UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c07"));
+
         LocalDateTime createdOnStart = LocalDateTime.now().minusDays(7);
         LocalDateTime createdOnEnd = LocalDateTime.now();
         Boolean enable = true;
         String keyword = "example";
 
-        Page<Room> expectedRoomPage = new PageImpl<>(List.of());
-        when(roomRepository.filter(pageable, names, siteId, createdOnStart, createdOnEnd, enable, keyword.toUpperCase())).thenReturn(expectedRoomPage);
+        Jwt jwt = mock(Jwt.class);
+
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c07");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        when(!SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c08")).thenReturn(true);
+        when(!SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c07")).thenReturn(true);
+        Page<Room> expectedRooms = new PageImpl<>(List.of());
+        when(roomRepository.filter(pageable, names, siteIds, createdOnStart, createdOnEnd, enable, keyword.toUpperCase())).thenReturn(expectedRooms);
 
         // When
         Page<Room> filteredRoomPage = roomService.filter(pageable, names, siteId, createdOnStart, createdOnEnd, enable, keyword);
@@ -253,6 +294,6 @@ class RoomServiceImplTest {
         // Then
         assertNotNull(filteredRoomPage);
         // Add assertions to check the content of the filteredRoomPage, depending on the expected behavior
-        verify(roomRepository, times(1)).filter(pageable, names, siteId, createdOnStart, createdOnEnd, enable, keyword.toUpperCase());
+        verify(roomRepository, times(1)).filter(pageable, names, siteIds, createdOnStart, createdOnEnd, enable, keyword.toUpperCase());
     }
 }

@@ -20,14 +20,14 @@ public interface RoomRepository extends GenericRepository<Room, UUID> {
         "where ((coalesce(:names) is null) or (u.name in :names)) " +
         "and (((cast(:createdOnStart as date) is null ) or (cast(:createdOnEnd as date) is null )) or (u.createdOn between :createdOnStart and :createdOnEnd)) " +
         "and ((:enable is null) or (u.enable = :enable)) " +
-        "and ((cast(:siteId as string) is null) or (u.siteId = :siteId)) " +
+        "and ((coalesce(:siteIds) is null) or (u.siteId in :siteIds)) " +
         "and ((:keyword is null) " +
         "or (UPPER(u.name) LIKE %:keyword% " +
         "or UPPER(u.code) LIKE %:keyword% " +
         "or UPPER(u.description) LIKE %:keyword% ))")
     Page<Room> filter(Pageable pageable,
                       @Param("names") @Nullable Collection<String> names,
-                      @Param("siteId") @Nullable UUID siteId,
+                      @Param("siteIds") @Nullable Collection<UUID> siteIds,
                       @Param("createdOnStart") @Nullable LocalDateTime createdOnStart,
                       @Param("createdOnEnd") @Nullable LocalDateTime createdOnEnd,
                       @Param("enable") @Nullable Boolean isEnable,
@@ -37,14 +37,14 @@ public interface RoomRepository extends GenericRepository<Room, UUID> {
         "where ((coalesce(:names) is null) or (u.name in :names)) " +
         "and (((cast(:createdOnStart as date) is null ) or (cast(:createdOnEnd as date) is null )) or (u.createdOn between :createdOnStart and :createdOnEnd)) " +
         "and ((:enable is null) or (u.enable = :enable)) " +
-        "and ((cast(:siteId as string) is null) or (u.siteId = :siteId)) " +
+        "and ((coalesce(:siteIds) is null) or (u.siteId in :siteIds)) " +
         "and ((:keyword is null) " +
         "or ( UPPER(u.name) LIKE %:keyword% " +
         "or UPPER(u.code) LIKE %:keyword% " +
         "or UPPER(u.description) LIKE %:keyword% ))")
     List<Room> filter(
         @Param("names") @Nullable Collection<String> names,
-        @Param("siteId") @Nullable UUID siteId,
+        @Param("siteIds") @Nullable Collection<UUID> siteIds,
         @Param("createdOnStart") @Nullable LocalDateTime createdOnStart,
         @Param("createdOnEnd") @Nullable LocalDateTime createdOnEnd,
         @Param("enable") @Nullable Boolean isEnable,
