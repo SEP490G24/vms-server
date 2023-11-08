@@ -4,6 +4,7 @@ import fpt.edu.capstone.vms.controller.ISiteController;
 import fpt.edu.capstone.vms.exception.HttpClientResponse;
 import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.service.ISiteService;
+import fpt.edu.capstone.vms.util.SecurityUtils;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
@@ -151,16 +152,16 @@ public class SiteController implements ISiteController {
         }.getType()));
     }
 
+
     /**
      * The function returns a ResponseEntity containing a list of SiteFilterDTO objects mapped from a list of sites found
-     * by organizationId.
+     * by organization ID.
      *
-     * @param organizationId The organizationId parameter is a unique identifier for an organization. It is used to filter
-     * and retrieve a list of sites that belong to the specified organization.
-     * @return The method is returning a ResponseEntity object containing a List of objects.
+     * @return The method is returning a ResponseEntity object containing a list of objects.
      */
     @Override
-    public ResponseEntity<List<?>> findAllByOrganizationId(String organizationId) {
-        return ResponseEntity.ok(mapper.map(siteService.findAllByOrganizationId(organizationId), new TypeToken<List<SiteFilterDTO>>() {}.getType()));
+    public ResponseEntity<List<?>> findAllByOrganizationId() {
+        return ResponseEntity.ok(mapper.map(siteService.findAllByOrganizationId(SecurityUtils.getOrgId()), new TypeToken<List<SiteFilterDTO>>() {
+        }.getType()));
     }
 }

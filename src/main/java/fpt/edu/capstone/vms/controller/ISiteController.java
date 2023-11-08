@@ -61,10 +61,10 @@ public interface ISiteController {
     @PreAuthorize("hasRole('r:site:find')")
     ResponseEntity<?> filter(@RequestBody @Valid SiteFilter siteFilter, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
-    @GetMapping("/organization/{organizationId}")
+    @GetMapping("/organization")
     @Operation(summary = "Get all site by organizationId")
     @PreAuthorize("hasRole('r:organization:find')")
-    ResponseEntity<List<?>> findAllByOrganizationId(@PathVariable String organizationId);
+    ResponseEntity<List<?>> findAllByOrganizationId();
 
     @Data
     class CreateSiteInfo {
