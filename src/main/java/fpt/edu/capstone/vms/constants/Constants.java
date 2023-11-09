@@ -54,8 +54,7 @@ public class Constants {
         CHECK_IN,
         CHECK_OUT,
         CANCEL,
-        REJECT,
-        APPROVED
+        REJECT
     }
 
     public enum Gender {

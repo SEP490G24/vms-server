@@ -8,15 +8,11 @@ import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.HttpClientErrorException;
 
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -53,29 +49,29 @@ public class CardServiceImpl extends GenericServiceImpl<Card, UUID> implements I
         return card;
     }
 
-    @Override
-    public Page<Card> filter(Pageable pageable, List<String> names, UUID siteId, LocalDateTime fromDate, LocalDateTime toDate, String keyword) {
-        return cardRepository.filter(
-            pageable,
-            names,
-            siteId,
-            fromDate,
-            toDate,
-            keyword != null ? keyword.toUpperCase() : null);
-    }
-
-    @Override
-    public List<Card> filter(List<String> names, UUID siteId, LocalDateTime fromDate, LocalDateTime toDate, String keyword) {
-        return cardRepository.filter(
-            names,
-            siteId,
-            fromDate,
-            toDate,
-            keyword != null ? keyword.toUpperCase() : null);
-    }
-
-    @Override
-    public List<Card> finAllBySiteId(UUID siteId) {
-        return cardRepository.findAllBySiteId(siteId);
-    }
+//    @Override
+//    public Page<Card> filter(Pageable pageable, List<String> names, UUID siteId, LocalDateTime fromDate, LocalDateTime toDate, String keyword) {
+//        return cardRepository.filter(
+//            pageable,
+//            names,
+//            siteId,
+//            fromDate,
+//            toDate,
+//            keyword != null ? keyword.toUpperCase() : null);
+//    }
+//
+//    @Override
+//    public List<Card> filter(List<String> names, UUID siteId, LocalDateTime fromDate, LocalDateTime toDate, String keyword) {
+//        return cardRepository.filter(
+//            names,
+//            siteId,
+//            fromDate,
+//            toDate,
+//            keyword != null ? keyword.toUpperCase() : null);
+//    }
+//
+//    @Override
+//    public List<Card> finAllBySiteId(UUID siteId) {
+//        return cardRepository.findAllBySiteId(siteId);
+//    }
 }

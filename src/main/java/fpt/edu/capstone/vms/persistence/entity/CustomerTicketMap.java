@@ -10,6 +10,7 @@ import lombok.experimental.Accessors;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -49,6 +50,12 @@ public class CustomerTicketMap extends AbstractBaseEntity<CustomerTicketMapPk> {
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private Constants.StatusTicket status;
+
+    @Column(name = "check_in_time")
+    private LocalDateTime checkInTime;
+
+    @Column(name = "check_out_time")
+    private LocalDateTime checkOutTime;
 
     public CustomerTicketMap update(CustomerTicketMap customerTicketMap) {
         if (customerTicketMap.getCreatedBy() != null) this.setCreatedBy(customerTicketMap.getCreatedBy());

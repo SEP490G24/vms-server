@@ -30,7 +30,7 @@ public class Card extends AbstractBaseEntity<UUID> {
     private UUID id;
 
     @Column(name = "card_id")
-    private UUID cardId;
+    private String cardId;
 
     @Column(name = "customer_id")
     private UUID customerId;

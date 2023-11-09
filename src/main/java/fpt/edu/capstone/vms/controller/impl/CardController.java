@@ -6,9 +6,6 @@ import fpt.edu.capstone.vms.persistence.entity.Card;
 import fpt.edu.capstone.vms.persistence.service.ICardService;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.TypeToken;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
@@ -57,34 +54,34 @@ public class CardController implements ICardController {
         }
     }
 
-    @Override
-    public ResponseEntity<?> filter(CardFilterDTO filter, boolean isPageable, Pageable pageable) {
-        var cardEntity = cardService.filter(
-            filter.getNames(),
-            filter.getSiteId(),
-            filter.getFromDate(),
-            filter.getToDate(),
-            filter.getKeyword());
-
-        var cardEntityPageable = cardService.filter(
-            pageable,
-            filter.getNames(),
-            filter.getSiteId(),
-            filter.getFromDate(),
-            filter.getToDate(),
-            filter.getKeyword());
-
-        List<CardFilterResponse> cardDtos = mapper.map(cardEntityPageable.getContent(), new TypeToken<List<CardFilterResponse>>() {
-        }.getType());
-
-        return isPageable ? ResponseEntity.ok(new PageImpl(cardDtos, pageable, cardDtos.size()))
-            : ResponseEntity.ok(mapper.map(cardEntity, new TypeToken<List<CardFilterResponse>>() {
-        }.getType()));
-    }
-
-    @Override
-    public ResponseEntity<List<?>> findAllBySiteId(UUID siteId) {
-        return ResponseEntity.ok(cardService.finAllBySiteId(siteId));
-    }
+//    @Override
+//    public ResponseEntity<?> filter(CardFilterDTO filter, boolean isPageable, Pageable pageable) {
+//        var cardEntity = cardService.filter(
+//            filter.getNames(),
+//            filter.getSiteId(),
+//            filter.getFromDate(),
+//            filter.getToDate(),
+//            filter.getKeyword());
+//
+//        var cardEntityPageable = cardService.filter(
+//            pageable,
+//            filter.getNames(),
+//            filter.getSiteId(),
+//            filter.getFromDate(),
+//            filter.getToDate(),
+//            filter.getKeyword());
+//
+//        List<CardFilterResponse> cardDtos = mapper.map(cardEntityPageable.getContent(), new TypeToken<List<CardFilterResponse>>() {
+//        }.getType());
+//
+//        return isPageable ? ResponseEntity.ok(new PageImpl(cardDtos, pageable, cardDtos.size()))
+//            : ResponseEntity.ok(mapper.map(cardEntity, new TypeToken<List<CardFilterResponse>>() {
+//        }.getType()));
+//    }
+//
+//    @Override
+//    public ResponseEntity<List<?>> findAllBySiteId(UUID siteId) {
+//        return ResponseEntity.ok(cardService.finAllBySiteId(siteId));
+//    }
 
 }

@@ -590,6 +590,11 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         customerTicketMap.setStatus(updateStatusTicketOfCustomer.getStatus());
         customerTicketMap.setReasonId(updateStatusTicketOfCustomer.getReasonId());
         customerTicketMap.setReasonNote(updateStatusTicketOfCustomer.getReasonNote());
+        if (updateStatusTicketOfCustomer.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
+            customerTicketMap.setCheckInTime(LocalDateTime.now());
+        } else if (updateStatusTicketOfCustomer.getStatus().equals(Constants.StatusTicket.CHECK_OUT)) {
+            customerTicketMap.setCheckOutTime(LocalDateTime.now());
+        }
         customerTicketMapRepository.save(customerTicketMap);
     }
 
@@ -726,14 +731,6 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             parameterMap.put("address", site.getAddress());
             parameterMap.put("room_name", ticket.getRoom().getName());
             String replacedTemplate = emailUtils.replaceEmailParameters(template.getBody(), parameterMap);
-
-            if (ticket.isPassGuard() && ticket.isPassReceptionist()) {
-                replacedTemplate += "<p style='color: red;'>Lưu ý: Bạn sẽ phải đi qua cổng bảo vệ và chỗ lễ tân.</p>";
-            } else if (ticket.isPassGuard()) {
-                replacedTemplate += "<p style='color: red;'>Lưu ý: Bạn sẽ phải đi qua cổng bảo vệ.</p>";
-            } else if (ticket.isPassReceptionist()) {
-                replacedTemplate += "<p style='color: red;'>Lưu ý: Bạn sẽ phải đi qua cổng lễ tân.</p>";
-            }
 
             emailUtils.sendMailWithQRCode(customer.getEmail(), template.getSubject(), replacedTemplate, qrCodeData, ticket.getSiteId());
         } catch (WriterException e) {

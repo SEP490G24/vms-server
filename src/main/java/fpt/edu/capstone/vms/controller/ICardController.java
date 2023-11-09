@@ -4,12 +4,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.QueryParam;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -41,7 +39,7 @@ public interface ICardController {
 
     @PostMapping()
     @Operation(summary = "Create new card")
-    @PreAuthorize("hasRole('r:card:create')")
+        //@PreAuthorize("hasRole('r:card:create')")
     ResponseEntity<?> create(@RequestBody @Valid CardDto cardDto);
 
     @PutMapping("/{id}")
@@ -49,13 +47,13 @@ public interface ICardController {
     @PreAuthorize("hasRole('r:card:update')")
     ResponseEntity<?> update(@RequestBody CardDto cardDto, @PathVariable UUID id);
 
-    @PostMapping("/filter")
-    @Operation(summary = "Filter")
-    ResponseEntity<?> filter(@RequestBody @Valid CardFilterDTO cardFilterDTO, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
-
-    @GetMapping("/site/{siteId}")
-    @Operation(summary = "Get all card by siteId")
-    ResponseEntity<List<?>> findAllBySiteId(@PathVariable UUID siteId);
+//    @PostMapping("/filter")
+//    @Operation(summary = "Filter")
+//    ResponseEntity<?> filter(@RequestBody @Valid CardFilterDTO cardFilterDTO, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
+//
+//    @GetMapping("/site/{siteId}")
+//    @Operation(summary = "Get all card by siteId")
+//    ResponseEntity<List<?>> findAllBySiteId(@PathVariable UUID siteId);
 
     @Data
     @Builder
@@ -64,7 +62,7 @@ public interface ICardController {
     class CardDto {
         private UUID id;
         @NotNull
-        private UUID cardId;
+        private String cardId;
         @NotNull
         private UUID customerId;
         @NotNull

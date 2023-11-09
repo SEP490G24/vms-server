@@ -6,11 +6,7 @@ import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMap;
 import fpt.edu.capstone.vms.persistence.entity.Room;
 import fpt.edu.capstone.vms.persistence.entity.Template;
 import fpt.edu.capstone.vms.persistence.entity.Ticket;
-import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
-import fpt.edu.capstone.vms.persistence.repository.RoomRepository;
-import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
-import fpt.edu.capstone.vms.persistence.repository.TemplateRepository;
-import fpt.edu.capstone.vms.persistence.repository.TicketRepository;
+import fpt.edu.capstone.vms.persistence.repository.*;
 import fpt.edu.capstone.vms.util.EmailUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,11 +17,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -39,11 +31,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static fpt.edu.capstone.vms.constants.Constants.Purpose.OTHERS;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -783,7 +771,7 @@ class TicketServiceImplTest {
         ITicketController.UpdateStatusTicketOfCustomer updateStatusTicketOfCustomer = new ITicketController.UpdateStatusTicketOfCustomer();
         updateStatusTicketOfCustomer.setTicketId(UUID.randomUUID());
         updateStatusTicketOfCustomer.setCustomerId(UUID.randomUUID());
-        updateStatusTicketOfCustomer.setStatus(Constants.StatusTicket.APPROVED);
+        updateStatusTicketOfCustomer.setStatus(Constants.StatusTicket.CHECK_IN);
         updateStatusTicketOfCustomer.setReasonId(UUID.randomUUID());
         updateStatusTicketOfCustomer.setReasonNote("ReasonNote");
 
