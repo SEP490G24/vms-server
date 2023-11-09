@@ -12,7 +12,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -60,6 +68,30 @@ public interface ITemplateController {
     @AllArgsConstructor
     @NoArgsConstructor
     class TemplateDto {
+        @NotNull
+        private String code;
+        @NotNull
+        private String name;
+        @NotNull
+        private String subject;
+        @NotNull
+        private String body;
+        @NotNull
+        Constants.TemplateType type;
+        private String description;
+        @NotNull
+        private Boolean enable;
+        @NotNull
+        private UUID siteId;
+        private String siteName;
+
+    }
+
+    @Data
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    class UpdateTemplateDto {
         private UUID id;
         @NotNull
         private String code;
@@ -94,7 +126,7 @@ public interface ITemplateController {
         private String body;
         private String description;
         Constants.TemplateType type;
-        private UUID siteId;
+        private List<String> siteId;
         private String siteName;
     }
 }

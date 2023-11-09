@@ -49,12 +49,6 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
     @Override
     public Department update(Department updateDepartmentInfo, UUID id) {
 
-        if (!StringUtils.isEmpty(updateDepartmentInfo.getCode())) {
-            if (departmentRepository.existsByCode(updateDepartmentInfo.getCode())) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code of department is exist");
-            }
-        }
-
         var department = departmentRepository.findById(id).orElse(null);
 
         if (ObjectUtils.isEmpty(department))
@@ -94,12 +88,12 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
     @Transactional
     public Department createDepartment(IDepartmentController.CreateDepartmentInfo departmentInfo) {
 
-        if (StringUtils.isEmpty(departmentInfo.getSiteId()))
+        if (StringUtils.isEmpty(departmentInfo.getSiteId().toString()))
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "SiteId is null");
 
-        String siteId = departmentInfo.getSiteId();
+        UUID siteId = departmentInfo.getSiteId();
 
-        if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId.toString())) {
             throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "Can't update department in this site");
         }
 

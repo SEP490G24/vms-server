@@ -52,7 +52,7 @@ public class RoomController implements IRoomController {
     }
 
     @Override
-    public ResponseEntity<?> update(RoomDto roomDto, UUID id) {
+    public ResponseEntity<?> update(UpdateRoomDto roomDto, UUID id) {
         try {
             var room = roomService.update(mapper.map(roomDto, Room.class), id);
             return ResponseEntity.ok(room);

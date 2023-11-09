@@ -114,7 +114,7 @@ class DepartmentServiceImplTest {
         UUID siteId = UUID.randomUUID();
         IDepartmentController.CreateDepartmentInfo departmentInfo = new IDepartmentController.CreateDepartmentInfo();
         departmentInfo.setCode(siteId.toString());
-        departmentInfo.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        departmentInfo.setSiteId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
 
         // Create a mock Jwt object with the necessary claims
         Jwt jwt = mock(Jwt.class);

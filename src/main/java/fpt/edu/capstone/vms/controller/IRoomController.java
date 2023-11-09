@@ -57,7 +57,7 @@ public interface IRoomController {
     @PutMapping("/{id}")
     @Operation(summary = "Update room")
     @PreAuthorize("hasRole('r:room:update')")
-    ResponseEntity<?> update(@RequestBody RoomDto roomDto, @PathVariable UUID id);
+    ResponseEntity<?> update(@RequestBody UpdateRoomDto roomDto, @PathVariable UUID id);
 
     @PostMapping("/filter")
     @Operation(summary = "Filter")
@@ -74,7 +74,6 @@ public interface IRoomController {
     @AllArgsConstructor
     @NoArgsConstructor
     class RoomDto {
-        private UUID id;
         @NotNull
         private String code;
         @NotNull
@@ -84,8 +83,17 @@ public interface IRoomController {
         private Boolean enable;
         @NotNull
         private UUID siteId;
-        private String siteName;
 
+    }
+
+    @Data
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    class UpdateRoomDto {
+        private String code;
+        private String name;
+        private String description;
     }
 
     @Data

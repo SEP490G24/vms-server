@@ -97,12 +97,14 @@ public class Site extends AbstractBaseEntity<UUID> {
     @Column(name = "enable")
     private Boolean enable;
 
-    @OneToMany(mappedBy = "siteEntity", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "siteEntity", cascade = CascadeType.REMOVE)
     @MapKey(name = "pricePackageSiteMapPk.siteId")
+    @JsonIgnore
     private Map<UUID, PricePackageSiteMap> pricePackageSiteMaps;
 
-    @OneToMany(mappedBy = "siteEntity", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "siteEntity", cascade = CascadeType.REMOVE)
     @MapKey(name = "settingSiteMapPk.siteId")
+    @JsonIgnore
     private Map<UUID, SettingSiteMap> settingSiteMaps;
 
     public Site update(Site siteEntity) {
