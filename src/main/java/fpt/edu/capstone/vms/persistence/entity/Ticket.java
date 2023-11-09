@@ -114,12 +114,6 @@ public class Ticket extends AbstractBaseEntity<UUID> {
     @Column(name = "reason_note")
     private String reasonNote;
 
-    @Column(name = "is_pass_guard", nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
-    private boolean isPassGuard;
-
-    @Column(name = "is_pass_receptionist", nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
-    private boolean isPassReceptionist;
-
     public Ticket update(Ticket ticketEntity) {
         if (ticketEntity.name != null) this.name = ticketEntity.name;
         if (ticketEntity.code != null) this.code = ticketEntity.code;

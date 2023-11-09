@@ -4,9 +4,7 @@ import fpt.edu.capstone.vms.constants.Constants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.QueryParam;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,119 +20,24 @@ import java.util.UUID;
 
 
 @RestController
-@Tag(name = "Ticket Service")
-@RequestMapping("/api/v1/ticket")
+@Tag(name = "Access History Service")
+@RequestMapping("/api/v1/access-history")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @PreAuthorize("isAuthenticated()")
-public interface ITicketController {
-
-    @DeleteMapping("/{id}")
-    @Operation(summary = "Delete ticket")
-    ResponseEntity<?> delete(@PathVariable String id);
-
-    @GetMapping
-    @Operation(summary = "Get all ticket")
-    @PreAuthorize("hasRole('r:ticket:find')")
-    ResponseEntity<List<?>> findAll();
-
-    @PostMapping()
-    @Operation(summary = "Create new ticket")
-    @PreAuthorize("hasRole('r:ticket:create')")
-    ResponseEntity<?> create(@RequestBody @Valid CreateTicketInfo ticketInfo);
-
-    @PostMapping("/bookmark")
-    @Operation(summary = "Set bookmark ticket")
-    ResponseEntity<?> updateBookmark(@RequestBody @Valid TicketBookmark ticketBookmark);
-
-    @PostMapping("/cancel")
-    @Operation(summary = "Cancel meeting ticket")
-    ResponseEntity<?> cancelMeeting(@RequestBody @Valid CancelTicket cancelTicket);
-
-    @PostMapping("/update")
-    @Operation(summary = "Update meeting ticket")
-    ResponseEntity<?> updateMeeting(@RequestBody @Valid UpdateTicketInfo updateTicketInfo);
-
-    @PostMapping("/filter")
-    @Operation(summary = "Filter ticket")
-    ResponseEntity<?> filter(@RequestBody @Valid TicketFilterUser ticketFilterUser, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
-
-    @PostMapping("/filter/site")
-    @Operation(summary = "Filter ticket in site for admin")
-    @PreAuthorize("hasRole('r:ticket:find')")
-    ResponseEntity<?> filterAllBySites(@RequestBody @Valid TicketFilterSite ticketFilterSite, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
+public interface IAccessHistoryController {
 
     @GetMapping("/{ticketId}/customer/{customerId}")
     @Operation(summary = "Find ticket by qrcode")
         //@PreAuthorize("hasRole('r:ticket:findQRCode')")
     ResponseEntity<?> findByQRCode(@PathVariable UUID ticketId, @PathVariable UUID customerId);
 
-    @PutMapping("/update-status")
-    @Operation(summary = "Update status of ticket")
-    ResponseEntity<?> updateState(@RequestBody @Valid UpdateStatusTicketOfCustomer updateStatusTicketOfCustomer);
-
-    @GetMapping("/{ticketId}")
-    @Operation(summary = "Find ticket by id for user")
-    ResponseEntity<?> findByIdForUser(@PathVariable UUID ticketId);
-
-    @GetMapping("/admin/{ticketId}")
-    @Operation(summary = "Find ticket by id for admin")
-    @PreAuthorize("hasRole('r:ticket:viewTicketDetail')")
-    ResponseEntity<?> findByIdForAdmin(@PathVariable UUID ticketId);
-
-    @PostMapping("/customer/filter")
-    @Operation(summary = "Filter ticket and customer ")
+    @PostMapping("")
+    @Operation(summary = "Filter access history ")
         //@PreAuthorize("hasRole('r:ticket:findQRCode')")
-    ResponseEntity<?> filterTicketAndCustomer(@RequestBody @Valid TicketFilterUser ticketFilterUser, Pageable pageable);
+    ResponseEntity<?> filterAccessHistory(@RequestBody @Valid TicketFilterUser ticketFilterUser, Pageable pageable);
 
     @Data
-    class CreateTicketInfo {
-
-        private Constants.Purpose purpose;
-
-        private String purposeNote;
-
-        private String name;
-
-        private LocalDateTime startTime;
-
-        private LocalDateTime endTime;
-
-        private String description;
-
-        private UUID roomId;
-
-        private UUID templateId;
-
-        private String siteId;
-
-        List<ICustomerController.NewCustomers> newCustomers;
-
-        List<String> oldCustomers;
-
-        @NotNull
-        private boolean draft;
-
-        @NotNull
-        private boolean isPassGuard;
-
-        @NotNull
-        private boolean isPassReceptionist;
-    }
-
-    @Data
-    class TicketBookmark {
-
-        @NotNull
-        @NotEmpty
-        private String ticketId;
-
-        @NotNull
-        @NotEmpty
-        private boolean bookmark;
-    }
-
-    @Data
-    class TicketFilterDTO {
+    class AccessHistoryFilter {
         private UUID id;
         private String code;
         private String name;
@@ -151,7 +54,6 @@ public interface ITicketController {
         private LocalDateTime createdOn;
         private String lastUpdatedBy;
         private LocalDateTime lastUpdatedOn;
-        private String siteId;
         List<ICustomerController.CustomerInfo> Customers;
     }
 

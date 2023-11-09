@@ -1,22 +1,10 @@
 package fpt.edu.capstone.vms.config.mapper;
 
 
-import fpt.edu.capstone.vms.controller.ICustomerController;
-import fpt.edu.capstone.vms.controller.IDepartmentController;
-import fpt.edu.capstone.vms.controller.IRoomController;
-import fpt.edu.capstone.vms.controller.ISiteController;
-import fpt.edu.capstone.vms.controller.ITemplateController;
-import fpt.edu.capstone.vms.controller.ITicketController;
-import fpt.edu.capstone.vms.controller.IUserController;
+import fpt.edu.capstone.vms.controller.*;
 import fpt.edu.capstone.vms.oauth2.IRoleResource;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
-import fpt.edu.capstone.vms.persistence.entity.Customer;
-import fpt.edu.capstone.vms.persistence.entity.Department;
-import fpt.edu.capstone.vms.persistence.entity.Room;
-import fpt.edu.capstone.vms.persistence.entity.Site;
-import fpt.edu.capstone.vms.persistence.entity.Template;
-import fpt.edu.capstone.vms.persistence.entity.Ticket;
-import fpt.edu.capstone.vms.persistence.entity.User;
+import fpt.edu.capstone.vms.persistence.entity.*;
 import fpt.edu.capstone.vms.persistence.repository.ProvinceRepository;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
@@ -93,6 +81,21 @@ public class ModelMapperConfig {
         modelMapper.createTypeMap(Ticket.class, ITicketController.TicketFilterDTO.class)
             .addMappings(mapping -> mapping.map((ticket -> ticket.getRoom().getName()), ITicketController.TicketFilterDTO::setRoomName));
 
+        // ticket => TicketFilterDTO
+        modelMapper.createTypeMap(CustomerTicketMap.class, ITicketController.TicketByQRCodeResponseDTO.class)
+            .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getId().getTicketId()), ITicketController.TicketByQRCodeResponseDTO::setTicketId))
+            .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getTicketEntity().getCode()), ITicketController.TicketByQRCodeResponseDTO::setTicketCode))
+            .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getTicketEntity().getName()), ITicketController.TicketByQRCodeResponseDTO::setTicketName))
+            .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getTicketEntity().getPurpose()), ITicketController.TicketByQRCodeResponseDTO::setPurpose))
+            .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getTicketEntity().getStatus()), ITicketController.TicketByQRCodeResponseDTO::setTicketStatus))
+            .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getStatus()), ITicketController.TicketByQRCodeResponseDTO::setTicketCustomerStatus))
+            .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getTicketEntity().getStartTime()), ITicketController.TicketByQRCodeResponseDTO::setStartTime))
+            .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getTicketEntity().getEndTime()), ITicketController.TicketByQRCodeResponseDTO::setEndTime))
+            .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getTicketEntity().getUsername()), ITicketController.TicketByQRCodeResponseDTO::setCreateBy))
+            .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getTicketEntity().getCreatedOn()), ITicketController.TicketByQRCodeResponseDTO::setCreatedOn))
+            .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getTicketEntity().getRoom().getId()), ITicketController.TicketByQRCodeResponseDTO::setRoomId))
+            .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getTicketEntity().getRoom().getName()), ITicketController.TicketByQRCodeResponseDTO::setRoomName))
+            .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getCustomerEntity()), ITicketController.TicketByQRCodeResponseDTO::setCustomerInfo));
         return modelMapper;
     }
 }
