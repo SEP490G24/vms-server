@@ -1,5 +1,6 @@
 package fpt.edu.capstone.vms.controller;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import fpt.edu.capstone.vms.constants.Constants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,7 +15,15 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -95,8 +104,10 @@ public interface ITicketController {
 
         private String name;
 
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         private LocalDateTime startTime;
 
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         private LocalDateTime endTime;
 
         private String description;
@@ -162,11 +173,17 @@ public interface ITicketController {
         UUID roomId;
         Constants.StatusTicket status;
         Constants.Purpose purpose;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         LocalDateTime createdOnStart;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         LocalDateTime createdOnEnd;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         LocalDateTime startTimeStart;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         LocalDateTime startTimeEnd;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         LocalDateTime endTimeStart;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         LocalDateTime endTimeEnd;
         String createdBy;
         String lastUpdatedBy;
@@ -179,11 +196,17 @@ public interface ITicketController {
         UUID roomId;
         Constants.StatusTicket status;
         Constants.Purpose purpose;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         LocalDateTime createdOnStart;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         LocalDateTime createdOnEnd;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         LocalDateTime startTimeStart;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         LocalDateTime startTimeEnd;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         LocalDateTime endTimeStart;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         LocalDateTime endTimeEnd;
         String createdBy;
         String lastUpdatedBy;
@@ -205,7 +228,9 @@ public interface ITicketController {
         private Constants.Purpose purpose;
         private String purposeNote;
         private String name;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         private LocalDateTime startTime;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         private LocalDateTime endTime;
         private String description;
         private UUID roomId;
@@ -224,9 +249,12 @@ public interface ITicketController {
         private Constants.Purpose purpose;
         private Constants.StatusTicket ticketStatus;
         private Constants.StatusTicket ticketCustomerStatus;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         private LocalDateTime startTime;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         private LocalDateTime endTime;
         private String createBy;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         private LocalDateTime createdOn;
 
         //Info Room
