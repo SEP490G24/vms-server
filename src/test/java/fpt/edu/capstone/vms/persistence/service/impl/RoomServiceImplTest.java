@@ -168,7 +168,7 @@ class RoomServiceImplTest {
         IRoomController.RoomDto roomDto = null;
 
         // When and Then
-        assertThrows(NullPointerException.class, () -> roomService.create(roomDto));
+        assertThrows(HttpClientErrorException.class, () -> roomService.create(roomDto));
     }
 
     @Test
