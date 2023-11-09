@@ -278,8 +278,8 @@ class DepartmentServiceImplTest {
         try {
             departmentService.filter(new ArrayList<>(), siteId, null, null, null, null, null, null);
         } catch (HttpClientErrorException ex) {
-            assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
-            assertEquals("400 You don't have permission to do this.", ex.getMessage());
+            assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
+            assertEquals("403 You don't have permission to do this.", ex.getMessage());
         }
     }
 
