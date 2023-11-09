@@ -3,7 +3,6 @@ package fpt.edu.capstone.vms.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -44,7 +43,7 @@ public interface ICardController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Update card")
-    @PreAuthorize("hasRole('r:card:update')")
+    //@PreAuthorize("hasRole('r:card:update')")
     ResponseEntity<?> update(@RequestBody CardDto cardDto, @PathVariable UUID id);
 
 //    @PostMapping("/filter")
@@ -61,17 +60,11 @@ public interface ICardController {
     @NoArgsConstructor
     class CardDto {
         private UUID id;
-        @NotNull
         private String cardId;
-        @NotNull
         private UUID customerId;
-        @NotNull
         private UUID meetingId;
         private LocalDateTime recordingTime;
         private LocalDateTime readingTime;
-        @NotNull
-        private UUID siteId;
-
     }
 
     @Data

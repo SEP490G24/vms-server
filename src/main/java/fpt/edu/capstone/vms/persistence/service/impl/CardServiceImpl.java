@@ -6,7 +6,6 @@ import fpt.edu.capstone.vms.persistence.repository.CardRepository;
 import fpt.edu.capstone.vms.persistence.service.ICardService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import jakarta.transaction.Transactional;
-import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -42,9 +41,8 @@ public class CardServiceImpl extends GenericServiceImpl<Card, UUID> implements I
     public Card create(ICardController.CardDto cardDto) {
         if (ObjectUtils.isEmpty(cardDto))
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Object is empty");
-        if (StringUtils.isEmpty(cardDto.getSiteId().toString()))
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "SiteId is null");
         var card = mapper.map(cardDto, Card.class);
+        card.setEnable(true);
         cardRepository.save(card);
         return card;
     }
