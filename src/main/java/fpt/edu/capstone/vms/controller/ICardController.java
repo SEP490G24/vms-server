@@ -20,7 +20,7 @@ import java.util.UUID;
 @Tag(name = "Card Service")
 @RequestMapping("/api/v1/card")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
-@PreAuthorize("isAuthenticated()")
+//@PreAuthorize("isAuthenticated()")
 public interface ICardController {
 
     @GetMapping("/{id}")
