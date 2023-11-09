@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -98,17 +97,18 @@ public class Site extends AbstractBaseEntity<UUID> {
     @Column(name = "enable")
     private Boolean enable;
 
-    @OneToMany(mappedBy = "siteEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "siteEntity", cascade = CascadeType.REMOVE)
     @MapKey(name = "pricePackageSiteMapPk.siteId")
+    @JsonIgnore
     private Map<UUID, PricePackageSiteMap> pricePackageSiteMaps;
 
-    @OneToMany(mappedBy = "siteEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "siteEntity", cascade = CascadeType.REMOVE)
     @MapKey(name = "settingSiteMapPk.siteId")
+    @JsonIgnore
     private Map<UUID, SettingSiteMap> settingSiteMaps;
 
     public Site update(Site siteEntity) {
         if (siteEntity.name != null) this.name = siteEntity.name;
-        if (siteEntity.code != null) this.code = siteEntity.code;
         if (siteEntity.organizationId != null) this.organizationId = siteEntity.organizationId;
         if (siteEntity.phoneNumber != null) this.phoneNumber = siteEntity.phoneNumber;
         if (siteEntity.provinceId != null) this.provinceId = siteEntity.provinceId;

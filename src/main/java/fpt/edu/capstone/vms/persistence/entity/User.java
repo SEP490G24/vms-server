@@ -126,7 +126,6 @@ public class User extends AbstractBaseEntity<String> {
     private Map<String, UserRoleMap> userRoleMaps;
 
     public User update(User userEntity) {
-        if (userEntity.username != null) this.username = userEntity.username;
         if (userEntity.openid != null) this.openid = userEntity.openid;
         if (userEntity.firstName != null) this.firstName = userEntity.firstName;
         if (userEntity.lastName != null) this.lastName = userEntity.lastName;

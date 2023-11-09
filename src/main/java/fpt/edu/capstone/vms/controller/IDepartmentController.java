@@ -74,14 +74,13 @@ public interface IDepartmentController {
         @NotNull
         private String code;
         @NotNull
-        private String siteId;
+        private UUID siteId;
         private String description;
     }
 
     @Data
     class UpdateDepartmentInfo {
         private String name;
-        private String code;
         private String enable;
         private String description;
     }

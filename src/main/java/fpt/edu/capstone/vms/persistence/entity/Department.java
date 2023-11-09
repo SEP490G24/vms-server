@@ -14,7 +14,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
-import java.util.Map;
 import java.util.UUID;
 
 @Data
@@ -53,7 +52,6 @@ public class Department extends AbstractBaseEntity<UUID>{
 
     public Department update(Department department) {
         if (department.name != null) this.name = department.name;
-        if (department.code != null) this.code = department.code;
         if (department.description != null) this.description = department.description;
         if (department.enable != null) this.enable = department.enable;
         if (department.getCreatedBy() != null) this.setCreatedBy(department.getCreatedBy());

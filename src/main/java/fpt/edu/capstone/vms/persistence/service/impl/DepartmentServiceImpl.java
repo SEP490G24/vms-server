@@ -7,7 +7,6 @@ import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.service.IDepartmentService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import fpt.edu.capstone.vms.util.SecurityUtils;
-import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
@@ -15,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.HttpClientErrorException;
 
@@ -47,13 +47,8 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
      * @return The method is returning a Department object.
      */
     @Override
+    @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
     public Department update(Department updateDepartmentInfo, UUID id) {
-
-        if (!StringUtils.isEmpty(updateDepartmentInfo.getCode())) {
-            if (departmentRepository.existsByCode(updateDepartmentInfo.getCode())) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code of department is exist");
-            }
-        }
 
         var department = departmentRepository.findById(id).orElse(null);
 
@@ -91,15 +86,15 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
      * @return The method is returning a Department object.
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
     public Department createDepartment(IDepartmentController.CreateDepartmentInfo departmentInfo) {
 
-        if (StringUtils.isEmpty(departmentInfo.getSiteId()))
+        if (StringUtils.isEmpty(departmentInfo.getSiteId().toString()))
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "SiteId is null");
 
-        String siteId = departmentInfo.getSiteId();
+        UUID siteId = departmentInfo.getSiteId();
 
-        if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId.toString())) {
             throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "Can't update department in this site");
         }
 

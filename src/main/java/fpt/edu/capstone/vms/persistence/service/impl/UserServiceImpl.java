@@ -225,7 +225,13 @@ public class UserServiceImpl implements IUserService {
                     }
                     addDepartmentToListFilter(departmentIds, departments, o);
                 });
+                if (departments.isEmpty()) {
+                    siteRepository.findAllByOrganizationId(UUID.fromString(SecurityUtils.getOrgId())).forEach(o -> {
+                        addDepartmentToListFilter(departmentIds, departments, o.getId().toString());
+                    });
+                }
             }
+
         } else {
             addDepartmentToListFilter(departmentIds, departments, SecurityUtils.getSiteId());
         }
@@ -242,13 +248,9 @@ public class UserServiceImpl implements IUserService {
     private void addDepartmentToListFilter(List<String> departmentIds, List<UUID> departments, String siteId) {
         if (departmentIds == null) {
             var departmentss = departmentRepository.findAllBySiteId(UUID.fromString(siteId));
-            if (departmentss != null) {
+            if (!departmentss.isEmpty()) {
                 departmentss.forEach(a -> {
                     departments.add(a.getId());
-                });
-            } else {
-                siteRepository.findAllByOrganizationId(UUID.fromString(SecurityUtils.getOrgId())).forEach(o -> {
-                    addDepartmentToListFilter(departmentIds, departments, o.getId().toString());
                 });
             }
         } else {
@@ -423,7 +425,7 @@ public class UserServiceImpl implements IUserService {
     @Override
     public ByteArrayResource export(IUserController.UserFilterRequest userFilter) {
         Pageable pageable = PageRequest.of(0, 1000000);
-        Page<IUserController.UserFilterResponse> listData = filter(pageable, userFilter.getUsernames(), userFilter.getRole(), userFilter.getCreatedOnStart(), userFilter.getCreatedOnEnd(), userFilter.getEnable(), userFilter.getKeyword(), userFilter.getDepartmentIds(), userFilter.getSiteId(), userFilter.getProvinceId(), userFilter.getDistrictId(), userFilter.getCommuneId());
+        Page<IUserController.UserFilterResponse> listData = filter(pageable, userFilter.getUsernames(), userFilter.getRole(), userFilter.getCreatedOnStart(), userFilter.getCreatedOnEnd(), userFilter.getEnable(), userFilter.getKeyword(), userFilter.getDepartmentId(), userFilter.getSiteId(), userFilter.getProvinceId(), userFilter.getDistrictId(), userFilter.getCommuneId());
         try {
             JasperReport jasperReport = JasperCompileManager.compileReport(getClass().getResourceAsStream(PATH_FILE));
 

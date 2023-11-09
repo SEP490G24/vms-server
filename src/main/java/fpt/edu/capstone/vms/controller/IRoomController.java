@@ -36,6 +36,7 @@ public interface IRoomController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Find by id")
+    @PreAuthorize("hasRole('r:room:find')")
     ResponseEntity<?> findById(@PathVariable UUID id);
 
     @DeleteMapping("/{id}")
@@ -45,6 +46,7 @@ public interface IRoomController {
 
     @GetMapping
     @Operation(summary = "Get all")
+    @PreAuthorize("hasRole('r:room:find')")
     ResponseEntity<List<?>> findAll();
 
     @PostMapping()
@@ -55,22 +57,23 @@ public interface IRoomController {
     @PutMapping("/{id}")
     @Operation(summary = "Update room")
     @PreAuthorize("hasRole('r:room:update')")
-    ResponseEntity<?> update(@RequestBody RoomDto roomDto, @PathVariable UUID id);
+    ResponseEntity<?> update(@RequestBody UpdateRoomDto roomDto, @PathVariable UUID id);
 
     @PostMapping("/filter")
     @Operation(summary = "Filter")
+    @PreAuthorize("hasRole('r:room:find')")
     ResponseEntity<?> filter(@RequestBody @Valid RoomFilterDTO roomFilterDTO, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
     @GetMapping("/site/{siteId}")
     @Operation(summary = "Get all room by siteId")
-    ResponseEntity<List<?>> findAllBySiteId(@PathVariable UUID siteId);
+    @PreAuthorize("hasRole('r:room:find')")
+    ResponseEntity<List<?>> findAllBySiteId(@PathVariable String siteId);
 
     @Data
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
     class RoomDto {
-        private UUID id;
         @NotNull
         private String code;
         @NotNull
@@ -80,8 +83,17 @@ public interface IRoomController {
         private Boolean enable;
         @NotNull
         private UUID siteId;
-        private String siteName;
 
+    }
+
+    @Data
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    class UpdateRoomDto {
+        private String code;
+        private String name;
+        private String description;
     }
 
     @Data
@@ -94,7 +106,7 @@ public interface IRoomController {
         LocalDateTime createdOnEnd;
         Boolean enable;
         String keyword;
-        UUID siteId;
+        List<String> siteId;
 
     }
 

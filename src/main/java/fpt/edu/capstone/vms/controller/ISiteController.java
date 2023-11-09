@@ -97,7 +97,6 @@ public interface ISiteController {
         private String address;
         private String taxCode;
         private String description;
-        private boolean enable;
     }
 
     @Data

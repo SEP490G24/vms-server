@@ -151,6 +151,7 @@ public interface ITicketController {
         private LocalDateTime createdOn;
         private String lastUpdatedBy;
         private LocalDateTime lastUpdatedOn;
+        private String siteId;
         List<ICustomerController.CustomerInfo> Customers;
     }
 

@@ -17,7 +17,7 @@ public interface ITemplateService extends IGenericService<Template, UUID> {
 
     Page<Template> filter(Pageable pageable,
                           List<String> names,
-                          UUID siteId,
+                          List<String> siteId,
                           LocalDateTime createdOnStart,
                           LocalDateTime createdOnEnd,
                           Boolean enable,
@@ -25,7 +25,7 @@ public interface ITemplateService extends IGenericService<Template, UUID> {
 
     List<Template> filter(
         List<String> names,
-        UUID siteId,
+        List<String> siteId,
         LocalDateTime createdOnStart,
         LocalDateTime createdOnEnd,
         Boolean enable,

@@ -1,8 +1,18 @@
 package fpt.edu.capstone.vms.persistence.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 import java.util.UUID;
@@ -25,7 +35,7 @@ public class Room extends AbstractBaseEntity<UUID> {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "code")
+    @Column(name = "code", unique = true, updatable = false, nullable = false)
     private String code;
 
     @Column(name = "description")
@@ -54,7 +64,6 @@ public class Room extends AbstractBaseEntity<UUID> {
 
     public Room update(Room room) {
         if (room.name != null) this.name = room.name;
-        if (room.code != null) this.code = room.code;
         if (room.description != null) this.description = room.description;
         if (room.enable != null) this.enable = room.enable;
         if (room.getCreatedBy() != null) this.setCreatedBy(room.getCreatedBy());
