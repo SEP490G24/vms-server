@@ -44,6 +44,8 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
     private final ModelMapper mapper;
 
     private static final String SITE_TABLE_NAME = "Site";
+    private static final String SITE_SETTING_MAP_TABLE_NAME = "SettingSiteMap";
+
 
     public SiteServiceImpl(SiteRepository siteRepository
         , ProvinceRepository provinceRepository
@@ -225,10 +227,25 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
             , Constants.AuditType.DELETE
             , siteEntity.toString()
             , null));
+        deleteSiteSettingMap(siteEntity);
         siteRepository.delete(siteEntity);
         return true;
     }
 
+    private void deleteSiteSettingMap(Site site) {
+        var siteSettingMaps = settingSiteMapRepository.findAllBySettingSiteMapPk_SiteId(site.getId());
+        if (siteSettingMaps != null) {
+            siteSettingMaps.forEach(o -> {
+                auditLogRepository.save(new AuditLog(site.getId().toString()
+                    , site.getOrganizationId().toString()
+                    , o.getId().toString()
+                    , SITE_SETTING_MAP_TABLE_NAME
+                    , Constants.AuditType.DELETE
+                    , o.toString()
+                    , null));
+            });
+        }
+    }
 
     private void checkAddress(Integer provinceId, Integer districtId, Integer communeId) {
 
