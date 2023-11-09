@@ -150,7 +150,9 @@ class RoomServiceImplTest {
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
         //when
-        when(siteRepository.findById(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"))).thenReturn(Optional.of(site));
+        when(SecurityUtils.checkSiteAuthorization(siteRepository, room.getSiteId().toString())).thenReturn(true);
+        when(siteRepository.findById(room.getSiteId())).thenReturn(Optional.of(site));
+        // When
         when(roomRepository.save(any(Room.class))).thenReturn(room);
         Room roomActual = roomService.create(roomDto);
 
@@ -191,14 +193,26 @@ class RoomServiceImplTest {
         Room roomInfo = new Room();
         roomInfo.setSiteId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
         Room existingRoom = new Room();
+        existingRoom.setSiteId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
         when(roomRepository.findById(roomId)).thenReturn(Optional.of(existingRoom));
         when(roomRepository.save(any(Room.class))).thenAnswer(invocation -> invocation.getArgument(0));
         existingRoom.setId(roomId);
+
+        Jwt jwt = mock(Jwt.class);
+
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
         Site site = new Site();
         site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
         //when
         when(siteRepository.findById(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"))).thenReturn(Optional.of(site));
 
+        when(SecurityUtils.checkSiteAuthorization(siteRepository, existingRoom.getSiteId().toString())).thenReturn(true);
         // When
         Room updatedRoom = roomService.update(roomInfo, roomId);
 

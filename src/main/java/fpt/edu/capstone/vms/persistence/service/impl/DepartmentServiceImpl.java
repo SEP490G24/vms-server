@@ -1,7 +1,10 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
+import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.IDepartmentController;
+import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.entity.Department;
+import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
 import fpt.edu.capstone.vms.persistence.repository.DepartmentRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.service.IDepartmentService;
@@ -19,7 +22,6 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,11 +31,15 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
     private final DepartmentRepository departmentRepository;
     private final ModelMapper mapper;
     private final SiteRepository siteRepository;
+    private final AuditLogRepository auditLogRepository;
+    private static final String DEPARTMENT_TABLE_NAME = "Department";
 
-    public DepartmentServiceImpl(DepartmentRepository departmentRepository, ModelMapper mapper, SiteRepository siteRepository) {
+
+    public DepartmentServiceImpl(DepartmentRepository departmentRepository, ModelMapper mapper, SiteRepository siteRepository, AuditLogRepository auditLogRepository) {
         this.departmentRepository = departmentRepository;
         this.mapper = mapper;
         this.siteRepository = siteRepository;
+        this.auditLogRepository = auditLogRepository;
         this.init(departmentRepository);
     }
 
@@ -51,17 +57,19 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
     public Department update(Department updateDepartmentInfo, UUID id) {
 
         var department = departmentRepository.findById(id).orElse(null);
-
+        var departmentOld = department;
         if (ObjectUtils.isEmpty(department))
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't found department");
+        var site = siteRepository.findById(department.getSiteId()).orElse(null);
 
-        String siteId = department.getSiteId().toString();
-
-        if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
-            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "Can't create department in this site");
-        }
-
-        departmentRepository.save(department.update(updateDepartmentInfo));
+        var departmentUpdate = departmentRepository.save(department.update(updateDepartmentInfo));
+        auditLogRepository.save(new AuditLog(site.getId().toString()
+            , site.getOrganizationId().toString()
+            , department.getId().toString()
+            , DEPARTMENT_TABLE_NAME
+            , Constants.AuditType.UPDATE
+            , departmentOld.toString()
+            , departmentUpdate.toString()));
         return department;
     }
 
@@ -98,6 +106,12 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
             throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "Can't update department in this site");
         }
 
+        var site = siteRepository.findById(siteId).orElse(null);
+
+        if (ObjectUtils.isEmpty(site)) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code is null");
+        }
+
         if (StringUtils.isEmpty(departmentInfo.getCode())) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code is null");
         }
@@ -110,7 +124,14 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Object is empty");
         var department = mapper.map(departmentInfo, Department.class);
         department.setEnable(true);
-        departmentRepository.save(department);
+        var departmentCreate = departmentRepository.save(department);
+        auditLogRepository.save(new AuditLog(siteId.toString()
+            , site.getOrganizationId().toString()
+            , departmentCreate.getId().toString()
+            , DEPARTMENT_TABLE_NAME
+            , Constants.AuditType.CREATE
+            , null
+            , departmentCreate.toString()));
         return department;
     }
 
@@ -138,7 +159,7 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
      */
     @Override
     public Page<Department> filter(Pageable pageable, List<String> names, List<String> siteId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, String createBy, String lastUpdatedBy, Boolean enable, String keyword) {
-        List<UUID> sites = getListSite(siteId);
+        List<UUID> sites = SecurityUtils.getListSite(siteRepository, siteId);
         return departmentRepository.filter(
             pageable,
             names,
@@ -173,7 +194,7 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
      */
     @Override
     public List<Department> filter(List<String> names, List<String> siteId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, String createBy, String lastUpdatedBy, Boolean enable, String keyword) {
-        List<UUID> sites = getListSite(siteId);
+        List<UUID> sites = SecurityUtils.getListSite(siteRepository, siteId);
         return departmentRepository.filter(
             names,
             sites,
@@ -185,29 +206,4 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
             keyword);
     }
 
-    private List<UUID> getListSite(List<String> siteId) {
-
-        if (SecurityUtils.getOrgId() == null && siteId != null) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "You don't have permission to do this.");
-        }
-        List<UUID> sites = new ArrayList<>();
-        if (SecurityUtils.getOrgId() != null) {
-            if (siteId == null) {
-                siteRepository.findAllByOrganizationId(UUID.fromString(SecurityUtils.getOrgId())).forEach(o -> {
-                    sites.add(o.getId());
-                });
-            } else {
-                siteId.forEach(o -> {
-                    if (!SecurityUtils.checkSiteAuthorization(siteRepository, o)) {
-                        throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "You don't have permission to do this.");
-                    }
-                    sites.add(UUID.fromString(o));
-                });
-            }
-        } else {
-            sites.add(UUID.fromString(SecurityUtils.getSiteId()));
-        }
-
-        return sites;
-    }
 }

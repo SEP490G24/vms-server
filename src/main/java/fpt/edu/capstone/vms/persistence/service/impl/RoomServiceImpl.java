@@ -21,7 +21,6 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -52,6 +51,9 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
         if (ObjectUtils.isEmpty(site)) {
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Site is null");
         }
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, room.getSiteId().toString())) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+        }
         var updateRoom = roomRepository.save(room.update(roomInfo));
         auditLogRepository.save(new AuditLog(roomInfo.getSiteId().toString()
             , site.getOrganizationId().toString()
@@ -66,9 +68,6 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
     @Override
     @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
     public Room create(IRoomController.RoomDto roomDto) {
-        if (SecurityUtils.checkSiteAuthorization(siteRepository, roomDto.getSiteId().toString())) {
-            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
-        }
         if (ObjectUtils.isEmpty(roomDto))
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Object is empty");
         if (StringUtils.isEmpty(roomDto.getSiteId().toString()))
@@ -76,6 +75,9 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
         var site = siteRepository.findById(roomDto.getSiteId()).orElse(null);
         if (ObjectUtils.isEmpty(site)) {
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Site is null");
+        }
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, roomDto.getSiteId().toString())) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
         }
         var room = mapper.map(roomDto, Room.class);
         room.setEnable(true);
@@ -92,7 +94,7 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
 
     @Override
     public Page<Room> filter(Pageable pageable, List<String> names, List<String> siteId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, Boolean enable, String keyword) {
-        List<UUID> sites = getListSite(siteId);
+        List<UUID> sites = SecurityUtils.getListSite(siteRepository, siteId);
         return roomRepository.filter(
             pageable,
             names,
@@ -105,7 +107,7 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
 
     @Override
     public List<Room> filter(List<String> names, List<String> siteId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, Boolean enable, String keyword) {
-        List<UUID> sites = getListSite(siteId);
+        List<UUID> sites = SecurityUtils.getListSite(siteRepository, siteId);
         return roomRepository.filter(
             names,
             sites,
@@ -115,31 +117,6 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
             keyword != null ? keyword.toUpperCase() : null);
     }
 
-    private List<UUID> getListSite(List<String> siteId) {
-
-        if (SecurityUtils.getOrgId() == null && siteId != null) {
-            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
-        }
-        List<UUID> sites = new ArrayList<>();
-        if (SecurityUtils.getOrgId() != null) {
-            if (siteId == null) {
-                siteRepository.findAllByOrganizationId(UUID.fromString(SecurityUtils.getOrgId())).forEach(o -> {
-                    sites.add(o.getId());
-                });
-            } else {
-                siteId.forEach(o -> {
-                    if (!SecurityUtils.checkSiteAuthorization(siteRepository, o)) {
-                        throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
-                    }
-                    sites.add(UUID.fromString(o));
-                });
-            }
-        } else {
-            sites.add(UUID.fromString(SecurityUtils.getSiteId()));
-        }
-
-        return sites;
-    }
 
     @Override
     public List<Room> finAllBySiteId(String siteId) {

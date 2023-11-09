@@ -52,7 +52,7 @@ public interface ITemplateController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Update site")
-    ResponseEntity<?> update(@RequestBody TemplateDto templateDto, @PathVariable UUID id);
+    ResponseEntity<?> update(@RequestBody UpdateTemplateDto templateDto, @PathVariable UUID id);
 
     @PostMapping("/filter")
     @Operation(summary = "Filter")
@@ -83,7 +83,6 @@ public interface ITemplateController {
         private Boolean enable;
         @NotNull
         private UUID siteId;
-        private String siteName;
 
     }
 
@@ -92,24 +91,12 @@ public interface ITemplateController {
     @AllArgsConstructor
     @NoArgsConstructor
     class UpdateTemplateDto {
-        private UUID id;
-        @NotNull
-        private String code;
-        @NotNull
         private String name;
-        @NotNull
         private String subject;
-        @NotNull
         private String body;
-        @NotNull
         Constants.TemplateType type;
-        private String description;
-        @NotNull
         private Boolean enable;
-        @NotNull
-        private UUID siteId;
-        private String siteName;
-
+        private String description;
     }
 
     @Data
@@ -128,5 +115,23 @@ public interface ITemplateController {
         Constants.TemplateType type;
         private List<String> siteId;
         private String siteName;
+    }
+
+    @Data
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    class TemplateFilter {
+        private UUID id;
+        private String code;
+        private String name;
+        private String subject;
+        private String body;
+        Constants.TemplateType type;
+        private String description;
+        private Boolean enable;
+        private UUID siteId;
+        private String siteName;
+
     }
 }

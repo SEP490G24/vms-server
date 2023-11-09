@@ -31,4 +31,5 @@ public interface ITemplateService extends IGenericService<Template, UUID> {
         Boolean enable,
         String keyword);
 
+    List<Template> finAllBySiteId(String siteId);
 }

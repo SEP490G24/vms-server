@@ -64,7 +64,7 @@ public interface IDepartmentController {
     @PostMapping("/site/{siteId}")
     @Operation(summary = "Find all department by site")
     @PreAuthorize("hasRole('r:department:find')")
-    ResponseEntity<?> findAllBySite(String siteId);
+    ResponseEntity<?> findAllBySite(@PathVariable String siteId);
 
 
     @Data

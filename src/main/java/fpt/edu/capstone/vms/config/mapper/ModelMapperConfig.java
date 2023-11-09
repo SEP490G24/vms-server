@@ -1,10 +1,23 @@
 package fpt.edu.capstone.vms.config.mapper;
 
 
-import fpt.edu.capstone.vms.controller.*;
+import fpt.edu.capstone.vms.controller.ICustomerController;
+import fpt.edu.capstone.vms.controller.IDepartmentController;
+import fpt.edu.capstone.vms.controller.IRoomController;
+import fpt.edu.capstone.vms.controller.ISiteController;
+import fpt.edu.capstone.vms.controller.ITemplateController;
+import fpt.edu.capstone.vms.controller.ITicketController;
+import fpt.edu.capstone.vms.controller.IUserController;
 import fpt.edu.capstone.vms.oauth2.IRoleResource;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
-import fpt.edu.capstone.vms.persistence.entity.*;
+import fpt.edu.capstone.vms.persistence.entity.Customer;
+import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMap;
+import fpt.edu.capstone.vms.persistence.entity.Department;
+import fpt.edu.capstone.vms.persistence.entity.Room;
+import fpt.edu.capstone.vms.persistence.entity.Site;
+import fpt.edu.capstone.vms.persistence.entity.Template;
+import fpt.edu.capstone.vms.persistence.entity.Ticket;
+import fpt.edu.capstone.vms.persistence.entity.User;
 import fpt.edu.capstone.vms.persistence.repository.ProvinceRepository;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
@@ -69,9 +82,9 @@ public class ModelMapperConfig {
         modelMapper.createTypeMap(Room.class, IRoomController.RoomFilterResponse.class)
             .addMappings(mapping -> mapping.map((room -> room.getSite().getName()), IRoomController.RoomFilterResponse::setSiteName));
 
-        // template => templateDto
-        modelMapper.createTypeMap(Template.class, ITemplateController.TemplateDto.class)
-            .addMappings(mapping -> mapping.map((template -> template.getSite().getName()), ITemplateController.TemplateDto::setSiteName));
+        // template => TemplateFilter
+        modelMapper.createTypeMap(Template.class, ITemplateController.TemplateFilter.class)
+            .addMappings(mapping -> mapping.map((template -> template.getSite().getName()), ITemplateController.TemplateFilter::setSiteName));
 
         // RoleRepresentation => RoleDto
         modelMapper.createTypeMap(RoleRepresentation.class, IRoleResource.RoleDto.class)
