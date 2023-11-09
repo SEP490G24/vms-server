@@ -20,8 +20,6 @@ import fpt.edu.capstone.vms.persistence.repository.RoomRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.repository.TemplateRepository;
 import fpt.edu.capstone.vms.persistence.repository.TicketRepository;
-import fpt.edu.capstone.vms.persistence.entity.*;
-import fpt.edu.capstone.vms.persistence.repository.*;
 import fpt.edu.capstone.vms.persistence.service.ITicketService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import fpt.edu.capstone.vms.util.EmailUtils;
@@ -50,7 +48,12 @@ import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -816,7 +819,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
 
             Map<String, String> parameterMap = new HashMap<>();
             parameterMap.put("customer_name", customer.getVisitorName());
-            parameterMap.put("meeting_name", ticket.getRoom().getName());
+            parameterMap.put("meeting_name", ticket.getName());
             parameterMap.put("start_time", ticket.getStartTime().toString());
             parameterMap.put("end_time", ticket.getEndTime().toString());
             parameterMap.put("address", site.getAddress());
@@ -861,7 +864,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
      * @return The method is returning a boolean value.
      */
     boolean isRoomBooked(UUID roomId, LocalDateTime startTime, LocalDateTime endTime) {
-        int count = ticketRepository.countByRoomIdAndEndTimeGreaterThanEqualAndStartTimeLessThanEqual(roomId, startTime, endTime);
+        int count = ticketRepository.countByRoomIdAndEndTimeGreaterThanEqualAndStartTimeLessThanEqualAndStatusNotLike(roomId, startTime, endTime, Constants.StatusTicket.CANCEL);
         return count > 0;
     }
 
@@ -874,7 +877,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
      * @return The method is returning a boolean value.
      */
     private boolean isUserHaveTicketInTime(String username, LocalDateTime startTime, LocalDateTime endTime) {
-        int count = ticketRepository.countByUsernameAndEndTimeGreaterThanEqualAndStartTimeLessThanEqual(username, startTime, endTime);
+        int count = ticketRepository.countByUsernameAndEndTimeGreaterThanEqualAndStartTimeLessThanEqualAndStatusNotLike(username, startTime, endTime, Constants.StatusTicket.CANCEL);
         return count > 0;
     }
 

@@ -125,11 +125,6 @@ public interface ITicketController {
         @NotNull
         private boolean draft;
 
-        @NotNull
-        private boolean isPassGuard;
-
-        @NotNull
-        private boolean isPassReceptionist;
     }
 
     @Data
