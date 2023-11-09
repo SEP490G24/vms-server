@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -98,11 +97,11 @@ public class Site extends AbstractBaseEntity<UUID> {
     @Column(name = "enable")
     private Boolean enable;
 
-    @OneToMany(mappedBy = "siteEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "siteEntity", cascade = CascadeType.ALL)
     @MapKey(name = "pricePackageSiteMapPk.siteId")
     private Map<UUID, PricePackageSiteMap> pricePackageSiteMaps;
 
-    @OneToMany(mappedBy = "siteEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "siteEntity", cascade = CascadeType.ALL)
     @MapKey(name = "settingSiteMapPk.siteId")
     private Map<UUID, SettingSiteMap> settingSiteMaps;
 
