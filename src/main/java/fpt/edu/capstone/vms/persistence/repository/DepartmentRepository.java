@@ -22,7 +22,7 @@ public interface DepartmentRepository extends GenericRepository<Department, UUID
         "and ((:createBy is null) or (u.createdBy in :createBy)) " +
         "and ((:lastUpdatedBy is null) or (u.lastUpdatedBy in :lastUpdatedBy)) " +
         "and ((:enable is null) or (u.enable = :enable)) " +
-        "and ((cast(:siteId as string) is null) or (u.siteId = :siteId)) " +
+        "and ((coalesce(:siteId) is null) or (u.siteId in :siteId))" +
         "and ((:keyword is null) " +
         "or (u.name LIKE %:keyword% " +
         "or u.code LIKE %:keyword% " +
@@ -45,7 +45,7 @@ public interface DepartmentRepository extends GenericRepository<Department, UUID
         "and ((:createBy is null) or (u.createdBy in :createBy)) " +
         "and ((:lastUpdatedBy is null) or (u.lastUpdatedBy in :lastUpdatedBy)) " +
         "and ((:enable is null) or (u.enable = :enable)) " +
-        "and ((cast(:siteId as string) is null) or (u.siteId = :siteId)) " +
+        "and ((coalesce(:siteId) is null) or (u.siteId in :siteId)) " +
         "and ((:keyword is null) " +
         "or (u.name LIKE %:keyword% " +
         "or u.code LIKE %:keyword% " +
