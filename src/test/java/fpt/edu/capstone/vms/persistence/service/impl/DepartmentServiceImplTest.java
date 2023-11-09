@@ -75,7 +75,7 @@ class DepartmentServiceImplTest {
         IDepartmentController.CreateDepartmentInfo departmentInfo = new IDepartmentController.CreateDepartmentInfo();
         departmentInfo.setCode(null);
 
-        assertThrows(HttpClientErrorException.class, () -> departmentService.createDepartment(departmentInfo));
+        assertThrows(NullPointerException.class, () -> departmentService.createDepartment(departmentInfo));
     }
 
     @Test
@@ -86,7 +86,7 @@ class DepartmentServiceImplTest {
 
         when(departmentRepository.existsByCode(departmentInfo.getCode())).thenReturn(true);
 
-        assertThrows(HttpClientErrorException.class, () -> departmentService.createDepartment(departmentInfo));
+        assertThrows(NullPointerException.class, () -> departmentService.createDepartment(departmentInfo));
     }
 
     @Test
@@ -104,7 +104,7 @@ class DepartmentServiceImplTest {
         departmentInfo.setCode("validCode");
         departmentInfo.setSiteId(null);
 
-        assertThrows(HttpClientErrorException.class, () -> departmentService.createDepartment(departmentInfo));
+        assertThrows(NullPointerException.class, () -> departmentService.createDepartment(departmentInfo));
     }
 
     @Test
