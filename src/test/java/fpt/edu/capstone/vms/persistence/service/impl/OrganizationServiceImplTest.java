@@ -6,6 +6,7 @@ import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.entity.Organization;
 import fpt.edu.capstone.vms.persistence.entity.User;
 import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
+import fpt.edu.capstone.vms.persistence.repository.FileRepository;
 import fpt.edu.capstone.vms.persistence.repository.OrganizationRepository;
 import fpt.edu.capstone.vms.persistence.service.IUserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,13 +15,21 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -29,15 +38,23 @@ class OrganizationServiceImplTest {
 
     @InjectMocks
     private OrganizationServiceImpl organizationService;
+    @InjectMocks
+    private FileServiceImpl fileService;
     @Mock
     private OrganizationRepository organizationRepository;
+    @Mock
+    private FileRepository fileRepository;
     @Mock
     private IUserService userService;
     @Mock
     private AuditLogRepository auditLogRepository;
+    SecurityContext securityContext;
+    Authentication authentication;
 
     @BeforeEach
     void setUp() {
+        securityContext = mock(SecurityContext.class);
+        authentication = mock(Authentication.class);
         MockitoAnnotations.openMocks(this);
     }
 
@@ -108,4 +125,110 @@ class OrganizationServiceImplTest {
         assertThrows(NullPointerException.class, () -> organizationService.save(null));
     }
 
+    @Test
+    @DisplayName("given code organization exist, throw HttpClientErrorException")
+    public void givenUpdateWithExistingCode_ThrowException() {
+        // Arrange
+        Organization entity = new Organization();
+        entity.setCode("existingCode");
+        UUID id = UUID.randomUUID();
+
+        when(organizationRepository.existsByCode("existingCode")).thenReturn(true);
+
+        // Act and Assert
+        HttpClientErrorException exception = assertThrows(HttpClientErrorException.class, () -> {
+            organizationService.update(entity, id);
+        });
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
+
+        // Verify that no other methods were called on organizationRepository
+        verify(organizationRepository, never()).findById(any());
+    }
+
+    @Test
+    @DisplayName("given organization Mismatched OrgId, throw HttpClientErrorException")
+    public void givenUpdateWithMismatchedOrgId_ThrowException() {
+        // Arrange
+        Organization entity = new Organization();
+        UUID id = UUID.randomUUID();
+
+        // Create a mock Jwt object with the necessary claims
+        Jwt jwt = mock(Jwt.class);
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        // Act and Assert
+        HttpClientErrorException exception = assertThrows(HttpClientErrorException.class, () -> {
+            organizationService.update(entity, id);
+        });
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
+
+        // Verify that no other methods were called on organizationRepository
+        verify(organizationRepository, never()).findById(any());
+    }
+
+    @Test
+    @DisplayName("given organization Null Entity, throw HttpClientErrorException")
+    public void givenUpdateWithNullEntity_ThrowException() {
+        // Arrange
+        Organization entity = null;
+        UUID id = UUID.randomUUID();
+
+        // Act and Assert
+        assertThrows(NullPointerException.class, () -> {
+            organizationService.update(entity, id);
+        });
+    }
+
+    @Test
+    public void testUpdateWithNonExistentOrganization() {
+        // Arrange
+        Organization entity = new Organization();
+        UUID id = UUID.randomUUID();
+
+        when(organizationRepository.findById(id)).thenReturn(Optional.empty());
+
+        // Act and Assert
+        assertThrows(NullPointerException.class, () -> {
+            organizationService.update(entity, id);
+        });
+    }
+
+    @Test
+    @DisplayName("given organization, update organization")
+    public void testUpdateWithNameChangeAndSuccessfulDelete() {
+        // Arrange
+        Organization entity = new Organization();
+        UUID id = UUID.randomUUID();
+        entity.setName("newName");
+        entity.setId(id);
+        String oldImage = "old";
+        String newImage = "new";
+        Organization exist = new Organization();
+        exist.setId(id);
+        exist.setName("newName");
+
+        when(organizationRepository.findById(id)).thenReturn(Optional.of(exist));
+        Jwt jwt = mock(Jwt.class);
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn(id.toString());
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+        when(organizationRepository.save(exist.update(entity))).thenReturn(exist);
+        // Act
+        Organization updatedOrganization = organizationService.update(entity, id);
+
+        // Assert
+        assertEquals("newName", updatedOrganization.getName());
+
+        // Verify that deleteImage and other relevant methods were called
+        verify(organizationRepository, times(1)).save(any(Organization.class));
+        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
+    }
 }
