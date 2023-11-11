@@ -827,14 +827,16 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                 throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't not found template");
             }
 
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
 
+            String date = ticket.getStartTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
             String startTime = ticket.getStartTime().format(formatter);
             String endTime = ticket.getEndTime().format(formatter);
 
             Map<String, String> parameterMap = new HashMap<>();
             parameterMap.put("customerName", customer.getVisitorName());
             parameterMap.put("meetingName", ticket.getName());
+            parameterMap.put("dateTime", date);
             parameterMap.put("startTime", startTime);
             parameterMap.put("endTime", endTime);
             parameterMap.put("address", site.getAddress());
