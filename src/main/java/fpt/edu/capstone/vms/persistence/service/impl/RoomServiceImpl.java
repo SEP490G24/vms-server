@@ -48,7 +48,7 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
         var room = roomRepository.findById(id).orElse(null);
         if (ObjectUtils.isEmpty(room))
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't found room");
-        var site = siteRepository.findById(roomInfo.getSiteId()).orElse(null);
+        var site = siteRepository.findById(room.getSiteId()).orElse(null);
         if (ObjectUtils.isEmpty(site)) {
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Site is null");
         }
