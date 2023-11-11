@@ -1,12 +1,21 @@
 package fpt.edu.capstone.vms.persistence.entity;
 
 import fpt.edu.capstone.vms.constants.Constants;
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
 
-import java.util.Map;
 import java.util.UUID;
 
 @Data
@@ -45,10 +54,6 @@ public class Permission extends AbstractBaseEntity<UUID> {
 
     @Column(name = "scope")
     private String scope;
-
-    @OneToMany(mappedBy = "permissionEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
-    @MapKey(name = "permissionRoleMapPk.permissionId")
-    private Map<UUID, PermissionRoleMap> permissionRoleMaps;
 
     public Permission update(Permission permissionEntity) {
         if (permissionEntity.name != null) this.name = permissionEntity.name;

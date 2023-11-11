@@ -232,7 +232,7 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
         return true;
     }
 
-    private void deleteSiteSettingMap(Site site) {
+    public void deleteSiteSettingMap(Site site) {
         var siteSettingMaps = settingSiteMapRepository.findAllBySettingSiteMapPk_SiteId(site.getId());
         if (siteSettingMaps != null) {
             siteSettingMaps.forEach(o -> {

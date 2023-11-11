@@ -43,6 +43,7 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
     }
 
     @Override
+    @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
     public Room update(Room roomInfo, UUID id) {
         var room = roomRepository.findById(id).orElse(null);
         if (ObjectUtils.isEmpty(room))

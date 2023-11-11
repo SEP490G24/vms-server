@@ -5,17 +5,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import fpt.edu.capstone.vms.constants.Constants;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.MapKey;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,7 +22,6 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.UUID;
 
 @Data
@@ -119,11 +114,6 @@ public class User extends AbstractBaseEntity<String> {
     @JoinColumn(name = "department_id", referencedColumnName = "id", insertable = false, updatable = false)
     @JsonIgnore
     private Department department;
-
-    @OneToMany(mappedBy = "userEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
-    @MapKey(name = "userRoleMapPk.username")
-    @JsonIgnore
-    private Map<String, UserRoleMap> userRoleMaps;
 
     public User update(User userEntity) {
         if (userEntity.openid != null) this.openid = userEntity.openid;

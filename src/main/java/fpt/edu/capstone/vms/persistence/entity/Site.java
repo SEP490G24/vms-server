@@ -1,15 +1,12 @@
 package fpt.edu.capstone.vms.persistence.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.MapKey;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -22,7 +19,6 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
 
-import java.util.Map;
 import java.util.UUID;
 
 
@@ -96,16 +92,6 @@ public class Site extends AbstractBaseEntity<UUID> {
 
     @Column(name = "enable")
     private Boolean enable;
-
-    @OneToMany(mappedBy = "siteEntity", cascade = CascadeType.REMOVE)
-    @MapKey(name = "pricePackageSiteMapPk.siteId")
-    @JsonIgnore
-    private Map<UUID, PricePackageSiteMap> pricePackageSiteMaps;
-
-    @OneToMany(mappedBy = "siteEntity", cascade = CascadeType.REMOVE)
-    @MapKey(name = "settingSiteMapPk.siteId")
-    @JsonIgnore
-    private Map<UUID, SettingSiteMap> settingSiteMaps;
 
     public Site update(Site siteEntity) {
         if (siteEntity.name != null) this.name = siteEntity.name;

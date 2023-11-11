@@ -4,10 +4,13 @@ import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.persistence.entity.Commune;
 import fpt.edu.capstone.vms.persistence.entity.District;
 import fpt.edu.capstone.vms.persistence.entity.Province;
+import fpt.edu.capstone.vms.persistence.entity.SettingSiteMap;
 import fpt.edu.capstone.vms.persistence.entity.Site;
+import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
 import fpt.edu.capstone.vms.persistence.repository.CommuneRepository;
 import fpt.edu.capstone.vms.persistence.repository.DistrictRepository;
 import fpt.edu.capstone.vms.persistence.repository.ProvinceRepository;
+import fpt.edu.capstone.vms.persistence.repository.SettingSiteMapRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,6 +30,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -37,6 +41,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -54,6 +60,11 @@ class SiteServiceImplTest {
     @Mock
     CommuneRepository communeRepository;
 
+    @Mock
+    AuditLogRepository auditLogRepository;
+
+    @Mock
+    SettingSiteMapRepository settingSiteMapRepository;
     @Mock
     Pageable pageable;
 
@@ -274,5 +285,131 @@ class SiteServiceImplTest {
         // Add assertions to check the content of the filteredRooms, depending on the expected behavior
         verify(siteRepository, times(1)).filter(pageable, names, UUID.fromString(SecurityUtils.getOrgId()), createdOnStart, createdOnEnd, createBy, lastUpdatedBy, enable, provinceId, districtId, communeId, keyword.toUpperCase());
 
+    }
+
+
+    @Test
+    void deleteSiteSuccessfulTest() {
+        // Arrange
+        UUID siteId = UUID.randomUUID(); // a valid UUID
+        Site siteEntity = new Site(/* initialize your Site entity */);
+        siteEntity.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+        siteEntity.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+        Jwt jwt = mock(Jwt.class);
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        // Mock the behavior of the siteRepository
+        when(siteRepository.findById(eq(siteId))).thenReturn(Optional.of(siteEntity));
+
+        // Mock the behavior of SecurityUtils or any other necessary mocks for a successful delete
+
+        // Mock the behavior of settingSiteMapRepository
+        List<SettingSiteMap> siteSettingMaps = new ArrayList<>(); // Add some setting maps if needed
+        when(settingSiteMapRepository.findAllBySettingSiteMapPk_SiteId(eq(siteEntity.getId()))).thenReturn(siteSettingMaps);
+
+        // Act
+        boolean result = siteService.deleteSite(siteId);
+
+        // Assert
+        assertTrue(result);
+
+        // Verify that the delete method of siteRepository was called with the correct arguments
+        verify(siteRepository).delete(eq(siteEntity));
+
+        // Verify that the save method of auditLogRepository was called with the correct arguments
+        verify(auditLogRepository).save(
+            argThat(auditLog -> auditLog.getAuditType() == Constants.AuditType.DELETE &&
+                auditLog.getSiteId().equals(siteEntity.getId().toString()) &&
+                auditLog.getOrganizationId().equals(siteEntity.getOrganizationId().toString()) &&
+                auditLog.getTableName().equals("Site") &&
+                auditLog.getOldValue().equals(siteEntity.toString()) &&
+                auditLog.getNewValue() == null)
+        );
+
+    }
+
+    @Test
+    void deleteSiteNotFoundTest() {
+        // Arrange
+        UUID siteId = UUID.randomUUID(); // a valid UUID
+
+        // Mock the behavior of the siteRepository
+        when(siteRepository.findById(eq(siteId))).thenReturn(Optional.empty());
+
+        // Act and Assert
+        assertThrows(HttpClientErrorException.class, () -> siteService.deleteSite(siteId),
+            "Can't found site by id: " + siteId);
+    }
+
+    @Test
+    void deleteSiteBadRequestOrganizationMismatchTest() {
+        // Arrange
+        UUID siteId = UUID.randomUUID(); // a valid UUID
+        Site siteEntity = new Site(/* initialize your Site entity */);
+        siteEntity.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+        // Create a mock Jwt object with the necessary claims
+        Jwt jwt = mock(Jwt.class);
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+
+        // Mock the behavior of the siteRepository
+        when(siteRepository.findById(eq(siteId))).thenReturn(Optional.of(siteEntity));
+
+        // Mock the behavior of SecurityUtils or any other necessary mocks for a mismatched organization
+
+        // Act and Assert
+        assertThrows(NullPointerException.class, () -> siteService.deleteSite(siteId),
+            "The current user is not in organization with organizationId ");
+    }
+
+    @Test
+    void deleteSiteBadRequestSiteIdMismatchTest() {
+        // Arrange
+        UUID siteId = UUID.randomUUID(); // a valid UUID
+        Site siteEntity = new Site(/* initialize your Site entity */);
+
+        // Mock the behavior of the siteRepository
+        when(siteRepository.findById(eq(siteId))).thenReturn(Optional.of(siteEntity));
+
+        // Mock the behavior of SecurityUtils or any other necessary mocks for a mismatched siteId
+
+        // Act and Assert
+        assertThrows(HttpClientErrorException.class, () -> siteService.deleteSite(siteId),
+            "The current user is not in site with siteId = " + SecurityUtils.getSiteId());
+    }
+
+    @Test
+    void deleteSiteSettingMapTest() {
+        // Arrange
+        Site siteEntity = new Site(/* initialize your Site entity */);
+        List<SettingSiteMap> siteSettingMaps = new ArrayList<>(); // Add some setting maps if needed
+
+        // Mock the behavior of settingSiteMapRepository
+        when(settingSiteMapRepository.findAllBySettingSiteMapPk_SiteId(eq(siteEntity.getId()))).thenReturn(siteSettingMaps);
+
+        // Act
+        siteService.deleteSiteSettingMap(siteEntity);
+
+        // Verify that the save method of auditLogRepository was called for each setting map
+        for (SettingSiteMap settingSiteMap : siteSettingMaps) {
+            verify(auditLogRepository).save(
+                argThat(auditLog -> auditLog.getAuditType() == Constants.AuditType.DELETE &&
+                    auditLog.getSiteId().equals(siteEntity.getId().toString()) &&
+                    auditLog.getOrganizationId().equals(siteEntity.getOrganizationId().toString()) &&
+                    auditLog.getTableName().equals("SettingSiteMap") &&
+                    auditLog.getOldValue().equals(settingSiteMap.toString()) &&
+                    auditLog.getNewValue() == null)
+            );
+        }
     }
 }
