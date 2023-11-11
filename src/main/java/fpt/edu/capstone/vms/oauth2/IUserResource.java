@@ -44,8 +44,6 @@ public interface IUserResource {
         private Constants.Gender gender;
         private List<String> roles;
         private UUID departmentId;
-        @JsonIgnore
-        private Boolean isCreateUserOrg;
     }
 
     @Data

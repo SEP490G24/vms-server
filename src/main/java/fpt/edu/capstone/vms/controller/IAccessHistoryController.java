@@ -4,7 +4,6 @@ import fpt.edu.capstone.vms.constants.Constants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,7 +14,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 
@@ -34,98 +32,30 @@ public interface IAccessHistoryController {
     @PostMapping("")
     @Operation(summary = "Filter access history ")
         //@PreAuthorize("hasRole('r:ticket:findQRCode')")
-    ResponseEntity<?> filterAccessHistory(@RequestBody @Valid TicketFilterUser ticketFilterUser, Pageable pageable);
+    ResponseEntity<?> filterAccessHistory(@RequestBody @Valid AccessHistoryFilter ticketFilterUser, Pageable pageable);
 
     @Data
     class AccessHistoryFilter {
-        private UUID id;
-        private String code;
-        private String name;
-        private String roomName;
-        private Constants.Purpose purpose;
-        private String purposeNote;
-        private LocalDateTime startTime;
-        private LocalDateTime endTime;
-        private String comment;
+        private String keyword;
+        private LocalDateTime formCheckInTime;
+        private LocalDateTime toCheckInTime;
+        private LocalDateTime formCheckOutTime;
+        private LocalDateTime toCheckOutTime;
         private Constants.StatusTicket status;
-        private String username;
-        private UUID roomId;
-        private String createdBy;
-        private LocalDateTime createdOn;
-        private String lastUpdatedBy;
-        private LocalDateTime lastUpdatedOn;
-        List<ICustomerController.CustomerInfo> Customers;
-    }
-
-    @Data
-    class TicketFilterSite {
-        List<String> names;
-        String username;
-        UUID roomId;
-        Constants.StatusTicket status;
-        Constants.Purpose purpose;
-        LocalDateTime createdOnStart;
-        LocalDateTime createdOnEnd;
-        LocalDateTime startTimeStart;
-        LocalDateTime startTimeEnd;
-        LocalDateTime endTimeStart;
-        LocalDateTime endTimeEnd;
-        String createdBy;
-        String lastUpdatedBy;
-        String keyword;
-    }
-
-    @Data
-    class TicketFilterUser {
-        List<String> names;
-        UUID roomId;
-        Constants.StatusTicket status;
-        Constants.Purpose purpose;
-        LocalDateTime createdOnStart;
-        LocalDateTime createdOnEnd;
-        LocalDateTime startTimeStart;
-        LocalDateTime startTimeEnd;
-        LocalDateTime endTimeStart;
-        LocalDateTime endTimeEnd;
-        String createdBy;
-        String lastUpdatedBy;
-        Boolean bookmark;
-        String keyword;
-    }
-
-    @Data
-    class CancelTicket {
-        private UUID reason;
-        private String reasonNote;
-        private UUID ticketId;
-        private UUID templateId;
-    }
-
-    @Data
-    class UpdateTicketInfo {
-        private UUID id;
-        private Constants.Purpose purpose;
-        private String purposeNote;
-        private String name;
-        private LocalDateTime startTime;
-        private LocalDateTime endTime;
-        private String description;
-        private UUID roomId;
-        List<ICustomerController.NewCustomers> newCustomers;
+        String site;
     }
 
     @Data
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    class TicketByQRCodeResponseDTO {
+    class AccessHistoryResponseDTO {
         //Ticket Info
         private UUID ticketId;
         private String ticketCode;
         private String ticketName;
         private Constants.Purpose purpose;
         private Constants.StatusTicket ticketStatus;
-        private Constants.StatusTicket ticketCustomerStatus;
         private LocalDateTime startTime;
         private LocalDateTime endTime;
         private String createBy;
@@ -137,22 +67,10 @@ public interface IAccessHistoryController {
 
         //Info customer
         ICustomerController.CustomerInfo customerInfo;
+
+        //access history
+        private LocalDateTime checkInTime;
+        private LocalDateTime checkOutTime;
+        private Constants.StatusTicket ticketCustomerStatus;
     }
-
-    @Data
-    class UpdateStatusTicketOfCustomer {
-
-        @NotNull
-        private UUID ticketId;
-
-        @NotNull
-        private UUID customerId;
-
-        @NotNull
-        private Constants.StatusTicket status;
-
-        private UUID reasonId;
-        private String reasonNote;
-    }
-
 }

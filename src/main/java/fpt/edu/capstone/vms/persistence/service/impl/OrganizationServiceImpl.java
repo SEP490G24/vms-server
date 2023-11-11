@@ -99,7 +99,6 @@ public class OrganizationServiceImpl extends GenericServiceImpl<Organization, UU
         userDto.setUsername(entity.getCode().toLowerCase() + "_" + "admin");
         userDto.setPassword("123456aA@");
         userDto.setOrgId(organization.getId().toString());
-        userDto.setIsCreateUserOrg(true);
         iUserService.createUser(userDto);
 
         auditLogRepository.save(new AuditLog(null

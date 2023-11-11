@@ -14,12 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 import java.util.Properties;
 
-import static fpt.edu.capstone.vms.constants.Constants.SettingCode.MAIL_HOST;
-import static fpt.edu.capstone.vms.constants.Constants.SettingCode.MAIL_PASSWORD;
-import static fpt.edu.capstone.vms.constants.Constants.SettingCode.MAIL_PORT;
-import static fpt.edu.capstone.vms.constants.Constants.SettingCode.MAIL_SMTP_AUTH;
-import static fpt.edu.capstone.vms.constants.Constants.SettingCode.MAIL_SMTP_STARTTLS_ENABLE;
-import static fpt.edu.capstone.vms.constants.Constants.SettingCode.MAIL_USERNAME;
+import static fpt.edu.capstone.vms.constants.Constants.SettingCode.*;
 
 @Service
 @AllArgsConstructor
@@ -76,7 +71,7 @@ public class EmailUtils {
         String replacedTemplate = emailTemplate;
 
         for (Map.Entry<String, String> entry : parameterMap.entrySet()) {
-            String parameter = "{{" + entry.getKey() + "}}";
+            String parameter = "@" + entry.getKey();
             String value = entry.getValue();
             replacedTemplate = replacedTemplate.replace(parameter, value);
         }

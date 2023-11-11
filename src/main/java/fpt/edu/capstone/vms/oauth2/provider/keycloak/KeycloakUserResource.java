@@ -5,6 +5,7 @@ import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
 import fpt.edu.capstone.vms.persistence.entity.Department;
 import fpt.edu.capstone.vms.persistence.repository.DepartmentRepository;
+import fpt.edu.capstone.vms.util.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.keycloak.admin.client.CreatedResponseUtil;
@@ -56,7 +57,7 @@ public class KeycloakUserResource implements IUserResource {
     public String create(UserDto userDto) {
 
         Map<String, List<String>> attributes = new HashMap<>();
-        if (userDto.getIsCreateUserOrg()) {
+        if (SecurityUtils.getUserDetails().isAdmin()) {
             attributes.put(Constants.Claims.OrgId, List.of(userDto.getOrgId()));
         } else {
             Department department = departmentRepository.findById(userDto.getDepartmentId()).orElse(null);

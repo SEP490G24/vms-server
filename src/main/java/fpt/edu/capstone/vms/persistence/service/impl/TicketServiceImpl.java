@@ -4,22 +4,6 @@ import com.google.zxing.WriterException;
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ICustomerController;
 import fpt.edu.capstone.vms.controller.ITicketController;
-import fpt.edu.capstone.vms.persistence.entity.AuditLog;
-import fpt.edu.capstone.vms.persistence.entity.Customer;
-import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMap;
-import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMapPk;
-import fpt.edu.capstone.vms.persistence.entity.Room;
-import fpt.edu.capstone.vms.persistence.entity.Site;
-import fpt.edu.capstone.vms.persistence.entity.Template;
-import fpt.edu.capstone.vms.persistence.entity.Ticket;
-import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
-import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
-import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
-import fpt.edu.capstone.vms.persistence.repository.OrganizationRepository;
-import fpt.edu.capstone.vms.persistence.repository.RoomRepository;
-import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
-import fpt.edu.capstone.vms.persistence.repository.TemplateRepository;
-import fpt.edu.capstone.vms.persistence.repository.TicketRepository;
 import fpt.edu.capstone.vms.persistence.entity.*;
 import fpt.edu.capstone.vms.persistence.repository.*;
 import fpt.edu.capstone.vms.persistence.service.ITicketService;
@@ -814,13 +798,15 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             String siteId = ticket.getSiteId();
             Site site = siteRepository.findById(UUID.fromString(siteId)).orElse(null);
 
+            //get template email to setting site
+
             Map<String, String> parameterMap = new HashMap<>();
-            parameterMap.put("customer_name", customer.getVisitorName());
-            parameterMap.put("meeting_name", ticket.getRoom().getName());
-            parameterMap.put("start_time", ticket.getStartTime().toString());
-            parameterMap.put("end_time", ticket.getEndTime().toString());
+            parameterMap.put("customerName", customer.getVisitorName());
+            parameterMap.put("meetingName", ticket.getRoom().getName());
+            parameterMap.put("startTime", ticket.getStartTime().toString());
+            parameterMap.put("endTime", ticket.getEndTime().toString());
             parameterMap.put("address", site.getAddress());
-            parameterMap.put("room_name", ticket.getRoom().getName());
+            parameterMap.put("roomName", ticket.getRoom().getName());
             String replacedTemplate = emailUtils.replaceEmailParameters(template.getBody(), parameterMap);
 
             emailUtils.sendMailWithQRCode(customer.getEmail(), template.getSubject(), replacedTemplate, qrCodeData, ticket.getSiteId());
