@@ -10,23 +10,27 @@ import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.entity.Template;
 import fpt.edu.capstone.vms.persistence.entity.Ticket;
 import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
+import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
 import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
+import fpt.edu.capstone.vms.persistence.repository.OrganizationRepository;
 import fpt.edu.capstone.vms.persistence.repository.RoomRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.repository.TemplateRepository;
 import fpt.edu.capstone.vms.persistence.repository.TicketRepository;
-import fpt.edu.capstone.vms.persistence.repository.*;
 import fpt.edu.capstone.vms.util.EmailUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
+import fpt.edu.capstone.vms.util.SettingUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -45,33 +49,33 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class TicketServiceImplTest {
 
-    @InjectMocks
     private TicketServiceImpl ticketService;
 
-    @Mock
     private TicketRepository ticketRepository;
-    @Mock
     private AuditLogRepository auditLogRepository;
 
-    @Mock
     private TemplateRepository templateRepository;
 
-    @Mock
     private SiteRepository siteRepository;
 
-    @Mock
     private EmailUtils emailUtils;
 
-    @Mock
+    private SettingUtils settingUtils;
+    private AuditLogServiceImpl auditLogService;
+
     private RoomRepository roomRepository;
+    private CustomerRepository customerRepository;
+    private OrganizationRepository organizationRepository;
 
 
     @Mock
@@ -84,10 +88,24 @@ class TicketServiceImplTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
         securityContext = mock(SecurityContext.class);
         authentication = mock(Authentication.class);
         mapper = mock(ModelMapper.class);
+        settingUtils = mock(SettingUtils.class);
+        ticketRepository = mock(TicketRepository.class);
+        siteRepository = mock(SiteRepository.class);
+        settingUtils = mock(SettingUtils.class);
+        templateRepository = mock(TemplateRepository.class);
+        roomRepository = mock(RoomRepository.class);
+        customerTicketMapRepository = mock(CustomerTicketMapRepository.class);
+        emailUtils = mock(EmailUtils.class);
+        auditLogRepository = mock(AuditLogRepository.class);
+
+        ticketService = new TicketServiceImpl(ticketRepository
+            , customerRepository, templateRepository
+            , mapper, roomRepository, siteRepository
+            , organizationRepository, customerTicketMapRepository
+            , emailUtils, auditLogService, auditLogRepository, settingUtils);
     }
 
     @Test
@@ -123,7 +141,6 @@ class TicketServiceImplTest {
         ticketInfo.setStartTime(LocalDateTime.now());
         ticketInfo.setEndTime(LocalDateTime.now().plusHours(1));
         ticketInfo.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
-        ticketInfo.setTemplateId(UUID.randomUUID());
 
         // Create a mock Jwt object with the necessary claims
         Jwt jwt = mock(Jwt.class);
@@ -154,7 +171,6 @@ class TicketServiceImplTest {
         ticketInfo.setStartTime(null); // Invalid start time
         ticketInfo.setEndTime(LocalDateTime.now().plusHours(1));
         ticketInfo.setSiteId("valid_site_id");
-        ticketInfo.setTemplateId(UUID.randomUUID());
 
         Jwt jwt = mock(Jwt.class);
         when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
@@ -176,7 +192,6 @@ class TicketServiceImplTest {
         ticketInfo.setStartTime(LocalDateTime.now());
         ticketInfo.setEndTime(LocalDateTime.now().plusHours(1));
         ticketInfo.setSiteId("invalid_site_id"); // Invalid site id
-        ticketInfo.setTemplateId(UUID.randomUUID());
 
         Jwt jwt = mock(Jwt.class);
         when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
@@ -201,7 +216,6 @@ class TicketServiceImplTest {
         ticketInfo.setStartTime(LocalDateTime.now());
         ticketInfo.setEndTime(LocalDateTime.now().plusHours(1));
         ticketInfo.setSiteId("valid_site_id");
-        ticketInfo.setTemplateId(UUID.randomUUID());
 
         Jwt jwt = mock(Jwt.class);
         when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
@@ -228,7 +242,6 @@ class TicketServiceImplTest {
         ticketInfo.setStartTime(LocalDateTime.now());
         ticketInfo.setEndTime(LocalDateTime.now().plusHours(1));
         ticketInfo.setSiteId("valid_site_id");
-        ticketInfo.setTemplateId(UUID.randomUUID());
         ticketInfo.setPurpose(null); // Invalid purpose
 
         Jwt jwt = mock(Jwt.class);
@@ -256,7 +269,6 @@ class TicketServiceImplTest {
         ticketInfo.setStartTime(LocalDateTime.now());
         ticketInfo.setEndTime(LocalDateTime.now().plusHours(1));
         ticketInfo.setSiteId("valid_site_id");
-        ticketInfo.setTemplateId(UUID.randomUUID());
         ticketInfo.setPurpose(OTHERS); // Other purpose, but no purpose note
 
         Jwt jwt = mock(Jwt.class);
@@ -273,7 +285,7 @@ class TicketServiceImplTest {
         when(templateRepository.findById(Mockito.any(UUID.class))).thenReturn(Optional.of(new Template()));
         when(mapper.map(ticketInfo, Ticket.class)).thenReturn(new Ticket());
 
-        assertThrows(NullPointerException.class, () -> ticketService.create(ticketInfo));
+        assertThrows(IllegalArgumentException.class, () -> ticketService.create(ticketInfo));
     }
 
     @Test
@@ -471,7 +483,6 @@ class TicketServiceImplTest {
     public void givenTicketToCancel_WhenCancelling_ThenCancelTicket() {
         ITicketController.CancelTicket cancelTicket = new ITicketController.CancelTicket();
         cancelTicket.setTicketId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c06"));
-        cancelTicket.setTemplateId(UUID.randomUUID());
 
         Ticket mockTicket = new Ticket();
         mockTicket.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
@@ -479,8 +490,10 @@ class TicketServiceImplTest {
         mockTicket.setStartTime(LocalDateTime.now().plusHours(3)); // Start time is after 2 hours
         when(ticketRepository.findById(cancelTicket.getTicketId())).thenReturn(Optional.of(mockTicket));
 
+        Template template = new Template();
+        template.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c06"));
+
         Jwt jwt = mock(Jwt.class);
-        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
         when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c07");
         when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("mocked_username");
         when(authentication.getPrincipal()).thenReturn(jwt);
@@ -489,8 +502,11 @@ class TicketServiceImplTest {
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
 
+        when(siteRepository.existsByIdAndOrganizationId(Mockito.any(UUID.class), Mockito.any(UUID.class))).thenReturn(true);
         when(ticketRepository.existsByIdAndUsername(cancelTicket.getTicketId(), "mocked_username")).thenReturn(true);
-        when(templateRepository.findById(cancelTicket.getTemplateId())).thenReturn(Optional.of(new Template()));
+        when(settingUtils.getOrDefault(eq(Constants.SettingCode.TICKET_TEMPLATE_CANCEL_EMAIL))).thenReturn(template.getId().toString());
+
+        doNothing().when(emailUtils).sendMailWithQRCode(anyString(), anyString(), anyString(), any(), anyString());
         when(customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(mockTicket.getId())).thenReturn(new ArrayList<>());
 
         Site site = new Site();
@@ -534,7 +550,6 @@ class TicketServiceImplTest {
 
         ITicketController.CancelTicket cancelTicket = new ITicketController.CancelTicket();
         cancelTicket.setTicketId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c06"));
-        cancelTicket.setTemplateId(UUID.randomUUID());
 
         Ticket mockTicket = new Ticket();
         mockTicket.setStartTime(LocalDateTime.now().plusHours(1)); // Start time is before 2 hours
@@ -551,11 +566,11 @@ class TicketServiceImplTest {
         cancelTicket.setTicketId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c06"));
 
         Ticket mockTicket = new Ticket();
+        mockTicket.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
         mockTicket.setStartTime(LocalDateTime.now().plusHours(3)); // Start time is after 2 hours
         when(ticketRepository.findById(cancelTicket.getTicketId())).thenReturn(Optional.of(mockTicket));
 
         Jwt jwt = mock(Jwt.class);
-        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
         when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c07");
         when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("mocked_username");
         when(authentication.getPrincipal()).thenReturn(jwt);
@@ -564,6 +579,13 @@ class TicketServiceImplTest {
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
 
+        Template template = new Template();
+        template.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c06"));
+        when(settingUtils.getOrDefault(eq(Constants.SettingCode.TICKET_TEMPLATE_CANCEL_EMAIL))).thenReturn(template.getId().toString());
+
+        doNothing().when(emailUtils).sendMailWithQRCode(anyString(), anyString(), anyString(), any(), anyString());
+        when(customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(mockTicket.getId())).thenReturn(new ArrayList<>());
+        when(siteRepository.existsByIdAndOrganizationId(Mockito.any(UUID.class), Mockito.any(UUID.class))).thenReturn(true);
         when(ticketRepository.existsByIdAndUsername(cancelTicket.getTicketId(), "another_user")).thenReturn(false);
 
         boolean result = ticketService.cancelTicket(cancelTicket);
@@ -578,7 +600,6 @@ class TicketServiceImplTest {
 
         ITicketController.CancelTicket cancelTicket = new ITicketController.CancelTicket();
         cancelTicket.setTicketId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c06"));
-        cancelTicket.setTemplateId(UUID.randomUUID());
 
         Ticket mockTicket = new Ticket();
         mockTicket.setStartTime(LocalDateTime.now().plusHours(3)); // Start time is after 2 hours
@@ -595,7 +616,14 @@ class TicketServiceImplTest {
         SecurityContextHolder.setContext(securityContext);
 
         when(ticketRepository.existsByIdAndUsername(cancelTicket.getTicketId(), "mocked_username")).thenReturn(true);
-        when(templateRepository.findById(cancelTicket.getTemplateId())).thenReturn(Optional.empty());
+
+        Template template = new Template();
+        template.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c06"));
+        when(settingUtils.getOrDefault(eq(Constants.SettingCode.TICKET_TEMPLATE_CANCEL_EMAIL))).thenReturn(template.getId().toString());
+
+        doNothing().when(emailUtils).sendMailWithQRCode(anyString(), anyString(), anyString(), any(), anyString());
+        when(customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(mockTicket.getId())).thenReturn(new ArrayList<>());
+        when(siteRepository.existsByIdAndOrganizationId(Mockito.any(UUID.class), Mockito.any(UUID.class))).thenReturn(true);
 
         Site site = new Site();
         mockTicket.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c06");

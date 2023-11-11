@@ -12,6 +12,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -60,8 +61,14 @@ public interface ITemplateController {
     ResponseEntity<?> filter(@RequestBody @Valid TemplateFilterDTO templateFilterDTO, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
     @GetMapping("/site/{siteId}")
-    @Operation(summary = "Get all room by siteId")
-    ResponseEntity<List<?>> findAllBySiteId(@PathVariable UUID siteId);
+    @Operation(summary = "Get all template by siteId")
+    @PreAuthorize("hasRole('r:user:find')")
+    ResponseEntity<List<?>> findAllBySiteId(@PathVariable String siteId);
+
+    @GetMapping("/site/{siteId}/{type}")
+    @Operation(summary = "Get all template by siteId and type")
+    @PreAuthorize("hasRole('r:user:find')")
+    ResponseEntity<List<?>> findAllBySiteIdAndType(@PathVariable String siteId, @PathVariable Constants.TemplateType type);
 
     @Data
     @Builder

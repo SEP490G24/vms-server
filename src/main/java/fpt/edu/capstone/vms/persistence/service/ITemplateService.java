@@ -1,5 +1,6 @@
 package fpt.edu.capstone.vms.persistence.service;
 
+import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ITemplateController;
 import fpt.edu.capstone.vms.persistence.entity.Template;
 import fpt.edu.capstone.vms.persistence.service.generic.IGenericService;
@@ -32,4 +33,6 @@ public interface ITemplateService extends IGenericService<Template, UUID> {
         String keyword);
 
     List<Template> finAllBySiteId(String siteId);
+
+    List<Template> finAllBySiteIdAndType(String siteId, Constants.TemplateType type);
 }

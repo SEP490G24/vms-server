@@ -20,13 +20,12 @@ import fpt.edu.capstone.vms.persistence.repository.RoomRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.repository.TemplateRepository;
 import fpt.edu.capstone.vms.persistence.repository.TicketRepository;
-import fpt.edu.capstone.vms.persistence.entity.*;
-import fpt.edu.capstone.vms.persistence.repository.*;
 import fpt.edu.capstone.vms.persistence.service.ITicketService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import fpt.edu.capstone.vms.util.EmailUtils;
 import fpt.edu.capstone.vms.util.QRcodeUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
+import fpt.edu.capstone.vms.util.SettingUtils;
 import fpt.edu.capstone.vms.util.Utils;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -73,6 +72,8 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     final EmailUtils emailUtils;
     final AuditLogServiceImpl auditLogService;
     final AuditLogRepository auditLogRepository;
+    final SettingUtils settingUtils;
+
     private static final String TICKET_TABLE_NAME = "Ticket";
     private static final String CUSTOMER_TICKET_TABLE_NAME = "CustomerTicketMap";
 
@@ -80,7 +81,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     public TicketServiceImpl(TicketRepository ticketRepository, CustomerRepository customerRepository,
                              TemplateRepository templateRepository, ModelMapper mapper, RoomRepository roomRepository,
                              SiteRepository siteRepository, OrganizationRepository organizationRepository,
-                             CustomerTicketMapRepository customerTicketMapRepository, EmailUtils emailUtils, AuditLogServiceImpl auditLogService, AuditLogRepository auditLogRepository) {
+                             CustomerTicketMapRepository customerTicketMapRepository, EmailUtils emailUtils, AuditLogServiceImpl auditLogService, AuditLogRepository auditLogRepository, SettingUtils settingUtils) {
         this.ticketRepository = ticketRepository;
         this.templateRepository = templateRepository;
         this.customerRepository = customerRepository;
@@ -92,6 +93,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         this.emailUtils = emailUtils;
         this.auditLogService = auditLogService;
         this.auditLogRepository = auditLogRepository;
+        this.settingUtils = settingUtils;
         this.init(ticketRepository);
     }
 
@@ -149,15 +151,12 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "End time is empty");
             }
 
-            // check template
-            if (StringUtils.isEmpty(ticketInfo.getTemplateId().toString())) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "TemplateId is empty");
-            }
+            settingUtils.loadSettingsSite(ticketDto.getSiteId());
 
-            Template template = templateRepository.findById(ticketDto.getTemplateId()).orElse(null);
+            Template template = templateRepository.findById(UUID.fromString(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CONFIRM_EMAIL))).orElse(null);
 
             if (ObjectUtils.isEmpty(template)) {
-                throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't not found ticket");
+                throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't not found template");
             }
 
             if (!template.getSiteId().equals(UUID.fromString(ticketDto.getSiteId())))
@@ -394,7 +393,18 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         if (!startTime.isAfter(currentTime.plusHours(2))) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Meetings cannot be canceled at least 2 hours before they start.");
         }
+        if (SecurityUtils.getOrgId() != null) {
+            if (StringUtils.isEmpty(ticket.getSiteId().trim()))
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SiteId is null");
+            if (!siteRepository.existsByIdAndOrganizationId(UUID.fromString(ticket.getSiteId()), UUID.fromString(SecurityUtils.getOrgId())))
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "You don't have permission to do this.");
+        } else {
+            if (!ticket.getSiteId().equals(SecurityUtils.getSiteId()))
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "You don't have permission to do this.");
+        }
+        settingUtils.loadSettingsSite(ticket.getSiteId());
 
+        Template template = templateRepository.findById(UUID.fromString(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CANCEL_EMAIL))).orElse(null);
 
         if (ticketRepository.existsByIdAndUsername(cancelTicket.getTicketId(), SecurityUtils.loginUsername())) {
             Ticket oldValue = ticket;
@@ -405,7 +415,6 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                 customerTicketMaps.forEach(o -> {
                     Customer customer = o.getCustomerEntity();
 
-                    Template template = templateRepository.findById(cancelTicket.getTemplateId()).orElse(null);
                     if (ObjectUtils.isEmpty(template)) {
                         throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't not found template");
                     }
@@ -511,6 +520,10 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             orgId = SecurityUtils.getOrgId();
         }
 
+        settingUtils.loadSettingsSite(ticket.getSiteId());
+
+        Template template = templateRepository.findById(UUID.fromString(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CONFIRM_EMAIL))).orElse(null);
+
         if (newCustomers != null) {
             for (ICustomerController.NewCustomers customerDto : newCustomers) {
                 if (ObjectUtils.isEmpty(customerDto))
@@ -522,10 +535,10 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                 if (ObjectUtils.isEmpty(customerExist)) {
                     Customer customer = customerRepository.save(mapper.map(customerDto, Customer.class).setOrganizationId(orgId));
                     createCustomerTicket(ticket, customer.getId());
-                    sendEmail(customer, ticket, ticket.getTemplate());
+                    sendEmail(customer, ticket, template);
                 } else {
                     createCustomerTicket(ticket, customerExist.getId());
-                    sendEmail(customerExist, ticket, ticket.getTemplate());
+                    sendEmail(customerExist, ticket, template);
                 }
             }
         }

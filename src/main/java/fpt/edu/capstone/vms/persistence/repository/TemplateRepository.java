@@ -1,5 +1,6 @@
 package fpt.edu.capstone.vms.persistence.repository;
 
+import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.persistence.entity.Template;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -55,4 +56,6 @@ public interface TemplateRepository extends GenericRepository<Template, UUID> {
         @Param("keyword") @Nullable String keyword);
 
     List<Template> findAllBySiteIdAndEnableIsTrue(UUID siteId);
+
+    List<Template> findAllBySiteIdAndEnableIsTrueAndType(UUID siteId, Constants.TemplateType type);
 }

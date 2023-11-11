@@ -1,5 +1,6 @@
 package fpt.edu.capstone.vms.controller.impl;
 
+import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ITemplateController;
 import fpt.edu.capstone.vms.exception.HttpClientResponse;
 import fpt.edu.capstone.vms.persistence.entity.Template;
@@ -85,8 +86,13 @@ public class TemplateController implements ITemplateController {
     }
 
     @Override
-    public ResponseEntity<List<?>> findAllBySiteId(UUID siteId) {
-        return null;
+    public ResponseEntity<List<?>> findAllBySiteId(String siteId) {
+        return ResponseEntity.ok(templateService.finAllBySiteId(siteId));
+    }
+
+    @Override
+    public ResponseEntity<List<?>> findAllBySiteIdAndType(String siteId, Constants.TemplateType type) {
+        return ResponseEntity.ok(templateService.finAllBySiteIdAndType(siteId, type));
     }
 
 }

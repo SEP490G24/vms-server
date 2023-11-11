@@ -114,8 +114,6 @@ public interface ITicketController {
 
         private UUID roomId;
 
-        private UUID templateId;
-
         private String siteId;
 
         List<ICustomerController.NewCustomers> newCustomers;
@@ -214,7 +212,6 @@ public interface ITicketController {
         private UUID reason;
         private String reasonNote;
         private UUID ticketId;
-        private UUID templateId;
     }
 
     @Data

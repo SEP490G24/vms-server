@@ -83,14 +83,6 @@ public class Ticket extends AbstractBaseEntity<UUID> {
     @Column(name = "settings", length = 500)
     private String settings;
 
-    @Column(name = "template_id")
-    private UUID templateId;
-
-    @ManyToOne
-    @JoinColumn(name = "template_id", referencedColumnName = "id", insertable = false, updatable = false)
-    @JsonIgnore
-    private Template template;
-
     @Column(name = "site_id")
     private String siteId;
 

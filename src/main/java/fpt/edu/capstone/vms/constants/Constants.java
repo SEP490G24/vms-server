@@ -23,6 +23,10 @@ public class Constants {
         public static String MAIL_PASSWORD = "mail.password";
         public static String MAIL_SMTP_STARTTLS_ENABLE = "mail.smtp.starttls.enable";
 
+        //ticket
+        public static String TICKET_TEMPLATE_CONFIRM_EMAIL = "ticket.template.confirm.email";
+        public static String TICKET_TEMPLATE_CANCEL_EMAIL = "ticket.template.cancel.email";
+
     }
 
     public static final String[] IGNORE_CLIENT_ID_KEYCLOAK = new String[]{"account", "account-console", "admin-cli", "broker",
@@ -81,16 +85,15 @@ public class Constants {
     }
 
     public enum TemplateType {
-        EMAIL,
-        SMS,
-        CANCEL_MEETING,
-        REFUSE_MEETING
+        CANCEL_MEETING_EMAIL,
+        CONFIRM_MEETING_EMAIL
     }
 
     public enum SettingType {
         INPUT,
         SWITCH,
-        SELECT
+        SELECT,
+        API
     }
 
     public enum Purpose {
