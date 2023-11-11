@@ -154,7 +154,7 @@ class OrganizationServiceImplTest {
         when(organizationRepository.existsByCode("existingCode")).thenReturn(true);
 
         // Act and Assert
-        assertThrows(NullPointerException.class, () -> {
+        assertThrows(HttpClientErrorException.class, () -> {
             organizationService.update(entity, id);
         });
 
@@ -210,7 +210,7 @@ class OrganizationServiceImplTest {
         when(organizationRepository.findById(id)).thenReturn(Optional.empty());
 
         // Act and Assert
-        assertThrows(NullPointerException.class, () -> {
+        assertThrows(HttpClientErrorException.class, () -> {
             organizationService.update(entity, id);
         });
     }
