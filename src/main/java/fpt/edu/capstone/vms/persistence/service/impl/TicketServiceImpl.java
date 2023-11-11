@@ -159,9 +159,6 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                 throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't not found template");
             }
 
-            if (!template.getSiteId().equals(UUID.fromString(ticketDto.getSiteId())))
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User can not create meeting in this template");
-
             //check purpose
             if (StringUtils.isEmpty(ticketDto.getPurpose().toString())) {
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Purpose is empty");
@@ -836,7 +833,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
 
             Map<String, String> parameterMap = new HashMap<>();
             parameterMap.put("customerName", customer.getVisitorName());
-            parameterMap.put("meetingName", ticket.getRoom().getName());
+            parameterMap.put("meetingName", ticket.getName());
             parameterMap.put("startTime", ticket.getStartTime().toString());
             parameterMap.put("endTime", ticket.getEndTime().toString());
             parameterMap.put("address", site.getAddress());
