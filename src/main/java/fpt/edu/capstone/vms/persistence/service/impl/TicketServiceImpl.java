@@ -49,6 +49,7 @@ import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -151,14 +152,6 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "End time is empty");
             }
 
-            settingUtils.loadSettingsSite(ticketDto.getSiteId());
-
-            Template template = templateRepository.findById(UUID.fromString(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CONFIRM_EMAIL))).orElse(null);
-
-            if (ObjectUtils.isEmpty(template)) {
-                throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't not found template");
-            }
-
             //check purpose
             if (StringUtils.isEmpty(ticketDto.getPurpose().toString())) {
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Purpose is empty");
@@ -173,11 +166,12 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             ticketDto.setStatus(Constants.StatusTicket.PENDING);
             Ticket ticket = ticketRepository.save(ticketDto);
 
+            Room room = roomRepository.findById(ticketInfo.getRoomId()).orElse(null);
             setDataCustomer(ticketInfo, ticket);
             var customerTicketMaps = customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(ticket.getId());
             if (customerTicketMaps.isEmpty())
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is null");
-            sendQr(customerTicketMaps, ticket, template);
+            sendQr(customerTicketMaps, ticket, room);
 
             auditLogRepository.save(new AuditLog(ticket.getSiteId()
                 , siteRepository.findById(UUID.fromString(ticket.getSiteId())).orElse(null).getOrganizationId().toString()
@@ -490,9 +484,10 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
 
         Ticket oldValue = ticket;
         ticketRepository.save(ticket.update(ticketMap));
+        Room room = roomRepository.findById(ticket.getRoomId()).orElse(null);
 
         if (ticketInfo.getNewCustomers() != null) {
-            checkNewCustomers(ticketInfo.getNewCustomers(), ticket);
+            checkNewCustomers(ticketInfo.getNewCustomers(), ticket, room);
         }
         auditLogRepository.save(new AuditLog(ticket.getSiteId()
             , siteRepository.findById(UUID.fromString(ticket.getSiteId())).orElse(null).getOrganizationId().toString()
@@ -505,7 +500,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         return ticket;
     }
 
-    private void checkNewCustomers(List<ICustomerController.NewCustomers> newCustomers, Ticket ticket) {
+    private void checkNewCustomers(List<ICustomerController.NewCustomers> newCustomers, Ticket ticket, Room room) {
         String orgId;
         if (SecurityUtils.getOrgId() == null) {
             Site site = siteRepository.findById(UUID.fromString(SecurityUtils.getSiteId())).orElse(null);
@@ -532,10 +527,10 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                 if (ObjectUtils.isEmpty(customerExist)) {
                     Customer customer = customerRepository.save(mapper.map(customerDto, Customer.class).setOrganizationId(orgId));
                     createCustomerTicket(ticket, customer.getId());
-                    sendEmail(customer, ticket, template);
+                    sendEmail(customer, ticket, room);
                 } else {
                     createCustomerTicket(ticket, customerExist.getId());
-                    sendEmail(customerExist, ticket, template);
+                    sendEmail(customerExist, ticket, room);
                 }
             }
         }
@@ -792,14 +787,11 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
      *                          object represents a mapping between a customer and a ticket.
      * @param ticket            The `ticket` parameter is an object of type `Ticket`. It represents a ticket that is associated with
      *                          the QR code being sent.
-     * @param template          The `template` parameter is an object of type `Template`. It contains the email template that will
-     *                          be used to send the email to the customer. The template object has properties such as `subject` and `body`, which
-     *                          represent the subject and content of the email respectively.
      */
-    private void sendQr(List<CustomerTicketMap> customerTicketMap, Ticket ticket, Template template) {
+    private void sendQr(List<CustomerTicketMap> customerTicketMap, Ticket ticket, Room room) {
         customerTicketMap.forEach(o -> {
             var customer = customerRepository.findById(o.getCustomerTicketMapPk().getCustomerId()).orElse(null);
-            sendEmail(customer, ticket, template);
+            sendEmail(customer, ticket, room);
         });
     }
 
@@ -810,11 +802,8 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
      *                 name.
      * @param ticket   The `ticket` parameter is an object of the `Ticket` class. It contains information about a ticket,
      *                 such as its ID and site ID.
-     * @param template The `template` parameter is an object of type `Template`. It contains the email template that will
-     *                 be used to send the email. The `Template` class likely has properties such as `subject` and `body`, which store the
-     *                 subject and body of the email template, respectively.
      */
-    private void sendEmail(Customer customer, Ticket ticket, Template template) {
+    private void sendEmail(Customer customer, Ticket ticket, Room room) {
         String meetingUrl = "https://web-vms.azurewebsites.net/ticket/" + ticket.getId().toString() + "/customer/" + customer.getId().toString();
 
         if (ObjectUtils.isEmpty(customer))
@@ -823,7 +812,6 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         // Tạo mã QR code
         try {
             byte[] qrCodeData = QRcodeUtils.getQRCodeImage(meetingUrl, 800, 800);
-            assert template != null;
 
             //template email
             String siteId = ticket.getSiteId();
@@ -831,13 +819,26 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
 
             //get template email to setting site
 
+            settingUtils.loadSettingsSite(siteId);
+
+            Template template = templateRepository.findById(UUID.fromString(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CONFIRM_EMAIL))).orElse(null);
+
+            if (ObjectUtils.isEmpty(template)) {
+                throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't not found template");
+            }
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+            String startTime = ticket.getStartTime().format(formatter);
+            String endTime = ticket.getEndTime().format(formatter);
+
             Map<String, String> parameterMap = new HashMap<>();
             parameterMap.put("customerName", customer.getVisitorName());
             parameterMap.put("meetingName", ticket.getName());
-            parameterMap.put("startTime", ticket.getStartTime().toString());
-            parameterMap.put("endTime", ticket.getEndTime().toString());
+            parameterMap.put("startTime", startTime);
+            parameterMap.put("endTime", endTime);
             parameterMap.put("address", site.getAddress());
-            parameterMap.put("roomName", ticket.getRoom().getName());
+            parameterMap.put("roomName", room.getName());
             String replacedTemplate = emailUtils.replaceEmailParameters(template.getBody(), parameterMap);
 
             emailUtils.sendMailWithQRCode(customer.getEmail(), template.getSubject(), replacedTemplate, qrCodeData, ticket.getSiteId());

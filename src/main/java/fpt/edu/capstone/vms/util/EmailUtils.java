@@ -14,7 +14,12 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 import java.util.Properties;
 
-import static fpt.edu.capstone.vms.constants.Constants.SettingCode.*;
+import static fpt.edu.capstone.vms.constants.Constants.SettingCode.MAIL_HOST;
+import static fpt.edu.capstone.vms.constants.Constants.SettingCode.MAIL_PASSWORD;
+import static fpt.edu.capstone.vms.constants.Constants.SettingCode.MAIL_PORT;
+import static fpt.edu.capstone.vms.constants.Constants.SettingCode.MAIL_SMTP_AUTH;
+import static fpt.edu.capstone.vms.constants.Constants.SettingCode.MAIL_SMTP_STARTTLS_ENABLE;
+import static fpt.edu.capstone.vms.constants.Constants.SettingCode.MAIL_USERNAME;
 
 @Service
 @AllArgsConstructor
