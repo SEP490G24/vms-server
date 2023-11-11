@@ -14,7 +14,7 @@ import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,7 +48,11 @@ public class OrganizationServiceImpl extends GenericServiceImpl<Organization, UU
     @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
     public Organization update(Organization entity, UUID id) {
 
-        if (!StringUtils.isEmpty(entity.getCode())) {
+        if (StringUtils.isEmpty(id.toString())) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Id of organization is null");
+        }
+
+        if (StringUtils.isEmpty(entity.getCode())) {
             if (organizationRepository.existsByCode(entity.getCode())) {
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code of organization is exist");
             }
@@ -113,9 +117,21 @@ public class OrganizationServiceImpl extends GenericServiceImpl<Organization, UU
     }
 
     @Override
-    public Page<Organization> filter(int pageNumber, List<String> names, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, String createBy, String lastUpdatedBy, Boolean enable, String keyword) {
+    public Page<Organization> filter(Pageable pageable, List<String> names, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, String createBy, String lastUpdatedBy, Boolean enable, String keyword) {
         return organizationRepository.filter(
-            PageRequest.of(pageNumber, Constants.PAGE_SIZE),
+            pageable,
+            names,
+            createdOnStart,
+            createdOnEnd,
+            createBy,
+            lastUpdatedBy,
+            enable,
+            keyword);
+    }
+
+    @Override
+    public List<Organization> filter(List<String> names, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, String createBy, String lastUpdatedBy, Boolean enable, String keyword) {
+        return organizationRepository.filter(
             names,
             createdOnStart,
             createdOnEnd,
