@@ -1,14 +1,13 @@
 package fpt.edu.capstone.vms.controller.impl;
 
 import fpt.edu.capstone.vms.controller.IOrganizationController;
-import fpt.edu.capstone.vms.controller.ISiteController;
 import fpt.edu.capstone.vms.exception.HttpClientResponse;
 import fpt.edu.capstone.vms.persistence.entity.Organization;
-import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.service.IOrganizationService;
-import fpt.edu.capstone.vms.persistence.service.impl.OrganizationServiceImpl;
+import jakarta.ws.rs.QueryParam;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
@@ -58,10 +57,18 @@ public class OrganizationController implements IOrganizationController {
     }
 
     @Override
-    public ResponseEntity<?> filter(OrganizationFilter filter) {
-        return ResponseEntity.ok(
+    public ResponseEntity<?> filter(OrganizationFilter filter, @QueryParam("isPageable") boolean isPageable, Pageable pageable) {
+        return isPageable ? ResponseEntity.ok(
             organizationService.filter(
-                filter.getPageNumber(),
+                pageable,
+                filter.getNames(),
+                filter.getCreatedOnStart(),
+                filter.getCreatedOnEnd(),
+                filter.getCreateBy(),
+                filter.getLastUpdatedBy(),
+                filter.getEnable(),
+                filter.getKeyword())) : ResponseEntity.ok(
+            organizationService.filter(
                 filter.getNames(),
                 filter.getCreatedOnStart(),
                 filter.getCreatedOnEnd(),

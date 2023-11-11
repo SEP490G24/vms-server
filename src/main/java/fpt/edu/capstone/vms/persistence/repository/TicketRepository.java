@@ -17,9 +17,9 @@ import java.util.UUID;
 @Repository
 public interface TicketRepository extends GenericRepository<Ticket, UUID> {
 
-    Integer countByRoomIdAndEndTimeGreaterThanEqualAndStartTimeLessThanEqual(UUID roomId, LocalDateTime startTime, LocalDateTime endTime);
+    Integer countByRoomIdAndEndTimeGreaterThanEqualAndStartTimeLessThanEqualAndStatusNotLike(UUID roomId, LocalDateTime startTime, LocalDateTime endTime, Constants.StatusTicket statusTicket);
 
-    Integer countByUsernameAndEndTimeGreaterThanEqualAndStartTimeLessThanEqual(String username, LocalDateTime startTime, LocalDateTime endTime);
+    Integer countByUsernameAndEndTimeGreaterThanEqualAndStartTimeLessThanEqualAndStatusNotLike(String username, LocalDateTime startTime, LocalDateTime endTime, Constants.StatusTicket statusTicket);
 
     Boolean existsByIdAndUsername(UUID ticketId, String username);
 
