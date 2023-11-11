@@ -56,7 +56,7 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
             throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
         }
         var updateRoom = roomRepository.save(room.update(roomInfo));
-        auditLogRepository.save(new AuditLog(roomInfo.getSiteId().toString()
+        auditLogRepository.save(new AuditLog(room.getSiteId().toString()
             , site.getOrganizationId().toString()
             , room.getId().toString()
             , ROOM_TABLE_NAME
