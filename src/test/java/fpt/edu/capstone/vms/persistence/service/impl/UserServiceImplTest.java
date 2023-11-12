@@ -53,46 +53,66 @@ class UserServiceImplTest {
     @Mock
     AuditLogRepository auditLogRepository;
 
-   /* @Test
-    public void testFilter() {
-        // Mock dữ liệu thử nghiệm
-        Pageable pageable = PageRequest.of(0, 10);
-        List<String> usernames = Arrays.asList("username1", "username2");
-        String role = "ADMIN";
-        LocalDateTime createdOnStart = LocalDateTime.now().minusDays(1);
+/*    @Test
+    void testFilter() {
+        // Mock input parameters
+        Pageable pageable = mock(Pageable.class);
+        List<String> usernames = new ArrayList<>();
+        String role = "ROLE_USER";
+        LocalDateTime createdOnStart = LocalDateTime.now().minusDays(7);
         LocalDateTime createdOnEnd = LocalDateTime.now();
         Boolean enable = true;
-        String keyword = "keyword";
-        List<String> departmentIds = Arrays.asList("departmentId1", "departmentId2");
-        List<String> siteIds = Arrays.asList("siteId1", "siteId2");
+        String keyword = "search";
+        List<String> departmentIds = new ArrayList<>();
+        departmentIds.add("3d65906a-c6e3-4e9d-bbc6-ba20938f9cad");
+        List<String> siteIds = new ArrayList<>();
+        siteIds.add("3d65906a-c6e3-4e9d-bbc6-ba20938f9cad");
         Integer provinceId = 1;
         Integer districtId = 2;
         Integer communeId = 3;
 
-        // Mock đối tượng userRepository
-        Mockito.when(userRepository.filter(
-                pageable,
-                usernames,
-                role,
-                createdOnStart,
-                createdOnEnd,
-                enable,
-                keyword,
-                departments,
-                provinceId,
-                districtId,
-                communeId))
-            .thenReturn(new PageImpl<>(Arrays.asList(new IUserController.UserFilterResponse())));
+        // Mock the result you expect from userRepository.filter
+        List<IUserController.UserFilterResponse> expectedResult = new ArrayList<>();
+        Page<IUserController.UserFilterResponse> expectedPage = new PageImpl<>(expectedResult);
 
-        // Gọi hàm filter()
-        Page<IUserController.UserFilterResponse> userFilterResponses = userService.filter(pageable, usernames, role, createdOnStart, createdOnEnd, enable, keyword, departmentIds, siteIds, provinceId, districtId, communeId);
+        // Mock dependencies
+        when(userRepository.filter(pageable, ))
+            .thenReturn(expectedPage);
+        when(userService.getListDepartments(siteIds, departmentIds)).thenReturn(new ArrayList<>());
 
-        // Kiểm tra kết quả trả về
-        assertThat(userFilterResponses).isNotNull();
-        assertThat(userFilterResponses.getTotalElements()).isEqualTo(1);
+        // Call the actual method
+        Page<IUserController.UserFilterResponse> result = userService.filter(
+            pageable,
+            usernames,
+            role,
+            createdOnStart,
+            createdOnEnd,
+            enable,
+            keyword,
+            departmentIds,
+            siteIds,
+            provinceId,
+            districtId,
+            communeId
+        );
 
-        // Kiểm tra kết quả trả về cụ thể
-        assertThat(userFilterResponses.getContent().get(0).getUsername()).isEqualTo("username1");
+        // Verify that userRepository.filter was called with the correct parameters
+        verify(userRepository).filter(
+            pageable,
+            usernames,
+            role,
+            createdOnStart,
+            createdOnEnd,
+            enable,
+            keyword,
+            new ArrayList<>(), // Since getListDepartments is mocked, an empty list is expected here
+            provinceId,
+            districtId,
+            communeId
+        );
+
+        // Verify that the result is as expected
+        assertEquals(expectedPage, result);
     }*/
 
 }

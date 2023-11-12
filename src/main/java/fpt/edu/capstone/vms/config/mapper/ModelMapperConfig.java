@@ -83,6 +83,7 @@ public class ModelMapperConfig {
 
         // customerTicketMap => TicketByQRCodeResponseDTO
         modelMapper.createTypeMap(CustomerTicketMap.class, ITicketController.TicketByQRCodeResponseDTO.class)
+            .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getTicketEntity().getSiteId()), ITicketController.TicketByQRCodeResponseDTO::setSiteId))
             .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getId().getTicketId()), ITicketController.TicketByQRCodeResponseDTO::setTicketId))
             .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getTicketEntity().getCode()), ITicketController.TicketByQRCodeResponseDTO::setTicketCode))
             .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getTicketEntity().getName()), ITicketController.TicketByQRCodeResponseDTO::setTicketName))

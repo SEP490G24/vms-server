@@ -180,7 +180,7 @@ public class UserServiceImpl implements IUserService {
      * @param departmentIds A list of department IDs as strings.
      * @return The method is returning a List of UUIDs.
      */
-    private List<UUID> getListDepartments(List<String> siteIds, List<String> departmentIds) {
+    List<UUID> getListDepartments(List<String> siteIds, List<String> departmentIds) {
 
         if (SecurityUtils.getOrgId() == null && siteIds != null) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "You don't have permission to do this.");
