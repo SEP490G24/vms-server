@@ -15,15 +15,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -75,10 +67,10 @@ public interface ITicketController {
     @PreAuthorize("hasRole('r:ticket:findQRCode')")
     ResponseEntity<?> findByQRCode(@PathVariable UUID ticketId, @PathVariable UUID customerId);
 
-    @PutMapping("/update-status")
-    @Operation(summary = "Update status of ticket is reject or approve")
-    @PreAuthorize("hasRole('r:ticket:update')")
-    ResponseEntity<?> updateState(@RequestBody @Valid UpdateStatusTicketOfCustomer updateStatusTicketOfCustomer);
+    @PutMapping("/check-in")
+    @Operation(summary = "Check in customer for ticket")
+    @PreAuthorize("hasRole('r:ticket:checkIn')")
+    ResponseEntity<?> checkIn(@RequestBody @Valid CheckInPayload checkInPayload);
 
     @GetMapping("/{ticketId}")
     @Operation(summary = "Find ticket by id for user")
@@ -259,7 +251,7 @@ public interface ITicketController {
     }
 
     @Data
-    class UpdateStatusTicketOfCustomer {
+    class CheckInPayload {
 
         @NotNull
         private UUID ticketId;

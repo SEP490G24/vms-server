@@ -184,8 +184,8 @@ public class TicketController implements ITicketController {
     }
 
     @Override
-    public ResponseEntity<?> updateState(UpdateStatusTicketOfCustomer updateStatusTicketOfCustomer) {
-        ticketService.updateStatusTicketOfCustomer(updateStatusTicketOfCustomer);
+    public ResponseEntity<?> checkIn(CheckInPayload checkInPayload) {
+        ticketService.checkInCustomer(checkInPayload);
         return ResponseEntity.ok().build();
     }
 

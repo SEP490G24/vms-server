@@ -2,21 +2,8 @@ package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ITicketController;
-import fpt.edu.capstone.vms.persistence.entity.AuditLog;
-import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMap;
-import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMapPk;
-import fpt.edu.capstone.vms.persistence.entity.Room;
-import fpt.edu.capstone.vms.persistence.entity.Site;
-import fpt.edu.capstone.vms.persistence.entity.Template;
-import fpt.edu.capstone.vms.persistence.entity.Ticket;
-import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
-import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
-import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
-import fpt.edu.capstone.vms.persistence.repository.OrganizationRepository;
-import fpt.edu.capstone.vms.persistence.repository.RoomRepository;
-import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
-import fpt.edu.capstone.vms.persistence.repository.TemplateRepository;
-import fpt.edu.capstone.vms.persistence.repository.TicketRepository;
+import fpt.edu.capstone.vms.persistence.entity.*;
+import fpt.edu.capstone.vms.persistence.repository.*;
 import fpt.edu.capstone.vms.util.EmailUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import fpt.edu.capstone.vms.util.SettingUtils;
@@ -26,11 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -44,18 +27,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static fpt.edu.capstone.vms.constants.Constants.Purpose.OTHERS;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class TicketServiceImplTest {
 
@@ -897,21 +872,21 @@ class TicketServiceImplTest {
     }
 
     @Test
-    @DisplayName("Given UpdateStatusTicketOfCustomer Request, When Updating Status, Then Update Customer Ticket Map")
+    @DisplayName("Given CheckInPayload Request, When Updating Status, Then Update Customer Ticket Map")
     public void givenUpdateStatusTicketOfCustomerRequest_WhenUpdatingStatus_ThenUpdateCustomerTicketMap() {
         // Mock input parameters
-        ITicketController.UpdateStatusTicketOfCustomer updateStatusTicketOfCustomer = new ITicketController.UpdateStatusTicketOfCustomer();
-        updateStatusTicketOfCustomer.setTicketId(UUID.randomUUID());
-        updateStatusTicketOfCustomer.setCustomerId(UUID.randomUUID());
-        updateStatusTicketOfCustomer.setStatus(Constants.StatusTicket.CHECK_IN);
-        updateStatusTicketOfCustomer.setReasonId(UUID.randomUUID());
-        updateStatusTicketOfCustomer.setReasonNote("ReasonNote");
+        ITicketController.CheckInPayload checkInPayload = new ITicketController.CheckInPayload();
+        checkInPayload.setTicketId(UUID.randomUUID());
+        checkInPayload.setCustomerId(UUID.randomUUID());
+        checkInPayload.setStatus(Constants.StatusTicket.CHECK_IN);
+        checkInPayload.setReasonId(UUID.randomUUID());
+        checkInPayload.setReasonNote("ReasonNote");
 
         CustomerTicketMap customerTicketMap = new CustomerTicketMap();
         customerTicketMap.setCustomerTicketMapPk(new CustomerTicketMapPk(UUID.randomUUID(), UUID.randomUUID()));
 
         // Mock repository behavior
-        Mockito.when(customerTicketMapRepository.findByCustomerTicketMapPk_TicketIdAndCustomerTicketMapPk_CustomerId(updateStatusTicketOfCustomer.getTicketId(), updateStatusTicketOfCustomer.getCustomerId()))
+        Mockito.when(customerTicketMapRepository.findByCustomerTicketMapPk_TicketIdAndCustomerTicketMapPk_CustomerId(checkInPayload.getTicketId(), checkInPayload.getCustomerId()))
             .thenReturn(customerTicketMap);
 
         Site site = new Site();
@@ -938,12 +913,12 @@ class TicketServiceImplTest {
 
 
         // Call the method under test
-        ticketService.updateStatusTicketOfCustomer(updateStatusTicketOfCustomer);
+        ticketService.checkInCustomer(checkInPayload);
 
         // Verify that the customerTicketMap has been updated with the new status, reasonId, and reasonNote
-        assertEquals(updateStatusTicketOfCustomer.getStatus(), customerTicketMap.getStatus());
-        assertEquals(updateStatusTicketOfCustomer.getReasonId(), customerTicketMap.getReasonId());
-        assertEquals(updateStatusTicketOfCustomer.getReasonNote(), customerTicketMap.getReasonNote());
+        assertEquals(checkInPayload.getStatus(), customerTicketMap.getStatus());
+        assertEquals(checkInPayload.getReasonId(), customerTicketMap.getReasonId());
+        assertEquals(checkInPayload.getReasonNote(), customerTicketMap.getReasonNote());
 
         // Verify that the customerTicketMapRepository.save() has been called
         verify(customerTicketMapRepository).save(customerTicketMap);
