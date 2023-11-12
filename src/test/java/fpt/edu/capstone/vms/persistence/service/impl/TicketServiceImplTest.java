@@ -4,6 +4,7 @@ import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ITicketController;
 import fpt.edu.capstone.vms.persistence.entity.*;
 import fpt.edu.capstone.vms.persistence.repository.*;
+import fpt.edu.capstone.vms.persistence.service.sse.SseEmitterManager;
 import fpt.edu.capstone.vms.util.EmailUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import fpt.edu.capstone.vms.util.SettingUtils;
@@ -58,6 +59,7 @@ class TicketServiceImplTest {
 
     SecurityContext securityContext;
     Authentication authentication;
+    SseEmitterManager sseEmitterManager;
 
     ModelMapper mapper;
 
@@ -80,7 +82,7 @@ class TicketServiceImplTest {
             , customerRepository, templateRepository
             , mapper, roomRepository, siteRepository
             , organizationRepository, customerTicketMapRepository
-            , emailUtils, auditLogService, auditLogRepository, settingUtils);
+            , emailUtils, auditLogService, auditLogRepository, settingUtils, sseEmitterManager);
     }
 
     @Test

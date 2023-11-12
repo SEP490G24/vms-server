@@ -6,6 +6,7 @@ import fpt.edu.capstone.vms.exception.HttpClientResponse;
 import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
 import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
 import fpt.edu.capstone.vms.persistence.service.ITicketService;
+import fpt.edu.capstone.vms.persistence.service.sse.SseEmitterManager;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
@@ -14,24 +15,29 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 public class TicketController implements ITicketController {
     private final ITicketService ticketService;
+    private final SseEmitterManager sseEmitterManager;
     private final CustomerTicketMapRepository customerTicketMapRepository;
     private final CustomerRepository customerRepository;
     private final ModelMapper mapper;
 
-    public TicketController(ITicketService ticketService, CustomerTicketMapRepository customerTicketMapRepository, CustomerRepository customerRepository, ModelMapper mapper) {
+    public TicketController(ITicketService ticketService, SseEmitterManager sseEmitterManager, CustomerTicketMapRepository customerTicketMapRepository, CustomerRepository customerRepository, ModelMapper mapper) {
         this.ticketService = ticketService;
+        this.sseEmitterManager = sseEmitterManager;
         this.customerTicketMapRepository = customerTicketMapRepository;
         this.customerRepository = customerRepository;
         this.mapper = mapper;
     }
+
     @Override
     public ResponseEntity<?> delete(String id) {
         return ResponseEntity.ok(ticketService.deleteTicket(id));
@@ -185,7 +191,31 @@ public class TicketController implements ITicketController {
 
     @Override
     public ResponseEntity<?> checkIn(CheckInPayload checkInPayload) {
-        ticketService.checkInCustomer(checkInPayload);
+        // Create a new emitter for the client
+        SseEmitter emitter = new SseEmitter();
+
+        // Add the emitter to the manager
+        sseEmitterManager.addEmitter(checkInPayload, emitter);
+
+        // Set up completion and timeout handlers
+        emitter.onCompletion(() -> sseEmitterManager.removeEmitter(checkInPayload, emitter));
+        emitter.onTimeout(() -> sseEmitterManager.removeEmitter(checkInPayload, emitter));
+
+        // Start a new thread to handle the check-in process
+        CompletableFuture.runAsync(() -> {
+            try {
+                // Perform the check-in process
+                ticketService.checkInCustomer(checkInPayload);
+            } catch (Exception e) {
+                // Handle exceptions if needed
+                e.printStackTrace();
+            } finally {
+                // Complete the emitter (close the connection)
+                emitter.complete();
+            }
+        });
+
+        // Return the emitter immediately to the client
         return ResponseEntity.ok().build();
     }
 

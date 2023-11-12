@@ -8,6 +8,7 @@ import fpt.edu.capstone.vms.persistence.entity.*;
 import fpt.edu.capstone.vms.persistence.repository.*;
 import fpt.edu.capstone.vms.persistence.service.ITicketService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
+import fpt.edu.capstone.vms.persistence.service.sse.SseEmitterManager;
 import fpt.edu.capstone.vms.util.*;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -51,6 +52,8 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     final AuditLogServiceImpl auditLogService;
     final AuditLogRepository auditLogRepository;
     final SettingUtils settingUtils;
+    final SseEmitterManager sseEmitterManager;
+
 
     private static final String TICKET_TABLE_NAME = "Ticket";
     private static final String CUSTOMER_TICKET_TABLE_NAME = "CustomerTicketMap";
@@ -59,7 +62,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     public TicketServiceImpl(TicketRepository ticketRepository, CustomerRepository customerRepository,
                              TemplateRepository templateRepository, ModelMapper mapper, RoomRepository roomRepository,
                              SiteRepository siteRepository, OrganizationRepository organizationRepository,
-                             CustomerTicketMapRepository customerTicketMapRepository, EmailUtils emailUtils, AuditLogServiceImpl auditLogService, AuditLogRepository auditLogRepository, SettingUtils settingUtils) {
+                             CustomerTicketMapRepository customerTicketMapRepository, EmailUtils emailUtils, AuditLogServiceImpl auditLogService, AuditLogRepository auditLogRepository, SettingUtils settingUtils, SseEmitterManager sseEmitterManager) {
         this.ticketRepository = ticketRepository;
         this.templateRepository = templateRepository;
         this.customerRepository = customerRepository;
@@ -72,6 +75,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         this.auditLogService = auditLogService;
         this.auditLogRepository = auditLogRepository;
         this.settingUtils = settingUtils;
+        this.sseEmitterManager = sseEmitterManager;
         this.init(ticketRepository);
     }
 
@@ -698,6 +702,8 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         customerTicketMap.setReasonNote(checkInPayload.getReasonNote());
         if (checkInPayload.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
             customerTicketMap.setCheckInTime(LocalDateTime.now());
+            // Gửi SSE tới ReactJS
+            sseEmitterManager.sendSseToClient(checkInPayload, mapper.map(customerTicketMap, ITicketController.TicketByQRCodeResponseDTO.class));
         } else if (checkInPayload.getStatus().equals(Constants.StatusTicket.CHECK_OUT)) {
             customerTicketMap.setCheckOutTime(LocalDateTime.now());
         }

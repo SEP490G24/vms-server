@@ -4,6 +4,7 @@ import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.IAccessHistoryController;
 import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMap;
 import fpt.edu.capstone.vms.persistence.entity.Ticket;
+import fpt.edu.capstone.vms.persistence.entity.User;
 import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.repository.TicketRepository;
@@ -13,22 +14,30 @@ import fpt.edu.capstone.vms.util.SecurityUtils;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import net.sf.jasperreports.engine.*;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
+import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
+import net.sf.jasperreports.export.SimpleExporterInput;
+import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayOutputStream;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class AccessHistoryServiceImpl extends GenericServiceImpl<Ticket, UUID> implements IAccessHistoryService {
+
+    static final String PATH_FILE = "/jasper/access-history.jrxml";
 
     final ModelMapper mapper;
     final SiteRepository siteRepository;
@@ -65,6 +74,32 @@ public class AccessHistoryServiceImpl extends GenericServiceImpl<Ticket, UUID> i
     public IAccessHistoryController.AccessHistoryResponseDTO viewAccessHistoryDetail(UUID ticketId, UUID customerId) {
         var customerTicketMap = customerTicketMapRepository.findByCustomerTicketMapPk_TicketIdAndCustomerTicketMapPk_CustomerId(ticketId, customerId);
         return mapper.map(customerTicketMap, IAccessHistoryController.AccessHistoryResponseDTO.class);
+    }
+
+    @Override
+    public ByteArrayResource export(IAccessHistoryController.AccessHistoryFilter filter) throws JRException {
+        Pageable pageable = PageRequest.of(0, 99999);
+        Page<IAccessHistoryController.AccessHistoryResponseDTO> listData = accessHistory(pageable, filter.getKeyword(), filter.getStatus(), filter.getFormCheckInTime(), filter.getToCheckInTime(), filter.getFormCheckOutTime(), filter.getToCheckOutTime(), filter.getSite());
+        try {
+            JasperReport jasperReport = JasperCompileManager.compileReport(getClass().getResourceAsStream(PATH_FILE));
+
+            JRBeanCollectionDataSource listDataSource = new JRBeanCollectionDataSource(
+                listData.getContent().size() == 0 ? Collections.singletonList(new User()) : listData.getContent());
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("tableDataset", listDataSource);
+            JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, new JREmptyDataSource());
+
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            JRXlsxExporter exporter = new JRXlsxExporter();
+            exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
+            exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(byteArrayOutputStream));
+            exporter.exportReport();
+
+            byte[] excelBytes = byteArrayOutputStream.toByteArray();
+            return new ByteArrayResource(excelBytes);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private List<String> getListSite(String site) {
