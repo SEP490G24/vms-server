@@ -47,7 +47,7 @@ public interface IUserService {
 
     User updateUser(IUserResource.UserDto userDto) throws NotFoundException;
 
-    void changePasswordUser(IUserController.ChangePasswordUserDto userDto);
+    void changePasswordUser(String username, String oldPassword, String newPassword);
 
     int updateState(boolean isEnable, String username);
 
