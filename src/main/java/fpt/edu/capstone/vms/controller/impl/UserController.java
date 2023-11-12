@@ -93,7 +93,7 @@ public class UserController implements IUserController {
     @Override
     public ResponseEntity<?> viewMyProfile() {
         String username = SecurityUtils.loginUsername();
-        return ResponseEntity.ok(userService.findByUsername(username));
+        return ResponseEntity.ok(mapper.map(userService.findByUsername(username), ProfileUser.class));
     }
 
     @Override

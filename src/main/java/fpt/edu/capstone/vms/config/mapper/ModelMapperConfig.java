@@ -112,6 +112,13 @@ public class ModelMapperConfig {
             .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getTicketEntity().getRoom().getName()), IAccessHistoryController.AccessHistoryResponseDTO::setRoomName))
             .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getCustomerEntity()), IAccessHistoryController.AccessHistoryResponseDTO::setCustomerInfo));
 
+        //User => ProfileUser
+        modelMapper.createTypeMap(User.class, IUserController.ProfileUser.class)
+            .addMappings(mapping -> mapping.map((user -> user.getUsername()), IUserController.ProfileUser::setUserName))
+            .addMappings(mapping -> mapping.map((user -> user.getDepartment().getName()), IUserController.ProfileUser::setDepartmentName))
+            .addMappings(mapping -> mapping.map((user -> user.getDepartment().getSite().getId()), IUserController.ProfileUser::setSiteId))
+            .addMappings(mapping -> mapping.map((user -> user.getDepartment().getSite().getName()), IUserController.ProfileUser::setSiteName));
+
         return modelMapper;
     }
 }
