@@ -389,11 +389,10 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SiteId is null");
             if (!siteRepository.existsByIdAndOrganizationId(UUID.fromString(ticket.getSiteId()), UUID.fromString(SecurityUtils.getOrgId())))
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "You don't have permission to do this.");
+            settingUtils.loadSettingsSite(ticket.getSiteId());
         } else {
-            if (!ticket.getSiteId().equals(SecurityUtils.getSiteId()))
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "You don't have permission to do this.");
+            settingUtils.loadSettingsSite(SecurityUtils.getSiteId());
         }
-        settingUtils.loadSettingsSite(ticket.getSiteId());
 
         Template template = templateRepository.findById(UUID.fromString(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CANCEL_EMAIL))).orElse(null);
 
