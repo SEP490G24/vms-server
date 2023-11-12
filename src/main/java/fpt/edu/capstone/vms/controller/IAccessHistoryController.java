@@ -25,13 +25,13 @@ import java.util.UUID;
 public interface IAccessHistoryController {
 
     @GetMapping("/{ticketId}/customer/{customerId}")
-    @Operation(summary = "Find ticket by qrcode")
-    @PreAuthorize("hasRole('r:ticket:findQRCode')")
-    ResponseEntity<?> findByQRCode(@PathVariable UUID ticketId, @PathVariable UUID customerId);
+    @Operation(summary = "View detail access history")
+    @PreAuthorize("hasRole('r:access-history:detail')")
+    ResponseEntity<?> viewDetailAccessHistory(@PathVariable UUID ticketId, @PathVariable UUID customerId);
 
     @PostMapping("")
     @Operation(summary = "Filter access history ")
-    @PreAuthorize("hasRole('r:ticket:findQRCode')")
+    @PreAuthorize("hasRole('r:access-history:filter')")
     ResponseEntity<?> filterAccessHistory(@RequestBody @Valid AccessHistoryFilter ticketFilterUser, Pageable pageable);
 
     @Data
@@ -50,6 +50,9 @@ public interface IAccessHistoryController {
     @AllArgsConstructor
     @NoArgsConstructor
     class AccessHistoryResponseDTO {
+
+        private UUID id;
+
         //Ticket Info
         private UUID ticketId;
         private String ticketCode;

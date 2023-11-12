@@ -21,8 +21,8 @@ public class AccessHistoryController implements IAccessHistoryController {
     }
 
     @Override
-    public ResponseEntity<?> findByQRCode(UUID ticketId, UUID customerId) {
-        return null;
+    public ResponseEntity<?> viewDetailAccessHistory(UUID ticketId, UUID customerId) {
+        return ResponseEntity.ok(accessHistoryService.viewAccessHistoryDetail(ticketId, customerId));
     }
 
     @Override

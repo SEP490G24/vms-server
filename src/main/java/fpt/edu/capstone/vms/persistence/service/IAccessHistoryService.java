@@ -18,4 +18,6 @@ public interface IAccessHistoryService extends IGenericService<Ticket, UUID> {
         LocalDateTime formCheckInTime, LocalDateTime toCheckInTime,
         LocalDateTime formCheckOutTime, LocalDateTime toCheckOutTime, String site
     );
+
+    IAccessHistoryController.AccessHistoryResponseDTO viewAccessHistoryDetail(UUID ticketId, UUID customerId);
 }

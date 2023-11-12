@@ -1,12 +1,28 @@
 {
-  "R_PERMISSION_FIND" : [ "r:permission:find" ],
-  "R_CUSTOMER_FIND" : [ "r:customer:find" ],
-  "R_SITE_FIND" : [ "r:site:find" ],
-  "R_SETTING-SITE_DELETE" : [ "r:setting-site:delete" ],
-  "R_TICKET_CANCEL" : [ "r:ticket:cancel" ],
-  "R_DEPARTMENT_DELETE" : [ "r:department:delete" ],
-  "R_SITE_CREATE" : [ "r:site:create" ],
-  "R_ROLE_UPDATE" : [ "r:role:update" ],
+  "R_PERMISSION_FIND": [
+    "r:permission:find"
+  ],
+  "R_CUSTOMER_FIND": [
+    "r:customer:find"
+  ],
+  "R_SITE_FIND": [
+    "r:site:find"
+  ],
+  "R_SETTING-SITE_DELETE": [
+    "r:setting-site:delete"
+  ],
+  "R_TICKET_CANCEL": [
+    "r:ticket:cancel"
+  ],
+  "R_DEPARTMENT_DELETE": [
+    "r:department:delete"
+  ],
+  "R_SITE_CREATE": [
+    "r:site:create"
+  ],
+  "R_ROLE_UPDATE": [
+    "r:role:update"
+  ],
   "R_USER_FIND": [
     "r:user:find"
   ],
@@ -34,14 +50,17 @@
   "R_USER_CREATE": [
     "r:user:create"
   ],
-  "R_SETTING_CREATE": [
-    "r:setting:create"
-  ],
   "R_TEMPLATE_CREATE": [
     "r:template:create"
   ],
+  "R_SETTING_CREATE": [
+    "r:setting:create"
+  ],
   "R_PERMISSION_DELETE": [
     "r:permission:delete"
+  ],
+  "R_ACCESS-HISTORY_FILTER": [
+    "r:access-history:filter"
   ],
   "R_REASON_DELETE": [
     "r:reason:delete"
@@ -106,19 +125,42 @@
   "R_SETTING-GROUP_FIND": [
     "r:setting-group:find"
   ],
+  "R_ACCESS-HISTORY_DETAIL": [
+    "r:access-history:detail"
+  ],
   "R_ROOM_CREATE": [
     "r:room:create"
   ],
-  "R_SETTING-GROUP_CREATE" : [ "r:setting-group:create" ],
-  "R_TEMPLATE_FIND" : [ "r:template:find" ],
-  "R_SETTING_FIND" : [ "r:setting:find" ],
-  "R_USER_UPDATE" : [ "r:user:update" ],
-  "R_ROOM_UPDATE" : [ "r:room:update" ],
-  "R_ROLE_FIND" : [ "r:role:find" ],
-  "R_PERMISSION_UPDATE" : [ "r:permission:update" ],
-  "R_SITE_UPDATE" : [ "r:site:update" ],
-  "R_TICKET_VIEWTICKETDETAIL" : [ "r:ticket:viewTicketDetail" ],
-  "R_PERMISSION_CREATE" : [ "r:permission:create" ],
+  "R_SETTING-GROUP_CREATE": [
+    "r:setting-group:create"
+  ],
+  "R_TEMPLATE_FIND": [
+    "r:template:find"
+  ],
+  "R_SETTING_FIND": [
+    "r:setting:find"
+  ],
+  "R_USER_UPDATE": [
+    "r:user:update"
+  ],
+  "R_ROOM_UPDATE": [
+    "r:room:update"
+  ],
+  "R_ROLE_FIND": [
+    "r:role:find"
+  ],
+  "R_PERMISSION_UPDATE": [
+    "r:permission:update"
+  ],
+  "R_SITE_UPDATE": [
+    "r:site:update"
+  ],
+  "R_TICKET_VIEWTICKETDETAIL": [
+    "r:ticket:viewTicketDetail"
+  ],
+  "R_PERMISSION_CREATE": [
+    "r:permission:create"
+  ],
   "R_REASON_UPDATE" : [ "r:reason:update" ],
   "R_SETTING-SITE_CREATE" : [ "r:setting-site:create" ],
   "R_SETTING_DELETE" : [ "r:setting:delete" ],

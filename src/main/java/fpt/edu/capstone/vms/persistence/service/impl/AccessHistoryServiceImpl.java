@@ -4,10 +4,11 @@ import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.IAccessHistoryController;
 import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMap;
 import fpt.edu.capstone.vms.persistence.entity.Ticket;
-import fpt.edu.capstone.vms.persistence.repository.*;
+import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
+import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
+import fpt.edu.capstone.vms.persistence.repository.TicketRepository;
 import fpt.edu.capstone.vms.persistence.service.IAccessHistoryService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
-import fpt.edu.capstone.vms.util.EmailUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -30,35 +31,16 @@ import java.util.UUID;
 public class AccessHistoryServiceImpl extends GenericServiceImpl<Ticket, UUID> implements IAccessHistoryService {
 
     final ModelMapper mapper;
-    final TicketRepository ticketRepository;
-    final RoomRepository roomRepository;
-    final TemplateRepository templateRepository;
-    final CustomerRepository customerRepository;
     final SiteRepository siteRepository;
-    final OrganizationRepository organizationRepository;
     final CustomerTicketMapRepository customerTicketMapRepository;
-    final EmailUtils emailUtils;
-    final AuditLogServiceImpl auditLogService;
-    final AuditLogRepository auditLogRepository;
-    private static final String TICKET_TABLE_NAME = "Ticket";
-    private static final String CUSTOMER_TICKET_TABLE_NAME = "CustomerTicketMap";
 
 
-    public AccessHistoryServiceImpl(TicketRepository ticketRepository, CustomerRepository customerRepository,
-                                    TemplateRepository templateRepository, ModelMapper mapper, RoomRepository roomRepository,
-                                    SiteRepository siteRepository, OrganizationRepository organizationRepository,
-                                    CustomerTicketMapRepository customerTicketMapRepository, EmailUtils emailUtils, AuditLogServiceImpl auditLogService, AuditLogRepository auditLogRepository) {
-        this.ticketRepository = ticketRepository;
-        this.templateRepository = templateRepository;
-        this.customerRepository = customerRepository;
+    public AccessHistoryServiceImpl(TicketRepository ticketRepository,
+                                    ModelMapper mapper, SiteRepository siteRepository,
+                                    CustomerTicketMapRepository customerTicketMapRepository) {
         this.mapper = mapper;
-        this.roomRepository = roomRepository;
         this.siteRepository = siteRepository;
-        this.organizationRepository = organizationRepository;
         this.customerTicketMapRepository = customerTicketMapRepository;
-        this.emailUtils = emailUtils;
-        this.auditLogService = auditLogService;
-        this.auditLogRepository = auditLogRepository;
         this.init(ticketRepository);
     }
 
@@ -67,12 +49,22 @@ public class AccessHistoryServiceImpl extends GenericServiceImpl<Ticket, UUID> i
     public Page<IAccessHistoryController.AccessHistoryResponseDTO> accessHistory(Pageable pageable, String keyword, Constants.StatusTicket status,
                                                                                  LocalDateTime formCheckInTime, LocalDateTime toCheckInTime,
                                                                                  LocalDateTime formCheckOutTime, LocalDateTime toCheckOutTime, String site) {
-
-        List<String> sites = getListSite(site);
-        Page<CustomerTicketMap> customerTicketMapPage = customerTicketMapRepository.accessHistory(pageable, sites, formCheckInTime, toCheckInTime, formCheckOutTime, toCheckOutTime, status, keyword);
+        Page<CustomerTicketMap> customerTicketMapPage;
+        if (SecurityUtils.getUserDetails().isOrganizationAdmin() || SecurityUtils.getUserDetails().isSiteAdmin()) {
+            List<String> sites = getListSite(site);
+            customerTicketMapPage = customerTicketMapRepository.accessHistory(pageable, sites, formCheckInTime, toCheckInTime, formCheckOutTime, toCheckOutTime, status, keyword, null);
+        } else {
+            customerTicketMapPage = customerTicketMapRepository.accessHistory(pageable, null, formCheckInTime, toCheckInTime, formCheckOutTime, toCheckOutTime, status, keyword, SecurityUtils.loginUsername());
+        }
         List<IAccessHistoryController.AccessHistoryResponseDTO> accessHistoryResponseDTOS = mapper.map(customerTicketMapPage.getContent(), new TypeToken<List<IAccessHistoryController.AccessHistoryResponseDTO>>() {
         }.getType());
         return new PageImpl(accessHistoryResponseDTOS, pageable, accessHistoryResponseDTOS.size());
+    }
+
+    @Override
+    public IAccessHistoryController.AccessHistoryResponseDTO viewAccessHistoryDetail(UUID ticketId, UUID customerId) {
+        var customerTicketMap = customerTicketMapRepository.findByCustomerTicketMapPk_TicketIdAndCustomerTicketMapPk_CustomerId(ticketId, customerId);
+        return mapper.map(customerTicketMap, IAccessHistoryController.AccessHistoryResponseDTO.class);
     }
 
     private List<String> getListSite(String site) {
