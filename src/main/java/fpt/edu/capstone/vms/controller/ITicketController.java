@@ -15,7 +15,15 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -58,14 +66,9 @@ public interface ITicketController {
     ResponseEntity<?> updateMeeting(@RequestBody @Valid UpdateTicketInfo updateTicketInfo);
 
     @PostMapping("/filter")
-    @Operation(summary = "Filter ticket")
-    @PreAuthorize("hasRole('r:ticket:find')")
-    ResponseEntity<?> filter(@RequestBody @Valid TicketFilterUser ticketFilterUser, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
-
-    @PostMapping("/filter/site")
     @Operation(summary = "Filter ticket in site for admin")
     @PreAuthorize("hasRole('r:ticket:find')")
-    ResponseEntity<?> filterAllBySites(@RequestBody @Valid TicketFilterSite ticketFilterSite, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
+    ResponseEntity<?> filterAllBySites(@RequestBody @Valid TicketFilter ticketFilterSite, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
     @GetMapping("/{ticketId}/customer/{customerId}")
     @Operation(summary = "Find ticket by qrcode")
@@ -79,7 +82,6 @@ public interface ITicketController {
 
     @GetMapping("/{ticketId}")
     @Operation(summary = "Find ticket by id for user")
-    @PreAuthorize("hasRole('r:ticket:find')")
     ResponseEntity<?> findByIdForUser(@PathVariable UUID ticketId);
 
     @GetMapping("/admin/{ticketId}")
@@ -157,9 +159,10 @@ public interface ITicketController {
     }
 
     @Data
-    class TicketFilterSite {
+    class TicketFilter {
         List<String> names;
-        String username;
+        List<String> sites;
+        List<String> usernames;
         UUID roomId;
         Constants.StatusTicket status;
         Constants.Purpose purpose;
@@ -177,6 +180,7 @@ public interface ITicketController {
         LocalDateTime endTimeEnd;
         String createdBy;
         String lastUpdatedBy;
+        Boolean bookmark;
         String keyword;
     }
 

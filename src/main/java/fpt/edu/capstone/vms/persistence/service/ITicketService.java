@@ -41,7 +41,8 @@ public interface ITicketService extends IGenericService<Ticket, UUID> {
 
     Page<Ticket> filterAllBySite(Pageable pageable,
                                  List<String> names,
-                                 String username,
+                                 List<String> sites,
+                                 List<String> usernames,
                                  UUID roomId,
                                  Constants.StatusTicket status,
                                  Constants.Purpose purpose,
@@ -71,7 +72,8 @@ public interface ITicketService extends IGenericService<Ticket, UUID> {
                         String keyword);
 
     List<Ticket> filterAllBySite(List<String> names,
-                                 String username,
+                                 List<String> sites,
+                                 List<String> usernames,
                                  UUID roomId,
                                  Constants.StatusTicket status,
                                  Constants.Purpose purpose,

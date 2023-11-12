@@ -805,9 +805,12 @@ class TicketServiceImplTest {
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
 
+        List<String> usernames = new ArrayList<>();
+        usernames.add(SecurityUtils.loginUsername());
+
         Page<Ticket> expectedPage = new PageImpl<>(List.of(new Ticket(), new Ticket()));
 
-        when(ticketRepository.filter(pageable, names, null, SecurityUtils.loginUsername(), roomId, status, purpose, createdOnStart, createdOnEnd, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd, createdBy, lastUpdatedBy, bookmark, keyword))
+        when(ticketRepository.filter(pageable, names, null, usernames, roomId, status, purpose, createdOnStart, createdOnEnd, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd, createdBy, lastUpdatedBy, bookmark, keyword))
             .thenReturn(expectedPage);
 
         Page<Ticket> filteredTickets = ticketService.filter(pageable, names, roomId, status, purpose, createdOnStart, createdOnEnd, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd, createdBy, lastUpdatedBy, bookmark, keyword);
@@ -834,8 +837,6 @@ class TicketServiceImplTest {
         String username = "user1";
         String lastUpdatedBy = "user2";
         String keyword = "meeting";
-        List<String> siteList = new ArrayList<>();
-        siteList.add("Site1");
 
         Jwt jwt = mock(Jwt.class);
         when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
@@ -847,12 +848,19 @@ class TicketServiceImplTest {
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
 
+        List<String> siteList = new ArrayList<>();
+        List<String> usernames = new ArrayList<>();
+        siteList.add("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        usernames.add(SecurityUtils.loginUsername());
+
+        when(SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c08")).thenReturn(true);
+
         Page<Ticket> expectedPage = new PageImpl<>(List.of(new Ticket(), new Ticket()));
 
-        when(ticketRepository.filter(pageable, names, siteList, SecurityUtils.loginUsername(), roomId, status, purpose, createdOnStart, createdOnEnd, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd, createdBy, lastUpdatedBy, null, keyword))
+        when(ticketRepository.filter(pageable, names, siteList, usernames, roomId, status, purpose, createdOnStart, createdOnEnd, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd, createdBy, lastUpdatedBy, null, keyword))
             .thenReturn(expectedPage);
 
-        Page<Ticket> filteredTickets = ticketService.filterAllBySite(pageable, names, username, roomId, status, purpose, createdOnStart, createdOnEnd, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd, createdBy, lastUpdatedBy, keyword);
+        Page<Ticket> filteredTickets = ticketService.filterAllBySite(pageable, names, siteList, usernames, roomId, status, purpose, createdOnStart, createdOnEnd, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd, createdBy, lastUpdatedBy, keyword);
 
         assertNotNull(expectedPage);
         assertEquals(2, expectedPage.getTotalElements());

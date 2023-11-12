@@ -511,10 +511,6 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             orgId = SecurityUtils.getOrgId();
         }
 
-        settingUtils.loadSettingsSite(ticket.getSiteId());
-
-        Template template = templateRepository.findById(UUID.fromString(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CONFIRM_EMAIL))).orElse(null);
-
         if (newCustomers != null) {
             for (ICustomerController.NewCustomers customerDto : newCustomers) {
                 if (ObjectUtils.isEmpty(customerDto))
@@ -552,10 +548,13 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         , Boolean bookmark
         , String keyword) {
 
+        List<String> usernames = new ArrayList<>();
+        usernames.add(SecurityUtils.loginUsername());
+
         return ticketRepository.filter(pageable
             , names
             , null
-            , SecurityUtils.loginUsername()
+            , usernames
             , roomId
             , status
             , purpose
@@ -573,17 +572,26 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
 
     @Override
     public Page<Ticket> filterAllBySite(Pageable pageable
-        , List<String> names, String username
-        , UUID roomId, Constants.StatusTicket status
-        , Constants.Purpose purpose, LocalDateTime createdOnStart
-        , LocalDateTime createdOnEnd, LocalDateTime startTimeStart
-        , LocalDateTime startTimeEnd, LocalDateTime endTimeStart
-        , LocalDateTime endTimeEnd, String createdBy
-        , String lastUpdatedBy, String keyword) {
+        , List<String> names
+        , List<String> sites
+        , List<String> usernames
+        , UUID roomId
+        , Constants.StatusTicket status
+        , Constants.Purpose purpose
+        , LocalDateTime createdOnStart
+        , LocalDateTime createdOnEnd
+        , LocalDateTime startTimeStart
+        , LocalDateTime startTimeEnd
+        , LocalDateTime endTimeStart
+        , LocalDateTime endTimeEnd
+        , String createdBy
+        , String lastUpdatedBy
+        , String keyword) {
+
         return ticketRepository.filter(pageable
             , names
-            , getListSite()
-            , username
+            , getListSite(siteRepository, sites)
+            , usernames
             , roomId
             , status
             , purpose
@@ -614,9 +622,11 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         , String lastUpdatedBy
         , Boolean bookmark
         , String keyword) {
+        List<String> usernames = new ArrayList<>();
+        usernames.add(SecurityUtils.loginUsername());
         return ticketRepository.filter(names
             , null
-            , SecurityUtils.loginUsername()
+            , usernames
             , roomId
             , status
             , purpose
@@ -634,7 +644,9 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
 
     @Override
     public List<Ticket> filterAllBySite(List<String> names
-        , String username, UUID roomId
+        , List<String> sites
+        , List<String> usernames
+        , UUID roomId
         , Constants.StatusTicket status
         , Constants.Purpose purpose
         , LocalDateTime createdOnStart
@@ -647,8 +659,8 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         , String lastUpdatedBy
         , String keyword) {
         return ticketRepository.filter(names
-            , getListSite()
-            , username
+            , getListSite(siteRepository, sites)
+            , usernames
             , roomId
             , status
             , purpose
@@ -662,6 +674,32 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             , lastUpdatedBy
             , null
             , keyword);
+    }
+
+    public static List<String> getListSite(SiteRepository siteRepository, List<String> siteId) {
+
+        if (SecurityUtils.getOrgId() == null && siteId != null) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+        }
+        List<String> sites = new ArrayList<>();
+        if (SecurityUtils.getOrgId() != null) {
+            if (siteId == null) {
+                siteRepository.findAllByOrganizationId(UUID.fromString(SecurityUtils.getOrgId())).forEach(o -> {
+                    sites.add(o.getId().toString());
+                });
+            } else {
+                siteId.forEach(o -> {
+                    if (!SecurityUtils.checkSiteAuthorization(siteRepository, o)) {
+                        throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+                    }
+                    sites.add(o);
+                });
+            }
+        } else {
+            sites.add(SecurityUtils.getSiteId());
+        }
+
+        return sites;
     }
 
     @Override
@@ -759,23 +797,6 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         }.getType());
 
         return new PageImpl(ticketByQRCodeResponseDTOS, pageable, ticketByQRCodeResponseDTOS.size());
-    }
-
-    private List<String> getListSite() {
-        List<String> sites = new ArrayList<>();
-
-        if (SecurityUtils.getOrgId() == null) {
-            Site site = siteRepository.findById(UUID.fromString(SecurityUtils.getSiteId())).orElse(null);
-            if (ObjectUtils.isEmpty(site)) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "site is flase");
-            }
-            sites.add(SecurityUtils.getSiteId());
-        } else {
-            siteRepository.findAllByOrganizationId(UUID.fromString(SecurityUtils.getOrgId())).forEach(o -> {
-                sites.add(o.getId().toString());
-            });
-        }
-        return sites;
     }
 
     /**

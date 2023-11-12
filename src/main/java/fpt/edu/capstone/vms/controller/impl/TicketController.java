@@ -6,6 +6,7 @@ import fpt.edu.capstone.vms.exception.HttpClientResponse;
 import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
 import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
 import fpt.edu.capstone.vms.persistence.service.ITicketService;
+import fpt.edu.capstone.vms.util.SecurityUtils;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.data.domain.PageImpl;
@@ -70,111 +71,111 @@ public class TicketController implements ITicketController {
     }
 
     @Override
-    public ResponseEntity<?> filter(TicketFilterUser filter, boolean isPageable, Pageable pageable) {
-        var ticketEntity = ticketService.filter(
-            filter.getNames(),
-            filter.getRoomId(),
-            filter.getStatus(),
-            filter.getPurpose(),
-            filter.getCreatedOnStart(),
-            filter.getCreatedOnEnd(),
-            filter.getStartTimeStart(),
-            filter.getStartTimeEnd(),
-            filter.getEndTimeStart(),
-            filter.getEndTimeEnd(),
-            filter.getCreatedBy(),
-            filter.getLastUpdatedBy(),
-            filter.getBookmark(),
-            filter.getKeyword());
+    public ResponseEntity<?> filterAllBySites(TicketFilter filter, boolean isPageable, Pageable pageable) {
+        if (SecurityUtils.getUserDetails().isOrganizationAdmin() || SecurityUtils.getUserDetails().isSiteAdmin()) {
+            var ticketEntity = ticketService.filterAllBySite(
+                filter.getNames(),
+                filter.getSites(),
+                filter.getUsernames(),
+                filter.getRoomId(),
+                filter.getStatus(),
+                filter.getPurpose(),
+                filter.getCreatedOnStart(),
+                filter.getCreatedOnEnd(),
+                filter.getStartTimeStart(),
+                filter.getStartTimeEnd(),
+                filter.getEndTimeStart(),
+                filter.getEndTimeEnd(),
+                filter.getCreatedBy(),
+                filter.getLastUpdatedBy(), filter.getKeyword());
 
-        var ticketEntityPageable = ticketService.filter(
-            pageable,
-            filter.getNames(),
-            filter.getRoomId(),
-            filter.getStatus(),
-            filter.getPurpose(),
-            filter.getCreatedOnStart(),
-            filter.getCreatedOnEnd(),
-            filter.getStartTimeStart(),
-            filter.getStartTimeEnd(),
-            filter.getEndTimeStart(),
-            filter.getEndTimeEnd(),
-            filter.getCreatedBy(),
-            filter.getLastUpdatedBy(),
-            filter.getBookmark(),
-            filter.getKeyword());
-
-
-        List<TicketFilterDTO> ticketFilterPageDTOS = mapper.map(ticketEntityPageable.getContent(), new TypeToken<List<TicketFilterDTO>>() {
-        }.getType());
-        ticketFilterPageDTOS.forEach(o -> {
-            setCustomer(o);
-
-        });
-
-        List<TicketFilterDTO> ticketFilterDTOS = mapper.map(ticketEntity, new TypeToken<List<TicketFilterDTO>>() {
-        }.getType());
-        ticketFilterDTOS.forEach(o -> {
-            setCustomer(o);
-
-        });
-
-        return isPageable ?
-            ResponseEntity.ok(new PageImpl(ticketFilterPageDTOS, pageable, ticketFilterPageDTOS.size()))
-            : ResponseEntity.ok(ticketFilterDTOS);
-    }
-
-    @Override
-    public ResponseEntity<?> filterAllBySites(TicketFilterSite filter, boolean isPageable, Pageable pageable) {
-        var ticketEntity = ticketService.filterAllBySite(
-            filter.getNames(),
-            filter.getUsername(),
-            filter.getRoomId(),
-            filter.getStatus(),
-            filter.getPurpose(),
-            filter.getCreatedOnStart(),
-            filter.getCreatedOnEnd(),
-            filter.getStartTimeStart(),
-            filter.getStartTimeEnd(),
-            filter.getEndTimeStart(),
-            filter.getEndTimeEnd(),
-            filter.getCreatedBy(),
-            filter.getLastUpdatedBy(),
-            filter.getKeyword());
-
-        var ticketEntityPageable = ticketService.filterAllBySite(
-            pageable,
-            filter.getNames(),
-            filter.getUsername(),
-            filter.getRoomId(),
-            filter.getStatus(),
-            filter.getPurpose(),
-            filter.getCreatedOnStart(),
-            filter.getCreatedOnEnd(),
-            filter.getStartTimeStart(),
-            filter.getStartTimeEnd(),
-            filter.getEndTimeStart(),
-            filter.getEndTimeEnd(),
-            filter.getCreatedBy(),
-            filter.getLastUpdatedBy(),
-            filter.getKeyword());
+            var ticketEntityPageable = ticketService.filterAllBySite(
+                pageable,
+                filter.getNames(),
+                filter.getSites(),
+                filter.getUsernames(),
+                filter.getRoomId(),
+                filter.getStatus(),
+                filter.getPurpose(),
+                filter.getCreatedOnStart(),
+                filter.getCreatedOnEnd(),
+                filter.getStartTimeStart(),
+                filter.getStartTimeEnd(),
+                filter.getEndTimeStart(),
+                filter.getEndTimeEnd(),
+                filter.getCreatedBy(),
+                filter.getLastUpdatedBy(),
+                filter.getKeyword());
 
 
-        List<TicketFilterDTO> ticketFilterPageDTOS = mapper.map(ticketEntityPageable.getContent(), new TypeToken<List<TicketFilterDTO>>() {
-        }.getType());
-        ticketFilterPageDTOS.forEach(o -> {
-            setCustomer(o);
+            List<TicketFilterDTO> ticketFilterPageDTOS = mapper.map(ticketEntityPageable.getContent(), new TypeToken<List<TicketFilterDTO>>() {
+            }.getType());
+            ticketFilterPageDTOS.forEach(o -> {
+                setCustomer(o);
 
-        });
-        List<TicketFilterDTO> ticketFilterDTOS = mapper.map(ticketEntity, new TypeToken<List<TicketFilterDTO>>() {
-        }.getType());
-        ticketFilterDTOS.forEach(o -> {
-            setCustomer(o);
+            });
+            List<TicketFilterDTO> ticketFilterDTOS = mapper.map(ticketEntity, new TypeToken<List<TicketFilterDTO>>() {
+            }.getType());
+            ticketFilterDTOS.forEach(o -> {
+                setCustomer(o);
 
-        });
-        return isPageable ?
-            ResponseEntity.ok(new PageImpl(ticketFilterPageDTOS, pageable, ticketFilterPageDTOS.size()))
-            : ResponseEntity.ok(ticketFilterDTOS);
+            });
+            return isPageable ?
+                ResponseEntity.ok(new PageImpl(ticketFilterPageDTOS, pageable, ticketFilterPageDTOS.size()))
+                : ResponseEntity.ok(ticketFilterDTOS);
+        } else {
+            var ticketEntity = ticketService.filter(
+                filter.getNames(),
+                filter.getRoomId(),
+                filter.getStatus(),
+                filter.getPurpose(),
+                filter.getCreatedOnStart(),
+                filter.getCreatedOnEnd(),
+                filter.getStartTimeStart(),
+                filter.getStartTimeEnd(),
+                filter.getEndTimeStart(),
+                filter.getEndTimeEnd(),
+                filter.getCreatedBy(),
+                filter.getLastUpdatedBy(),
+                filter.getBookmark(),
+                filter.getKeyword());
+
+            var ticketEntityPageable = ticketService.filter(
+                pageable,
+                filter.getNames(),
+                filter.getRoomId(),
+                filter.getStatus(),
+                filter.getPurpose(),
+                filter.getCreatedOnStart(),
+                filter.getCreatedOnEnd(),
+                filter.getStartTimeStart(),
+                filter.getStartTimeEnd(),
+                filter.getEndTimeStart(),
+                filter.getEndTimeEnd(),
+                filter.getCreatedBy(),
+                filter.getLastUpdatedBy(),
+                filter.getBookmark(),
+                filter.getKeyword());
+
+
+            List<TicketFilterDTO> ticketFilterPageDTOS = mapper.map(ticketEntityPageable.getContent(), new TypeToken<List<TicketFilterDTO>>() {
+            }.getType());
+            ticketFilterPageDTOS.forEach(o -> {
+                setCustomer(o);
+
+            });
+
+            List<TicketFilterDTO> ticketFilterDTOS = mapper.map(ticketEntity, new TypeToken<List<TicketFilterDTO>>() {
+            }.getType());
+            ticketFilterDTOS.forEach(o -> {
+                setCustomer(o);
+
+            });
+
+            return isPageable ?
+                ResponseEntity.ok(new PageImpl(ticketFilterPageDTOS, pageable, ticketFilterPageDTOS.size()))
+                : ResponseEntity.ok(ticketFilterDTOS);
+        }
     }
 
     @Override
