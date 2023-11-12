@@ -55,10 +55,6 @@ public class User extends AbstractBaseEntity<String> {
     @Column(name = "email")
     private String email;
 
-    @Column(name = "password")
-    @JsonIgnore
-    private String password;
-
     @Column(name = "phone_number")
     private String phoneNumber;
 
@@ -124,7 +120,6 @@ public class User extends AbstractBaseEntity<String> {
         if (userEntity.lastLoginTime != null) this.lastLoginTime = userEntity.lastLoginTime;
         if (userEntity.gender != null) this.gender = userEntity.gender;
         if (userEntity.dateOfBirth != null) this.dateOfBirth = userEntity.dateOfBirth;
-        if (userEntity.password != null) this.password = encodePassword(userEntity.password);
         if (userEntity.countryCode != null) this.countryCode = userEntity.countryCode;
         if (userEntity.departmentId != null) this.departmentId = userEntity.departmentId;
         if (userEntity.enable != null) this.enable = userEntity.enable;
@@ -147,13 +142,5 @@ public class User extends AbstractBaseEntity<String> {
         return username;
     }
 
-    public static String encodePassword(String plainPassword) {
-        String salt = BCrypt.gensalt(12);
-        return BCrypt.hashpw(plainPassword, salt);
-    }
-
-    public static boolean checkPassword(String plainPassword, String hashedPassword) {
-        return BCrypt.checkpw(plainPassword, hashedPassword);
-    }
 
 }

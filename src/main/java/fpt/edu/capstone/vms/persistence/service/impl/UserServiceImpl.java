@@ -57,9 +57,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 
-import static fpt.edu.capstone.vms.persistence.entity.User.checkPassword;
-import static fpt.edu.capstone.vms.persistence.entity.User.encodePassword;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -316,22 +313,18 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     @Transactional
-    public void changePasswordUser(IUserController.ChangePasswordUserDto userDto) {
-        String username = SecurityUtils.loginUsername();
+    public void changePasswordUser(String username, String oldPassword, String newPassword) {
+
         var userEntity = userRepository.findByUsername(username).orElse(null);
         if (userEntity == null) throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can not found user");
 
-        if (userDto.getNewPassword().isEmpty())
+        if (oldPassword.isEmpty())
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Can not null for new password");
-        if (checkPassword(userDto.getNewPassword(), userEntity.getPassword()))
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Can not be user old password to update new");
 
-        if (checkPassword(userDto.getOldPassword(), userEntity.getPassword())) {
-            userEntity.setPassword(encodePassword(userDto.getNewPassword()));
-            userResource.changePassword(userEntity.getOpenid(), userDto.getNewPassword());
-            userRepository.save(userEntity);
+        if (userResource.verifyPassword(username, oldPassword)) {
+            userResource.changePassword(userEntity.getOpenid(), newPassword);
         } else {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The old password not match in database");
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The old password is valid");
         }
     }
 

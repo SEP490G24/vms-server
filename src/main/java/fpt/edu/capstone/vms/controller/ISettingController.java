@@ -39,7 +39,7 @@ public interface ISettingController {
     @PreAuthorize("hasRole('r:setting:delete')")
     ResponseEntity<?> delete(@PathVariable Long id);
 
-    @PutMapping ("/{id}")
+    @PutMapping("/{id}")
     @Operation(summary = "Update setting site")
     @PreAuthorize("hasRole('r:setting:update')")
     ResponseEntity<?> updateSettingGroup(@PathVariable Long id, @RequestBody @Valid UpdateSettingInfo settingInfo);
@@ -47,7 +47,7 @@ public interface ISettingController {
     @GetMapping
     @Operation(summary = "Get all")
     @PreAuthorize("hasRole('r:setting:find')")
-    ResponseEntity<List<?>> findAll(@RequestParam Integer groupId, @RequestParam String siteId);
+    ResponseEntity<List<?>> findAll(@RequestParam(value = "groupId", required = false) Integer groupId, @RequestParam(value = "siteId", required = false) String siteId);
 
     @PostMapping()
     @Operation(summary = "Create new agent")

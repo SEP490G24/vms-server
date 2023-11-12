@@ -112,7 +112,8 @@ public class UserController implements IUserController {
     @Override
     public ResponseEntity<?> changePassword(ChangePasswordUserDto changePasswordUserDto) {
         try {
-            userService.changePasswordUser(changePasswordUserDto);
+            String username = SecurityUtils.loginUsername();
+            userService.changePasswordUser(username, changePasswordUserDto.getOldPassword(), changePasswordUserDto.getNewPassword());
             return ResponseEntity.ok().build();
         } catch (HttpClientErrorException e) {
             return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
