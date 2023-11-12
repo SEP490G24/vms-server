@@ -297,8 +297,10 @@ public class UserServiceImpl implements IUserService {
 
             User oldValue = userEntity;
             userEntity = userEntity.update(value);
-            String role = String.join(";", userDto.getRoles());
-            userEntity.setRole(role);
+            if (userDto.getRoles() != null) {
+                String role = String.join(";", userDto.getRoles());
+                userEntity.setRole(role);
+            }
             userRepository.save(userEntity);
             auditLogRepository.save(new AuditLog(userEntity.getDepartment().getSiteId().toString()
                 , site.getOrganizationId().toString()

@@ -120,7 +120,9 @@ public class KeycloakUserResource implements IUserResource {
         if (userDto.getEnable() != null) modifiedUser.setEnabled(userDto.getEnable());
 
         //update role
-        updateRole(userDto.getOpenid(), userDto.getRoles());
+        if (userDto.getRoles() != null) {
+            updateRole(userDto.getOpenid(), userDto.getRoles());
+        }
         userResource.update(modifiedUser);
 
         return true;
