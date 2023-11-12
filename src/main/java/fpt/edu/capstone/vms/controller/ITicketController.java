@@ -59,7 +59,6 @@ public interface ITicketController {
 
     @PostMapping("/filter")
     @Operation(summary = "Filter ticket in site for admin")
-    @PreAuthorize("hasRole('r:ticket:find')")
     ResponseEntity<?> filterAllBySites(@RequestBody @Valid TicketFilter ticketFilterSite, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
     @GetMapping("/{ticketId}/customer/{customerId}")
@@ -229,6 +228,7 @@ public interface ITicketController {
     class TicketByQRCodeResponseDTO {
         //Ticket Info
         private UUID ticketId;
+        private String siteId;
         private String ticketCode;
         private String ticketName;
         private Constants.Purpose purpose;

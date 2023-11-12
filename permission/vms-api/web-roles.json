@@ -7,39 +7,108 @@
   "R_DEPARTMENT_DELETE" : [ "r:department:delete" ],
   "R_SITE_CREATE" : [ "r:site:create" ],
   "R_ROLE_UPDATE" : [ "r:role:update" ],
-  "R_USER_FIND" : [ "r:user:find" ],
-  "R_SETTING-GROUP_UPDATE" : [ "r:setting-group:update" ],
-  "R_SETTING-GROUP_DELETE" : [ "r:setting-group:delete" ],
-  "R_CUSTOMER_CREATE" : [ "r:customer:create" ],
-  "R_ORGANIZATION_UPDATE" : [ "r:organization:update" ],
-  "R_SETTING-SITE_FIND" : [ "r:setting-site:find" ],
-  "R_ROLE_DELETE" : [ "r:role:delete" ],
-  "R_TICKET_FIND" : [ "r:ticket:find" ],
-  "R_USER_CREATE" : [ "r:user:create" ],
-  "R_TEMPLATE_CREATE" : [ "r:template:create" ],
-  "R_SETTING_CREATE" : [ "r:setting:create" ],
-  "R_PERMISSION_DELETE" : [ "r:permission:delete" ],
-  "R_REASON_DELETE" : [ "r:reason:delete" ],
-  "R_ORGANIZATION_DELETE" : [ "r:organization:delete" ],
-  "R_SETTING_UPDATE" : [ "r:setting:update" ],
-  "R_ROOM_DELETE" : [ "r:room:delete" ],
-  "R_USER_IMPORT" : [ "r:user:import" ],
-  "R_DEPARTMENT_UPDATE" : [ "r:department:update" ],
-  "R_DEPARTMENT_FIND" : [ "r:department:find" ],
-  "R_TICKET_CREATE" : [ "r:ticket:create" ],
-  "R_SITE_DELETE" : [ "r:site:delete" ],
-  "R_ROLE_CREATE" : [ "r:role:create" ],
-  "R_CARD_DELETE" : [ "r:card:delete" ],
-  "R_ROOM_FIND" : [ "r:room:find" ],
-  "R_ORGANIZATION_FIND" : [ "r:organization:find" ],
-  "R_TICKET_FINDQRCODE" : [ "r:ticket:findQRCode" ],
-  "R_FILE_UPLOAD" : [ "r:file:upload" ],
-  "R_DEPARTMENT_CREATE" : [ "r:department:create" ],
-  "R_REASON_CREATE" : [ "r:reason:create" ],
-  "R_USER_EXPORT" : [ "r:user:export" ],
-  "R_TICKET_UPDATE" : [ "r:ticket:update" ],
-  "R_SETTING-GROUP_FIND" : [ "r:setting-group:find" ],
-  "R_ROOM_CREATE" : [ "r:room:create" ],
+  "R_USER_FIND": [
+    "r:user:find"
+  ],
+  "R_SETTING-GROUP_UPDATE": [
+    "r:setting-group:update"
+  ],
+  "R_SETTING-GROUP_DELETE": [
+    "r:setting-group:delete"
+  ],
+  "R_CUSTOMER_CREATE": [
+    "r:customer:create"
+  ],
+  "R_ORGANIZATION_UPDATE": [
+    "r:organization:update"
+  ],
+  "R_SETTING-SITE_FIND": [
+    "r:setting-site:find"
+  ],
+  "R_ROLE_DELETE": [
+    "r:role:delete"
+  ],
+  "R_TICKET_FIND": [
+    "r:ticket:find"
+  ],
+  "R_USER_CREATE": [
+    "r:user:create"
+  ],
+  "R_SETTING_CREATE": [
+    "r:setting:create"
+  ],
+  "R_TEMPLATE_CREATE": [
+    "r:template:create"
+  ],
+  "R_PERMISSION_DELETE": [
+    "r:permission:delete"
+  ],
+  "R_REASON_DELETE": [
+    "r:reason:delete"
+  ],
+  "R_ORGANIZATION_DELETE": [
+    "r:organization:delete"
+  ],
+  "R_SETTING_UPDATE": [
+    "r:setting:update"
+  ],
+  "R_ROOM_DELETE": [
+    "r:room:delete"
+  ],
+  "R_USER_IMPORT": [
+    "r:user:import"
+  ],
+  "R_DEPARTMENT_UPDATE": [
+    "r:department:update"
+  ],
+  "R_DEPARTMENT_FIND": [
+    "r:department:find"
+  ],
+  "R_TICKET_CREATE": [
+    "r:ticket:create"
+  ],
+  "R_SITE_DELETE": [
+    "r:site:delete"
+  ],
+  "R_ROLE_CREATE": [
+    "r:role:create"
+  ],
+  "R_CARD_DELETE": [
+    "r:card:delete"
+  ],
+  "R_TICKET_CHECKIN": [
+    "r:ticket:checkIn"
+  ],
+  "R_ROOM_FIND": [
+    "r:room:find"
+  ],
+  "R_ORGANIZATION_FIND": [
+    "r:organization:find"
+  ],
+  "R_TICKET_FINDQRCODE": [
+    "r:ticket:findQRCode"
+  ],
+  "R_FILE_UPLOAD": [
+    "r:file:upload"
+  ],
+  "R_DEPARTMENT_CREATE": [
+    "r:department:create"
+  ],
+  "R_REASON_CREATE": [
+    "r:reason:create"
+  ],
+  "R_USER_EXPORT": [
+    "r:user:export"
+  ],
+  "R_TICKET_UPDATE": [
+    "r:ticket:update"
+  ],
+  "R_SETTING-GROUP_FIND": [
+    "r:setting-group:find"
+  ],
+  "R_ROOM_CREATE": [
+    "r:room:create"
+  ],
   "R_SETTING-GROUP_CREATE" : [ "r:setting-group:create" ],
   "R_TEMPLATE_FIND" : [ "r:template:find" ],
   "R_SETTING_FIND" : [ "r:setting:find" ],
