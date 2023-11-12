@@ -140,6 +140,7 @@ public interface IUserController {
         Integer provinceId;
         Integer communeId;
         Integer districtId;
+        String address;
     }
 
     @Data

@@ -73,13 +73,12 @@ public interface ITicketController {
     ResponseEntity<?> findByQRCode(@PathVariable UUID ticketId, @PathVariable UUID customerId);
 
     @PutMapping("/update-status")
-    @Operation(summary = "Update status of ticket")
+    @Operation(summary = "Update status of ticket is reject or approve")
     @PreAuthorize("hasRole('r:ticket:update')")
     ResponseEntity<?> updateState(@RequestBody @Valid UpdateStatusTicketOfCustomer updateStatusTicketOfCustomer);
 
     @GetMapping("/{ticketId}")
     @Operation(summary = "Find ticket by id for user")
-    @PreAuthorize("hasRole('r:ticket:find')")
     ResponseEntity<?> findByIdForUser(@PathVariable UUID ticketId);
 
     @GetMapping("/admin/{ticketId}")
