@@ -60,6 +60,10 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
     @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
     public SettingSiteMap createOrUpdateSettingSiteMap(ISettingSiteMapController.SettingSiteInfo settingSiteInfo) {
 
+        if (StringUtils.isEmpty(settingSiteInfo.getValue())) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Value is empty");
+        }
+
         if (ObjectUtils.isEmpty(settingSiteInfo)) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Object is null");
         }
@@ -78,16 +82,9 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
         if (!settingRepository.existsById(settingId))
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SettingId is not correct in database!!");
 
-        var user = userRepository.findByUsername(SecurityUtils.loginUsername());
-
-        if (!site.get().getOrganizationId().equals(UUID.fromString(SecurityUtils.getOrgId()))) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Please login with account of organization");
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId.toString())) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "You don't have permission to do this");
         }
-
-        if (ObjectUtils.isEmpty(user) && !user.get().getDepartment().getSiteId().equals(siteId)) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Please login before change data setting!!");
-        }
-
 
         SettingSiteMapPk pk = new SettingSiteMapPk(settingId, siteId);
         SettingSiteMap settingSiteMap = settingSiteMapRepository.findById(pk).orElse(null);
@@ -100,21 +97,22 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
 
             auditLogRepository.save(new AuditLog(siteId.toString()
                 , site.get().getOrganizationId().toString()
-                , siteId.toString()
+                , pk.toString()
                 , SETTING_SITE_TABLE_NAME
                 , Constants.AuditType.CREATE
                 , null
-                , site.toString()));
+                , createSettingSite.toString()));
             return settingSiteMapRepository.save(createSettingSite);
         } else {
+            var settingSiteUpdate = settingSiteMapRepository.save(settingSiteMap.update(mapper.map(settingSiteInfo, SettingSiteMap.class)));
             auditLogRepository.save(new AuditLog(siteId.toString()
                 , site.get().getOrganizationId().toString()
-                , siteId.toString()
+                , pk.toString()
                 , SETTING_SITE_TABLE_NAME
                 , Constants.AuditType.UPDATE
-                , null
-                , site.toString()));
-            return settingSiteMapRepository.save(settingSiteMap.update(mapper.map(settingSiteInfo, SettingSiteMap.class)));
+                , settingSiteInfo.toString()
+                , settingSiteUpdate.toString()));
+            return settingSiteUpdate;
         }
     }
 
@@ -148,10 +146,16 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
      */
     @Override
     public ISettingSiteMapController.SettingSiteDTO findAllBySiteIdAndGroupId(String siteId, Integer settingGroupId) {
-        var settingSites = settingSiteMapRepository.findAllBySiteIdAndGroupId(siteId, settingGroupId);
+        var userDetails = SecurityUtils.getUserDetails();
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this");
+        }
+        var _siteId = userDetails.isOrganizationAdmin() ? siteId : userDetails.getSiteId();
+
+        var settingSites = settingSiteMapRepository.findAllBySiteIdAndGroupId(_siteId, settingGroupId);
         ISettingSiteMapController.SettingSiteDTO settingSiteDTO = new ISettingSiteMapController.SettingSiteDTO();
         if (!settingSites.isEmpty()) {
-            settingSiteDTO.setSiteId(siteId);
+            settingSiteDTO.setSiteId(_siteId);
             settingSiteDTO.setSettingGroupId(Long.valueOf(settingGroupId));
             Map<String, String> setting = new HashMap<>();
             settingSites.forEach(o -> {
@@ -165,5 +169,34 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
         }
         return settingSiteDTO;
     }
+
+    @Override
+    @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
+    public Boolean setDefaultValueBySite(String siteId) {
+
+        var userDetails = SecurityUtils.getUserDetails();
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this");
+        }
+        var _siteId = userDetails.isOrganizationAdmin() ? siteId : userDetails.getSiteId();
+
+        var site = siteRepository.findById(UUID.fromString(_siteId)).orElse(null);
+        var settingSites = settingSiteMapRepository.findAllBySettingSiteMapPk_SiteId(UUID.fromString(_siteId));
+        if (!settingSites.isEmpty()) {
+            settingSites.forEach(o -> {
+                settingSiteMapRepository.delete(o);
+                auditLogRepository.save(new AuditLog(_siteId
+                    , site.getOrganizationId().toString()
+                    , o.getSettingSiteMapPk().toString()
+                    , SETTING_SITE_TABLE_NAME
+                    , Constants.AuditType.DELETE
+                    , o.toString()
+                    , null));
+            });
+            return true;
+        }
+        return false;
+    }
+
 
 }

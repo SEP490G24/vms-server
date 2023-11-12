@@ -1,23 +1,27 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
+import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ISettingSiteMapController;
-import fpt.edu.capstone.vms.persistence.entity.Department;
+import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.entity.SettingSiteMap;
 import fpt.edu.capstone.vms.persistence.entity.SettingSiteMapPk;
 import fpt.edu.capstone.vms.persistence.entity.Site;
-import fpt.edu.capstone.vms.persistence.entity.User;
+import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
 import fpt.edu.capstone.vms.persistence.repository.SettingRepository;
 import fpt.edu.capstone.vms.persistence.repository.SettingSiteMapRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.repository.UserRepository;
 import fpt.edu.capstone.vms.util.SecurityUtils;
-import jakarta.persistence.OneToMany;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.ArrayList;
@@ -28,38 +32,61 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class SettingSiteMapServiceImplTest {
 
-    @InjectMocks
     private SettingSiteMapServiceImpl settingSiteMapService;
-    @InjectMocks
-    private SettingServiceImpl settingService;
-    @Mock
     private SettingSiteMapRepository settingSiteMapRepository;
-    @Mock
     private SettingRepository settingRepository;
-    @Mock
     private UserRepository userRepository;
-    @Mock
     private SiteRepository siteRepository;
+    private AuditLogRepository auditLogRepository;
 
+    SecurityContext securityContext;
+    Authentication authentication;
+    ModelMapper mapper;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.initMocks(this);
+        securityContext = mock(SecurityContext.class);
+        authentication = mock(Authentication.class);
+        mapper = mock(ModelMapper.class);
+        settingSiteMapRepository = mock(SettingSiteMapRepository.class);
+        settingRepository = mock(SettingRepository.class);
+        userRepository = mock(UserRepository.class);
+        siteRepository = mock(SiteRepository.class);
+        auditLogRepository = mock(AuditLogRepository.class);
+        settingSiteMapService = new SettingSiteMapServiceImpl(settingSiteMapRepository, settingRepository, siteRepository, userRepository, auditLogRepository, mapper);
     }
 
     @Test
     @DisplayName("given siteId and settingGroupId, when settings exist, return DTO with settings")
     void givenSiteIdAndGroupId_WhenSettingsExist_ThenReturnDTOWithSettings() {
-        String siteId = "exampleSite";
+        String siteId = "06eb43a7-6ea8-4744-8231-760559fe2c08";
         String code1 = "Test_setting_1";
         String code2 = "Test_setting_2";
         Long settingGroupId = 1L;
+
+
+        // Create a mock Jwt object with the necessary claims
+        Jwt jwt = mock(Jwt.class);
+        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("mocked_username");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
 
         ISettingSiteMapController.SettingSite setting1 = new ISettingSiteMapController.SettingSite();
         setting1.setStatus(true);
@@ -102,8 +129,18 @@ class SettingSiteMapServiceImplTest {
     @Test
     @DisplayName("given siteId and settingGroupId, when no settings exist, return empty DTO")
     void givenSiteIdAndGroupId_WhenNoSettingsExist_ThenReturnEmptyDTO() {
-        String siteId = "exampleSite";
+        String siteId = "06eb43a7-6ea8-4744-8231-760559fe2c08";
         Integer settingGroupId = 1;
+
+        // Create a mock Jwt object with the necessary claims
+        Jwt jwt = mock(Jwt.class);
+        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("mocked_username");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
 
         when(settingSiteMapRepository.findAllBySiteIdAndGroupId(siteId, settingGroupId))
             .thenReturn(Collections.emptyList());
@@ -160,5 +197,198 @@ class SettingSiteMapServiceImplTest {
         assertEquals(0, result.size());
     }
 
+    @Test
+    void testCreateOrUpdateSettingSiteMap_SiteIdNotFoundInDatabase() {
+        // Mocking input data
+        ISettingSiteMapController.SettingSiteInfo settingSiteInfo = ISettingSiteMapController.SettingSiteInfo.builder().settingId(1).siteId(UUID.randomUUID().toString()).value("abc").build();
 
+        // Mocking repository responses
+        when(siteRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
+
+        // Test case for HttpClientErrorException with HttpStatus.BAD_REQUEST and message "SiteId is not correct in database!!"
+        assertThrows(HttpClientErrorException.class, () -> settingSiteMapService.createOrUpdateSettingSiteMap(settingSiteInfo));
+    }
+
+    @Test
+    void testCreateOrUpdateSettingSiteMap_SettingIdNotFoundInDatabase() {
+        // Mocking input data
+        ISettingSiteMapController.SettingSiteInfo settingSiteInfo = ISettingSiteMapController.SettingSiteInfo.builder().settingId(1).siteId(UUID.randomUUID().toString()).value("abc").build();
+
+
+        // Mocking repository responses
+        when(siteRepository.findById(any(UUID.class))).thenReturn(Optional.of(new Site()));
+        when(settingRepository.existsById(any(Long.class))).thenReturn(false);
+
+        // Test case for HttpClientErrorException with HttpStatus.BAD_REQUEST and message "SettingId is not correct in database!!"
+        assertThrows(HttpClientErrorException.class, () -> settingSiteMapService.createOrUpdateSettingSiteMap(settingSiteInfo));
+    }
+
+    @Test
+    void testCreateOrUpdateSettingSiteMap_NoPermission() {
+        // Mocking input data
+        ISettingSiteMapController.SettingSiteInfo settingSiteInfo = ISettingSiteMapController.SettingSiteInfo.builder().settingId(1).siteId(UUID.randomUUID().toString()).value("abc").build();
+
+        // Create a mock Jwt object with the necessary claims
+        Jwt jwt = mock(Jwt.class);
+        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c07");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("mocked_username");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        // Mocking repository responses
+        when(siteRepository.findById(any(UUID.class))).thenReturn(Optional.of(new Site()));
+        when(settingRepository.existsById(any(Long.class))).thenReturn(true);
+        when(SecurityUtils.checkSiteAuthorization(siteRepository, settingSiteInfo.getSiteId())).thenReturn(false);
+
+        // Test case for HttpClientErrorException with HttpStatus.BAD_REQUEST and message "You don't have permission to do this"
+        assertThrows(HttpClientErrorException.class, () -> settingSiteMapService.createOrUpdateSettingSiteMap(settingSiteInfo));
+    }
+
+    @Test
+    void testCreateOrUpdateSettingSiteMap_ValueIsEmpty() {
+        // Mocking input data
+        ISettingSiteMapController.SettingSiteInfo settingSiteInfo = ISettingSiteMapController.SettingSiteInfo.builder().settingId(1).siteId(UUID.randomUUID().toString()).value("").build();
+
+
+        // Test case for HttpClientErrorException with HttpStatus.BAD_REQUEST and message "Value is empty"
+        assertThrows(HttpClientErrorException.class, () -> settingSiteMapService.createOrUpdateSettingSiteMap(settingSiteInfo));
+    }
+
+    @Test
+    void testCreateOrUpdateSettingSiteMap_SettingIdOrSiteIdIsNull() {
+        // Mocking input data
+        ISettingSiteMapController.SettingSiteInfo settingSiteInfo = ISettingSiteMapController.SettingSiteInfo.builder().settingId(null).siteId(null).value("abc").build();
+
+        // Test case for HttpClientErrorException with HttpStatus.BAD_REQUEST and message "SettingId or siteId is not null!!"
+        assertThrows(HttpClientErrorException.class, () -> settingSiteMapService.createOrUpdateSettingSiteMap(settingSiteInfo));
+    }
+
+    @Test
+    void testCreateOrUpdateSettingSiteMap_SuccessfulUpdate() {
+        // Mocking input data
+        ISettingSiteMapController.SettingSiteInfo settingSiteInfo = ISettingSiteMapController.SettingSiteInfo.builder().settingId(1).siteId("06eb43a7-6ea8-4744-8231-760559fe2c06").value("abc").build();
+
+        // Create a mock Jwt object with the necessary claims
+        Jwt jwt = mock(Jwt.class);
+        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c07");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("mocked_username");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        Site site = new Site();
+        site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+        // Mocking repository responses
+        when(siteRepository.findById(any(UUID.class))).thenReturn(Optional.of(site));
+        when(settingRepository.existsById(any(Long.class))).thenReturn(true);
+        when(SecurityUtils.checkSiteAuthorization(siteRepository, settingSiteInfo.getSiteId())).thenReturn(true);
+        SettingSiteMap existingSettingSiteMap = new SettingSiteMap();
+        SettingSiteMapPk pk = new SettingSiteMapPk(settingSiteInfo.getSettingId().longValue(), UUID.fromString(settingSiteInfo.getSiteId()));
+        existingSettingSiteMap.setSettingSiteMapPk(pk);
+        when(settingSiteMapRepository.findById(pk)).thenReturn(Optional.of(existingSettingSiteMap));
+        when(mapper.map(settingSiteInfo, SettingSiteMap.class)).thenReturn(existingSettingSiteMap);
+
+        when(settingSiteMapRepository.save(existingSettingSiteMap)).thenReturn(existingSettingSiteMap);
+        when(auditLogRepository.save(any(AuditLog.class))).thenAnswer(invocation -> {
+            AuditLog auditLog = invocation.getArgument(0);
+            assertEquals("06eb43a7-6ea8-4744-8231-760559fe2c06", auditLog.getSiteId());
+            assertEquals("06eb43a7-6ea8-4744-8231-760559fe2c08", auditLog.getOrganizationId());
+            assertEquals("Setting Site Map", auditLog.getTableName());
+            assertEquals(Constants.AuditType.UPDATE, auditLog.getAuditType());
+            return auditLog;
+        });
+
+
+        // Test case for successful update
+        assertDoesNotThrow(() -> settingSiteMapService.createOrUpdateSettingSiteMap(settingSiteInfo));
+    }
+
+    @Test
+    void testSetDefaultValueBySite_SuccessfulDeletion() {
+        // Mocking input data
+        String siteId = "06eb43a7-6ea8-4744-8231-760559fe2c08";
+
+        // Create a mock Jwt object with the necessary claims
+        Jwt jwt = mock(Jwt.class);
+        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("mocked_username");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        SecurityUtils.UserDetails userDetails = new SecurityUtils.UserDetails();
+        userDetails.setOrganizationAdmin(true);
+
+        Site site = new Site();
+        site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+        // Mocking repository responses
+        when(siteRepository.findById(any(UUID.class))).thenReturn(Optional.of(site));
+        SettingSiteMap settingSiteMap = new SettingSiteMap();
+        SettingSiteMapPk pk = new SettingSiteMapPk(1L, UUID.fromString(siteId));
+        settingSiteMap.setSettingSiteMapPk(pk);
+        when(settingSiteMapRepository.findAllBySettingSiteMapPk_SiteId(any(UUID.class))).thenReturn(Collections.singletonList(settingSiteMap));
+
+        // Test case for successful deletion
+        assertTrue(settingSiteMapService.setDefaultValueBySite(siteId));
+    }
+
+    @Test
+    void testSetDefaultValueBySite_NoPermission() {
+        // Mocking input data
+        String siteId = "06eb43a7-6ea8-4744-8231-760559fe2c08";
+
+        // Create a mock Jwt object with the necessary claims
+        Jwt jwt = mock(Jwt.class);
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("mocked_username");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        SecurityUtils.UserDetails userDetails = new SecurityUtils.UserDetails();
+        userDetails.setOrganizationAdmin(false);
+
+        // Test case for HttpClientErrorException with HttpStatus.FORBIDDEN and message "You don't have permission to do this"
+        HttpClientErrorException exception = assertThrows(HttpClientErrorException.class, () -> settingSiteMapService.setDefaultValueBySite(siteId));
+        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
+        assertEquals("403 You don't have permission to do this", exception.getMessage());
+    }
+
+    @Test
+    void testSetDefaultValueBySite_NoSettingSitesFound() {
+        // Mocking input data
+        String siteId = "06eb43a7-6ea8-4744-8231-760559fe2c08";
+
+        // Create a mock Jwt object with the necessary claims
+        Jwt jwt = mock(Jwt.class);
+        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("mocked_username");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        SecurityUtils.UserDetails userDetails = new SecurityUtils.UserDetails();
+        userDetails.setOrganizationAdmin(true);
+
+
+        // Mocking repository responses
+        when(siteRepository.findById(any(UUID.class))).thenReturn(Optional.of(new Site()));
+        when(settingSiteMapRepository.findAllBySettingSiteMapPk_SiteId(any(UUID.class))).thenReturn(Collections.emptyList());
+
+        // Test case for no setting sites found
+        assertFalse(settingSiteMapService.setDefaultValueBySite(siteId));
+    }
 }

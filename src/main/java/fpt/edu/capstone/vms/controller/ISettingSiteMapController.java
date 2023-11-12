@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 import lombok.Data;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -59,7 +60,13 @@ public interface ISettingSiteMapController {
     @PreAuthorize("hasRole('r:setting-site:find')")
     ResponseEntity<?> findAllBySiteIdAndGroupId(@PathVariable String siteId, @PathVariable Integer settingGroupId);
 
+    @GetMapping("/set-default/{siteId}")
+    @Operation(summary = "Set default setting for site")
+    @PreAuthorize("hasRole('r:setting-site:delete')")
+    ResponseEntity<?> setDefault(@PathVariable String siteId);
+
     @Data
+    @Builder
     class SettingSiteInfo {
         @NotNull
         private String siteId;

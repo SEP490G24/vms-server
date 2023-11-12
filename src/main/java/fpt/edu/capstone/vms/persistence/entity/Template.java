@@ -47,7 +47,7 @@ public class Template extends AbstractBaseEntity<UUID> {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "body", columnDefinition = "text")
+    @Column(name = "body", columnDefinition = "text", length = 10000)
     private String body;
 
     @Enumerated(EnumType.STRING)
