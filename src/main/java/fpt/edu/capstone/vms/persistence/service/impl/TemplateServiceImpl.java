@@ -123,6 +123,7 @@ public class TemplateServiceImpl extends GenericServiceImpl<Template, UUID> impl
         return templateRepository.findAllBySiteIdAndEnableIsTrue(UUID.fromString(siteId));
     }
 
+
     @Override
     public List<Template> finAllBySiteIdAndType(String siteId, Constants.TemplateType type) {
         if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {

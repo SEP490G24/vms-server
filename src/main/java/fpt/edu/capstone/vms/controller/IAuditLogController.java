@@ -7,6 +7,7 @@ import jakarta.ws.rs.QueryParam;
 import lombok.Data;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,7 +26,7 @@ import java.util.UUID;
 @Tag(name = "Audit Log Service")
 @RequestMapping("/api/v1/auditLog")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
-//@PreAuthorize("isAuthenticated()")
+@PreAuthorize("isAuthenticated()")
 public interface IAuditLogController {
 
     @GetMapping("/{id}")

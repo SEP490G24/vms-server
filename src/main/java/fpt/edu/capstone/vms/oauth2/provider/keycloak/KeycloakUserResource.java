@@ -57,7 +57,7 @@ public class KeycloakUserResource implements IUserResource {
     public String create(UserDto userDto) {
 
         Map<String, List<String>> attributes = new HashMap<>();
-        if (SecurityUtils.getUserDetails().isAdmin()) {
+        if (SecurityUtils.getUserDetails().isRealmAdmin()) {
             attributes.put(Constants.Claims.OrgId, List.of(userDto.getOrgId()));
         } else {
             Department department = departmentRepository.findById(userDto.getDepartmentId()).orElse(null);

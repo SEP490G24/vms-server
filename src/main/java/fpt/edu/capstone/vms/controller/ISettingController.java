@@ -47,7 +47,7 @@ public interface ISettingController {
     @GetMapping
     @Operation(summary = "Get all")
     @PreAuthorize("hasRole('r:setting:find')")
-    ResponseEntity<List<?>> findAll(@RequestParam Integer groupId);
+    ResponseEntity<List<?>> findAll(@RequestParam Integer groupId, @RequestParam String siteId);
 
     @PostMapping()
     @Operation(summary = "Create new agent")

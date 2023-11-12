@@ -48,7 +48,7 @@ public interface ITemplateController {
 
     @PostMapping()
     @Operation(summary = "Create new agent")
-//    @PreAuthorize("hasRole('r:user:create')")
+    @PreAuthorize("hasRole('r:template:create')")
     ResponseEntity<?> create(@RequestBody @Valid TemplateDto templateDto);
 
     @PutMapping("/{id}")
@@ -57,17 +57,17 @@ public interface ITemplateController {
 
     @PostMapping("/filter")
     @Operation(summary = "Filter")
-//    @PreAuthorize("hasRole('r:user:find')")
+    @PreAuthorize("hasRole('r:template:find')")
     ResponseEntity<?> filter(@RequestBody @Valid TemplateFilterDTO templateFilterDTO, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
     @GetMapping("/site/{siteId}")
     @Operation(summary = "Get all template by siteId")
-    @PreAuthorize("hasRole('r:user:find')")
+    @PreAuthorize("hasRole('r:template:find')")
     ResponseEntity<List<?>> findAllBySiteId(@PathVariable String siteId);
 
     @GetMapping("/site/{siteId}/{type}")
     @Operation(summary = "Get all template by siteId and type")
-    @PreAuthorize("hasRole('r:user:find')")
+    @PreAuthorize("hasRole('r:template:find')")
     ResponseEntity<List<?>> findAllBySiteIdAndType(@PathVariable String siteId, @PathVariable Constants.TemplateType type);
 
     @Data

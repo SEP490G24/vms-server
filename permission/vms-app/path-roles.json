@@ -1,0 +1,19 @@
+[
+  "path:dashboard",
+  "path:configuration",
+  "path:customer",
+  "path:department",
+  "path:device",
+  "path:history",
+  "path:meeting_calendar",
+  "path:meeting_statistic",
+  "path:meeting_room",
+  "path:organization",
+  "path:permission",
+  "path:profile",
+  "path:room",
+  "path:site",
+  "path:template",
+  "path:ticket_result",
+  "path:user"
+]

@@ -26,12 +26,12 @@ public interface IAccessHistoryController {
 
     @GetMapping("/{ticketId}/customer/{customerId}")
     @Operation(summary = "Find ticket by qrcode")
-        //@PreAuthorize("hasRole('r:ticket:findQRCode')")
+    @PreAuthorize("hasRole('r:ticket:findQRCode')")
     ResponseEntity<?> findByQRCode(@PathVariable UUID ticketId, @PathVariable UUID customerId);
 
     @PostMapping("")
     @Operation(summary = "Filter access history ")
-        //@PreAuthorize("hasRole('r:ticket:findQRCode')")
+    @PreAuthorize("hasRole('r:ticket:findQRCode')")
     ResponseEntity<?> filterAccessHistory(@RequestBody @Valid AccessHistoryFilter ticketFilterUser, Pageable pageable);
 
     @Data

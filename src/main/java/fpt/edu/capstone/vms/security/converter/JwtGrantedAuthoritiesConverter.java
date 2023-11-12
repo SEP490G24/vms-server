@@ -41,6 +41,16 @@ public class JwtGrantedAuthoritiesConverter implements Converter<Jwt, Collection
      */
     public static final String REALM_ADMIN = "REALM_ADMIN";
 
+    /**
+     * Name of scope organization admin
+     */
+    public static final String SCOPE_ORGANIZATION = "scope:organization";
+
+    /**
+     * Name of scope site admin
+     */
+    public static final String SCOPE_SITE = "scope:site";
+
     @Value("${edu.fpt.capstone.vms.oauth2.keycloak.client-id}")
     private String resourceId;
 

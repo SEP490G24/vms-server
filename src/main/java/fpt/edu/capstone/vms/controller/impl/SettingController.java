@@ -4,6 +4,7 @@ import fpt.edu.capstone.vms.controller.ISettingController;
 import fpt.edu.capstone.vms.exception.HttpClientResponse;
 import fpt.edu.capstone.vms.persistence.entity.Setting;
 import fpt.edu.capstone.vms.persistence.service.ISettingService;
+import fpt.edu.capstone.vms.util.SecurityUtils;
 import fpt.edu.capstone.vms.util.SmsUtils;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -34,10 +35,10 @@ public class SettingController implements ISettingController {
      * The function updates a setting group with the provided ID and returns a ResponseEntity with the updated setting or
      * an error message.
      *
-     * @param id The "id" parameter is of type Long and represents the identifier of the setting group that needs to be
-     * updated.
+     * @param id          The "id" parameter is of type Long and represents the identifier of the setting group that needs to be
+     *                    updated.
      * @param settingInfo The settingInfo parameter is an object of type UpdateSettingInfo. It contains the updated
-     * information for a setting.
+     *                    information for a setting.
      * @return The method is returning a ResponseEntity object.
      */
 
@@ -57,9 +58,11 @@ public class SettingController implements ISettingController {
      * @return The method is returning a ResponseEntity object containing a List of unknown type.
      */
     @Override
-    public ResponseEntity<List<?>> findAll(Integer groupId) {
+    public ResponseEntity<List<?>> findAll(Integer groupId, String siteId) {
+        var userDetails = SecurityUtils.getUserDetails();
+        var _siteId = userDetails.isOrganizationAdmin() ? siteId : userDetails.getSiteId();
         return groupId == null ?
-             ResponseEntity.ok(settingService.findAll()) : ResponseEntity.ok(settingService.findAllByGroupId(groupId))  ;
+            ResponseEntity.ok(settingService.findAll()) : ResponseEntity.ok(settingService.findAllByGroupIdAndSiteId(groupId, _siteId));
     }
 
     /**
@@ -67,7 +70,7 @@ public class SettingController implements ISettingController {
      * or an HttpClientResponse if an error occurs.
      *
      * @param settingInfo The parameter "settingInfo" is an object of type "CreateSettingInfo". It contains information
-     * needed to create a new setting.
+     *                    needed to create a new setting.
      * @return The method is returning a ResponseEntity object.
      */
 

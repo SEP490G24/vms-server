@@ -15,15 +15,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -57,14 +49,17 @@ public interface ITicketController {
 
     @PostMapping("/cancel")
     @Operation(summary = "Cancel meeting ticket")
+    @PreAuthorize("hasRole('r:ticket:cancel')")
     ResponseEntity<?> cancelMeeting(@RequestBody @Valid CancelTicket cancelTicket);
 
     @PostMapping("/update")
     @Operation(summary = "Update meeting ticket")
+    @PreAuthorize("hasRole('r:ticket:update')")
     ResponseEntity<?> updateMeeting(@RequestBody @Valid UpdateTicketInfo updateTicketInfo);
 
     @PostMapping("/filter")
     @Operation(summary = "Filter ticket")
+    @PreAuthorize("hasRole('r:ticket:find')")
     ResponseEntity<?> filter(@RequestBody @Valid TicketFilterUser ticketFilterUser, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
     @PostMapping("/filter/site")
@@ -74,15 +69,17 @@ public interface ITicketController {
 
     @GetMapping("/{ticketId}/customer/{customerId}")
     @Operation(summary = "Find ticket by qrcode")
-        //@PreAuthorize("hasRole('r:ticket:findQRCode')")
+    @PreAuthorize("hasRole('r:ticket:findQRCode')")
     ResponseEntity<?> findByQRCode(@PathVariable UUID ticketId, @PathVariable UUID customerId);
 
     @PutMapping("/update-status")
     @Operation(summary = "Update status of ticket")
+    @PreAuthorize("hasRole('r:ticket:update')")
     ResponseEntity<?> updateState(@RequestBody @Valid UpdateStatusTicketOfCustomer updateStatusTicketOfCustomer);
 
     @GetMapping("/{ticketId}")
     @Operation(summary = "Find ticket by id for user")
+    @PreAuthorize("hasRole('r:ticket:find')")
     ResponseEntity<?> findByIdForUser(@PathVariable UUID ticketId);
 
     @GetMapping("/admin/{ticketId}")
@@ -92,7 +89,7 @@ public interface ITicketController {
 
     @PostMapping("/customer/filter")
     @Operation(summary = "Filter ticket and customer ")
-        //@PreAuthorize("hasRole('r:ticket:findQRCode')")
+    @PreAuthorize("hasRole('r:ticket:findQRCode')")
     ResponseEntity<?> filterTicketAndCustomer(@RequestBody @Valid TicketFilterUser ticketFilterUser, Pageable pageable);
 
     @Data

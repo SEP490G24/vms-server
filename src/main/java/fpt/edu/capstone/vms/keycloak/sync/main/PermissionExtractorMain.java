@@ -18,9 +18,12 @@ public class PermissionExtractorMain {
 
     public static void main(String[] args) throws IOException {
 
-        final String rolesPathsInput = String.format("permission/%s/roles.json", CLIENT_APP);
+        final String rolesPathsInput = String.format("permission/%s/path-roles.json", CLIENT_APP);
+        final String scopePathsInput = String.format("permission/%s/scope-roles.json", CLIENT_APP);
 
-        final String rolesPathsOutput = String.format("permission/%s/permission-setting.json", CLIENT_APP);
+        final String rolesPathsOutput = String.format("permission/%s/path-permission-setting.json", CLIENT_APP);
+        final String scopePathsOutput = String.format("permission/%s/scope-permission-setting.json", CLIENT_APP);
+
         final String extractPathsOutput = String.format("permission/%s/permission-setting.json", CLIENT_API);
 
         var keycloak = KeycloakBuilder.builder()
@@ -32,8 +35,11 @@ public class PermissionExtractorMain {
                 .password(KeycloakConstants.PASSWORD)
                 .build();
 
-        /* Adapter roles path web to permission keycloak*/
-//        KeycloakRoleExtractorHelper.adaptRolePaths2File(new File(rolesPathsInput), CLIENT_APP, rolesPathsOutput);
+        /* Adapter roles paths web to permission keycloak*/
+        KeycloakRoleExtractorHelper.adaptRolePaths2File(new File(rolesPathsInput), CLIENT_APP, rolesPathsOutput);
+
+        /* Adapter roles scopes to permission keycloak*/
+        KeycloakRoleExtractorHelper.adaptRolePaths2File(new File(scopePathsInput), CLIENT_APP, scopePathsOutput);
 
         /* Extract roles server to permission keycloak*/
         KeycloakRoleExtractorHelper.extract2File(KeycloakRoleExtractConfig.builder()
@@ -41,11 +47,16 @@ public class PermissionExtractorMain {
                 .endWith("controller")
                 .cleanup("true").build(), extractPathsOutput);
 
-
+        /* init keycloak sync helper*/
         var keyCloakRoleSyncHelper = new KeyCloakRoleSyncHelper(keycloak, KeycloakConstants.REALM);
 
-//        keyCloakRoleSyncHelper.startToSync(new File(rolesPathsOutput), CLIENT_APP);
+        /* Sync roles paths web server keycloak*/
+        keyCloakRoleSyncHelper.startToSync(new File(rolesPathsOutput), CLIENT_APP);
 
+        /* Sync roles scope web server keycloak*/
+        keyCloakRoleSyncHelper.startToSync(new File(scopePathsOutput), CLIENT_APP);
+
+        /* Sync permission api server keycloak*/
         keyCloakRoleSyncHelper.startToSync(new File(extractPathsOutput), CLIENT_API);
     }
 }

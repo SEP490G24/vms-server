@@ -8,5 +8,5 @@ import java.util.List;
 
 public interface ISettingService extends IGenericService<Setting, Long> {
 
-    List<Setting> findAllByGroupId(Integer groupId);
+    List<Setting> findAllByGroupIdAndSiteId(Integer groupId, String siteId);
 }

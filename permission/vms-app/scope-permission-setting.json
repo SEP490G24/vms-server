@@ -1,0 +1,29 @@
+{
+  "constraints" : null,
+  "roles" : {
+    "scope:organization" : {
+      "vi" : {
+        "name" : "organization",
+        "feature" : "scope",
+        "description" : "scope:organization"
+      },
+      "en" : {
+        "name" : "organization",
+        "feature" : "scope",
+        "description" : "scope:organization"
+      }
+    },
+    "scope:site" : {
+      "vi" : {
+        "name" : "site",
+        "feature" : "scope",
+        "description" : "scope:site"
+      },
+      "en" : {
+        "name" : "site",
+        "feature" : "scope",
+        "description" : "scope:site"
+      }
+    }
+  }
+}
