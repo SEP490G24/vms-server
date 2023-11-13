@@ -68,7 +68,6 @@ public interface ISettingSiteMapController {
     @Data
     @Builder
     class SettingSiteInfo {
-        @NotNull
         private String siteId;
         @NotNull
         private Integer settingId;

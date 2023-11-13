@@ -60,6 +60,12 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
     @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
     public SettingSiteMap createOrUpdateSettingSiteMap(ISettingSiteMapController.SettingSiteInfo settingSiteInfo) {
 
+        var userDetails = SecurityUtils.getUserDetails();
+        var _siteId = userDetails.isOrganizationAdmin() ? settingSiteInfo.getSiteId() : userDetails.getSiteId();
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, _siteId)) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this");
+        }
+
         if (StringUtils.isEmpty(settingSiteInfo.getValue())) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Value is empty");
         }
@@ -73,20 +79,19 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
         }
 
         Long settingId = Long.valueOf(settingSiteInfo.getSettingId());
-        UUID siteId = UUID.fromString(settingSiteInfo.getSiteId());
 
-        var site = siteRepository.findById(siteId);
+        var site = siteRepository.findById(UUID.fromString(_siteId));
         if (site.isEmpty())
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SiteId is not correct in database!!");
 
         if (!settingRepository.existsById(settingId))
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SettingId is not correct in database!!");
 
-        if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId.toString())) {
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, _siteId.toString())) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "You don't have permission to do this");
         }
 
-        SettingSiteMapPk pk = new SettingSiteMapPk(settingId, siteId);
+        SettingSiteMapPk pk = new SettingSiteMapPk(settingId, UUID.fromString(_siteId));
         SettingSiteMap settingSiteMap = settingSiteMapRepository.findById(pk).orElse(null);
         if (ObjectUtils.isEmpty(settingSiteMap)) {
             SettingSiteMap createSettingSite = new SettingSiteMap();
@@ -95,7 +100,7 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
             createSettingSite.setDescription(settingSiteInfo.getDescription());
             createSettingSite.setStatus(true);
 
-            auditLogRepository.save(new AuditLog(siteId.toString()
+            auditLogRepository.save(new AuditLog(_siteId.toString()
                 , site.get().getOrganizationId().toString()
                 , pk.toString()
                 , SETTING_SITE_TABLE_NAME
@@ -105,7 +110,7 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
             return settingSiteMapRepository.save(createSettingSite);
         } else {
             var settingSiteUpdate = settingSiteMapRepository.save(settingSiteMap.update(mapper.map(settingSiteInfo, SettingSiteMap.class)));
-            auditLogRepository.save(new AuditLog(siteId.toString()
+            auditLogRepository.save(new AuditLog(_siteId.toString()
                 , site.get().getOrganizationId().toString()
                 , pk.toString()
                 , SETTING_SITE_TABLE_NAME
