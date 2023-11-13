@@ -147,11 +147,10 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
     @Override
     public ISettingSiteMapController.SettingSiteDTO findAllBySiteIdAndGroupId(String siteId, Integer settingGroupId) {
         var userDetails = SecurityUtils.getUserDetails();
-        if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
+        var _siteId = userDetails.isOrganizationAdmin() ? siteId : userDetails.getSiteId();
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, _siteId)) {
             throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this");
         }
-        var _siteId = userDetails.isOrganizationAdmin() ? siteId : userDetails.getSiteId();
-
         var settingSites = settingSiteMapRepository.findAllBySiteIdAndGroupId(_siteId, settingGroupId);
         ISettingSiteMapController.SettingSiteDTO settingSiteDTO = new ISettingSiteMapController.SettingSiteDTO();
         if (!settingSites.isEmpty()) {

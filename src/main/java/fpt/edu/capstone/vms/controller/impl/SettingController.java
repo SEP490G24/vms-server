@@ -73,10 +73,12 @@ public class SettingController implements ISettingController {
     @Override
     public ResponseEntity<List<?>> findAll(Integer groupId, String siteId) {
         var userDetails = SecurityUtils.getUserDetails();
-        if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
+
+        var _siteId = userDetails.isOrganizationAdmin() ? siteId : userDetails.getSiteId();
+
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, _siteId)) {
             throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this");
         }
-        var _siteId = userDetails.isOrganizationAdmin() ? siteId : userDetails.getSiteId();
 
         return groupId == null ?
             ResponseEntity.ok(settingService.findAll()) : ResponseEntity.ok(settingService.findAllByGroupIdAndSiteId(groupId, _siteId));
