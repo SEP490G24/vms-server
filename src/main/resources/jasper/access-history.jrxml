@@ -73,7 +73,7 @@
                 <textElement textAlignment="Center" verticalAlignment="Middle">
                     <font fontName="Times New Roman" size="18" isBold="true"/>
                 </textElement>
-                <text><![CDATA[Danh sách người dùng]]></text>
+                <text><![CDATA[Danh sách lịch sử ra vào tòa nhà]]></text>
             </staticText>
         </band>
         <band height="20">
@@ -139,7 +139,7 @@
                                 <textElement textAlignment="Center" verticalAlignment="Middle">
                                     <font fontName="Times New Roman" size="14" isBold="true"/>
                                 </textElement>
-                                <text><![CDATA[Username]]></text>
+                                <text><![CDATA[TicketCode]]></text>
                             </staticText>
                         </jr:columnHeader>
                         <jr:detailCell style="Table_TD" height="30">

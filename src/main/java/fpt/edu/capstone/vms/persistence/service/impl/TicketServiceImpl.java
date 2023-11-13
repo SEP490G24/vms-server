@@ -389,7 +389,20 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                     if (ObjectUtils.isEmpty(template)) {
                         throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't not found template");
                     }
-                    Map<String, String> parameterMap = Map.of("ten_nguoi_nhan", customer.getVisitorName());
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+
+                    String date = ticket.getStartTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                    String startTime1 = ticket.getStartTime().format(formatter);
+                    String endTime = ticket.getEndTime().format(formatter);
+
+                    Map<String, String> parameterMap = new HashMap<>();
+                    parameterMap.put("customerName", customer.getVisitorName());
+                    parameterMap.put("meetingName", ticket.getName());
+                    parameterMap.put("dateTime", date);
+                    parameterMap.put("startTime", startTime1);
+                    parameterMap.put("endTime", endTime);
+                    //parameterMap.put("address", site.getAddress());
+                    //parameterMap.put("roomName", room.getName());
                     String replacedTemplate = emailUtils.replaceEmailParameters(template.getBody(), parameterMap);
 
                     emailUtils.sendMailWithQRCode(customer.getEmail(), template.getSubject(), replacedTemplate, null, ticket.getSiteId());
