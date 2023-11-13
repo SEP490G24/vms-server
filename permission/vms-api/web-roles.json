@@ -92,6 +92,9 @@
   "R_ROLE_CREATE": [
     "r:role:create"
   ],
+  "R_ACCESS-HISTORY_EXPORT": [
+    "r:access-history:export"
+  ],
   "R_CARD_DELETE": [
     "r:card:delete"
   ],
@@ -161,8 +164,16 @@
   "R_PERMISSION_CREATE": [
     "r:permission:create"
   ],
-  "R_REASON_UPDATE" : [ "r:reason:update" ],
-  "R_SETTING-SITE_CREATE" : [ "r:setting-site:create" ],
-  "R_SETTING_DELETE" : [ "r:setting:delete" ],
-  "R_ORGANIZATION_CREATE" : [ "r:organization:create" ]
+  "R_REASON_UPDATE": [
+    "r:reason:update"
+  ],
+  "R_SETTING-SITE_CREATE": [
+    "r:setting-site:create"
+  ],
+  "R_SETTING_DELETE": [
+    "r:setting:delete"
+  ],
+  "R_ORGANIZATION_CREATE": [
+    "r:organization:create"
+  ]
 }
