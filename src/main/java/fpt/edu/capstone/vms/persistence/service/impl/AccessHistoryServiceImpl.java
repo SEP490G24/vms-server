@@ -4,7 +4,6 @@ import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.IAccessHistoryController;
 import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMap;
 import fpt.edu.capstone.vms.persistence.entity.Ticket;
-import fpt.edu.capstone.vms.persistence.entity.User;
 import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.repository.TicketRepository;
@@ -67,7 +66,7 @@ public class AccessHistoryServiceImpl extends GenericServiceImpl<Ticket, UUID> i
         }
         List<IAccessHistoryController.AccessHistoryResponseDTO> accessHistoryResponseDTOS = mapper.map(customerTicketMapPage.getContent(), new TypeToken<List<IAccessHistoryController.AccessHistoryResponseDTO>>() {
         }.getType());
-        return new PageImpl(accessHistoryResponseDTOS, pageable, accessHistoryResponseDTOS.size());
+        return new PageImpl(accessHistoryResponseDTOS, pageable, customerTicketMapPage.getTotalElements());
     }
 
     @Override
@@ -84,7 +83,7 @@ public class AccessHistoryServiceImpl extends GenericServiceImpl<Ticket, UUID> i
             JasperReport jasperReport = JasperCompileManager.compileReport(getClass().getResourceAsStream(PATH_FILE));
 
             JRBeanCollectionDataSource listDataSource = new JRBeanCollectionDataSource(
-                listData.getContent().size() == 0 ? Collections.singletonList(new User()) : listData.getContent());
+                listData.getContent().size() == 0 ? Collections.singletonList(new IAccessHistoryController.AccessHistoryResponseDTO()) : listData.getContent());
             Map<String, Object> parameters = new HashMap<>();
             parameters.put("tableDataset", listDataSource);
             JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, new JREmptyDataSource());

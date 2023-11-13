@@ -111,7 +111,13 @@ public class ModelMapperConfig {
             .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getTicketEntity().getCreatedOn()), IAccessHistoryController.AccessHistoryResponseDTO::setCreatedOn))
             .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getTicketEntity().getRoom().getId()), IAccessHistoryController.AccessHistoryResponseDTO::setRoomId))
             .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getTicketEntity().getRoom().getName()), IAccessHistoryController.AccessHistoryResponseDTO::setRoomName))
-            .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getCustomerEntity()), IAccessHistoryController.AccessHistoryResponseDTO::setCustomerInfo));
+            .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getCustomerEntity().getId()), IAccessHistoryController.AccessHistoryResponseDTO::setCustomerId))
+            .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getCustomerEntity().getVisitorName()), IAccessHistoryController.AccessHistoryResponseDTO::setVisitorName))
+            .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getCustomerEntity().getIdentificationNumber()), IAccessHistoryController.AccessHistoryResponseDTO::setIdentificationNumber))
+            .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getCustomerEntity().getEmail()), IAccessHistoryController.AccessHistoryResponseDTO::setEmail))
+            .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getCustomerEntity().getPhoneNumber()), IAccessHistoryController.AccessHistoryResponseDTO::setPhoneNumber))
+            .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getCustomerEntity().getGender()), IAccessHistoryController.AccessHistoryResponseDTO::setGender))
+            .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getCustomerEntity().getDescription()), IAccessHistoryController.AccessHistoryResponseDTO::setDescription));
 
         //User => ProfileUser
         modelMapper.createTypeMap(User.class, IUserController.ProfileUser.class)

@@ -51,16 +51,16 @@
         <queryString>
             <![CDATA[]]>
         </queryString>
-        <field name="username" class="java.lang.String"/>
-        <field name="firstName" class="java.lang.String"/>
-        <field name="lastName" class="java.lang.String"/>
-        <field name="email" class="java.lang.String"/>
-        <field name="gender" class="java.lang.String"/>
+        <field name="ticketCode" class="java.lang.String"/>
+        <field name="ticketName" class="java.lang.String"/>
+        <field name="createBy" class="java.lang.String"/>
+        <field name="createdOn" class="java.util.Date"/>
+        <field name="roomName" class="java.lang.String"/>
+        <field name="checkInTime" class="java.util.Date"/>
+        <field name="checkOutTime" class="java.util.Date"/>
+        <field name="visitorName" class="java.lang.String"/>
+        <field name="identificationNumber" class="java.lang.String"/>
         <field name="phoneNumber" class="java.lang.String"/>
-        <field name="dateOfBirth" class="java.sql.Date"/>
-        <field name="roleName" class="java.lang.String"/>
-        <field name="departmentName" class="java.lang.String"/>
-        <field name="enable" class="java.lang.Boolean"/>
     </subDataset>
     <parameter name="tableDataset" class="net.sf.jasperreports.engine.data.JRBeanCollectionDataSource"/>
     <queryString>
@@ -124,7 +124,7 @@
                                     <font fontName="Times New Roman" size="11"/>
                                 </textElement>
                                 <textFieldExpression>
-                                    <![CDATA[$F{username} == null ? "" : $V{REPORT_COUNT}]]></textFieldExpression>
+                                    <![CDATA[$F{ticketCode} == null ? "" : $V{REPORT_COUNT}]]></textFieldExpression>
                             </textField>
                         </jr:detailCell>
                     </jr:column>
@@ -151,7 +151,7 @@
                                     <font fontName="Times New Roman" size="11"/>
                                 </textElement>
                                 <textFieldExpression>
-                                    <![CDATA[$F{username} == null ?  "" : $F{username}]]></textFieldExpression>
+                                    <![CDATA[$F{ticketCode} == null ?  "" : $F{ticketCode}]]></textFieldExpression>
                             </textField>
                         </jr:detailCell>
                     </jr:column>
@@ -166,7 +166,7 @@
                                 <textElement textAlignment="Center" verticalAlignment="Middle">
                                     <font fontName="Times New Roman" size="14" isBold="true"/>
                                 </textElement>
-                                <text><![CDATA[FirstName]]></text>
+                                <text><![CDATA[TicketName]]></text>
                             </staticText>
                         </jr:columnHeader>
                         <jr:detailCell style="Table_TD" height="30">
@@ -178,7 +178,7 @@
                                     <font fontName="Times New Roman" size="11"/>
                                 </textElement>
                                 <textFieldExpression>
-                                    <![CDATA[$F{firstName} == null ? "" : $F{firstName}]]></textFieldExpression>
+                                    <![CDATA[$F{ticketName} == null ? "" : $F{ticketName}]]></textFieldExpression>
                             </textField>
                         </jr:detailCell>
                     </jr:column>
@@ -193,7 +193,7 @@
                                 <textElement textAlignment="Center" verticalAlignment="Middle">
                                     <font fontName="Times New Roman" size="14" isBold="true"/>
                                 </textElement>
-                                <text><![CDATA[LastName]]></text>
+                                <text><![CDATA[CreateBy]]></text>
                             </staticText>
                         </jr:columnHeader>
                         <jr:detailCell style="Table_TD" height="30">
@@ -205,7 +205,7 @@
                                     <font fontName="Times New Roman" size="11"/>
                                 </textElement>
                                 <textFieldExpression>
-                                    <![CDATA[$F{lastName} == null  ? "" : $F{lastName}]]></textFieldExpression>
+                                    <![CDATA[$F{createBy} == null  ? "" : $F{createBy}]]></textFieldExpression>
                             </textField>
                         </jr:detailCell>
                     </jr:column>
@@ -220,7 +220,7 @@
                                 <textElement textAlignment="Center" verticalAlignment="Middle">
                                     <font fontName="Times New Roman" size="14" isBold="true"/>
                                 </textElement>
-                                <text><![CDATA[Email]]></text>
+                                <text><![CDATA[CreatedOn]]></text>
                             </staticText>
                         </jr:columnHeader>
                         <jr:detailCell style="Table_TD" height="30">
@@ -232,7 +232,7 @@
                                     <font fontName="Times New Roman" size="11"/>
                                 </textElement>
                                 <textFieldExpression>
-                                    <![CDATA[$F{email} == null  ? "" : $F{email}]]></textFieldExpression>
+                                    <![CDATA[$F{createdOn} == null  ? "" : $F{createdOn}]]></textFieldExpression>
                             </textField>
                         </jr:detailCell>
                     </jr:column>
@@ -247,7 +247,7 @@
                                 <textElement textAlignment="Center" verticalAlignment="Middle">
                                     <font fontName="Times New Roman" size="14" isBold="true"/>
                                 </textElement>
-                                <text><![CDATA[Gender]]></text>
+                                <text><![CDATA[Room]]></text>
                             </staticText>
                         </jr:columnHeader>
                         <jr:detailCell style="Table_TD" height="30">
@@ -259,7 +259,7 @@
                                     <font fontName="Times New Roman" size="11"/>
                                 </textElement>
                                 <textFieldExpression>
-                                    <![CDATA[$F{gender}  == null ? "" : $F{gender}]]></textFieldExpression>
+                                    <![CDATA[$F{roomName}  == null ? "" : $F{roomName}]]></textFieldExpression>
                             </textField>
                         </jr:detailCell>
                     </jr:column>
@@ -273,7 +273,7 @@
                                 <textElement textAlignment="Center" verticalAlignment="Middle">
                                     <font fontName="Times New Roman" size="14" isBold="true"/>
                                 </textElement>
-                                <text><![CDATA[PhoneNumber]]></text>
+                                <text><![CDATA[VisitorName]]></text>
                             </staticText>
                         </jr:columnHeader>
                         <jr:detailCell style="Table_TD" height="30">
@@ -285,7 +285,7 @@
                                     <font fontName="Times New Roman" size="11"/>
                                 </textElement>
                                 <textFieldExpression>
-                                    <![CDATA[$F{phoneNumber}  == null ? "" : $F{phoneNumber}]]></textFieldExpression>
+                                    <![CDATA[$F{visitorName} == null ? "" : $F{visitorName}]]></textFieldExpression>
                             </textField>
                         </jr:detailCell>
                     </jr:column>
@@ -300,7 +300,7 @@
                                 <textElement textAlignment="Center" verticalAlignment="Middle">
                                     <font fontName="Times New Roman" size="14" isBold="true"/>
                                 </textElement>
-                                <text><![CDATA[DateOfBirth]]></text>
+                                <text><![CDATA[IdentificationNumber]]></text>
                             </staticText>
                         </jr:columnHeader>
                         <jr:detailCell style="Table_TD" height="30">
@@ -312,7 +312,7 @@
                                     <font fontName="Times New Roman" size="11"/>
                                 </textElement>
                                 <textFieldExpression>
-                                    <![CDATA[$F{dateOfBirth} == null  ? "" :$F{dateOfBirth}]]></textFieldExpression>
+                                    <![CDATA[$F{identificationNumber} == null ? "" : $F{identificationNumber}]]></textFieldExpression>
                             </textField>
                         </jr:detailCell>
                     </jr:column>
@@ -327,7 +327,7 @@
                                 <textElement textAlignment="Center" verticalAlignment="Middle">
                                     <font fontName="Times New Roman" size="14" isBold="true"/>
                                 </textElement>
-                                <text><![CDATA[RoleName]]></text>
+                                <text><![CDATA[PhoneNumber]]></text>
                             </staticText>
                         </jr:columnHeader>
                         <jr:detailCell style="Table_TD" height="30">
@@ -339,7 +339,7 @@
                                     <font fontName="Times New Roman" size="11"/>
                                 </textElement>
                                 <textFieldExpression>
-                                    <![CDATA[$F{roleName} == null  ? "" :$F{roleName}]]></textFieldExpression>
+                                    <![CDATA[$F{phoneNumber} == null ? "" : $F{phoneNumber}]]></textFieldExpression>
                             </textField>
                         </jr:detailCell>
                     </jr:column>
@@ -354,7 +354,7 @@
                                 <textElement textAlignment="Center" verticalAlignment="Middle">
                                     <font fontName="Times New Roman" size="14" isBold="true"/>
                                 </textElement>
-                                <text><![CDATA[DepartmentName]]></text>
+                                <text><![CDATA[CheckInTime]]></text>
                             </staticText>
                         </jr:columnHeader>
                         <jr:detailCell style="Table_TD" height="30">
@@ -366,7 +366,7 @@
                                     <font fontName="Times New Roman" size="11"/>
                                 </textElement>
                                 <textFieldExpression>
-                                    <![CDATA[$F{departmentName} == null  ? "" :$F{departmentName}]]></textFieldExpression>
+                                    <![CDATA[$F{checkInTime} == null  ? "" :$F{checkInTime}]]></textFieldExpression>
                             </textField>
                         </jr:detailCell>
                     </jr:column>
@@ -380,7 +380,7 @@
                                 <textElement textAlignment="Center" verticalAlignment="Middle">
                                     <font fontName="Times New Roman" size="14" isBold="true"/>
                                 </textElement>
-                                <text><![CDATA[Trạng thái]]></text>
+                                <text><![CDATA[CheckOutTime]]></text>
                             </staticText>
                         </jr:columnHeader>
                         <jr:detailCell style="Table_TD" height="30">
@@ -392,7 +392,7 @@
                                     <font fontName="Times New Roman" size="11"/>
                                 </textElement>
                                 <textFieldExpression>
-                                    <![CDATA[$F{enable}  == null ? "" : ($F{enable}  == true ? "Hoạt động" :  "Không hoạt động")]]></textFieldExpression>
+                                    <![CDATA[$F{checkOutTime} == null  ? "" :$F{checkOutTime}]]></textFieldExpression>
                             </textField>
                         </jr:detailCell>
                     </jr:column>

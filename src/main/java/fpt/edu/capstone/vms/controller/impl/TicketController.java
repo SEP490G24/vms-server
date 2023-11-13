@@ -216,7 +216,7 @@ public class TicketController implements ITicketController {
         });
 
         // Return the emitter immediately to the client
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(emitter);
     }
 
     @Override
