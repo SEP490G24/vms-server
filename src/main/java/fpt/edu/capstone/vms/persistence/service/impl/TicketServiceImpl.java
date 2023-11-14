@@ -233,9 +233,9 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Time meeting must greater than 15 minutes");
         }
 
-        if (isUserHaveTicketInTime(SecurityUtils.loginUsername(), startTime, endTime)) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User have meeting in this time");
-        }
+//        if (isUserHaveTicketInTime(SecurityUtils.loginUsername(), startTime, endTime)) {
+//            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User have meeting in this time");
+//        }
     }
 
     /**
