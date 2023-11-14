@@ -1,6 +1,5 @@
 package fpt.edu.capstone.vms.oauth2.provider.keycloak;
 
-import fpt.edu.capstone.vms.controller.IPermissionController;
 import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.oauth2.IPermissionResource;
 import lombok.extern.slf4j.Slf4j;
@@ -94,11 +93,6 @@ public class KeycloakClientRoleResource implements IPermissionResource {
     @Override
     public void delete(String cId, String roleName) {
         this.realmResource.clients().get(cId).roles().deleteRole(roleName);
-    }
-
-    @Override
-    public List filter(IPermissionController.PermissionFilterPayload filterPayload) {
-        return null;
     }
 
 }
