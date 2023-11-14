@@ -87,7 +87,7 @@ public interface ITicketService extends IGenericService<Ticket, UUID> {
                                  String lastUpdatedBy,
                                  String keyword);
 
-    ITicketController.TicketByQRCodeResponseDTO findByQRCode(UUID ticketId, UUID customerId);
+    ITicketController.TicketByQRCodeResponseDTO findByQRCode(String checkInCode);
 
     void checkInCustomer(ITicketController.CheckInPayload checkInPayload);
 

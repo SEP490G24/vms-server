@@ -23,6 +23,8 @@ public interface CustomerTicketMapRepository extends GenericRepository<CustomerT
 
     CustomerTicketMap findByCustomerTicketMapPk_TicketIdAndCustomerTicketMapPk_CustomerId(UUID ticketId, UUID customerId);
 
+    CustomerTicketMap findByCheckInCodeIgnoreCase(String checkInCode);
+
     @Query(value = "select ctm from CustomerTicketMap ctm " +
         " join Ticket t on ctm.ticketEntity.id = t.id " +
         " join Customer c on ctm.customerEntity.id = c.id " +

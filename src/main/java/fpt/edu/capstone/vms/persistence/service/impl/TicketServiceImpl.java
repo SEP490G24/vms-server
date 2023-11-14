@@ -728,8 +728,8 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     }
 
     @Override
-    public ITicketController.TicketByQRCodeResponseDTO findByQRCode(UUID ticketId, UUID customerId) {
-        CustomerTicketMap customerTicketMap = customerTicketMapRepository.findByCustomerTicketMapPk_TicketIdAndCustomerTicketMapPk_CustomerId(ticketId, customerId);
+    public ITicketController.TicketByQRCodeResponseDTO findByQRCode(String checkInCode) {
+        CustomerTicketMap customerTicketMap = customerTicketMapRepository.findByCheckInCodeIgnoreCase(checkInCode);
         String site = SecurityUtils.getSiteId();
         if (!site.equals(customerTicketMap.getTicketEntity().getSiteId())) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Ticket can not found in site");
@@ -740,7 +740,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     @Override
     @Transactional
     public void checkInCustomer(ITicketController.CheckInPayload checkInPayload) {
-        CustomerTicketMap customerTicketMap = customerTicketMapRepository.findByCustomerTicketMapPk_TicketIdAndCustomerTicketMapPk_CustomerId(checkInPayload.getTicketId(), checkInPayload.getCustomerId());
+        CustomerTicketMap customerTicketMap = customerTicketMapRepository.findByCheckInCodeIgnoreCase(checkInPayload.getCheckInCode());
         customerTicketMap.setStatus(checkInPayload.getStatus());
         customerTicketMap.setReasonId(checkInPayload.getReasonId());
         customerTicketMap.setReasonNote(checkInPayload.getReasonNote());

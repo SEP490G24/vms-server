@@ -185,8 +185,8 @@ public class TicketController implements ITicketController {
     }
 
     @Override
-    public ResponseEntity<?> findByQRCode(UUID ticketId, UUID customerId) {
-        return ResponseEntity.ok(ticketService.findByQRCode(ticketId, customerId));
+    public ResponseEntity<?> findByQRCode(String checkInCode) {
+        return ResponseEntity.ok(ticketService.findByQRCode(checkInCode));
     }
 
     @Override

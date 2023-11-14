@@ -15,7 +15,15 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -61,10 +69,10 @@ public interface ITicketController {
     @Operation(summary = "Filter ticket in site for admin")
     ResponseEntity<?> filterAllBySites(@RequestBody @Valid TicketFilter ticketFilterSite, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
-    @GetMapping("/{ticketId}/customer/{customerId}")
+    @GetMapping("/{checkInCode}")
     @Operation(summary = "Find ticket by qrcode")
     @PreAuthorize("hasRole('r:ticket:findQRCode')")
-    ResponseEntity<?> findByQRCode(@PathVariable UUID ticketId, @PathVariable UUID customerId);
+    ResponseEntity<?> findByQRCode(@PathVariable String checkInCode);
 
     @PutMapping("/check-in")
     @Operation(summary = "Check in customer for ticket")
@@ -241,6 +249,7 @@ public interface ITicketController {
         private String createBy;
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         private LocalDateTime createdOn;
+        private String checkInCode;
 
         //Info Room
         private UUID roomId;
@@ -258,6 +267,9 @@ public interface ITicketController {
 
         @NotNull
         private UUID customerId;
+
+        @NotNull
+        private String checkInCode;
 
         @NotNull
         private Constants.StatusTicket status;

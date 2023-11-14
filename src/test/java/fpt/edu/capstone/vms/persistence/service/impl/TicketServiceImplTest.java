@@ -875,12 +875,13 @@ class TicketServiceImplTest {
         // Mock input parameters
         UUID ticketId = UUID.randomUUID();
         UUID customerId = UUID.randomUUID();
+        String checkInCode = "ABC3AD";
         CustomerTicketMap customerTicketMap = new CustomerTicketMap();
         Ticket ticketEntity = new Ticket();
         ticketEntity.setSiteId("site2"); // A different site ID
 
         // Mock repository behavior
-        Mockito.when(customerTicketMapRepository.findByCustomerTicketMapPk_TicketIdAndCustomerTicketMapPk_CustomerId(ticketId, customerId))
+        Mockito.when(customerTicketMapRepository.findByCheckInCodeIgnoreCase(checkInCode))
             .thenReturn(customerTicketMap);
 
         Jwt jwt = mock(Jwt.class);
@@ -895,7 +896,7 @@ class TicketServiceImplTest {
 
         // Verify that a HttpClientErrorException is thrown
         assertThrows(NullPointerException.class, () -> {
-            ticketService.findByQRCode(ticketId, customerId);
+            ticketService.findByQRCode(checkInCode);
         });
     }
 
@@ -909,12 +910,13 @@ class TicketServiceImplTest {
         checkInPayload.setStatus(Constants.StatusTicket.CHECK_IN);
         checkInPayload.setReasonId(UUID.randomUUID());
         checkInPayload.setReasonNote("ReasonNote");
+        checkInPayload.setCheckInCode("checkInCode");
 
         CustomerTicketMap customerTicketMap = new CustomerTicketMap();
         customerTicketMap.setCustomerTicketMapPk(new CustomerTicketMapPk(UUID.randomUUID(), UUID.randomUUID()));
 
         // Mock repository behavior
-        Mockito.when(customerTicketMapRepository.findByCustomerTicketMapPk_TicketIdAndCustomerTicketMapPk_CustomerId(checkInPayload.getTicketId(), checkInPayload.getCustomerId()))
+        Mockito.when(customerTicketMapRepository.findByCheckInCodeIgnoreCase(checkInPayload.getCheckInCode()))
             .thenReturn(customerTicketMap);
 
         Site site = new Site();
