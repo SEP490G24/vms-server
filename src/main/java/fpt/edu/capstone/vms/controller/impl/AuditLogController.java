@@ -4,7 +4,11 @@ import fpt.edu.capstone.vms.controller.IAuditLogController;
 import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.service.impl.AuditLogServiceImpl;
 import lombok.AllArgsConstructor;
+import net.sf.jasperreports.engine.JRException;
+import org.apache.http.HttpStatus;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -49,4 +53,11 @@ public class AuditLogController implements IAuditLogController {
                 filter.getKeyword()));
     }
 
+    @Override
+    public ResponseEntity<?> export(AuditLogFilter auditLogFilter) throws JRException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.setContentDispositionFormData("attachment", "audit_log.xlsx");
+        return ResponseEntity.status(HttpStatus.SC_OK).headers(headers).body(auditLogService.export(auditLogFilter));
+    }
 }

@@ -13,12 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @RequiredArgsConstructor
 public class AuditLogRepositoryCustomImpl implements AuditLogRepositoryCustom {
@@ -45,8 +40,8 @@ public class AuditLogRepositoryCustomImpl implements AuditLogRepositoryCustom {
             " u.created_by ";
         StringBuilder sqlConditional = new StringBuilder();
         sqlConditional.append("FROM audit_log u ");
-        sqlConditional.append("LEFT JOIN site s ON cast(s.id as string) = u.site_id ");
-        sqlConditional.append("LEFT JOIN organization o ON cast(o.id as string) = u.organization_id ");
+        sqlConditional.append("LEFT JOIN site s ON cast(s.id as text) = u.site_id ");
+        sqlConditional.append("LEFT JOIN organization o ON cast(o.id as text) = u.organization_id ");
         sqlConditional.append("WHERE 1=1 ");
 
         if (organizations != null && !organizations.isEmpty()) {
@@ -100,10 +95,10 @@ public class AuditLogRepositoryCustomImpl implements AuditLogRepositoryCustom {
             auditLogFilter.setOrganizationName((String) object[5]);
             auditLogFilter.setPrimaryKey((String) object[6]);
             auditLogFilter.setTableName((String) object[7]);
-            auditLogFilter.setAuditType((Constants.AuditType) object[8]);
+            auditLogFilter.setAuditType((String) object[8]);
             auditLogFilter.setOldValue((String) object[9]);
             auditLogFilter.setNewValue((String) object[10]);
-            auditLogFilter.setCreateOn((LocalDateTime) object[11]);
+            auditLogFilter.setCreateOn((Date) object[11]);
             auditLogFilter.setCreateBy((String) object[12]);
             listData.add(auditLogFilter);
         }
@@ -177,10 +172,10 @@ public class AuditLogRepositoryCustomImpl implements AuditLogRepositoryCustom {
             auditLogFilter.setOrganizationName((String) object[5]);
             auditLogFilter.setPrimaryKey((String) object[6]);
             auditLogFilter.setTableName((String) object[7]);
-            auditLogFilter.setAuditType((Constants.AuditType) object[8]);
+            auditLogFilter.setAuditType((String) object[8]);
             auditLogFilter.setOldValue((String) object[9]);
             auditLogFilter.setNewValue((String) object[10]);
-            auditLogFilter.setCreateOn((LocalDateTime) object[11]);
+            auditLogFilter.setCreateOn((Date) object[11]);
             auditLogFilter.setCreateBy((String) object[12]);
             listData.add(auditLogFilter);
         }

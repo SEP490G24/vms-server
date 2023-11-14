@@ -4,6 +4,8 @@ import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.IAuditLogController;
 import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.service.generic.IGenericService;
+import net.sf.jasperreports.engine.JRException;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -23,4 +25,5 @@ public interface IAuditLogService extends IGenericService<AuditLog, UUID> {
         , List<String> sites, Constants.AuditType auditType, LocalDateTime createdOnStart, LocalDateTime createdOnEnd
         , String createdBy, String tableName, String keyword);
 
+    ByteArrayResource export(IAuditLogController.AuditLogFilter auditLogFilter) throws JRException;
 }
