@@ -5,26 +5,21 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.ws.rs.QueryParam;
 import lombok.Data;
+import net.sf.jasperreports.engine.JRException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
 
 @RestController
 @Tag(name = "Audit Log Service")
-@RequestMapping("/api/v1/auditLog")
+@RequestMapping("/api/v1/audit-log")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @PreAuthorize("isAuthenticated()")
 public interface IAuditLogController {
@@ -41,6 +36,11 @@ public interface IAuditLogController {
     @Operation(summary = "Filter")
     ResponseEntity<?> filter(@RequestBody AuditLogFilter auditLogFilter, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
+    @PostMapping("/export")
+    @Operation(summary = "Export audit log")
+        //@PreAuthorize("hasRole('r:audit-log:export')")
+    ResponseEntity<?> export(AuditLogFilter auditLogFilter) throws JRException;
+
     @Data
     class AuditLogFilterDTO {
         private UUID id;
@@ -51,11 +51,11 @@ public interface IAuditLogController {
         private String organizationName;
         private String primaryKey;
         private String tableName;
-        private Constants.AuditType auditType;
+        private String auditType;
         private String oldValue;
         private String newValue;
         private String createBy;
-        private LocalDateTime createOn;
+        private Date createOn;
     }
 
     @Data
