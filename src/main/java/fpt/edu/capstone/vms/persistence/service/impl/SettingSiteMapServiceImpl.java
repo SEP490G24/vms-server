@@ -66,12 +66,12 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
             throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this");
         }
 
-        if (StringUtils.isEmpty(settingSiteInfo.getValue())) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Value is empty");
-        }
-
         if (ObjectUtils.isEmpty(settingSiteInfo)) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Object is null");
+        }
+
+        if (StringUtils.isEmpty(settingSiteInfo.getValue())) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Value is empty");
         }
 
         if (settingSiteInfo.getSettingId() == null || StringUtils.isEmpty(settingSiteInfo.getSiteId())) {
@@ -86,10 +86,6 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
 
         if (!settingRepository.existsById(settingId))
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SettingId is not correct in database!!");
-
-        if (!SecurityUtils.checkSiteAuthorization(siteRepository, _siteId.toString())) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "You don't have permission to do this");
-        }
 
         SettingSiteMapPk pk = new SettingSiteMapPk(settingId, UUID.fromString(_siteId));
         SettingSiteMap settingSiteMap = settingSiteMapRepository.findById(pk).orElse(null);

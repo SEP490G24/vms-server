@@ -97,10 +97,17 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
     @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
     public Department createDepartment(IDepartmentController.CreateDepartmentInfo departmentInfo) {
 
-        if (StringUtils.isEmpty(departmentInfo.getSiteId().toString()))
+        if (ObjectUtils.isEmpty(departmentInfo))
+            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Object is empty");
+
+        if (StringUtils.isEmpty(departmentInfo.getSiteId()))
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "SiteId is null");
 
-        UUID siteId = departmentInfo.getSiteId();
+        if (StringUtils.isEmpty(departmentInfo.getCode())) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code is null");
+        }
+
+        UUID siteId = UUID.fromString(departmentInfo.getSiteId());
 
         if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId.toString())) {
             throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "Can't update department in this site");
@@ -109,21 +116,15 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
         var site = siteRepository.findById(siteId).orElse(null);
 
         if (ObjectUtils.isEmpty(site)) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code is null");
-        }
-
-        if (StringUtils.isEmpty(departmentInfo.getCode())) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code is null");
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Site is null");
         }
 
         if (departmentRepository.existsByCode(departmentInfo.getCode())) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code of department is exist");
         }
 
-        if (ObjectUtils.isEmpty(departmentInfo))
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Object is empty");
+
         var department = mapper.map(departmentInfo, Department.class);
-        department.setEnable(true);
         var departmentCreate = departmentRepository.save(department);
         auditLogRepository.save(new AuditLog(siteId.toString()
             , site.getOrganizationId().toString()

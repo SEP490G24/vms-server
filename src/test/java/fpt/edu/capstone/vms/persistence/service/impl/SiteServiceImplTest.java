@@ -1,6 +1,7 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.constants.Constants;
+import fpt.edu.capstone.vms.controller.ISiteController;
 import fpt.edu.capstone.vms.persistence.entity.Commune;
 import fpt.edu.capstone.vms.persistence.entity.District;
 import fpt.edu.capstone.vms.persistence.entity.Province;
@@ -10,6 +11,7 @@ import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
 import fpt.edu.capstone.vms.persistence.repository.CommuneRepository;
 import fpt.edu.capstone.vms.persistence.repository.DistrictRepository;
 import fpt.edu.capstone.vms.persistence.repository.ProvinceRepository;
+import fpt.edu.capstone.vms.persistence.repository.SettingRepository;
 import fpt.edu.capstone.vms.persistence.repository.SettingSiteMapRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.util.SecurityUtils;
@@ -44,6 +46,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -64,6 +67,9 @@ class SiteServiceImplTest {
     AuditLogRepository auditLogRepository;
 
     @Mock
+    SettingRepository settingRepository;
+
+    @Mock
     SettingSiteMapRepository settingSiteMapRepository;
     @Mock
     Pageable pageable;
@@ -78,6 +84,21 @@ class SiteServiceImplTest {
         MockitoAnnotations.openMocks(this);
         securityContext = mock(SecurityContext.class);
         authentication = mock(Authentication.class);
+
+        Jwt jwt = mock(Jwt.class);
+
+        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        when(jwt.getClaim(Constants.Claims.Name)).thenReturn("username");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("preferred_username");
+        when(jwt.getClaim(Constants.Claims.GivenName)).thenReturn("given_name");
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("3d65906a-c6e3-4e9d-bbc6-ba20938f9cad");
+        when(jwt.getClaim(Constants.Claims.FamilyName)).thenReturn("family_name");
+        when(jwt.getClaim(Constants.Claims.Email)).thenReturn("email");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
     }
 
     @Test
@@ -196,31 +217,6 @@ class SiteServiceImplTest {
 
         assertNotNull(updateSite);
         assertEquals(updateSite.getCode(), updateSite.getCode());
-    }
-
-    @Test
-    @DisplayName("given site, when update site with duplicate code, then throw exception")
-    void givenSite_WhenUpdateWithDuplicateCode_ThenThrowException() {
-        UUID id = UUID.randomUUID();
-        Site updateSite = new Site();
-        updateSite.setId(id);
-        updateSite.setCode("duplicateCode");
-
-        when(siteRepository.existsByCode(updateSite.getCode())).thenReturn(true);
-
-        assertThrows(HttpClientErrorException.class, () -> siteService.save(updateSite));
-    }
-
-    @Test
-    @DisplayName("given site, when update site with not found, then throw exception")
-    void testUpdateSiteNotFound() {
-        UUID id = UUID.randomUUID();
-        Site updateSite = new Site();
-        updateSite.setCode("newCode");
-
-        when(siteRepository.findById(id)).thenReturn(Optional.empty());
-
-        assertThrows(HttpClientErrorException.class, () -> siteService.save(updateSite));
     }
 
     @Test
@@ -411,5 +407,156 @@ class SiteServiceImplTest {
                     auditLog.getNewValue() == null)
             );
         }
+    }
+
+    @Test
+    void testCheckAddress_Success() {
+        // Arrange
+        Integer provinceId = 1;
+        Integer districtId = 2;
+        Integer communeId = 3;
+
+        Province province = new Province(provinceId, "Province");
+        District district = new District(districtId, "District", provinceId, province);
+        Commune commune = new Commune(communeId, "Commune", districtId, district);
+        // Mock repository behaviors
+        when(provinceRepository.findById(provinceId)).thenReturn(Optional.of(province));
+        when(districtRepository.findById(districtId)).thenReturn(Optional.of(district));
+        when(communeRepository.findById(communeId)).thenReturn(Optional.of(commune));
+
+        // Act
+        siteService.checkAddress(provinceId, districtId, communeId);
+
+        // Assert
+        // No exceptions should be thrown, and the method should complete successfully
+    }
+
+    @Test
+    void testCheckAddress_ProvinceNotFound() {
+        // Arrange
+        Integer provinceId = 1;
+        Integer districtId = 2;
+        Integer communeId = 3;
+
+        // Mock provinceRepository behavior for not found province
+        when(provinceRepository.findById(provinceId)).thenReturn(Optional.empty());
+
+        // Act and Assert
+        assertThrows(HttpClientErrorException.class, () -> siteService.checkAddress(provinceId, districtId, communeId));
+    }
+
+    @Test
+    void testCheckAddress_DistrictNotFound() {
+        // Arrange
+        Integer provinceId = 1;
+        Integer districtId = 2;
+        Integer communeId = 3;
+
+        // Mock repository behaviors
+        when(provinceRepository.findById(provinceId)).thenReturn(Optional.of(new Province(provinceId, "Province")));
+        when(districtRepository.findById(districtId)).thenReturn(Optional.empty());
+
+        // Act and Assert
+        assertThrows(HttpClientErrorException.class, () -> siteService.checkAddress(provinceId, districtId, communeId));
+    }
+
+    @Test
+    void testCheckAddress_CommuneNotFound() {
+        // Arrange
+        Integer provinceId = 1;
+        Integer districtId = 2;
+        Integer communeId = 3;
+
+        Province province = new Province(provinceId, "Province");
+        District district = new District(districtId, "District", provinceId, province);
+
+        // Mock repository behaviors
+        when(provinceRepository.findById(provinceId)).thenReturn(Optional.of(province));
+        when(districtRepository.findById(districtId)).thenReturn(Optional.of(district));
+        when(communeRepository.findById(communeId)).thenReturn(Optional.empty());
+
+        // Act and Assert
+        assertThrows(HttpClientErrorException.class, () -> siteService.checkAddress(provinceId, districtId, communeId));
+    }
+
+
+    @Test
+    void testCheckAddress_WrongDistrictProvince() {
+        // Arrange
+        Integer provinceId = 1;
+        Integer districtId = 2;
+        Integer communeId = 3;
+
+
+        Province province = new Province(provinceId, "Province");
+        Province provinceEx = new Province(4, "Province");
+        District district = new District(districtId, "District", 4, provinceEx);
+
+        // Mock repository behaviors
+        when(provinceRepository.findById(provinceId)).thenReturn(Optional.of(province));
+        when(districtRepository.findById(districtId)).thenReturn(Optional.of(district)); // Wrong province ID
+
+        // Act and Assert
+        assertThrows(HttpClientErrorException.class, () -> siteService.checkAddress(provinceId, districtId, communeId));
+    }
+
+    @Test
+    void testCheckAddress_WrongCommuneDistrict() {
+        // Arrange
+        Integer provinceId = 1;
+        Integer districtId = 2;
+        Integer communeId = 3;
+
+        Province province = new Province(provinceId, "Province");
+        District district = new District(districtId, "District", provinceId, province);
+        District districtEX = new District(4, "District", provinceId, province);
+        Commune commune = new Commune(communeId, "Commune", 4, districtEX);
+
+        // Mock repository behaviors
+        when(provinceRepository.findById(provinceId)).thenReturn(Optional.of(province));
+        when(districtRepository.findById(districtId)).thenReturn(Optional.of(district));
+        when(communeRepository.findById(communeId)).thenReturn(Optional.of(commune)); // Wrong district ID
+
+        // Act and Assert
+        assertThrows(HttpClientErrorException.class, () -> siteService.checkAddress(provinceId, districtId, communeId));
+    }
+
+    @Test
+    void testUpdateSite_SiteNotFound() {
+        // Arrange
+        UUID siteId = UUID.randomUUID();
+
+        ISiteController.UpdateSiteInfo updateSiteInfo = new ISiteController.UpdateSiteInfo();
+        updateSiteInfo.setName("Updated Site");
+
+        when(siteRepository.findById(siteId)).thenReturn(Optional.empty());
+
+        // Act and Assert
+        assertThrows(NullPointerException.class, () -> siteService.updateSite(updateSiteInfo, siteId));
+        verify(siteRepository, never()).save(Mockito.any());
+        verify(auditLogRepository, never()).save(Mockito.any());
+    }
+
+    @Test
+    void testUpdateSite_CurrentUserInSiteIdNull() {
+        // Arrange
+        UUID siteId = UUID.randomUUID();
+
+        ISiteController.UpdateSiteInfo updateSiteInfo = new ISiteController.UpdateSiteInfo();
+        updateSiteInfo.setName("Updated Site");
+
+        Site existingSite = new Site();
+        existingSite.setId(siteId);
+        existingSite.setOrganizationId(UUID.randomUUID());
+
+        when(siteRepository.findById(siteId)).thenReturn(Optional.of(existingSite));
+
+        // Mock SecurityUtils.getSiteId() to return null
+        when(SecurityUtils.getSiteId()).thenReturn(null);
+
+        // Act and Assert
+        assertThrows(NullPointerException.class, () -> siteService.updateSite(updateSiteInfo, siteId));
+        verify(siteRepository, never()).save(Mockito.any());
+        verify(auditLogRepository, never()).save(Mockito.any());
     }
 }

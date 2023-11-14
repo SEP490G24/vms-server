@@ -3,8 +3,6 @@ package fpt.edu.capstone.vms.persistence.service.impl;
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ISiteController;
 import fpt.edu.capstone.vms.persistence.entity.AuditLog;
-import fpt.edu.capstone.vms.persistence.entity.SettingSiteMap;
-import fpt.edu.capstone.vms.persistence.entity.SettingSiteMapPk;
 import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
 import fpt.edu.capstone.vms.persistence.repository.CommuneRepository;
@@ -243,11 +241,12 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
                     , Constants.AuditType.DELETE
                     , o.toString()
                     , null));
+                settingSiteMapRepository.delete(o);
             });
         }
     }
 
-    private void checkAddress(Integer provinceId, Integer districtId, Integer communeId) {
+    public void checkAddress(Integer provinceId, Integer districtId, Integer communeId) {
 
         if (ObjectUtils.isEmpty(provinceId)) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Province is null");
@@ -286,20 +285,6 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
         }
     }
 
-    private void addSettingForSite(UUID siteId) {
-        var settings = settingRepository.findAll();
-        if (!settings.isEmpty()) {
-            settings.forEach(o -> {
-                SettingSiteMapPk pk = new SettingSiteMapPk();
-                pk.setSiteId(siteId);
-                pk.setSettingId(o.getId());
-                SettingSiteMap settingSiteMap = new SettingSiteMap();
-                settingSiteMap.setSettingSiteMapPk(pk);
-                settingSiteMap.setStatus(true);
-                settingSiteMapRepository.save(settingSiteMap);
-            });
-        }
-    }
 
 
 }

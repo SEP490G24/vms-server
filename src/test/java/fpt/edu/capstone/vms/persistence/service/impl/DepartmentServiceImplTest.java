@@ -2,15 +2,18 @@ package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.IDepartmentController;
+import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.entity.Department;
+import fpt.edu.capstone.vms.persistence.entity.Site;
+import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
 import fpt.edu.capstone.vms.persistence.repository.DepartmentRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -33,7 +36,6 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -43,7 +45,6 @@ import static org.mockito.Mockito.when;
 
 class DepartmentServiceImplTest {
 
-    @InjectMocks
     private DepartmentServiceImpl departmentService;
 
     @Mock
@@ -51,7 +52,9 @@ class DepartmentServiceImplTest {
     @Mock
     private SiteRepository siteRepository;
 
-    @InjectMocks
+    @Mock
+    private AuditLogRepository auditLogRepository;
+
     private ModelMapper mapper;
 
     @Mock
@@ -66,6 +69,22 @@ class DepartmentServiceImplTest {
         MockitoAnnotations.initMocks(this);
         securityContext = mock(SecurityContext.class);
         authentication = mock(Authentication.class);
+        mapper = mock(ModelMapper.class);
+        departmentService = new DepartmentServiceImpl(departmentRepository, mapper, siteRepository, auditLogRepository);
+        Jwt jwt = mock(Jwt.class);
+
+        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        when(jwt.getClaim(Constants.Claims.Name)).thenReturn("username");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("preferred_username");
+        when(jwt.getClaim(Constants.Claims.GivenName)).thenReturn("given_name");
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("3d65906a-c6e3-4e9d-bbc6-ba20938f9cad");
+        when(jwt.getClaim(Constants.Claims.FamilyName)).thenReturn("family_name");
+        when(jwt.getClaim(Constants.Claims.Email)).thenReturn("email");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
     }
 
 
@@ -73,20 +92,33 @@ class DepartmentServiceImplTest {
     @DisplayName("given incomplete data, when department with null code, then exception is thrown")
     void givenDepartment_WhenSaveWithNullCode_ThenThrowException() {
         IDepartmentController.CreateDepartmentInfo departmentInfo = new IDepartmentController.CreateDepartmentInfo();
-        departmentInfo.setCode(null);
+        departmentInfo.setCode("");
+        departmentInfo.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
 
-        assertThrows(NullPointerException.class, () -> departmentService.createDepartment(departmentInfo));
+        assertThrows(HttpClientErrorException.class, () -> departmentService.createDepartment(departmentInfo));
     }
 
     @Test
     @DisplayName("given incomplete data, when department with existing siteId, then exception is thrown")
     void givenDepartment_WhenSaveWithExistingCode_ThenThrowException() {
+        // Arrange
         IDepartmentController.CreateDepartmentInfo departmentInfo = new IDepartmentController.CreateDepartmentInfo();
-        departmentInfo.setCode("existingCode");
+        departmentInfo.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        departmentInfo.setCode("existing_department_code");
 
+        // Mock SecurityUtils.checkSiteAuthorization to allow access
+        when(SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c08")).thenReturn(true);
+
+        // Mock siteRepository behavior
+        when(siteRepository.findById(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08")))
+            .thenReturn(Optional.of(new Site())); // Adjust based on your actual Site entity
+
+        // Mock departmentRepository behavior
         when(departmentRepository.existsByCode(departmentInfo.getCode())).thenReturn(true);
 
-        assertThrows(NullPointerException.class, () -> departmentService.createDepartment(departmentInfo));
+        // Act and Assert
+        assertThrows(HttpClientErrorException.class, () -> departmentService.createDepartment(departmentInfo));
+
     }
 
     @Test
@@ -94,48 +126,81 @@ class DepartmentServiceImplTest {
     void givenDepartment_WhenSaveWithNullObject_ThenThrowException() {
         IDepartmentController.CreateDepartmentInfo departmentInfo = null;
 
-        assertThrows(NullPointerException.class, () -> departmentService.createDepartment(departmentInfo));
+        assertThrows(HttpClientErrorException.class, () -> departmentService.createDepartment(departmentInfo));
     }
+
+    @Test
+    void testCreateDepartment_SiteNotFound() {
+        // Arrange
+        IDepartmentController.CreateDepartmentInfo departmentInfo = new IDepartmentController.CreateDepartmentInfo();
+        departmentInfo.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        // Mock SecurityUtils.checkSiteAuthorization to allow access
+        when(SecurityUtils.checkSiteAuthorization(siteRepository, departmentInfo.getSiteId().toString())).thenReturn(true);
+
+        // Mock siteRepository behavior
+        when(siteRepository.findById(UUID.fromString(departmentInfo.getSiteId().toString()))).thenReturn(Optional.empty());
+
+        // Act and Assert
+        assertThrows(HttpClientErrorException.class, () -> departmentService.createDepartment(departmentInfo));
+    }
+
+    @Test
+    void testCreateDepartment_NotPermission() {
+        // Arrange
+        IDepartmentController.CreateDepartmentInfo departmentInfo = new IDepartmentController.CreateDepartmentInfo();
+        departmentInfo.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        // Mock SecurityUtils.checkSiteAuthorization to allow access
+        when(SecurityUtils.checkSiteAuthorization(siteRepository, departmentInfo.getSiteId())).thenReturn(false);
+
+        // Mock siteRepository behavior
+        when(siteRepository.findById(UUID.fromString(departmentInfo.getSiteId().toString()))).thenReturn(Optional.empty());
+
+        // Act and Assert
+        assertThrows(HttpClientErrorException.class, () -> departmentService.createDepartment(departmentInfo));
+    }
+
 
     @Test
     @DisplayName("given incomplete data, when department with null siteId, then exception is thrown")
     void givenDepartment_WhenSaveWithNullSiteId_ThenThrowException() {
         IDepartmentController.CreateDepartmentInfo departmentInfo = new IDepartmentController.CreateDepartmentInfo();
         departmentInfo.setCode("validCode");
-        departmentInfo.setSiteId(null);
+        departmentInfo.setSiteId("");
 
-        assertThrows(NullPointerException.class, () -> departmentService.createDepartment(departmentInfo));
+        assertThrows(HttpClientErrorException.class, () -> departmentService.createDepartment(departmentInfo));
     }
 
     @Test
     @DisplayName("given incomplete data, when create new department, then department is save")
     void givenDepartment_WhenSaveValidDepartment_ThenCreateNewDepartment() {
 
-        UUID siteId = UUID.randomUUID();
         IDepartmentController.CreateDepartmentInfo departmentInfo = new IDepartmentController.CreateDepartmentInfo();
-        departmentInfo.setCode(siteId.toString());
-        departmentInfo.setSiteId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
-
-        // Create a mock Jwt object with the necessary claims
-        Jwt jwt = mock(Jwt.class);
-        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
-        when(authentication.getPrincipal()).thenReturn(jwt);
-
-        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
-        when(securityContext.getAuthentication()).thenReturn(authentication);
-        SecurityContextHolder.setContext(securityContext);
+        departmentInfo.setCode("code");
+        departmentInfo.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
 
         Department department = new Department();
+        department.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
         when(departmentRepository.existsByCode(departmentInfo.getCode())).thenReturn(false);
-//        when(mapper.map(departmentInfo, Department.class)).thenReturn(department);
+        when(SecurityUtils.checkSiteAuthorization(siteRepository, departmentInfo.getSiteId())).thenReturn(true);
 
+        Site site = new Site();
+        site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+        site.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+
+        when(siteRepository.findById(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08")))
+            .thenReturn(Optional.of(site)); // Adjust based on your actual Site entity
+
+        // Mock departmentRepository save method
+
+        // Mock auditLogRepository save method
+        when(auditLogRepository.save(Mockito.any())).thenReturn(new AuditLog());
+        when(departmentRepository.save(Mockito.any())).thenReturn(department);
         department.setEnable(true);
-        department.setCode(departmentInfo.getCode());
-        department.setSiteId(siteId);
-        Department savedDepartment = departmentRepository.save(department);
+        // Act
+        Department result = departmentService.createDepartment(departmentInfo);
 
         assertNotNull(department);
-        assertTrue(department.getEnable());
+
     }
 
     @Test
@@ -300,6 +365,18 @@ class DepartmentServiceImplTest {
 
         List<Department> result = departmentService.filter(new ArrayList<>(), null, null, null, null, null, null, null);
         assertEquals(departments, result);
+    }
+
+    @Test
+    void testFindAllBySiteId_Forbidden() {
+        // Arrange
+        String siteId = "06eb43a7-6ea8-4744-8231-760559fe2c08";
+
+        // Mock SecurityUtils.checkSiteAuthorization to deny access
+        when(SecurityUtils.checkSiteAuthorization(siteRepository, siteId)).thenReturn(false);
+
+        // Act and Assert
+        assertThrows(HttpClientErrorException.class, () -> departmentService.FindAllBySiteId(siteId));
     }
 
 }

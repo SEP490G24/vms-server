@@ -1,17 +1,35 @@
 package fpt.edu.capstone.vms.config.mapper;
 
 
-import fpt.edu.capstone.vms.controller.*;
+import fpt.edu.capstone.vms.controller.IAccessHistoryController;
+import fpt.edu.capstone.vms.controller.ICustomerController;
+import fpt.edu.capstone.vms.controller.IDepartmentController;
+import fpt.edu.capstone.vms.controller.IRoomController;
+import fpt.edu.capstone.vms.controller.ISiteController;
+import fpt.edu.capstone.vms.controller.ITemplateController;
+import fpt.edu.capstone.vms.controller.ITicketController;
+import fpt.edu.capstone.vms.controller.IUserController;
 import fpt.edu.capstone.vms.oauth2.IRoleResource;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
-import fpt.edu.capstone.vms.persistence.entity.*;
+import fpt.edu.capstone.vms.persistence.entity.Customer;
+import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMap;
+import fpt.edu.capstone.vms.persistence.entity.Department;
+import fpt.edu.capstone.vms.persistence.entity.Room;
+import fpt.edu.capstone.vms.persistence.entity.Site;
+import fpt.edu.capstone.vms.persistence.entity.Template;
+import fpt.edu.capstone.vms.persistence.entity.Ticket;
+import fpt.edu.capstone.vms.persistence.entity.User;
 import fpt.edu.capstone.vms.persistence.repository.ProvinceRepository;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
+import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
+import org.modelmapper.spi.MappingContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.UUID;
 
 @Configuration
 public class ModelMapperConfig {
@@ -126,6 +144,20 @@ public class ModelMapperConfig {
             .addMappings(mapping -> mapping.map((user -> user.getDepartment().getSite().getId()), IUserController.ProfileUser::setSiteId))
             .addMappings(mapping -> mapping.map((user -> user.getDepartment().getSite().getName()), IUserController.ProfileUser::setSiteName));
 
+        // departmentInfo => Department
+        modelMapper.createTypeMap(IDepartmentController.CreateDepartmentInfo.class, Department.class)
+            .addMappings(mapping -> mapping.using(stringToUuidConverter)
+                .map(departmentInfo -> departmentInfo.getSiteId(), Department::setSiteId));
+
+
         return modelMapper;
     }
+
+    Converter<String, UUID> stringToUuidConverter = new Converter<String, UUID>() {
+        @Override
+        public UUID convert(MappingContext<String, UUID> context) {
+            String source = context.getSource();
+            return source != null ? UUID.fromString(source) : null;
+        }
+    };
 }
