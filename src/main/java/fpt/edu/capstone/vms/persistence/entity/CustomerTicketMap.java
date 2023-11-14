@@ -47,13 +47,14 @@ public class CustomerTicketMap extends AbstractBaseEntity<CustomerTicketMapPk> {
     @JoinColumn(name = "reason_id", referencedColumnName = "id", insertable = false, updatable = false)
     @JsonIgnore
     private Reason reason;
-
     @Column(name = "reason_note")
     private String reasonNote;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private Constants.StatusTicket status;
+
+    @Column(name = "check_in_code", unique = true, updatable = false)
+    private String checkInCode;
 
     @Column(name = "check_in_time")
     private LocalDateTime checkInTime;

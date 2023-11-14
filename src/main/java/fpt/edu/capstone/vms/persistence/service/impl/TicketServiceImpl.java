@@ -4,12 +4,33 @@ import com.google.zxing.WriterException;
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ICustomerController;
 import fpt.edu.capstone.vms.controller.ITicketController;
-import fpt.edu.capstone.vms.persistence.entity.*;
-import fpt.edu.capstone.vms.persistence.repository.*;
+import fpt.edu.capstone.vms.persistence.entity.AuditLog;
+import fpt.edu.capstone.vms.persistence.entity.Customer;
+import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMap;
+import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMapPk;
+import fpt.edu.capstone.vms.persistence.entity.Room;
+import fpt.edu.capstone.vms.persistence.entity.Site;
+import fpt.edu.capstone.vms.persistence.entity.Template;
+import fpt.edu.capstone.vms.persistence.entity.Ticket;
+import fpt.edu.capstone.vms.persistence.entity.User;
+import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
+import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
+import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
+import fpt.edu.capstone.vms.persistence.repository.OrganizationRepository;
+import fpt.edu.capstone.vms.persistence.repository.ReasonRepository;
+import fpt.edu.capstone.vms.persistence.repository.RoomRepository;
+import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
+import fpt.edu.capstone.vms.persistence.repository.TemplateRepository;
+import fpt.edu.capstone.vms.persistence.repository.TicketRepository;
+import fpt.edu.capstone.vms.persistence.repository.UserRepository;
 import fpt.edu.capstone.vms.persistence.service.ITicketService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import fpt.edu.capstone.vms.persistence.service.sse.SseEmitterManager;
-import fpt.edu.capstone.vms.util.*;
+import fpt.edu.capstone.vms.util.EmailUtils;
+import fpt.edu.capstone.vms.util.QRcodeUtils;
+import fpt.edu.capstone.vms.util.SecurityUtils;
+import fpt.edu.capstone.vms.util.SettingUtils;
+import fpt.edu.capstone.vms.util.Utils;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
@@ -29,11 +50,17 @@ import org.springframework.web.client.HttpClientErrorException;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -49,9 +76,10 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     final OrganizationRepository organizationRepository;
     final CustomerTicketMapRepository customerTicketMapRepository;
     final EmailUtils emailUtils;
-    final AuditLogServiceImpl auditLogService;
     final AuditLogRepository auditLogRepository;
     final SettingUtils settingUtils;
+    final UserRepository userRepository;
+    final ReasonRepository reasonRepository;
     final SseEmitterManager sseEmitterManager;
 
 
@@ -62,7 +90,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     public TicketServiceImpl(TicketRepository ticketRepository, CustomerRepository customerRepository,
                              TemplateRepository templateRepository, ModelMapper mapper, RoomRepository roomRepository,
                              SiteRepository siteRepository, OrganizationRepository organizationRepository,
-                             CustomerTicketMapRepository customerTicketMapRepository, EmailUtils emailUtils, AuditLogServiceImpl auditLogService, AuditLogRepository auditLogRepository, SettingUtils settingUtils, SseEmitterManager sseEmitterManager) {
+                             CustomerTicketMapRepository customerTicketMapRepository, EmailUtils emailUtils, AuditLogRepository auditLogRepository, SettingUtils settingUtils, UserRepository userRepository, ReasonRepository reasonRepository, SseEmitterManager sseEmitterManager) {
         this.ticketRepository = ticketRepository;
         this.templateRepository = templateRepository;
         this.customerRepository = customerRepository;
@@ -72,9 +100,10 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         this.organizationRepository = organizationRepository;
         this.customerTicketMapRepository = customerTicketMapRepository;
         this.emailUtils = emailUtils;
-        this.auditLogService = auditLogService;
         this.auditLogRepository = auditLogRepository;
         this.settingUtils = settingUtils;
+        this.userRepository = userRepository;
+        this.reasonRepository = reasonRepository;
         this.sseEmitterManager = sseEmitterManager;
         this.init(ticketRepository);
     }
@@ -246,9 +275,9 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                 Customer customerExist = customerRepository.findByIdentificationNumberAndOrganizationId(customerDto.getIdentificationNumber(), orgId);
                 if (ObjectUtils.isEmpty(customerExist)) {
                     Customer customer = customerRepository.save(mapper.map(customerDto, Customer.class).setOrganizationId(orgId));
-                    createCustomerTicket(ticket, customer.getId());
+                    createCustomerTicket(ticket, customer.getId(), generateCheckInCode());
                 } else {
-                    createCustomerTicket(ticket, customerExist.getId());
+                    createCustomerTicket(ticket, customerExist.getId(), generateCheckInCode());
                 }
             }
         }
@@ -259,7 +288,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                     throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is null");
                 if (!customerRepository.existsByIdAndAndOrganizationId(UUID.fromString(oldCustomer), orgId))
                     throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is null");
-                createCustomerTicket(ticket, UUID.fromString(oldCustomer.trim()));
+                createCustomerTicket(ticket, UUID.fromString(oldCustomer.trim()), generateCheckInCode());
             }
         }
 
@@ -498,7 +527,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         if (SecurityUtils.getOrgId() == null) {
             Site site = siteRepository.findById(UUID.fromString(SecurityUtils.getSiteId())).orElse(null);
             if (ObjectUtils.isEmpty(site)) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "site is flase");
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "site is false");
             }
             orgId = String.valueOf(site.getOrganizationId());
         } else {
@@ -515,11 +544,13 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                 Customer customerExist = customerRepository.findByIdentificationNumberAndOrganizationId(customerDto.getIdentificationNumber(), orgId);
                 if (ObjectUtils.isEmpty(customerExist)) {
                     Customer customer = customerRepository.save(mapper.map(customerDto, Customer.class).setOrganizationId(orgId));
-                    createCustomerTicket(ticket, customer.getId());
-                    sendEmail(customer, ticket, room);
+                    String checkInCode = generateCheckInCode();
+                    createCustomerTicket(ticket, customer.getId(), checkInCode);
+                    sendEmail(customer, ticket, room, checkInCode);
                 } else {
-                    createCustomerTicket(ticket, customerExist.getId());
-                    sendEmail(customerExist, ticket, room);
+                    String checkInCode = generateCheckInCode();
+                    createCustomerTicket(ticket, customerExist.getId(), checkInCode);
+                    sendEmail(customerExist, ticket, room, checkInCode);
                 }
             }
         }
@@ -807,7 +838,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     private void sendQr(List<CustomerTicketMap> customerTicketMap, Ticket ticket, Room room) {
         customerTicketMap.forEach(o -> {
             var customer = customerRepository.findById(o.getCustomerTicketMapPk().getCustomerId()).orElse(null);
-            sendEmail(customer, ticket, room);
+            sendEmail(customer, ticket, room, o.getCheckInCode());
         });
     }
 
@@ -819,8 +850,8 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
      * @param ticket   The `ticket` parameter is an object of the `Ticket` class. It contains information about a ticket,
      *                 such as its ID and site ID.
      */
-    private void sendEmail(Customer customer, Ticket ticket, Room room) {
-        String meetingUrl = "https://web-vms.azurewebsites.net/ticket/" + ticket.getId().toString() + "/customer/" + customer.getId().toString();
+    private void sendEmail(Customer customer, Ticket ticket, Room room, String checkInCode) {
+        String meetingUrl = "https://web-vms.azurewebsites.net/check-in/" + checkInCode;
 
         if (ObjectUtils.isEmpty(customer))
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Customer is empty");
@@ -839,6 +870,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
 
             Template template = templateRepository.findById(UUID.fromString(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CONFIRM_EMAIL))).orElse(null);
 
+            User user = userRepository.findFirstByUsername(ticket.getUsername());
             if (ObjectUtils.isEmpty(template)) {
                 throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't not found template");
             }
@@ -857,6 +889,10 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             parameterMap.put("endTime", endTime);
             parameterMap.put("address", site.getAddress());
             parameterMap.put("roomName", room.getName());
+            parameterMap.put("staffName", user.getFirstName() + " " + user.getLastName());
+            parameterMap.put("staffPhone", user.getPhoneNumber());
+            parameterMap.put("staffEmail", user.getEmail());
+            parameterMap.put("checkInCode", checkInCode);
             String replacedTemplate = emailUtils.replaceEmailParameters(template.getBody(), parameterMap);
 
             emailUtils.sendMailWithQRCode(customer.getEmail(), template.getSubject(), replacedTemplate, qrCodeData, ticket.getSiteId());
@@ -876,13 +912,14 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
      *                   stands for Universally Unique Identifier. This identifier is used to associate the customer with the ticket being
      *                   created.
      */
-    private void createCustomerTicket(Ticket ticket, UUID customerId) {
+    private void createCustomerTicket(Ticket ticket, UUID customerId, String checkInCode) {
         CustomerTicketMap customerTicketMap = new CustomerTicketMap();
         CustomerTicketMapPk pk = new CustomerTicketMapPk();
         pk.setTicketId(ticket.getId());
         pk.setCustomerId(customerId);
         customerTicketMap.setCustomerTicketMapPk(pk);
         customerTicketMap.setStatus(Constants.StatusTicket.PENDING);
+        customerTicketMap.setCheckInCode(checkInCode);
         customerTicketMapRepository.save(customerTicketMap);
     }
 
@@ -950,5 +987,22 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             throw new RuntimeException();
         }
 
+    }
+
+    private static String generateCheckInCode() {
+        String upperCaseLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        String digits = "0123456789";
+        String characters = upperCaseLetters + digits;
+
+        SecureRandom random = new SecureRandom();
+
+        StringBuilder checkInCodeBuilder = new StringBuilder();
+        for (int i = 0; i < 6; i++) {
+            int randomIndex = random.nextInt(characters.length());
+            char randomChar = characters.charAt(randomIndex);
+            checkInCodeBuilder.append(randomChar);
+        }
+
+        return checkInCodeBuilder.toString();
     }
 }

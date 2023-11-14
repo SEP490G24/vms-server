@@ -13,10 +13,12 @@ import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
 import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
 import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
 import fpt.edu.capstone.vms.persistence.repository.OrganizationRepository;
+import fpt.edu.capstone.vms.persistence.repository.ReasonRepository;
 import fpt.edu.capstone.vms.persistence.repository.RoomRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.repository.TemplateRepository;
 import fpt.edu.capstone.vms.persistence.repository.TicketRepository;
+import fpt.edu.capstone.vms.persistence.repository.UserRepository;
 import fpt.edu.capstone.vms.persistence.service.sse.SseEmitterManager;
 import fpt.edu.capstone.vms.util.EmailUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
@@ -72,10 +74,12 @@ class TicketServiceImplTest {
 
     private SettingUtils settingUtils;
     private AuditLogServiceImpl auditLogService;
+    private UserRepository userRepository;
 
     private RoomRepository roomRepository;
     private CustomerRepository customerRepository;
     private OrganizationRepository organizationRepository;
+    private ReasonRepository reasonRepository;
 
     private CustomerTicketMapRepository customerTicketMapRepository;
 
@@ -90,7 +94,6 @@ class TicketServiceImplTest {
         securityContext = mock(SecurityContext.class);
         authentication = mock(Authentication.class);
         mapper = mock(ModelMapper.class);
-        settingUtils = mock(SettingUtils.class);
         ticketRepository = mock(TicketRepository.class);
         siteRepository = mock(SiteRepository.class);
         settingUtils = mock(SettingUtils.class);
@@ -105,7 +108,7 @@ class TicketServiceImplTest {
             , customerRepository, templateRepository
             , mapper, roomRepository, siteRepository
             , organizationRepository, customerTicketMapRepository
-            , emailUtils, auditLogService, auditLogRepository, settingUtils, sseEmitterManager);
+            , emailUtils, auditLogRepository, settingUtils, userRepository, reasonRepository, sseEmitterManager);
     }
 
     @Test
