@@ -70,7 +70,7 @@ public interface ITicketController {
     @Operation(summary = "Filter ticket in site for admin")
     ResponseEntity<?> filterAllBySites(@RequestBody @Valid TicketFilter ticketFilterSite, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
-    @GetMapping("/{checkInCode}")
+    @GetMapping("/check-in/{checkInCode}")
     @Operation(summary = "Find ticket by qrcode")
     @PreAuthorize("hasRole('r:ticket:findQRCode')")
     ResponseEntity<?> findByQRCode(@PathVariable String checkInCode);
@@ -144,15 +144,19 @@ public interface ITicketController {
         private String roomName;
         private Constants.Purpose purpose;
         private String purposeNote;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         private LocalDateTime startTime;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         private LocalDateTime endTime;
         private String comment;
         private Constants.StatusTicket status;
         private String username;
         private UUID roomId;
         private String createdBy;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         private LocalDateTime createdOn;
         private String lastUpdatedBy;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         private LocalDateTime lastUpdatedOn;
         private String siteId;
         List<ICustomerController.CustomerInfo> Customers;
@@ -166,17 +170,11 @@ public interface ITicketController {
         UUID roomId;
         Constants.StatusTicket status;
         Constants.Purpose purpose;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         LocalDateTime createdOnStart;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         LocalDateTime createdOnEnd;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         LocalDateTime startTimeStart;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         LocalDateTime startTimeEnd;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         LocalDateTime endTimeStart;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         LocalDateTime endTimeEnd;
         String createdBy;
         String lastUpdatedBy;
@@ -190,17 +188,11 @@ public interface ITicketController {
         UUID roomId;
         Constants.StatusTicket status;
         Constants.Purpose purpose;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         LocalDateTime createdOnStart;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         LocalDateTime createdOnEnd;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         LocalDateTime startTimeStart;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         LocalDateTime startTimeEnd;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         LocalDateTime endTimeStart;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         LocalDateTime endTimeEnd;
         String createdBy;
         String lastUpdatedBy;
@@ -221,9 +213,7 @@ public interface ITicketController {
         private Constants.Purpose purpose;
         private String purposeNote;
         private String name;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         private LocalDateTime startTime;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         private LocalDateTime endTime;
         private String description;
         private UUID roomId;

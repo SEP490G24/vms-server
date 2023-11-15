@@ -446,7 +446,29 @@ class SiteServiceImplTest {
     }
 
     @Test
+    void testCheckAddress_ProvinceIdNotFound() {
+        // Arrange
+        Integer provinceId = null;
+        Integer districtId = 2;
+        Integer communeId = 3;
+
+        // Act and Assert
+        assertThrows(HttpClientErrorException.class, () -> siteService.checkAddress(provinceId, districtId, communeId));
+    }
+
+    @Test
     void testCheckAddress_DistrictNotFound() {
+        // Arrange
+        Integer provinceId = 1;
+        Integer districtId = null;
+        Integer communeId = 3;
+
+        // Act and Assert
+        assertThrows(HttpClientErrorException.class, () -> siteService.checkAddress(provinceId, districtId, communeId));
+    }
+
+    @Test
+    void testCheckAddress_DistrictIdNotFound() {
         // Arrange
         Integer provinceId = 1;
         Integer districtId = 2;
@@ -479,6 +501,16 @@ class SiteServiceImplTest {
         assertThrows(HttpClientErrorException.class, () -> siteService.checkAddress(provinceId, districtId, communeId));
     }
 
+    @Test
+    void testCheckAddress_CommuneIdNotFound() {
+        // Arrange
+        Integer provinceId = 1;
+        Integer districtId = 2;
+        Integer communeId = null;
+
+        // Act and Assert
+        assertThrows(HttpClientErrorException.class, () -> siteService.checkAddress(provinceId, districtId, communeId));
+    }
 
     @Test
     void testCheckAddress_WrongDistrictProvince() {

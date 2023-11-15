@@ -83,6 +83,20 @@ public class Customer extends AbstractBaseEntity<UUID> {
     @JsonIgnore
     private Commune commune;
 
+    public Customer(UUID id, String visitorName, String identificationNumber, String email, String phoneNumber, Constants.Gender gender, String description, String organizationId, Integer provinceId, Integer districtId, Integer communeId) {
+        this.id = id;
+        this.visitorName = visitorName;
+        this.identificationNumber = identificationNumber;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.gender = gender;
+        this.description = description;
+        this.organizationId = organizationId;
+        this.provinceId = provinceId;
+        this.districtId = districtId;
+        this.communeId = communeId;
+    }
+
     @Override
     public UUID getId() {
         return id;

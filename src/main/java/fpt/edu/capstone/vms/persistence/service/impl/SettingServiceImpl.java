@@ -40,13 +40,13 @@ public class SettingServiceImpl extends GenericServiceImpl<Setting, Long> implem
     @Override
     @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
     public Setting update(Setting entity, Long id) {
+        if (ObjectUtils.isEmpty(entity)) throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Object is empty");
         if (!StringUtils.isEmpty(entity.getCode())) {
             if (settingRepository.existsByCode(entity.getCode())) {
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code is exist");
             }
         }
 
-        if (ObjectUtils.isEmpty(entity)) throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Object is empty");
         var settingEntity = settingRepository.findById(id).orElse(null);
 
         if (ObjectUtils.isEmpty(settingEntity))

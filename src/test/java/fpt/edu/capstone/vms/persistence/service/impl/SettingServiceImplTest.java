@@ -1,7 +1,6 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
-import static org.junit.jupiter.api.Assertions.*;
-
+import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.persistence.entity.Setting;
 import fpt.edu.capstone.vms.persistence.repository.SettingRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,9 +9,16 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
-import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.Collections;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class SettingServiceImplTest {
@@ -70,5 +76,57 @@ class SettingServiceImplTest {
         Setting updatedSetting = settingService.update(entity, id);
         assertEquals(entity.getCode(), updatedSetting.getCode());
         // Add more assertions if needed
+    }
+
+    @Test
+    @DisplayName("given existing code, when updating with duplicate code, then throw exception")
+    void givenExistingCode_WhenUpdateWithNullEntity_ThenThrowException() {
+        Long id = 1L;
+        Setting entity = null;
+        assertThrows(HttpClientErrorException.class, () -> settingService.update(entity, id));
+    }
+
+    @Test
+    public void testFindAllByGroupIdAndSiteIdWithNoSettings() {
+        // Mock data
+        Integer groupId = 1;
+        String siteId = "exampleSiteId";
+
+        // No settings in the repository
+        when(settingRepository.findAllByGroupId(any(Long.class))).thenReturn(Collections.emptyList());
+
+        // Call the method to test
+        List<Setting> resultSettings = settingService.findAllByGroupIdAndSiteId(groupId, siteId);
+
+        // Assertions for no settings
+
+        // Verify that the repository method was called
+        verify(settingRepository, times(1)).findAllByGroupId(any(Long.class));
+    }
+
+    @Test
+    public void testFindAllByGroupIdAndSiteIdWithNonApiSetting() {
+        // Similar to the previous test but for a non-API setting
+
+        // Mock data
+        Integer groupId = 1;
+        String siteId = "exampleSiteId";
+
+        Setting nonApiSetting = new Setting();
+        nonApiSetting.setType(Constants.SettingType.SWITCH);
+        nonApiSetting.setCode(Constants.SettingCode.MAIL_SMTP_STARTTLS_ENABLE);
+
+        List<Setting> settings = Collections.singletonList(nonApiSetting);
+
+        when(settingRepository.findAllByGroupId(any(Long.class))).thenReturn(settings);
+
+        // Call the method to test
+        List<Setting> resultSettings = settingService.findAllByGroupIdAndSiteId(groupId, siteId);
+
+        // Assertions for non-API setting
+
+        // Verify that the repository method was called
+        verify(settingRepository, times(1)).findAllByGroupId(any(Long.class));
+
     }
 }
