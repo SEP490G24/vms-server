@@ -1289,6 +1289,30 @@ class TicketServiceImplTest {
     }
 
     @Test
+    void testFindByTicketForAdminWithInvalidSiteIdForSiteAdmin() {
+        // Mock data
+        UUID ticketId = UUID.randomUUID();
+
+        Ticket ticket = new Ticket();
+        ticket.setId(ticketId);
+        ticket.setSiteId(UUID.randomUUID().toString());  // Set a different site ID
+
+        Jwt jwt = mock(Jwt.class);
+        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c07");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("mocked_username");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(ticket));
+
+        // Call the method under test and expect a HttpClientErrorException
+        assertThrows(HttpClientErrorException.class, () -> ticketService.findByTicketForAdmin(ticketId, null));
+    }
+
+    @Test
     void testSendEmail() throws IOException, WriterException {
         // Mock data
         Customer customer = new Customer();
