@@ -103,7 +103,6 @@ class TicketServiceImplTest {
         emailUtils = mock(EmailUtils.class);
         auditLogRepository = mock(AuditLogRepository.class);
         sseEmitterManager = mock(SseEmitterManager.class);
-        reasonRepository = mock(ReasonRepository.class);
 
         ticketService = new TicketServiceImpl(ticketRepository
             , customerRepository, templateRepository
