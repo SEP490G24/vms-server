@@ -252,9 +252,9 @@ public class TicketController implements ITicketController {
     }
 
     @Override
-    public ResponseEntity<?> findByIdForAdmin(UUID ticketId) {
+    public ResponseEntity<?> findByIdForAdmin(UUID ticketId, String siteId) {
         try {
-            TicketFilterDTO ticketFilterDTO = ticketService.findByTicketForAdmin(ticketId);
+            TicketFilterDTO ticketFilterDTO = ticketService.findByTicketForAdmin(ticketId, siteId);
             setCustomer(ticketFilterDTO);
             return ResponseEntity.ok(ticketFilterDTO);
         } catch (HttpClientErrorException e) {

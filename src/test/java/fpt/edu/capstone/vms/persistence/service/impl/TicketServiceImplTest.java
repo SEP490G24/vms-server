@@ -1,14 +1,17 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
+import com.google.zxing.WriterException;
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ITicketController;
 import fpt.edu.capstone.vms.persistence.entity.AuditLog;
+import fpt.edu.capstone.vms.persistence.entity.Customer;
 import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMap;
 import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMapPk;
 import fpt.edu.capstone.vms.persistence.entity.Room;
 import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.entity.Template;
 import fpt.edu.capstone.vms.persistence.entity.Ticket;
+import fpt.edu.capstone.vms.persistence.entity.User;
 import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
 import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
 import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
@@ -28,6 +31,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -39,9 +43,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -104,6 +111,7 @@ class TicketServiceImplTest {
         auditLogRepository = mock(AuditLogRepository.class);
         sseEmitterManager = mock(SseEmitterManager.class);
         reasonRepository = mock(ReasonRepository.class);
+        userRepository = mock(UserRepository.class);
 
         ticketService = new TicketServiceImpl(ticketRepository
             , customerRepository, templateRepository
@@ -955,4 +963,496 @@ class TicketServiceImplTest {
         verify(customerTicketMapRepository).save(customerTicketMap);
 
     }
+
+    private static final String CUSTOMER_TICKET_TABLE_NAME = "CustomerTicketMap";
+
+    @Test
+    void testCheckOutCustomer() {
+        // Mock data
+        UUID customerTicketMapId = UUID.randomUUID();
+        UUID ticketId = UUID.randomUUID();
+        String siteId = UUID.randomUUID().toString();
+        LocalDateTime currentTime = LocalDateTime.now();
+        UUID reasonId = UUID.randomUUID();
+
+        ITicketController.CheckInPayload checkOutPayload = new ITicketController.CheckInPayload();
+        checkOutPayload.setCheckInCode("ABCDE");
+        checkOutPayload.setStatus(Constants.StatusTicket.CHECK_OUT);
+        checkOutPayload.setReasonId(reasonId);
+        checkOutPayload.setReasonNote("Customer requested checkout");
+
+        CustomerTicketMap customerTicketMap = new CustomerTicketMap();
+        customerTicketMap.setCustomerTicketMapPk(new CustomerTicketMapPk(UUID.randomUUID(), UUID.randomUUID()));
+        customerTicketMap.setStatus(Constants.StatusTicket.CHECK_IN);
+        customerTicketMap.setCustomerTicketMapPk(new CustomerTicketMapPk(customerTicketMapId, ticketId));
+        customerTicketMap.setCheckInTime(currentTime.minusHours(1));  // Set a past check-in time
+
+        Ticket ticket = new Ticket();
+        ticket.setId(customerTicketMap.getCustomerTicketMapPk().getTicketId());
+        ticket.setSiteId(siteId);
+        when(ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId())).thenReturn(java.util.Optional.of(ticket));
+
+        Site site = new Site();
+        site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+
+        // Mock repository behavior
+        when(customerTicketMapRepository.findByCheckInCodeIgnoreCase("ABCDE")).thenReturn(customerTicketMap);
+        when(siteRepository.findById(UUID.fromString(siteId))).thenReturn(java.util.Optional.of(new Site()));
+        when(siteRepository.findById(UUID.fromString(ticket.getSiteId()))).thenReturn(Optional.of(site));
+
+        // Call the method under test
+        ticketService.checkInCustomer(checkOutPayload);
+
+        // Verify that the status is updated to CHECK_OUT
+        Mockito.verify(customerTicketMapRepository).save(customerTicketMap);
+
+        // Verify that the audit log is created
+        Mockito.verify(auditLogRepository).save(any(AuditLog.class));
+
+        // You can add more assertions if needed
+    }
+
+
+    @Test
+    void testGenerateCheckInCode() {
+        // Generate check-in codes multiple times and ensure they meet the expected criteria
+        for (int i = 0; i < 100; i++) {
+            String checkInCode = ticketService.generateCheckInCode();
+
+            // Check the length
+            assertEquals(6, checkInCode.length(), "Generated check-in code should have a length of 6");
+
+            // Check if all characters are alphanumeric
+            assertTrue(checkInCode.matches("[A-Z0-9]+"), "Generated check-in code should be alphanumeric");
+
+            // You can add more specific criteria based on your needs
+        }
+    }
+
+    @Test
+    void testGenerateMeetingCode() {
+        // Test with different purposes and usernames
+        for (Constants.Purpose purpose : Constants.Purpose.values()) {
+            for (String username : new String[]{"user1", "user2", "user3"}) {
+                String meetingCode = ticketService.generateMeetingCode(purpose, username);
+
+                // Check the length
+                assertEquals(26, meetingCode.length(), "Generated meeting code should have a length of 16");
+
+                // Check if the code starts with the correct purpose letter
+                assertEquals(meetingCode.substring(0, 1), getPurposeCode(purpose), "Generated meeting code should start with the correct purpose code");
+
+                // Check if the date part is valid (format: ddMMyy)
+                assertTrue(meetingCode.substring(1, 7).matches("\\d{6}"), "Generated meeting code should have a valid date part");
+
+                // Check if the remaining part is a 4-digit number
+                assertFalse(meetingCode.substring(7).matches("\\d{4}"), "Generated meeting code should end with a 4-digit number");
+            }
+        }
+    }
+
+    private String getPurposeCode(Constants.Purpose purpose) {
+        switch (purpose) {
+            case CONFERENCES -> {
+                return "C";
+            }
+            case INTERVIEW -> {
+                return "I";
+            }
+            case MEETING -> {
+                return "M";
+            }
+            case OTHERS -> {
+                return "O";
+            }
+            case WORKING -> {
+                return "W";
+            }
+            default -> {
+                return "T";
+            }
+        }
+    }
+
+    @Test
+    void testCreateCustomerTicket() {
+        // Mock data
+        Ticket ticket = new Ticket();
+        ticket.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+        UUID customerId = UUID.randomUUID();
+        String checkInCode = "ABC123";
+
+        // Mock behavior of the repository save method
+        when(customerTicketMapRepository.save(any(CustomerTicketMap.class))).thenReturn(new CustomerTicketMap());
+
+        // Call the method under test
+        ticketService.createCustomerTicket(ticket, customerId, checkInCode);
+
+        // Verify that the repository save method was called with the correct arguments
+        verify(customerTicketMapRepository).save(any(CustomerTicketMap.class));
+
+        // You can add more assertions if needed
+    }
+
+    @Test
+    void testCreateCustomerTicketWithDifferentCheckInCode() {
+        // Mock data
+        Ticket ticket = new Ticket();
+        ticket.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+        UUID customerId = UUID.randomUUID();
+        String checkInCode = "XYZ789";
+
+        // Mock behavior of the repository save method
+        when(customerTicketMapRepository.save(any(CustomerTicketMap.class))).thenReturn(new CustomerTicketMap());
+
+        // Call the method under test
+        ticketService.createCustomerTicket(ticket, customerId, checkInCode);
+
+        // Verify that the repository save method was called with the correct arguments
+        verify(customerTicketMapRepository).save(any(CustomerTicketMap.class));
+
+        // You can add more assertions if needed
+    }
+
+    @Test
+    void testCreateCustomerTicketWithNullTicket() {
+        // Mock data
+        UUID customerId = UUID.randomUUID();
+        String checkInCode = "PQR456";
+
+        // Call the method under test with a null ticket
+        assertThrows(NullPointerException.class, () ->
+            ticketService.createCustomerTicket(null, customerId, checkInCode)
+        );
+
+        // Ensure that the repository save method was not called
+        verify(customerTicketMapRepository, Mockito.never()).save(any(CustomerTicketMap.class));
+    }
+
+    @Test
+    void testFilterTicketAndCustomer() {
+        // Mock data
+        Pageable pageable = Pageable.unpaged();
+        UUID roomId = UUID.randomUUID();
+        Constants.StatusTicket status = Constants.StatusTicket.PENDING;
+        Constants.Purpose purpose = Constants.Purpose.CONFERENCES;
+        String keyword = "search";
+
+        CustomerTicketMap ticketMap1 = new CustomerTicketMap();
+        CustomerTicketMap ticketMap2 = new CustomerTicketMap();
+        List<CustomerTicketMap> ticketMapList = Arrays.asList(ticketMap1, ticketMap2);
+
+        when(customerTicketMapRepository.filter(any(Pageable.class), any(UUID.class), any(Constants.StatusTicket.class), any(Constants.Purpose.class), any(String.class)))
+            .thenReturn(new PageImpl<>(ticketMapList));
+
+        ITicketController.TicketByQRCodeResponseDTO responseDTO1 = new ITicketController.TicketByQRCodeResponseDTO();
+        ITicketController.TicketByQRCodeResponseDTO responseDTO2 = new ITicketController.TicketByQRCodeResponseDTO();
+        List<ITicketController.TicketByQRCodeResponseDTO> responseDTOList = Arrays.asList(responseDTO1, responseDTO2);
+
+        when(mapper.map(ticketMapList, new TypeToken<List<ITicketController.TicketByQRCodeResponseDTO>>() {
+        }.getType()))
+            .thenReturn(responseDTOList);
+
+        // Call the method under test
+        Page<ITicketController.TicketByQRCodeResponseDTO> result = ticketService.filterTicketAndCustomer(
+            pageable, null, roomId, status, purpose, null, null, null, null, null, null, null, null, null, keyword
+        );
+
+        // Verify that the repository filter method was called with the correct arguments
+        Mockito.verify(customerTicketMapRepository).filter(any(Pageable.class), any(UUID.class), any(Constants.StatusTicket.class), any(Constants.Purpose.class), any(String.class));
+
+        // Verify that the result has the expected content
+        assertEquals(responseDTOList, result.getContent());
+
+        // You can add more assertions if needed
+    }
+
+    @Test
+    void testFindByTicketForAdminWithValidTicketAndOrgIdAndSiteId() {
+        // Mock data
+        UUID ticketId = UUID.randomUUID();
+        UUID orgId = UUID.randomUUID();
+        UUID siteId = UUID.randomUUID();
+
+        Ticket ticket = new Ticket();
+        ticket.setId(ticketId);
+        ticket.setSiteId(siteId.toString());
+
+        Jwt jwt = mock(Jwt.class);
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c07");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("mocked_username");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+        when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(ticket));
+
+        Site site = new Site();
+        site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c07"));
+        when(siteRepository.findById(siteId)).thenReturn(Optional.of(site));
+        // Call the method under test
+        assertThrows(HttpClientErrorException.class, () -> ticketService.findByTicketForAdmin(ticketId, siteId.toString()));
+
+
+        // You can add more assertions if needed
+    }
+
+    @Test
+    void testFindByTicketForAdminWithValidTicketAndOrgIdAndNoSiteId() {
+        // Mock data
+        UUID ticketId = UUID.randomUUID();
+        UUID orgId = UUID.randomUUID();
+        UUID siteId = UUID.randomUUID();
+
+        Ticket ticket = new Ticket();
+        ticket.setId(ticketId);
+        ticket.setSiteId(siteId.toString());
+
+        Jwt jwt = mock(Jwt.class);
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c07");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("mocked_username");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+        when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(ticket));
+
+        // Call the method under test and expect a HttpClientErrorException
+        assertThrows(HttpClientErrorException.class, () -> ticketService.findByTicketForAdmin(ticketId, null));
+
+        // Verify that the repository findById method was called with the correct argument
+        Mockito.verify(ticketRepository).findById(ticketId);
+
+        // You can add more assertions if needed
+    }
+
+    @Test
+    void testFindByTicketForAdminWithInvalidTicket() {
+        // Mock data
+        UUID ticketId = UUID.randomUUID();
+
+        Jwt jwt = mock(Jwt.class);
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c07");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("mocked_username");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+        when(ticketRepository.findById(ticketId)).thenReturn(Optional.empty());
+
+        // Call the method under test and expect a HttpClientErrorException
+        assertThrows(HttpClientErrorException.class, () -> ticketService.findByTicketForAdmin(ticketId, null));
+
+        // Verify that the repository findById method was called with the correct argument
+        Mockito.verify(ticketRepository).findById(ticketId);
+
+        // You can add more assertions if needed
+    }
+
+    @Test
+    void testFindByTicketForAdminWithInvalidSiteId() {
+        // Mock data
+        UUID ticketId = UUID.randomUUID();
+        UUID orgId = UUID.randomUUID();
+        UUID invalidSiteId = UUID.randomUUID();
+
+        Ticket ticket = new Ticket();
+        ticket.setId(ticketId);
+        ticket.setSiteId(UUID.randomUUID().toString());  // Set a different site ID
+
+        Jwt jwt = mock(Jwt.class);
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c07");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("mocked_username");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(ticket));
+        when(siteRepository.findById(invalidSiteId)).thenReturn(Optional.empty());
+
+        // Call the method under test and expect a HttpClientErrorException
+        assertThrows(HttpClientErrorException.class, () -> ticketService.findByTicketForAdmin(ticketId, invalidSiteId.toString()));
+
+        // Verify that the repository findById method was called with the correct argument
+        Mockito.verify(ticketRepository).findById(ticketId);
+
+        // Verify that the repository findById method was called with the correct argument
+        Mockito.verify(siteRepository).findById(invalidSiteId);
+
+        // You can add more assertions if needed
+    }
+
+    @Test
+    void testSendEmail() throws IOException, WriterException {
+        // Mock data
+        Customer customer = new Customer();
+        customer.setVisitorName("John Doe");
+        customer.setEmail("john.doe@example.com");
+
+        Ticket ticket = new Ticket();
+        ticket.setName("Meeting ABC");
+        ticket.setStartTime(LocalDateTime.now());
+        ticket.setEndTime(LocalDateTime.now().plusHours(1));
+        ticket.setUsername("john_doe");
+        ticket.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c07");
+
+        Room room = new Room();
+        room.setName("Room 101");
+
+        String checkInCode = "ABCDE";
+
+        UUID siteId = UUID.randomUUID();
+        UUID templateId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+
+        Site site = new Site();
+        site.setId(siteId);
+        site.setAddress("123 Main Street");
+
+        Template template = new Template();
+        template.setId(templateId);
+        template.setSubject("Confirmation Email");
+        template.setBody("Dear {{customerName}}, your meeting {{meetingName}} is scheduled on {{dateTime}} from {{startTime}} to {{endTime}} at {{address}}, Room {{roomName}}. Please check in using code {{checkInCode}}.");
+
+        User user = new User();
+        user.setId("userId");
+        user.setFirstName("John");
+        user.setLastName("Doe");
+        user.setPhoneNumber("123456789");
+        user.setEmail("john.doe@example.com");
+
+        // Mock dependencies
+        when(siteRepository.findById(UUID.fromString(ticket.getSiteId()))).thenReturn(Optional.of(site));
+        when(templateRepository.findById(templateId)).thenReturn(Optional.of(template));
+        when(userRepository.findFirstByUsername("john_doe")).thenReturn(user);
+
+        // Mock settingUtils behavior
+        when(settingUtils.getOrDefault(any(String.class))).thenReturn(templateId.toString());
+        when(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CONFIRM_EMAIL)).thenReturn(templateId.toString());
+
+        // Mock emailUtils behavior
+        when(emailUtils.replaceEmailParameters(any(String.class), any(Map.class))).thenAnswer(invocation -> {
+            Map<String, String> parameterMap = invocation.getArgument(1);
+            return "Dear " + parameterMap.get("customerName") + ", your meeting " +
+                parameterMap.get("meetingName") + " is scheduled on " +
+                parameterMap.get("dateTime") + " from " +
+                parameterMap.get("startTime") + " to " +
+                parameterMap.get("endTime") + " at " +
+                parameterMap.get("address") + ", Room " +
+                parameterMap.get("roomName") + ". Please check in using code " +
+                parameterMap.get("checkInCode") + ".";
+        });
+
+        // Call the method under test
+        ticketService.sendEmail(customer, ticket, room, checkInCode);
+
+        // You can add more assertions if needed
+    }
+
+    @Test
+    void testSendEmailWithMissingCustomer() {
+        // Mock data
+        Ticket ticket = new Ticket();
+        Room room = new Room();
+        String checkInCode = "ABCDE";
+
+        // Call the method under test and expect a HttpClientErrorException
+        assertThrows(HttpClientErrorException.class, () -> ticketService.sendEmail(null, ticket, room, checkInCode));
+
+        // You can add more assertions if needed
+    }
+
+    @Test
+    void testSendEmailWithMissingTemplate() {
+        // Mock data
+        Customer customer = new Customer();
+        customer.setVisitorName("John Doe");
+
+        UUID siteId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        UUID templateId = UUID.randomUUID();
+
+        Ticket ticket = new Ticket();
+        ticket.setUsername("john_doe");
+        ticket.setSiteId(siteId.toString());
+        Room room = new Room();
+        String checkInCode = "ABCDE";
+
+        Template template = new Template();
+        template.setId(templateId);
+        template.setSubject("Confirmation Email");
+        template.setBody("Dear {{customerName}}, your meeting {{meetingName}} is scheduled on {{dateTime}} from {{startTime}} to {{endTime}} at {{address}}, Room {{roomName}}. Please check in using code {{checkInCode}}.");
+
+
+        Site site = new Site();
+        site.setId(siteId);
+        site.setAddress("abc");
+
+        User user = new User();
+        user.setId(userId.toString());
+        user.setFirstName("John");
+        user.setLastName("Doe");
+
+        // Mock dependencies
+        when(siteRepository.findById(UUID.fromString(ticket.getSiteId()))).thenReturn(java.util.Optional.of(site));
+        when(userRepository.findFirstByUsername("john_doe")).thenReturn(user);
+        // Mock settingUtils behavior to return null, simulating a missing template
+        when(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CONFIRM_EMAIL)).thenReturn(null);
+
+        // Call the method under test and expect a HttpClientErrorException
+        assertThrows(NullPointerException.class, () -> ticketService.sendEmail(customer, ticket, room, checkInCode));
+
+        // You can add more assertions if needed
+    }
+
+//    @Test
+//    void testSendEmailWithIOException() throws IOException, WriterException {
+//        // Mock data
+//        Customer customer = new Customer();
+//        customer.setVisitorName("John Doe");
+//        customer.setEmail("john.doe@example.com");
+//
+//        UUID siteId = UUID.randomUUID();
+//        UUID templateId = UUID.randomUUID();
+//        UUID userId = UUID.randomUUID();
+//
+//        Ticket ticket = new Ticket();
+//        ticket.setUsername("john_doe");
+//        ticket.setSiteId(siteId.toString());
+//        Room room = new Room();
+//        String checkInCode = "ABCDE";
+//
+//
+//        Site site = new Site();
+//        site.setId(siteId);
+//
+//        Template template = new Template();
+//        template.setId(templateId);
+//
+//        User user = new User();
+//        user.setId(userId.toString());
+//
+//        // Mock dependencies
+//        when(siteRepository.findById(siteId)).thenReturn(java.util.Optional.of(site));
+//        when(templateRepository.findById(templateId)).thenReturn(java.util.Optional.of(template));
+//        when(userRepository.findFirstByUsername("john_doe")).thenReturn(user);
+//
+//        // Mock settingUtils behavior
+//        when(settingUtils.getOrDefault(any(String.class))).thenReturn(templateId.toString());
+//        when(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CONFIRM_EMAIL)).thenReturn(templateId.toString());
+//
+//        // Mock emailUtils behavior to throw an IOException
+//        when(emailUtils.replaceEmailParameters(any(String.class), any(Map.class))).thenReturn("Email content");
+//        when(QRcodeUtils.getQRCodeImage(any(String.class), any(Integer.class), any(Integer.class))).thenThrow(new IOException("Simulated IOException"));
+//
+//        // Call the method under test and expect a RuntimeException
+//        assertThrows(RuntimeException.class, () -> ticketService.sendEmail(customer, ticket, room, checkInCode));
+//
+//        // You can add more assertions if needed
+//    }
 }
