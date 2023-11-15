@@ -403,6 +403,7 @@ public class UserServiceImpl implements IUserService {
                 listData.getContent().size() == 0 ? Collections.singletonList(new User()) : listData.getContent());
             Map<String, Object> parameters = new HashMap<>();
             parameters.put("tableDataset", listDataSource);
+            parameters.put("exporter", SecurityUtils.loginUsername());
             JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, new JREmptyDataSource());
 
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();

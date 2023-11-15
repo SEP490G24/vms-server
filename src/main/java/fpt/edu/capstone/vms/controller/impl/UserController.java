@@ -100,7 +100,7 @@ public class UserController implements IUserController {
     public ResponseEntity<?> export(UserFilterRequest userFilter) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        headers.setContentDispositionFormData("attachment", "danh_sach_nguoi_dung.xlsx");
+        headers.setContentDispositionFormData("attachment", "users.xlsx");
         return ResponseEntity.status(HttpStatus.SC_OK).headers(headers).body(userService.export(userFilter));
     }
 

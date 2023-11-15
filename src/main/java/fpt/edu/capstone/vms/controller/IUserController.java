@@ -180,6 +180,7 @@ public interface IUserController {
         Date dateOfBirth;
         String gender;
         List<String> roles;
+        String roleName;
         Date createdOn;
         Date lastUpdatedOn;
         Boolean enable;

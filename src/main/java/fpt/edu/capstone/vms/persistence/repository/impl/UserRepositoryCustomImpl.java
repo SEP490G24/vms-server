@@ -12,14 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 @RequiredArgsConstructor
 public class UserRepositoryCustomImpl implements UserRepositoryCustom {
 
@@ -114,6 +107,7 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
             userFilter.setDateOfBirth((Date) object[6]);
             userFilter.setEnable((Boolean) object[7]);
             String roleNames = (String) object[8];
+            userFilter.setRoleName(roleNames);
             List<String> rolesList = roleNames == null ? null : Arrays.asList(roleNames.split(";"));
             userFilter.setRoles(rolesList);
             userFilter.setDepartmentName((String) object[9]);
