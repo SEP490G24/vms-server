@@ -4,12 +4,34 @@ import com.google.zxing.WriterException;
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ICustomerController;
 import fpt.edu.capstone.vms.controller.ITicketController;
-import fpt.edu.capstone.vms.persistence.entity.*;
-import fpt.edu.capstone.vms.persistence.repository.*;
+import fpt.edu.capstone.vms.persistence.entity.AuditLog;
+import fpt.edu.capstone.vms.persistence.entity.Customer;
+import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMap;
+import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMapPk;
+import fpt.edu.capstone.vms.persistence.entity.Reason;
+import fpt.edu.capstone.vms.persistence.entity.Room;
+import fpt.edu.capstone.vms.persistence.entity.Site;
+import fpt.edu.capstone.vms.persistence.entity.Template;
+import fpt.edu.capstone.vms.persistence.entity.Ticket;
+import fpt.edu.capstone.vms.persistence.entity.User;
+import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
+import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
+import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
+import fpt.edu.capstone.vms.persistence.repository.OrganizationRepository;
+import fpt.edu.capstone.vms.persistence.repository.ReasonRepository;
+import fpt.edu.capstone.vms.persistence.repository.RoomRepository;
+import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
+import fpt.edu.capstone.vms.persistence.repository.TemplateRepository;
+import fpt.edu.capstone.vms.persistence.repository.TicketRepository;
+import fpt.edu.capstone.vms.persistence.repository.UserRepository;
 import fpt.edu.capstone.vms.persistence.service.ITicketService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import fpt.edu.capstone.vms.persistence.service.sse.SseEmitterManager;
-import fpt.edu.capstone.vms.util.*;
+import fpt.edu.capstone.vms.util.EmailUtils;
+import fpt.edu.capstone.vms.util.QRcodeUtils;
+import fpt.edu.capstone.vms.util.SecurityUtils;
+import fpt.edu.capstone.vms.util.SettingUtils;
+import fpt.edu.capstone.vms.util.Utils;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +56,12 @@ import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -752,18 +779,21 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     }
 
     @Override
-    public ITicketController.TicketFilterDTO findByTicketForAdmin(UUID ticketId) {
+    public ITicketController.TicketFilterDTO findByTicketForAdmin(UUID ticketId, String siteId) {
         Ticket ticket = ticketRepository.findById(ticketId).orElse(null);
         if (ObjectUtils.isEmpty(ticket)) {
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't not found ticket");
         }
         if (SecurityUtils.getOrgId() != null) {
-            Site site = siteRepository.findById(UUID.fromString(SecurityUtils.getSiteId())).orElse(null);
+            if (siteId == null) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Must to choose siteId for organization admin");
+            }
+            Site site = siteRepository.findById(UUID.fromString(siteId)).orElse(null);
             if (ObjectUtils.isEmpty(site)) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "site is null");
+                throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "site is null");
             }
             if (!site.getOrganizationId().equals(SecurityUtils.getOrgId())) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "This admin can't view this ticket of customer");
+                throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "This admin can't view this ticket of customer");
             }
             return mapper.map(ticket, ITicketController.TicketFilterDTO.class);
         } else {
@@ -825,7 +855,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
      * @param ticket   The `ticket` parameter is an object of the `Ticket` class. It contains information about a ticket,
      *                 such as its ID and site ID.
      */
-    private void sendEmail(Customer customer, Ticket ticket, Room room, String checkInCode) {
+    public void sendEmail(Customer customer, Ticket ticket, Room room, String checkInCode) {
         String meetingUrl = "https://web-vms.azurewebsites.net/check-in/" + checkInCode;
 
         if (ObjectUtils.isEmpty(customer))
@@ -887,7 +917,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
      *                   stands for Universally Unique Identifier. This identifier is used to associate the customer with the ticket being
      *                   created.
      */
-    private void createCustomerTicket(Ticket ticket, UUID customerId, String checkInCode) {
+    public void createCustomerTicket(Ticket ticket, UUID customerId, String checkInCode) {
         CustomerTicketMap customerTicketMap = new CustomerTicketMap();
         CustomerTicketMapPk pk = new CustomerTicketMapPk();
         pk.setTicketId(ticket.getId());
@@ -933,7 +963,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
      *                the meeting. The possible values for purpose are CONFERENCES, INTERVIEW, MEETING, OTHERS, and WORKING.
      * @return The method is returning a String value.
      */
-    private static String generateMeetingCode(Constants.Purpose purpose, String username) {
+    public static String generateMeetingCode(Constants.Purpose purpose, String username) {
         String per = "";
         switch (purpose) {
             case CONFERENCES -> per = "C";
@@ -964,7 +994,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
 
     }
 
-    private static String generateCheckInCode() {
+    public static String generateCheckInCode() {
         String upperCaseLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         String digits = "0123456789";
         String characters = upperCaseLetters + digits;
