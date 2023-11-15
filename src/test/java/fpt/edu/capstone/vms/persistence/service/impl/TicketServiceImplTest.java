@@ -889,6 +889,7 @@ class TicketServiceImplTest {
         Ticket ticketEntity = new Ticket();
         ticketEntity.setSiteId("site2"); // A different site ID
 
+        customerTicketMap.setTicketEntity(ticketEntity);
         // Mock repository behavior
         Mockito.when(customerTicketMapRepository.findByCheckInCodeIgnoreCase(checkInCode))
             .thenReturn(customerTicketMap);
@@ -904,7 +905,7 @@ class TicketServiceImplTest {
         SecurityContextHolder.setContext(securityContext);
 
         // Verify that a HttpClientErrorException is thrown
-        assertThrows(NullPointerException.class, () -> {
+        assertThrows(HttpClientErrorException.class, () -> {
             ticketService.findByQRCode(checkInCode);
         });
     }
