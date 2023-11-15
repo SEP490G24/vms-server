@@ -99,6 +99,7 @@ public interface IRoomController {
         LocalDateTime createdOnEnd;
         Boolean enable;
         String keyword;
+        String createBy;
         List<String> siteId;
 
     }

@@ -415,7 +415,7 @@ public class UserServiceImpl implements IUserService {
             byte[] excelBytes = byteArrayOutputStream.toByteArray();
             return new ByteArrayResource(excelBytes);
         } catch (Exception e) {
-            return null;
+            throw new CustomException(ErrorApp.EXPORT_ERROR);
         }
     }
 

@@ -97,18 +97,6 @@
         "description": "r:customer:create"
       }
     },
-    "r:reason:update": {
-      "vi": {
-        "name": "update",
-        "feature": "reason",
-        "description": "r:reason:update"
-      },
-      "en": {
-        "name": "update",
-        "feature": "reason",
-        "description": "r:reason:update"
-      }
-    },
     "r:ticket:checkIn": {
       "vi": {
         "name": "checkIn",
@@ -133,6 +121,30 @@
         "description": "r:ticket:viewTicketDetail"
       }
     },
+    "r:reason:update": {
+      "vi": {
+        "name": "update",
+        "feature": "reason",
+        "description": "r:reason:update"
+      },
+      "en": {
+        "name": "update",
+        "feature": "reason",
+        "description": "r:reason:update"
+      }
+    },
+    "r:ticket:room": {
+      "vi": {
+        "name": "room",
+        "feature": "ticket",
+        "description": "r:ticket:room"
+      },
+      "en": {
+        "name": "room",
+        "feature": "ticket",
+        "description": "r:ticket:room"
+      }
+    },
     "r:setting:find": {
       "vi": {
         "name": "find",
@@ -146,7 +158,7 @@
       }
     },
     "r:template:find": {
-      "vi" : {
+      "vi": {
         "name": "find",
         "feature": "template",
         "description": "r:template:find"
@@ -181,9 +193,9 @@
         "description": "r:reason:delete"
       }
     },
-    "r:permission:update" : {
-      "vi" : {
-        "name" : "update",
+    "r:permission:update": {
+      "vi": {
+        "name": "update",
         "feature" : "permission",
         "description" : "r:permission:update"
       },
@@ -205,18 +217,6 @@
         "description": "r:site:update"
       }
     },
-    "r:template:create": {
-      "vi": {
-        "name": "create",
-        "feature": "template",
-        "description": "r:template:create"
-      },
-      "en": {
-        "name": "create",
-        "feature": "template",
-        "description": "r:template:create"
-      }
-    },
     "r:setting:create": {
       "vi": {
         "name": "create",
@@ -227,6 +227,18 @@
         "name": "create",
         "feature": "setting",
         "description": "r:setting:create"
+      }
+    },
+    "r:template:create": {
+      "vi": {
+        "name": "create",
+        "feature": "template",
+        "description": "r:template:create"
+      },
+      "en": {
+        "name": "create",
+        "feature": "template",
+        "description": "r:template:create"
       }
     },
     "r:site:find": {
@@ -304,16 +316,16 @@
     "r:organization:delete": {
       "vi": {
         "name": "delete",
-        "feature" : "organization",
-        "description" : "r:organization:delete"
+        "feature": "organization",
+        "description": "r:organization:delete"
       },
-      "en" : {
-        "name" : "delete",
-        "feature" : "organization",
-        "description" : "r:organization:delete"
+      "en": {
+        "name": "delete",
+        "feature": "organization",
+        "description": "r:organization:delete"
       }
     },
-    "r:setting-group:update" : {
+    "r:setting-group:update": {
       "vi" : {
         "name" : "update",
         "feature" : "setting-group",
@@ -470,27 +482,15 @@
       }
     },
     "r:setting:delete": {
-      "vi" : {
-        "name" : "delete",
-        "feature" : "setting",
-        "description" : "r:setting:delete"
-      },
-      "en" : {
-        "name" : "delete",
-        "feature" : "setting",
-        "description" : "r:setting:delete"
-      }
-    },
-    "r:user:update" : {
-      "vi" : {
-        "name": "update",
-        "feature": "user",
-        "description": "r:user:update"
+      "vi": {
+        "name": "delete",
+        "feature": "setting",
+        "description": "r:setting:delete"
       },
       "en": {
-        "name": "update",
-        "feature": "user",
-        "description": "r:user:update"
+        "name": "delete",
+        "feature": "setting",
+        "description": "r:setting:delete"
       }
     },
     "r:site:create": {
@@ -505,6 +505,18 @@
         "description": "r:site:create"
       }
     },
+    "r:user:update": {
+      "vi": {
+        "name": "update",
+        "feature": "user",
+        "description": "r:user:update"
+      },
+      "en": {
+        "name": "update",
+        "feature": "user",
+        "description": "r:user:update"
+      }
+    },
     "r:setting:update": {
       "vi": {
         "name": "update",
@@ -517,7 +529,7 @@
         "description": "r:setting:update"
       }
     },
-    "r:ticket:cancel" : {
+    "r:ticket:cancel": {
       "vi": {
         "name": "cancel",
         "feature": "ticket",
@@ -556,16 +568,16 @@
     "r:role:update": {
       "vi": {
         "name": "update",
-        "feature" : "role",
-        "description" : "r:role:update"
+        "feature": "role",
+        "description": "r:role:update"
       },
-      "en" : {
-        "name" : "update",
-        "feature" : "role",
-        "description" : "r:role:update"
+      "en": {
+        "name": "update",
+        "feature": "role",
+        "description": "r:role:update"
       }
     },
-    "r:ticket:findQRCode" : {
+    "r:ticket:findQRCode": {
       "vi" : {
         "name" : "findQRCode",
         "feature" : "ticket",
@@ -661,18 +673,6 @@
         "description": "r:role:create"
       }
     },
-    "r:organization:update": {
-      "vi": {
-        "name": "update",
-        "feature": "organization",
-        "description": "r:organization:update"
-      },
-      "en": {
-        "name": "update",
-        "feature": "organization",
-        "description": "r:organization:update"
-      }
-    },
     "r:setting-site:create": {
       "vi": {
         "name": "create",
@@ -685,16 +685,16 @@
         "description": "r:setting-site:create"
       }
     },
-    "r:setting-group:delete": {
+    "r:organization:update": {
       "vi": {
-        "name": "delete",
-        "feature": "setting-group",
-        "description": "r:setting-group:delete"
+        "name": "update",
+        "feature": "organization",
+        "description": "r:organization:update"
       },
       "en": {
-        "name": "delete",
-        "feature": "setting-group",
-        "description": "r:setting-group:delete"
+        "name": "update",
+        "feature": "organization",
+        "description": "r:organization:update"
       }
     },
     "r:permission:delete": {
@@ -707,6 +707,18 @@
         "name": "delete",
         "feature": "permission",
         "description": "r:permission:delete"
+      }
+    },
+    "r:setting-group:delete": {
+      "vi": {
+        "name": "delete",
+        "feature": "setting-group",
+        "description": "r:setting-group:delete"
+      },
+      "en": {
+        "name": "delete",
+        "feature": "setting-group",
+        "description": "r:setting-group:delete"
       }
     }
   }

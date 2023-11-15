@@ -50,11 +50,11 @@
   "R_USER_CREATE": [
     "r:user:create"
   ],
-  "R_TEMPLATE_CREATE": [
-    "r:template:create"
-  ],
   "R_SETTING_CREATE": [
     "r:setting:create"
+  ],
+  "R_TEMPLATE_CREATE": [
+    "r:template:create"
   ],
   "R_PERMISSION_DELETE": [
     "r:permission:delete"
@@ -100,6 +100,9 @@
   ],
   "R_TICKET_CHECKIN": [
     "r:ticket:checkIn"
+  ],
+  "R_TICKET_ROOM": [
+    "r:ticket:room"
   ],
   "R_ROOM_FIND": [
     "r:room:find"
