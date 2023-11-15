@@ -17,9 +17,9 @@ import java.util.UUID;
 @Repository
 public interface TicketRepository extends GenericRepository<Ticket, UUID> {
 
-    Integer countByRoomIdAndEndTimeGreaterThanEqualAndStartTimeLessThanEqual(UUID roomId, LocalDateTime startTime, LocalDateTime endTime);
+    Integer countByRoomIdAndEndTimeGreaterThanEqualAndStartTimeLessThanEqualAndStatusNotLike(UUID roomId, LocalDateTime startTime, LocalDateTime endTime, Constants.StatusTicket statusTicket);
 
-    Integer countByUsernameAndEndTimeGreaterThanEqualAndStartTimeLessThanEqual(String username, LocalDateTime startTime, LocalDateTime endTime);
+    Integer countByUsernameAndEndTimeGreaterThanEqualAndStartTimeLessThanEqualAndStatusNotLike(String username, LocalDateTime startTime, LocalDateTime endTime, Constants.StatusTicket statusTicket);
 
     Boolean existsByIdAndUsername(UUID ticketId, String username);
 
@@ -37,7 +37,7 @@ public interface TicketRepository extends GenericRepository<Ticket, UUID> {
         "and ((:lastUpdatedBy is null) or (u.lastUpdatedBy in :lastUpdatedBy)) " +
         "and (((cast(:startTimeStart as date) is null ) or (cast(:startTimeEnd as date) is null )) or (u.startTime between :startTimeStart and :startTimeEnd)) " +
         "and (((cast(:endTimeStart as date) is null ) or (cast(:endTimeEnd as date) is null )) or (u.endTime between :endTimeStart and :endTimeEnd)) " +
-        "and ((cast(:username as string) is null) or (u.username = :username)) " +
+        "and ((coalesce(:usernames) is null) or (u.username in :usernames)) " +
         "and ((cast(:roomId as string) is null) or (u.roomId = :roomId)) " +
         "and ((cast(:status as string) is null) or (u.status = :status)) " +
         "and ((cast(:purpose as string) is null) or (u.purpose = :purpose)) " +
@@ -48,7 +48,7 @@ public interface TicketRepository extends GenericRepository<Ticket, UUID> {
     Page<Ticket> filter(Pageable pageable,
                         @Param("names") @Nullable Collection<String> names,
                         @Param("sites") @Nullable Collection<String> sites,
-                        @Param("username") @Nullable String username,
+                        @Param("usernames") @Nullable Collection<String> usernames,
                         @Param("roomId") @Nullable UUID roomId,
                         @Param("status") @Nullable Constants.StatusTicket status,
                         @Param("purpose") @Nullable Constants.Purpose purpose,
@@ -72,7 +72,7 @@ public interface TicketRepository extends GenericRepository<Ticket, UUID> {
         "and ((:lastUpdatedBy is null) or (u.lastUpdatedBy in :lastUpdatedBy)) " +
         "and (((cast(:startTimeStart as date) is null ) or (cast(:startTimeEnd as date) is null )) or (u.startTime between :startTimeStart and :startTimeEnd)) " +
         "and (((cast(:endTimeStart as date) is null ) or (cast(:endTimeEnd as date) is null )) or (u.endTime between :endTimeStart and :endTimeEnd)) " +
-        "and ((cast(:username as string) is null) or (u.username = :username)) " +
+        "and ((coalesce(:usernames) is null) or (u.username in :usernames)) " +
         "and ((cast(:roomId as string) is null) or (u.roomId = :roomId)) " +
         "and ((cast(:status as string) is null) or (u.status = :status)) " +
         "and ((cast(:purpose as string) is null) or (u.purpose = :purpose)) " +
@@ -82,7 +82,7 @@ public interface TicketRepository extends GenericRepository<Ticket, UUID> {
         "or u.createdBy LIKE %:keyword% ))")
     List<Ticket> filter(@Param("names") @Nullable Collection<String> names,
                         @Param("sites") @Nullable Collection<String> sites,
-                        @Param("username") @Nullable String username,
+                        @Param("usernames") @Nullable Collection<String> usernames,
                         @Param("roomId") @Nullable UUID roomId,
                         @Param("status") @Nullable Constants.StatusTicket status,
                         @Param("purpose") @Nullable Constants.Purpose purpose,

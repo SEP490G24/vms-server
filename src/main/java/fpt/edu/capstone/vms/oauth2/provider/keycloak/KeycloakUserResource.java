@@ -1,14 +1,18 @@
 package fpt.edu.capstone.vms.oauth2.provider.keycloak;
 
+import fpt.edu.capstone.vms.config.keycloak.KeycloakProperties;
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
 import fpt.edu.capstone.vms.persistence.entity.Department;
 import fpt.edu.capstone.vms.persistence.repository.DepartmentRepository;
+import fpt.edu.capstone.vms.util.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.CreatedResponseUtil;
 import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.RolesResource;
 import org.keycloak.admin.client.resource.UserResource;
@@ -36,16 +40,19 @@ public class KeycloakUserResource implements IUserResource {
     private final UsersResource usersResource;
     private final RolesResource rolesResource;
     private final DepartmentRepository departmentRepository;
+    private final KeycloakProperties keycloakProperties;
+
 
 
     public KeycloakUserResource(
         Keycloak keycloak,
         ModelMapper mapper, @Value("${edu.fpt.capstone.vms.oauth2.keycloak.realm}") String realm,
-        DepartmentRepository departmentRepository
-    ) {
+        DepartmentRepository departmentRepository,
+        KeycloakProperties keycloakProperties) {
         this.keycloak = keycloak;
         this.mapper = mapper;
         this.REALM = realm;
+        this.keycloakProperties = keycloakProperties;
         RealmResource realmResource = keycloak.realm(REALM);
         this.usersResource = realmResource.users();
         this.rolesResource = realmResource.roles();
@@ -56,7 +63,7 @@ public class KeycloakUserResource implements IUserResource {
     public String create(UserDto userDto) {
 
         Map<String, List<String>> attributes = new HashMap<>();
-        if (userDto.getIsCreateUserOrg()) {
+        if (SecurityUtils.getUserDetails().isRealmAdmin()) {
             attributes.put(Constants.Claims.OrgId, List.of(userDto.getOrgId()));
         } else {
             Department department = departmentRepository.findById(userDto.getDepartmentId()).orElse(null);
@@ -113,21 +120,12 @@ public class KeycloakUserResource implements IUserResource {
         if (userDto.getEnable() != null) modifiedUser.setEnabled(userDto.getEnable());
 
         //update role
-        updateRole(userDto.getOpenid(), userDto.getRoles());
+        if (userDto.getRoles() != null) {
+            updateRole(userDto.getOpenid(), userDto.getRoles());
+        }
         userResource.update(modifiedUser);
 
         return true;
-    }
-
-    public void updatePassword(UserRepresentation modifiedUser, String password){
-        // Update password credential if password not null or empty
-        if (!StringUtils.isEmpty(password)) {
-            var passwordCred = new CredentialRepresentation();
-            passwordCred.setTemporary(false);
-            passwordCred.setType(CredentialRepresentation.PASSWORD);
-            passwordCred.setValue(password);
-            modifiedUser.setCredentials(List.of(passwordCred));
-        }
     }
 
     @Override
@@ -170,6 +168,39 @@ public class KeycloakUserResource implements IUserResource {
         updatePassword(modifiedUser, newPassword);
         userResource.update(modifiedUser);
     }
+
+    @Override
+     public boolean verifyPassword(String username, String password) {
+        var keycloakClient = KeycloakBuilder.builder()
+                .serverUrl(keycloakProperties.getAuthUrl())
+                .realm(keycloakProperties.getRealm())
+                .clientId(keycloakProperties.getClientId())
+                .clientSecret(keycloakProperties.getClientSecret())
+                .grantType(OAuth2Constants.PASSWORD)
+                .username(username)
+                .password(password)
+                .build();
+        try {
+            return keycloakClient.tokenManager().getAccessTokenString() != null;
+        } catch (Exception exception) {
+            log.error("Username and password not valid", exception);
+            return false;
+        }
+    }
+
+    private void updatePassword(UserRepresentation modifiedUser, String password){
+        // Update password credential if password not null or empty
+        if (!StringUtils.isEmpty(password)) {
+            var passwordCred = new CredentialRepresentation();
+            passwordCred.setTemporary(false);
+            passwordCred.setType(CredentialRepresentation.PASSWORD);
+            passwordCred.setValue(password);
+            modifiedUser.setCredentials(List.of(passwordCred));
+        }
+    }
+
+
+
 
 //    @Override
 //    public List<UserDto> users() {

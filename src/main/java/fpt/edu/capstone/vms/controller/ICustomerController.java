@@ -40,10 +40,12 @@ public interface ICustomerController {
 
     @PostMapping("/filter")
     @Operation(summary = "Filter customer")
+    @PreAuthorize("hasRole('r:customer:find')")
     ResponseEntity<?> filter(@RequestBody @Valid CustomerFilter filter, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
     @GetMapping("/organization")
     @Operation(summary = "Find all by organization id")
+    @PreAuthorize("hasRole('r:customer:find')")
     ResponseEntity<?> findByOrganzationId();
 
 

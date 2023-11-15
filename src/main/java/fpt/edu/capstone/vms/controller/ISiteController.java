@@ -9,15 +9,7 @@ import lombok.Data;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -61,10 +53,10 @@ public interface ISiteController {
     @PreAuthorize("hasRole('r:site:find')")
     ResponseEntity<?> filter(@RequestBody @Valid SiteFilter siteFilter, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
-    @GetMapping("/organization/{organizationId}")
+    @GetMapping("/organization")
     @Operation(summary = "Get all site by organizationId")
     @PreAuthorize("hasRole('r:organization:find')")
-    ResponseEntity<List<?>> findAllByOrganizationId(@PathVariable String organizationId);
+    ResponseEntity<List<?>> findAllByOrganizationId();
 
     @Data
     class CreateSiteInfo {
@@ -85,12 +77,13 @@ public interface ISiteController {
         @NotNull
         private String taxCode;
         private String description;
+        @NotNull
+        private Boolean enable;
     }
 
     @Data
     class UpdateSiteInfo {
         private String name;
-        private String code;
         private String phoneNumber;
         private Integer provinceId;
         private Integer districtId;
@@ -98,7 +91,7 @@ public interface ISiteController {
         private String address;
         private String taxCode;
         private String description;
-        private boolean enable;
+        private Boolean enable;
     }
 
     @Data
@@ -110,7 +103,9 @@ public interface ISiteController {
         String lastUpdatedBy;
         Boolean enable;
         String keyword;
-        UUID organizationId;
+        Integer provinceId;
+        Integer districtId;
+        Integer communeId;
     }
 
     @Data

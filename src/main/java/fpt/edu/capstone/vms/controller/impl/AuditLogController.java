@@ -4,10 +4,14 @@ import fpt.edu.capstone.vms.controller.IAuditLogController;
 import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.service.impl.AuditLogServiceImpl;
 import lombok.AllArgsConstructor;
+import net.sf.jasperreports.engine.JRException;
+import org.apache.http.HttpStatus;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -26,8 +30,34 @@ public class AuditLogController implements IAuditLogController {
     }
 
     @Override
-    public ResponseEntity<List<?>> findAll() {
-        return ResponseEntity.ok(auditLogService.findAll());
+    public ResponseEntity<?> filter(AuditLogFilter filter, boolean isPageable, Pageable pageable) {
+        return isPageable ? ResponseEntity.ok(
+            auditLogService.filter(
+                pageable,
+                filter.getOrganizationId(),
+                filter.getSiteId(),
+                filter.getAuditType(),
+                filter.getCreatedOnStart(),
+                filter.getCreatedOnEnd(),
+                filter.getCreateBy(),
+                filter.getTableName(),
+                filter.getKeyword())) : ResponseEntity.ok(
+            auditLogService.filter(
+                filter.getOrganizationId(),
+                filter.getSiteId(),
+                filter.getAuditType(),
+                filter.getCreatedOnStart(),
+                filter.getCreatedOnEnd(),
+                filter.getCreateBy(),
+                filter.getTableName(),
+                filter.getKeyword()));
     }
 
+    @Override
+    public ResponseEntity<?> export(AuditLogFilter auditLogFilter) throws JRException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.setContentDispositionFormData("attachment", "audit_log.xlsx");
+        return ResponseEntity.status(HttpStatus.SC_OK).headers(headers).body(auditLogService.export(auditLogFilter));
+    }
 }

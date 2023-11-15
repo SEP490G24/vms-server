@@ -1,4 +1,5 @@
 package fpt.edu.capstone.vms.security.converter;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.core.convert.converter.Converter;
@@ -41,6 +42,16 @@ public class JwtGrantedAuthoritiesConverter implements Converter<Jwt, Collection
      */
     public static final String REALM_ADMIN = "REALM_ADMIN";
 
+    /**
+     * Name of scope organization admin
+     */
+    public static final String SCOPE_ORGANIZATION = "scope:organization";
+
+    /**
+     * Name of scope site admin
+     */
+    public static final String SCOPE_SITE = "scope:site";
+
     @Value("${edu.fpt.capstone.vms.oauth2.keycloak.client-id}")
     private String resourceId;
 
@@ -53,7 +64,7 @@ public class JwtGrantedAuthoritiesConverter implements Converter<Jwt, Collection
         Collection<GrantedAuthority> grantedAuthorities = new ArrayList<>();
 
         // Realm roles
-        // grantedAuthorities.addAll(extractRealmRoles(jwt));
+        grantedAuthorities.addAll(extractRealmRoles(jwt));
 
         // Resource (client) roles
         grantedAuthorities.addAll(extractResourceRoles(jwt));
@@ -76,9 +87,9 @@ public class JwtGrantedAuthoritiesConverter implements Converter<Jwt, Collection
             if (roles != null && !roles.isEmpty()) {
                 // Iterate of the roles and add them to the granted authorities
                 Collection<GrantedAuthority> realmRoles = roles.stream()
-                        // Prefix all realm roles with "ROLE_realm_"
-                        .map(role -> new SimpleGrantedAuthority(PREFIX_REALM_ROLE + role))
-                        .collect(Collectors.toList());
+                    // Prefix all realm roles with "ROLE_realm_"
+                    .map(role -> new SimpleGrantedAuthority(PREFIX_REALM_ROLE + role))
+                    .collect(Collectors.toList());
                 grantedAuthorities.addAll(realmRoles);
             }
         }
@@ -98,13 +109,11 @@ public class JwtGrantedAuthoritiesConverter implements Converter<Jwt, Collection
         if (resourceAccess != null && !resourceAccess.isEmpty()) {
             // Iterate of all the resources
             resourceAccess.forEach((resource, resourceClaims) -> {
-                if(resource.equals(resourceId)) {
-                    // Iterate of the "roles" claim inside the resource claims
-                    resourceClaims.get(CLAIM_ROLES).forEach(
-                            // Add the role to the granted authority prefixed with ROLE_ and the name of the resource
-                            role -> grantedAuthorities.add(new SimpleGrantedAuthority(PREFIX_RESOURCE_ROLE + role))
-                    );
-                }
+                // Iterate of the "roles" claim inside the resource claims
+                resourceClaims.get(CLAIM_ROLES).forEach(
+                    // Add the role to the granted authority prefixed with ROLE_ and the name of the resource
+                    role -> grantedAuthorities.add(new SimpleGrantedAuthority(PREFIX_RESOURCE_ROLE + role))
+                );
             });
         }
 

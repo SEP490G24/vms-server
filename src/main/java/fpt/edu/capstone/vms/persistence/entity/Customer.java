@@ -2,18 +2,14 @@ package fpt.edu.capstone.vms.persistence.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import fpt.edu.capstone.vms.constants.Constants;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.MapKey;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -23,7 +19,6 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
-import java.util.Map;
 import java.util.UUID;
 
 @Data
@@ -87,11 +82,6 @@ public class Customer extends AbstractBaseEntity<UUID> {
     @JoinColumn(name = "commune_id", referencedColumnName = "id", insertable = false, updatable = false)
     @JsonIgnore
     private Commune commune;
-
-    @OneToMany(mappedBy = "customerEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
-    @MapKey(name = "customerTicketMapPk.customerId")
-    @JsonIgnore
-    private Map<UUID, CustomerTicketMap> customerTicketMaps;
 
     @Override
     public UUID getId() {

@@ -1,0 +1,209 @@
+{
+  "constraints" : null,
+  "roles" : {
+    "path:room" : {
+      "vi" : {
+        "name" : "room",
+        "feature" : "path",
+        "description" : "path:room"
+      },
+      "en" : {
+        "name" : "room",
+        "feature" : "path",
+        "description" : "path:room"
+      }
+    },
+    "path:history" : {
+      "vi" : {
+        "name" : "history",
+        "feature" : "path",
+        "description" : "path:history"
+      },
+      "en" : {
+        "name" : "history",
+        "feature" : "path",
+        "description" : "path:history"
+      }
+    },
+    "path:meeting_calendar" : {
+      "vi" : {
+        "name" : "meeting_calendar",
+        "feature" : "path",
+        "description" : "path:meeting_calendar"
+      },
+      "en" : {
+        "name" : "meeting_calendar",
+        "feature" : "path",
+        "description" : "path:meeting_calendar"
+      }
+    },
+    "path:site" : {
+      "vi" : {
+        "name" : "site",
+        "feature" : "path",
+        "description" : "path:site"
+      },
+      "en" : {
+        "name" : "site",
+        "feature" : "path",
+        "description" : "path:site"
+      }
+    },
+    "path:ticket_result" : {
+      "vi" : {
+        "name" : "ticket_result",
+        "feature" : "path",
+        "description" : "path:ticket_result"
+      },
+      "en" : {
+        "name" : "ticket_result",
+        "feature" : "path",
+        "description" : "path:ticket_result"
+      }
+    },
+    "path:permission" : {
+      "vi" : {
+        "name" : "permission",
+        "feature" : "path",
+        "description" : "path:permission"
+      },
+      "en" : {
+        "name" : "permission",
+        "feature" : "path",
+        "description" : "path:permission"
+      }
+    },
+    "path:customer" : {
+      "vi" : {
+        "name" : "customer",
+        "feature" : "path",
+        "description" : "path:customer"
+      },
+      "en" : {
+        "name" : "customer",
+        "feature" : "path",
+        "description" : "path:customer"
+      }
+    },
+    "path:profile" : {
+      "vi" : {
+        "name" : "profile",
+        "feature" : "path",
+        "description" : "path:profile"
+      },
+      "en" : {
+        "name" : "profile",
+        "feature" : "path",
+        "description" : "path:profile"
+      }
+    },
+    "path:meeting_room" : {
+      "vi" : {
+        "name" : "meeting_room",
+        "feature" : "path",
+        "description" : "path:meeting_room"
+      },
+      "en" : {
+        "name" : "meeting_room",
+        "feature" : "path",
+        "description" : "path:meeting_room"
+      }
+    },
+    "path:user" : {
+      "vi" : {
+        "name" : "user",
+        "feature" : "path",
+        "description" : "path:user"
+      },
+      "en" : {
+        "name" : "user",
+        "feature" : "path",
+        "description" : "path:user"
+      }
+    },
+    "path:department" : {
+      "vi" : {
+        "name" : "department",
+        "feature" : "path",
+        "description" : "path:department"
+      },
+      "en" : {
+        "name" : "department",
+        "feature" : "path",
+        "description" : "path:department"
+      }
+    },
+    "path:device" : {
+      "vi" : {
+        "name" : "device",
+        "feature" : "path",
+        "description" : "path:device"
+      },
+      "en" : {
+        "name" : "device",
+        "feature" : "path",
+        "description" : "path:device"
+      }
+    },
+    "path:organization" : {
+      "vi" : {
+        "name" : "organization",
+        "feature" : "path",
+        "description" : "path:organization"
+      },
+      "en" : {
+        "name" : "organization",
+        "feature" : "path",
+        "description" : "path:organization"
+      }
+    },
+    "path:template" : {
+      "vi" : {
+        "name" : "template",
+        "feature" : "path",
+        "description" : "path:template"
+      },
+      "en" : {
+        "name" : "template",
+        "feature" : "path",
+        "description" : "path:template"
+      }
+    },
+    "path:dashboard" : {
+      "vi" : {
+        "name" : "dashboard",
+        "feature" : "path",
+        "description" : "path:dashboard"
+      },
+      "en" : {
+        "name" : "dashboard",
+        "feature" : "path",
+        "description" : "path:dashboard"
+      }
+    },
+    "path:meeting_statistic" : {
+      "vi" : {
+        "name" : "meeting_statistic",
+        "feature" : "path",
+        "description" : "path:meeting_statistic"
+      },
+      "en" : {
+        "name" : "meeting_statistic",
+        "feature" : "path",
+        "description" : "path:meeting_statistic"
+      }
+    },
+    "path:configuration" : {
+      "vi" : {
+        "name" : "configuration",
+        "feature" : "path",
+        "description" : "path:configuration"
+      },
+      "en" : {
+        "name" : "configuration",
+        "feature" : "path",
+        "description" : "path:configuration"
+      }
+    }
+  }
+}

@@ -85,12 +85,9 @@ public final class KeycloakRoleMapper {
     public static Map<String, KeycloakRoleAttribute> convert2RoleMap(String role) {
         String[] roleDetails = role.trim().split(":");
         Map<String, KeycloakRoleAttribute> results = new HashMap<>();
-        if (!roleDetails[0].equalsIgnoreCase("p")) {
-            throw new IllegalArgumentException("Role path must start with p!! Current value " + role);
-        }
         KeycloakRoleAttribute keycloakRoleAttribute = new KeycloakRoleAttribute();
         keycloakRoleAttribute.setDescription(role);
-        keycloakRoleAttribute.setFeature("pages");
+        keycloakRoleAttribute.setFeature(roleDetails[0]);
         keycloakRoleAttribute.setName(roleDetails[1]);
 
         Stream.of(LanguageCode.values()).forEach(languageCode -> {

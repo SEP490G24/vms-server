@@ -1,5 +1,6 @@
 package fpt.edu.capstone.vms.persistence.service;
 
+import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ITemplateController;
 import fpt.edu.capstone.vms.persistence.entity.Template;
 import fpt.edu.capstone.vms.persistence.service.generic.IGenericService;
@@ -17,7 +18,7 @@ public interface ITemplateService extends IGenericService<Template, UUID> {
 
     Page<Template> filter(Pageable pageable,
                           List<String> names,
-                          UUID siteId,
+                          List<String> siteId,
                           LocalDateTime createdOnStart,
                           LocalDateTime createdOnEnd,
                           Boolean enable,
@@ -25,10 +26,13 @@ public interface ITemplateService extends IGenericService<Template, UUID> {
 
     List<Template> filter(
         List<String> names,
-        UUID siteId,
+        List<String> siteId,
         LocalDateTime createdOnStart,
         LocalDateTime createdOnEnd,
         Boolean enable,
         String keyword);
 
+    List<Template> finAllBySiteId(String siteId);
+
+    List<Template> finAllBySiteIdAndType(String siteId, Constants.TemplateType type);
 }

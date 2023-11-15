@@ -9,12 +9,11 @@ import fpt.edu.capstone.vms.controller.IUserController;
 import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
+import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.entity.Department;
+import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.entity.User;
-import fpt.edu.capstone.vms.persistence.repository.DepartmentRepository;
-import fpt.edu.capstone.vms.persistence.repository.FileRepository;
-import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
-import fpt.edu.capstone.vms.persistence.repository.UserRepository;
+import fpt.edu.capstone.vms.persistence.repository.*;
 import fpt.edu.capstone.vms.persistence.service.IUserService;
 import fpt.edu.capstone.vms.util.FileUtils;
 import fpt.edu.capstone.vms.util.ResponseUtils;
@@ -22,11 +21,7 @@ import fpt.edu.capstone.vms.util.SecurityUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.sf.jasperreports.engine.JREmptyDataSource;
-import net.sf.jasperreports.engine.JasperCompileManager;
-import net.sf.jasperreports.engine.JasperFillManager;
-import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
 import net.sf.jasperreports.export.SimpleExporterInput;
@@ -34,16 +29,7 @@ import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.openxml4j.util.ZipSecureFile;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.usermodel.HorizontalAlignment;
-import org.apache.poi.ss.usermodel.IndexedColors;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.VerticalAlignment;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.ss.usermodel.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
@@ -69,16 +55,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import static fpt.edu.capstone.vms.persistence.entity.User.checkPassword;
-import static fpt.edu.capstone.vms.persistence.entity.User.encodePassword;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -94,6 +71,7 @@ public class UserServiceImpl implements IUserService {
     private final SiteRepository siteRepository;
     private final ModelMapper mapper;
     final DepartmentRepository departmentRepository;
+    private final AuditLogRepository auditLogRepository;
 
 
     Integer currentRowIndex;
@@ -137,6 +115,8 @@ public class UserServiceImpl implements IUserService {
     public static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@(.+)$";
     public static final String SPECIAL_CHARACTERS_REGEX = "^[a-zA-Z0-9]*$";
 
+    private static final String USER_TABLE_NAME = "User";
+
     Map<Integer, List<String>> mapError;
 
     static {
@@ -154,8 +134,11 @@ public class UserServiceImpl implements IUserService {
 
 
     @Override
-    public Page<IUserController.UserFilterResponse> filter(Pageable pageable, List<String> usernames, String role, LocalDateTime createdOnStart,
-                                                           LocalDateTime createdOnEnd, Boolean enable, String keyword, String departmentId, String siteId) {
+    public Page<IUserController.UserFilterResponse> filter(Pageable pageable, List<String> usernames
+        , String role, LocalDateTime createdOnStart
+        , LocalDateTime createdOnEnd, Boolean enable
+        , String keyword, List<String> departmentIds, List<String> siteIds, Integer provinceId, Integer districtId, Integer communeId) {
+        List<UUID> departments = getListDepartments(siteIds, departmentIds);
         return userRepository.filter(
             pageable,
             usernames,
@@ -164,13 +147,17 @@ public class UserServiceImpl implements IUserService {
             createdOnEnd,
             enable,
             keyword,
-            departmentId,
-            siteId);
+            departments,
+            provinceId,
+            districtId,
+            communeId);
     }
 
     @Override
-    public List<IUserController.UserFilterResponse> filter(List<String> usernames, String role, LocalDateTime createdOnStart,
-                                                           LocalDateTime createdOnEnd, Boolean enable, String keyword, String departmentId, String siteId) {
+    public List<IUserController.UserFilterResponse> filter(List<String> usernames, String role
+        , LocalDateTime createdOnStart, LocalDateTime createdOnEnd
+        , Boolean enable, String keyword, List<String> departmentIds, List<String> siteIds, Integer provinceId, Integer districtId, Integer communeId) {
+        List<UUID> departments = getListDepartments(siteIds, departmentIds);
         return userRepository.filter(
             usernames,
             role,
@@ -178,12 +165,79 @@ public class UserServiceImpl implements IUserService {
             createdOnEnd,
             enable,
             keyword,
-            departmentId,
-            siteId);
+            departments,
+            provinceId,
+            districtId,
+            communeId);
     }
 
 
+    /**
+     * The function getListDepartments retrieves a list of department UUIDs based on site and department IDs, with
+     * permission checks.
+     *
+     * @param siteIds       A list of site IDs.
+     * @param departmentIds A list of department IDs as strings.
+     * @return The method is returning a List of UUIDs.
+     */
+    List<UUID> getListDepartments(List<String> siteIds, List<String> departmentIds) {
+
+        if (SecurityUtils.getOrgId() == null && siteIds != null) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "You don't have permission to do this.");
+        }
+        List<UUID> departments = new ArrayList<>();
+        if (SecurityUtils.getOrgId() != null) {
+            if (siteIds == null) {
+                siteRepository.findAllByOrganizationId(UUID.fromString(SecurityUtils.getOrgId())).forEach(o -> {
+                    addDepartmentToListFilter(departmentIds, departments, o.getId().toString());
+                });
+            } else {
+                siteIds.forEach(o -> {
+                    if (!SecurityUtils.checkSiteAuthorization(siteRepository, o)) {
+                        throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "You don't have permission to do this.");
+                    }
+                    addDepartmentToListFilter(departmentIds, departments, o);
+                });
+                if (departments.isEmpty()) {
+                    siteRepository.findAllByOrganizationId(UUID.fromString(SecurityUtils.getOrgId())).forEach(o -> {
+                        addDepartmentToListFilter(departmentIds, departments, o.getId().toString());
+                    });
+                }
+            }
+
+        } else {
+            addDepartmentToListFilter(departmentIds, departments, SecurityUtils.getSiteId());
+        }
+        return departments;
+    }
+
+    /**
+     * The function adds department IDs to a list based on certain conditions and checks for permission before adding.
+     *
+     * @param departmentIds A list of department IDs as strings.
+     * @param departments   A list of UUIDs representing departments.
+     * @param siteId        The `siteId` parameter is a String representing the ID of a site.
+     */
+    private void addDepartmentToListFilter(List<String> departmentIds, List<UUID> departments, String siteId) {
+        if (departmentIds == null) {
+            var departmentss = departmentRepository.findAllBySiteId(UUID.fromString(siteId));
+            if (!departmentss.isEmpty()) {
+                departmentss.forEach(a -> {
+                    departments.add(a.getId());
+                });
+            }
+        } else {
+            departmentIds.forEach(e -> {
+                if (!SecurityUtils.checkDepartmentInSite(departmentRepository, e, siteId)) {
+                    throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "You don't have permission to do this.");
+                }
+                departments.add(UUID.fromString(e));
+            });
+        }
+    }
+
     @Override
+    @Transactional
     public User createUser(IUserResource.UserDto userDto) {
         User userEntity = null;
         Department department = departmentRepository.findById(userDto.getDepartmentId()).orElse(null);
@@ -198,8 +252,8 @@ public class UserServiceImpl implements IUserService {
             throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "Can't create user in this site");
         };
 
+        Site site = siteRepository.findById(UUID.fromString(siteId)).orElse(null);
         userDto.setUsername(department.getSite().getCode().toLowerCase() + "_" + userDto.getUsername());
-        userDto.setIsCreateUserOrg(false);
         // (1) Create user on Keycloak
         String kcUserId = userResource.create(userDto);
 
@@ -209,7 +263,14 @@ public class UserServiceImpl implements IUserService {
                 String role = String.join(";", userDto.getRoles());
                 userEntity.setRole(role);
 //                userEntity.setPassword(encodePassword(userEntity.getPassword()));
-                userRepository.save(userEntity);
+                User user = userRepository.save(userEntity);
+                auditLogRepository.save(new AuditLog(siteId
+                    , site.getOrganizationId().toString()
+                    , user.getId()
+                    , USER_TABLE_NAME
+                    , Constants.AuditType.CREATE
+                    , null
+                    , user.toString()));
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -232,32 +293,40 @@ public class UserServiceImpl implements IUserService {
                     userEntity.setAvatar(value.getAvatar());
                 }
             }
+            Site site = siteRepository.findById(userEntity.getDepartment().getSiteId()).orElse(null);
+
+            User oldValue = userEntity;
             userEntity = userEntity.update(value);
-            String role = String.join(";", userDto.getRoles());
-            userEntity.setRole(role);
+            if (userDto.getRoles() != null) {
+                String role = String.join(";", userDto.getRoles());
+                userEntity.setRole(role);
+            }
             userRepository.save(userEntity);
+            auditLogRepository.save(new AuditLog(userEntity.getDepartment().getSiteId().toString()
+                , site.getOrganizationId().toString()
+                , userEntity.getId()
+                , USER_TABLE_NAME
+                , Constants.AuditType.UPDATE
+                , oldValue.toString()
+                , userEntity.toString()));
         }
         return userEntity;
     }
 
     @Override
     @Transactional
-    public void changePasswordUser(IUserController.ChangePasswordUserDto userDto) {
-        String username = SecurityUtils.loginUsername();
+    public void changePasswordUser(String username, String oldPassword, String newPassword) {
+
         var userEntity = userRepository.findByUsername(username).orElse(null);
         if (userEntity == null) throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can not found user");
 
-        if (userDto.getNewPassword().isEmpty())
+        if (oldPassword.isEmpty())
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Can not null for new password");
-        if (checkPassword(userDto.getNewPassword(), userEntity.getPassword()))
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Can not be user old password to update new");
 
-        if (checkPassword(userDto.getOldPassword(), userEntity.getPassword())) {
-            userEntity.setPassword(encodePassword(userDto.getNewPassword()));
-            userResource.changePassword(userEntity.getOpenid(), userDto.getNewPassword());
-            userRepository.save(userEntity);
+        if (userResource.verifyPassword(username, oldPassword)) {
+            userResource.changePassword(userEntity.getOpenid(), newPassword);
         } else {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The old password not match in database");
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The old password is valid");
         }
     }
 
@@ -304,6 +373,7 @@ public class UserServiceImpl implements IUserService {
 //    }
 
     @Override
+    @Transactional
     public Boolean deleteAvatar(String oldImage, String newImage, String username) {
         var oldFile = fileRepository.findByName(oldImage);
         var newFile = fileRepository.findByName(newImage);
@@ -325,7 +395,7 @@ public class UserServiceImpl implements IUserService {
     @Override
     public ByteArrayResource export(IUserController.UserFilterRequest userFilter) {
         Pageable pageable = PageRequest.of(0, 1000000);
-        Page<IUserController.UserFilterResponse> listData = filter(pageable, userFilter.getUsernames(), userFilter.getRole(), userFilter.getCreatedOnStart(), userFilter.getCreatedOnEnd(), userFilter.getEnable(), userFilter.getKeyword(), userFilter.getDepartmentId(), userFilter.getSiteId());
+        Page<IUserController.UserFilterResponse> listData = filter(pageable, userFilter.getUsernames(), userFilter.getRole(), userFilter.getCreatedOnStart(), userFilter.getCreatedOnEnd(), userFilter.getEnable(), userFilter.getKeyword(), userFilter.getDepartmentId(), userFilter.getSiteId(), userFilter.getProvinceId(), userFilter.getDistrictId(), userFilter.getCommuneId());
         try {
             JasperReport jasperReport = JasperCompileManager.compileReport(getClass().getResourceAsStream(PATH_FILE));
 

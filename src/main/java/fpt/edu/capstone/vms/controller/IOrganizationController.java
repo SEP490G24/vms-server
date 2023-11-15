@@ -2,13 +2,22 @@ package fpt.edu.capstone.vms.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.persistence.Column;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.QueryParam;
 import lombok.Data;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -50,7 +59,7 @@ public interface IOrganizationController {
     @PostMapping("/filter")
     @Operation(summary = "Filter organization")
     @PreAuthorize("hasRole('r:organization:find')")
-    ResponseEntity<?> filter(@RequestBody OrganizationFilter organizationFilter);
+    ResponseEntity<?> filter(@RequestBody OrganizationFilter organizationFilter, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
     @Data
     class CreateOrganizationInfo {
@@ -83,7 +92,6 @@ public interface IOrganizationController {
 
     @Data
     class OrganizationFilter {
-        int pageNumber = 0;
         List<String> names;
         LocalDateTime createdOnStart;
         LocalDateTime createdOnEnd;

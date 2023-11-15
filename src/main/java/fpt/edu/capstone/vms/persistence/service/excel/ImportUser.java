@@ -8,7 +8,6 @@ import fpt.edu.capstone.vms.persistence.entity.Department;
 import fpt.edu.capstone.vms.persistence.entity.User;
 import fpt.edu.capstone.vms.persistence.repository.DepartmentRepository;
 import fpt.edu.capstone.vms.persistence.repository.UserRepository;
-import fpt.edu.capstone.vms.persistence.service.impl.UserServiceImpl;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
@@ -33,7 +32,6 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
 
-import static fpt.edu.capstone.vms.persistence.entity.User.encodePassword;
 
 @Service
 @Slf4j
@@ -112,7 +110,6 @@ public class ImportUser {
         try {
             if (!StringUtils.isEmpty(kcUserId)) {
                 userEntity = mapper.map(userDto, User.class).setOpenid(kcUserId);
-                userEntity.setPassword(encodePassword(userEntity.getPassword()));
                 if (userEntity.getDepartmentId() == null)
                     throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SiteId not null");
                 userRepository.save(userEntity);

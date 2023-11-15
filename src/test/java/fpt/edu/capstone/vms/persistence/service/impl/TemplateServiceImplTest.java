@@ -1,10 +1,19 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
+import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ITemplateController;
+import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.entity.Template;
+import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
+import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.repository.TemplateRepository;
+import fpt.edu.capstone.vms.util.SecurityUtils;
 import jakarta.persistence.EntityNotFoundException;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -13,6 +22,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.client.HttpClientErrorException;
 
@@ -22,10 +35,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @TestInstance(PER_CLASS)
 @ActiveProfiles("test")
@@ -35,13 +54,21 @@ import static org.mockito.Mockito.*;
 class TemplateServiceImplTest {
     TemplateRepository templateRepository;
     TemplateServiceImpl templateService;
+    SiteRepository siteRepository;
     Pageable pageable;
+    AuditLogRepository auditLogRepository;
+    SecurityContext securityContext;
+    Authentication authentication;
 
     @BeforeAll
     public void init() {
         pageable = mock(Pageable.class);
         templateRepository = mock(TemplateRepository.class);
-        templateService = new TemplateServiceImpl(templateRepository, new ModelMapper());
+        auditLogRepository = mock(AuditLogRepository.class);
+        securityContext = mock(SecurityContext.class);
+        authentication = mock(Authentication.class);
+        siteRepository = mock(SiteRepository.class);
+        templateService = new TemplateServiceImpl(templateRepository, siteRepository, new ModelMapper(), auditLogRepository);
     }
 
     @Test
@@ -106,9 +133,28 @@ class TemplateServiceImplTest {
         //given
         Template template = Template.builder().name("Template2").code("R2").description("aaaalala").enable(true).siteId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08")).build();
         ITemplateController.TemplateDto templateDto = ITemplateController.TemplateDto.builder().name("Template2").code("R2").description("aaaalala").enable(true).siteId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08")).build();
-
+        template.setId(UUID.fromString("63139e5c-3d0b-46d3-8167-fe59cf46d3d5"));
         //when
         when(templateRepository.save(any(Template.class))).thenReturn(template);
+
+        Jwt jwt = mock(Jwt.class);
+
+        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("63139e5c-3d0b-46d3-8167-fe59cf46d3d5");
+        when(jwt.getClaim(Constants.Claims.Name)).thenReturn("username");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("preferred_username");
+        when(jwt.getClaim(Constants.Claims.GivenName)).thenReturn("given_name");
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("63139e5c-3d0b-46d3-8167-fe59cf46d3d5");
+        when(jwt.getClaim(Constants.Claims.FamilyName)).thenReturn("family_name");
+        when(jwt.getClaim(Constants.Claims.Email)).thenReturn("email");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+        Site site = new Site();
+        site.setOrganizationId(UUID.fromString("63139e5c-3d0b-46d3-8167-fe59cf46d3d5"));
+        when(SecurityUtils.checkSiteAuthorization(siteRepository, template.getSiteId().toString())).thenReturn(true);
+        when(siteRepository.findById(template.getSiteId())).thenReturn(Optional.of(site));
         Template templateActual = templateService.create(templateDto);
 
         //then
@@ -151,9 +197,30 @@ class TemplateServiceImplTest {
         UUID templateId = UUID.fromString("63139e5c-3d0b-46d3-8167-fe59cf46d3d5");
         Template templateInfo = new Template();
         Template existingTemplate = new Template();
+        existingTemplate.setSiteId(UUID.fromString("63139e5c-3d0b-46d3-8167-fe59cf46d3d5"));
+        existingTemplate.setId(UUID.fromString("63139e5c-3d0b-46d3-8167-fe59cf46d3d5"));
+        templateInfo.setSiteId(UUID.fromString("63139e5c-3d0b-46d3-8167-fe59cf46d3d5"));
         when(templateRepository.findById(templateId)).thenReturn(Optional.of(existingTemplate));
         when(templateRepository.save(any(Template.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
+        Jwt jwt = mock(Jwt.class);
+
+        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("63139e5c-3d0b-46d3-8167-fe59cf46d3d5");
+        when(jwt.getClaim(Constants.Claims.Name)).thenReturn("username");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("preferred_username");
+        when(jwt.getClaim(Constants.Claims.GivenName)).thenReturn("given_name");
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("63139e5c-3d0b-46d3-8167-fe59cf46d3d5");
+        when(jwt.getClaim(Constants.Claims.FamilyName)).thenReturn("family_name");
+        when(jwt.getClaim(Constants.Claims.Email)).thenReturn("email");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+        Site site = new Site();
+        site.setOrganizationId(UUID.fromString("63139e5c-3d0b-46d3-8167-fe59cf46d3d5"));
+        when(SecurityUtils.checkSiteAuthorization(siteRepository, existingTemplate.getSiteId().toString())).thenReturn(true);
+        when(siteRepository.findById(existingTemplate.getSiteId())).thenReturn(Optional.of(site));
         // When
         Template updatedTemplate = templateService.update(templateInfo, templateId);
 
@@ -186,36 +253,71 @@ class TemplateServiceImplTest {
     void filter() {
         // Given
         List<String> names = Arrays.asList("Template1", "Template2");
-        UUID siteId = UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        List<String> siteId = Arrays.asList("06eb43a7-6ea8-4744-8231-760559fe2c08", "06eb43a7-6ea8-4744-8231-760559fe2c07");
+        List<UUID> siteIds = Arrays.asList(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"), UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c07"));
+
         LocalDateTime createdOnStart = LocalDateTime.now().minusDays(7);
         LocalDateTime createdOnEnd = LocalDateTime.now();
         Boolean enable = true;
         String keyword = "example";
 
         List<Template> expectedTemplates = List.of();
-        when(templateRepository.filter(names, siteId, createdOnStart, createdOnEnd, enable, keyword.toUpperCase())).thenReturn(expectedTemplates);
+        when(templateRepository.filter(names, siteIds, createdOnStart, createdOnEnd, enable, keyword.toUpperCase())).thenReturn(expectedTemplates);
+        Jwt jwt = mock(Jwt.class);
 
+        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("63139e5c-3d0b-46d3-8167-fe59cf46d3d5");
+        when(jwt.getClaim(Constants.Claims.Name)).thenReturn("username");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("preferred_username");
+        when(jwt.getClaim(Constants.Claims.GivenName)).thenReturn("given_name");
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("63139e5c-3d0b-46d3-8167-fe59cf46d3d5");
+        when(jwt.getClaim(Constants.Claims.FamilyName)).thenReturn("family_name");
+        when(jwt.getClaim(Constants.Claims.Email)).thenReturn("email");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        when(!SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c08")).thenReturn(true);
+        when(!SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c07")).thenReturn(true);
         // When
         List<Template> filteredTemplates = templateService.filter(names, siteId, createdOnStart, createdOnEnd, enable, keyword);
 
         // Then
         assertNotNull(filteredTemplates);
         // Add assertions to check the content of the filteredTemplates, depending on the expected behavior
-        verify(templateRepository, times(1)).filter(names, siteId, createdOnStart, createdOnEnd, enable, keyword.toUpperCase());
+        verify(templateRepository, times(1)).filter(names, siteIds, createdOnStart, createdOnEnd, enable, keyword.toUpperCase());
     }
 
     @Test
     void filterPageable() {
         // Given
         List<String> names = Arrays.asList("Template1", "Template2");
-        UUID siteId = UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        List<String> siteId = Arrays.asList("06eb43a7-6ea8-4744-8231-760559fe2c08", "06eb43a7-6ea8-4744-8231-760559fe2c07");
+        List<UUID> siteIds = Arrays.asList(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"), UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c07"));
         LocalDateTime createdOnStart = LocalDateTime.now().minusDays(7);
         LocalDateTime createdOnEnd = LocalDateTime.now();
         Boolean enable = true;
         String keyword = "example";
+        Jwt jwt = mock(Jwt.class);
 
+        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("63139e5c-3d0b-46d3-8167-fe59cf46d3d5");
+        when(jwt.getClaim(Constants.Claims.Name)).thenReturn("username");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("preferred_username");
+        when(jwt.getClaim(Constants.Claims.GivenName)).thenReturn("given_name");
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("63139e5c-3d0b-46d3-8167-fe59cf46d3d5");
+        when(jwt.getClaim(Constants.Claims.FamilyName)).thenReturn("family_name");
+        when(jwt.getClaim(Constants.Claims.Email)).thenReturn("email");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        when(!SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c08")).thenReturn(true);
+        when(!SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c07")).thenReturn(true);
         Page<Template> expectedTemplatePage = new PageImpl<>(List.of());
-        when(templateRepository.filter(pageable, names, siteId, createdOnStart, createdOnEnd, enable, keyword.toUpperCase())).thenReturn(expectedTemplatePage);
+        when(templateRepository.filter(pageable, names, siteIds, createdOnStart, createdOnEnd, enable, keyword.toUpperCase())).thenReturn(expectedTemplatePage);
 
         // When
         Page<Template> filteredTemplatePage = templateService.filter(pageable, names, siteId, createdOnStart, createdOnEnd, enable, keyword);
@@ -223,6 +325,6 @@ class TemplateServiceImplTest {
         // Then
         assertNotNull(filteredTemplatePage);
         // Add assertions to check the content of the filteredTemplatePage, depending on the expected behavior
-        verify(templateRepository, times(1)).filter(pageable, names, siteId, createdOnStart, createdOnEnd, enable, keyword.toUpperCase());
+        verify(templateRepository, times(1)).filter(pageable, names, siteIds, createdOnStart, createdOnEnd, enable, keyword.toUpperCase());
     }
 }

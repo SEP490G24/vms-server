@@ -41,7 +41,8 @@ public interface ITicketService extends IGenericService<Ticket, UUID> {
 
     Page<Ticket> filterAllBySite(Pageable pageable,
                                  List<String> names,
-                                 String username,
+                                 List<String> sites,
+                                 List<String> usernames,
                                  UUID roomId,
                                  Constants.StatusTicket status,
                                  Constants.Purpose purpose,
@@ -71,7 +72,8 @@ public interface ITicketService extends IGenericService<Ticket, UUID> {
                         String keyword);
 
     List<Ticket> filterAllBySite(List<String> names,
-                                 String username,
+                                 List<String> sites,
+                                 List<String> usernames,
                                  UUID roomId,
                                  Constants.StatusTicket status,
                                  Constants.Purpose purpose,
@@ -85,13 +87,13 @@ public interface ITicketService extends IGenericService<Ticket, UUID> {
                                  String lastUpdatedBy,
                                  String keyword);
 
-    ITicketController.TicketByQRCodeResponseDTO findByQRCode(UUID ticketId, UUID customerId);
+    ITicketController.TicketByQRCodeResponseDTO findByQRCode(String checkInCode);
 
-    void updateStatusTicketOfCustomer(ITicketController.UpdateStatusTicketOfCustomer updateStatusTicketOfCustomer);
+    void checkInCustomer(ITicketController.CheckInPayload checkInPayload);
 
     ITicketController.TicketFilterDTO findByTicketForUser(UUID ticketId);
 
-    ITicketController.TicketFilterDTO findByTicketForAdmin(UUID ticketId);
+    ITicketController.TicketFilterDTO findByTicketForAdmin(UUID ticketId, String siteId);
 
     Page<ITicketController.TicketByQRCodeResponseDTO> filterTicketAndCustomer(
         Pageable pageable,

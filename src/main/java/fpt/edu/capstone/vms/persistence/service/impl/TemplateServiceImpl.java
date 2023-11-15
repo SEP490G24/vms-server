@@ -1,17 +1,22 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
+import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ITemplateController;
+import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.entity.Template;
+import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
+import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.repository.TemplateRepository;
 import fpt.edu.capstone.vms.persistence.service.ITemplateService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
-import jakarta.transaction.Transactional;
+import fpt.edu.capstone.vms.util.SecurityUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.HttpClientErrorException;
 
@@ -23,43 +28,75 @@ import java.util.UUID;
 public class TemplateServiceImpl extends GenericServiceImpl<Template, UUID> implements ITemplateService {
 
     private final TemplateRepository templateRepository;
+    private final SiteRepository siteRepository;
     private final ModelMapper mapper;
+    private static final String TEMPLATE_TABLE_NAME = "Template";
+    private final AuditLogRepository auditLogRepository;
 
-
-    public TemplateServiceImpl(TemplateRepository templateRepository, ModelMapper mapper) {
+    public TemplateServiceImpl(TemplateRepository templateRepository, SiteRepository siteRepository, ModelMapper mapper, AuditLogRepository auditLogRepository) {
         this.templateRepository = templateRepository;
+        this.siteRepository = siteRepository;
         this.mapper = mapper;
+        this.auditLogRepository = auditLogRepository;
         this.init(templateRepository);
     }
 
     @Override
+    @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
     public Template update(Template templateInfo, UUID id) {
         var template = templateRepository.findById(id).orElse(null);
+        var oldTemplate = template;
         if (ObjectUtils.isEmpty(template))
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't found template");
+
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, template.getSiteId().toString())) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+        }
+
+        var site = siteRepository.findById(template.getSiteId()).orElse(null);
         templateRepository.save(template.update(templateInfo));
+        auditLogRepository.save(new AuditLog(template.getSiteId().toString()
+            , site.getOrganizationId().toString()
+            , template.getId().toString()
+            , TEMPLATE_TABLE_NAME
+            , Constants.AuditType.UPDATE
+            , oldTemplate.toString()
+            , template.toString()));
         return template;
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
     public Template create(ITemplateController.TemplateDto templateDto) {
         if (ObjectUtils.isEmpty(templateDto))
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Object is empty");
         if (StringUtils.isEmpty(templateDto.getSiteId().toString()))
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "SiteId is null");
+        var site = siteRepository.findById(templateDto.getSiteId()).orElse(null);
+
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, templateDto.getSiteId().toString())) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+        }
         var template = mapper.map(templateDto, Template.class);
         template.setEnable(true);
-        templateRepository.save(template);
+        var templateNew = templateRepository.save(template);
+        auditLogRepository.save(new AuditLog(template.getSiteId().toString()
+            , site.getOrganizationId().toString()
+            , templateNew.getId().toString()
+            , TEMPLATE_TABLE_NAME
+            , Constants.AuditType.CREATE
+            , null
+            , templateNew.toString()));
         return template;
     }
 
     @Override
-    public Page<Template> filter(Pageable pageable, List<String> names, UUID siteId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, Boolean enable, String keyword) {
+    public Page<Template> filter(Pageable pageable, List<String> names, List<String> siteId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, Boolean enable, String keyword) {
+        List<UUID> sites = SecurityUtils.getListSite(siteRepository, siteId);
         return templateRepository.filter(
             pageable,
             names,
-            siteId,
+            sites,
             createdOnStart,
             createdOnEnd,
             enable,
@@ -67,14 +104,31 @@ public class TemplateServiceImpl extends GenericServiceImpl<Template, UUID> impl
     }
 
     @Override
-    public List<Template> filter(List<String> names, UUID siteId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, Boolean enable, String keyword) {
+    public List<Template> filter(List<String> names, List<String> siteId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, Boolean enable, String keyword) {
+        List<UUID> sites = SecurityUtils.getListSite(siteRepository, siteId);
         return templateRepository.filter(
             names,
-            siteId,
+            sites,
             createdOnStart,
             createdOnEnd,
             enable,
             keyword != null ? keyword.toUpperCase() : null);
     }
 
+    @Override
+    public List<Template> finAllBySiteId(String siteId) {
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "Not permission");
+        }
+        return templateRepository.findAllBySiteIdAndEnableIsTrue(UUID.fromString(siteId));
+    }
+
+
+    @Override
+    public List<Template> finAllBySiteIdAndType(String siteId, Constants.TemplateType type) {
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "Not permission");
+        }
+        return templateRepository.findAllBySiteIdAndEnableIsTrueAndType(UUID.fromString(siteId), type);
+    }
 }

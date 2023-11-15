@@ -20,6 +20,8 @@ public interface IUserResource {
     void delete(String userId);
 
     void changePassword(String openId, String newPassword);
+
+    boolean verifyPassword(String username, String password);
     //List<UserDto> users();
 
     @Data
@@ -44,8 +46,6 @@ public interface IUserResource {
         private Constants.Gender gender;
         private List<String> roles;
         private UUID departmentId;
-        @JsonIgnore
-        private Boolean isCreateUserOrg;
     }
 
     @Data

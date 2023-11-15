@@ -1,15 +1,10 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
+import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ISiteController;
-import fpt.edu.capstone.vms.persistence.entity.SettingSiteMap;
-import fpt.edu.capstone.vms.persistence.entity.SettingSiteMapPk;
+import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.entity.Site;
-import fpt.edu.capstone.vms.persistence.repository.CommuneRepository;
-import fpt.edu.capstone.vms.persistence.repository.DistrictRepository;
-import fpt.edu.capstone.vms.persistence.repository.ProvinceRepository;
-import fpt.edu.capstone.vms.persistence.repository.SettingRepository;
-import fpt.edu.capstone.vms.persistence.repository.SettingSiteMapRepository;
-import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
+import fpt.edu.capstone.vms.persistence.repository.*;
 import fpt.edu.capstone.vms.persistence.service.ISiteService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import fpt.edu.capstone.vms.util.SecurityUtils;
@@ -25,6 +20,7 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -36,20 +32,26 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
     private final CommuneRepository communeRepository;
     private final SettingSiteMapRepository settingSiteMapRepository;
     private final SettingRepository settingRepository;
+    private final AuditLogRepository auditLogRepository;
     private final ModelMapper mapper;
+
+    private static final String SITE_TABLE_NAME = "Site";
+    private static final String SITE_SETTING_MAP_TABLE_NAME = "SettingSiteMap";
+
 
     public SiteServiceImpl(SiteRepository siteRepository
         , ProvinceRepository provinceRepository
         , DistrictRepository districtRepository
         , CommuneRepository communeRepository
         , SettingSiteMapRepository settingSiteMapRepository
-        , SettingRepository settingRepository, ModelMapper mapper) {
+        , SettingRepository settingRepository, AuditLogRepository auditLogRepository, ModelMapper mapper) {
         this.siteRepository = siteRepository;
         this.provinceRepository = provinceRepository;
         this.districtRepository = districtRepository;
         this.communeRepository = communeRepository;
         this.settingSiteMapRepository = settingSiteMapRepository;
         this.settingRepository = settingRepository;
+        this.auditLogRepository = auditLogRepository;
         this.mapper = mapper;
         this.init(siteRepository);
     }
@@ -79,6 +81,13 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
             entity.setOrganizationId(UUID.fromString(SecurityUtils.getOrgId()));
             entity.setEnable(true);
             var site = siteRepository.save(entity);
+            auditLogRepository.save(new AuditLog(site.getId().toString()
+                , site.getOrganizationId().toString()
+                , site.getId().toString()
+                , SITE_TABLE_NAME
+                , Constants.AuditType.CREATE
+                , null
+                , site.toString()));
 //            if (!ObjectUtils.isEmpty(site)) addSettingForSite(site.getId());
             return site;
         } catch (HttpClientErrorException e) {
@@ -95,15 +104,8 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
      * @return The method is returning a Site object.
      */
     @Override
+    @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
     public Site updateSite(ISiteController.UpdateSiteInfo updateSite, UUID id) {
-
-
-
-        if (!StringUtils.isEmpty(updateSite.getCode())) {
-            if (siteRepository.existsByCode(updateSite.getCode())) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code of site is exist");
-            }
-        }
 
         var siteEntity = siteRepository.findById(id).orElse(null);
         var update = mapper.map(updateSite, Site.class);
@@ -115,40 +117,73 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in organization with organizationId = " + siteEntity.getOrganization());
             }
         } else {
-            if (StringUtils.isEmpty(SecurityUtils.getSiteId())) throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in site with siteId = " + SecurityUtils.getSiteId());
+            if (StringUtils.isEmpty(SecurityUtils.getSiteId()))
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in site with siteId = " + SecurityUtils.getSiteId());
 
-            if(!SecurityUtils.getSiteId().equals(siteEntity.getId().toString())) {
+            if (!SecurityUtils.getSiteId().equals(siteEntity.getId().toString())) {
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in site with siteId = " + SecurityUtils.getSiteId());
             }
         }
-        siteRepository.save(siteEntity.update(update));
+        var updateS = siteRepository.save(siteEntity.update(update));
+        auditLogRepository.save(new AuditLog(siteEntity.getId().toString()
+            , siteEntity.getOrganizationId().toString()
+            , siteEntity.getId().toString()
+            , SITE_TABLE_NAME
+            , Constants.AuditType.UPDATE
+            , siteEntity.toString()
+            , updateS.toString()));
         return siteEntity;
     }
 
     @Override
-    public Page<Site> filter(Pageable pageable, List<String> names, UUID orgId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, String createBy, String lastUpdatedBy, Boolean enable, String keyword) {
+    public Page<Site> filter(Pageable pageable
+        , List<String> names
+        , LocalDateTime createdOnStart
+        , LocalDateTime createdOnEnd
+        , String createBy
+        , String lastUpdatedBy
+        , Boolean enable
+        , Integer provinceId
+        , Integer districtId
+        , Integer communeId
+        , String keyword) {
         return siteRepository.filter(
             pageable,
             names,
-            orgId,
+            UUID.fromString(SecurityUtils.getOrgId()),
             createdOnStart,
             createdOnEnd,
             createBy,
             lastUpdatedBy,
             enable,
+            provinceId,
+            districtId,
+            communeId,
             keyword);
     }
 
     @Override
-    public List<Site> filter(List<String> names, UUID orgId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, String createdBy, String lastUpdatedBy, Boolean enable, String keyword) {
+    public List<Site> filter(List<String> names
+        , LocalDateTime createdOnStart
+        , LocalDateTime createdOnEnd
+        , String createdBy
+        , String lastUpdatedBy
+        , Boolean enable
+        , Integer provinceId
+        , Integer districtId
+        , Integer communeId
+        , String keyword) {
         return siteRepository.filter(
             names,
-            orgId,
+            UUID.fromString(SecurityUtils.getOrgId()),
             createdOnStart,
             createdOnEnd,
             createdBy,
             lastUpdatedBy,
             enable,
+            provinceId,
+            districtId,
+            communeId,
             keyword);
     }
 
@@ -157,8 +192,55 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
         return siteRepository.findAllByOrganizationId(UUID.fromString(organizationId));
     }
 
+    @Override
+    @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
+    public Boolean deleteSite(UUID siteId) {
+        var siteEntity = siteRepository.findById(siteId).orElse(null);
+        if (ObjectUtils.isEmpty(siteEntity))
+            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't found site by id: " + siteId);
 
-    private void checkAddress(Integer provinceId, Integer districtId, Integer communeId) {
+        if (SecurityUtils.getOrgId() != null) {
+            if (!UUID.fromString(SecurityUtils.getOrgId()).equals(siteEntity.getOrganizationId())) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in organization with organizationId ");
+            }
+        } else {
+            if (StringUtils.isEmpty(SecurityUtils.getSiteId()))
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in site with siteId = " + SecurityUtils.getSiteId());
+
+            if (!SecurityUtils.getSiteId().equals(siteEntity.getId().toString())) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in site with siteId = " + SecurityUtils.getSiteId());
+            }
+        }
+
+        auditLogRepository.save(new AuditLog(siteEntity.getId().toString()
+            , siteEntity.getOrganizationId().toString()
+            , siteEntity.getId().toString()
+            , SITE_TABLE_NAME
+            , Constants.AuditType.DELETE
+            , siteEntity.toString()
+            , null));
+        deleteSiteSettingMap(siteEntity);
+        siteRepository.delete(siteEntity);
+        return true;
+    }
+
+    public void deleteSiteSettingMap(Site site) {
+        var siteSettingMaps = settingSiteMapRepository.findAllBySettingSiteMapPk_SiteId(site.getId());
+        if (siteSettingMaps != null) {
+            siteSettingMaps.forEach(o -> {
+                auditLogRepository.save(new AuditLog(site.getId().toString()
+                    , site.getOrganizationId().toString()
+                    , o.getId().toString()
+                    , SITE_SETTING_MAP_TABLE_NAME
+                    , Constants.AuditType.DELETE
+                    , o.toString()
+                    , null));
+                settingSiteMapRepository.delete(o);
+            });
+        }
+    }
+
+    public void checkAddress(Integer provinceId, Integer districtId, Integer communeId) {
 
         if (ObjectUtils.isEmpty(provinceId)) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Province is null");
@@ -182,7 +264,7 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can not found district");
         }
 
-        if (district.getProvinceId() != province.getId()) {
+        if (!Objects.equals(district.getProvinceId(), province.getId())) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "the district not in province please check it again");
         }
 
@@ -192,24 +274,11 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can not found commune");
         }
 
-        if (commune.getDistrictId() != district.getId()) {
+        if (!Objects.equals(commune.getDistrictId(), district.getId())) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "the commune not in district please check it again");
         }
     }
 
-    private void addSettingForSite(UUID siteId) {
-        var settings = settingRepository.findAll();
-        if (!settings.isEmpty()) {
-            settings.forEach(o -> {
-                SettingSiteMapPk pk = new SettingSiteMapPk();
-                pk.setSiteId(siteId);
-                pk.setSettingId(o.getId());
-                SettingSiteMap settingSiteMap = new SettingSiteMap();
-                settingSiteMap.setSettingSiteMapPk(pk);
-                settingSiteMap.setStatus(true);
-                settingSiteMapRepository.save(settingSiteMap);
-            });
-        }
-    }
+
 
 }

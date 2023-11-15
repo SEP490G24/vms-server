@@ -1,6 +1,7 @@
 package fpt.edu.capstone.vms.util;
 
-import fpt.edu.capstone.vms.persistence.entity.Site;
+import fpt.edu.capstone.vms.constants.Constants.Claims;
+import fpt.edu.capstone.vms.persistence.repository.DepartmentRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -9,16 +10,14 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
-import fpt.edu.capstone.vms.constants.Constants.Claims;
 import org.springframework.web.client.HttpClientErrorException;
 
-
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_REALM_ROLE;
-import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.REALM_ADMIN;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.*;
 
 
 public class SecurityUtils {
@@ -26,18 +25,25 @@ public class SecurityUtils {
     public static UserDetails getUserDetails() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         var jwt = (Jwt) authentication.getPrincipal();
-        return new UserDetails()
-                .setOrgId(jwt.getClaim(Claims.OrgId))
-                .setName(jwt.getClaim(Claims.Name))
-                .setPreferredUsername(jwt.getClaim(Claims.PreferredUsername))
-                .setGivenName(jwt.getClaim(Claims.GivenName))
-                .setFamilyName(jwt.getClaim(Claims.FamilyName))
-                .setEmail(jwt.getClaim(Claims.Email))
-                .setSiteId(jwt.getClaim(Claims.SiteId))
-                .setRoles(authentication.getAuthorities())
-                .setAdmin(authentication.getAuthorities().stream()
-                        .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals(PREFIX_REALM_ROLE + REALM_ADMIN))
-                );
+        var userDetails = new UserDetails()
+            .setName(jwt.getClaim(Claims.Name))
+            .setPreferredUsername(jwt.getClaim(Claims.PreferredUsername))
+            .setGivenName(jwt.getClaim(Claims.GivenName))
+            .setFamilyName(jwt.getClaim(Claims.FamilyName))
+            .setEmail(jwt.getClaim(Claims.Email))
+            .setOrgId(jwt.getClaim(Claims.OrgId))
+            .setSiteId(jwt.getClaim(Claims.SiteId))
+            .setRoles(authentication.getAuthorities());
+
+        /* Check scope users */
+        authentication.getAuthorities().forEach((grantedAuthority) -> {
+            switch (grantedAuthority.getAuthority()) {
+                case PREFIX_REALM_ROLE + REALM_ADMIN -> userDetails.setRealmAdmin(true);
+                case PREFIX_RESOURCE_ROLE + SCOPE_ORGANIZATION -> userDetails.setOrganizationAdmin(true);
+                case PREFIX_RESOURCE_ROLE + SCOPE_SITE -> userDetails.setSiteAdmin(true);
+            }
+        });
+        return userDetails;
     }
 
     public static String loginUsername() {
@@ -47,6 +53,7 @@ public class SecurityUtils {
     public static String getOrgId() {
         return getUserDetails().orgId;
     }
+
     public static String getSiteId() {
         return getUserDetails().siteId;
     }
@@ -61,7 +68,9 @@ public class SecurityUtils {
         private String familyName;
         private String email;
         private String siteId;
-        private boolean isAdmin;
+        private boolean isRealmAdmin = false;
+        private boolean isOrganizationAdmin = false;
+        private boolean isSiteAdmin = false;
         private Collection<? extends GrantedAuthority> roles;
     }
 
@@ -80,5 +89,40 @@ public class SecurityUtils {
             }
         }
         return true;
+    }
+
+    public static Boolean checkDepartmentInSite(DepartmentRepository departmentRepository, String existsBySiteId, String siteId) {
+        var checkDepartment = departmentRepository.existsByIdAndSiteId(UUID.fromString(existsBySiteId), UUID.fromString(siteId));
+
+        if (!checkDepartment) {
+            return false;
+        }
+        return true;
+    }
+
+    public static List<UUID> getListSite(SiteRepository siteRepository, List<String> siteId) {
+
+        if (SecurityUtils.getOrgId() == null && siteId != null) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+        }
+        List<UUID> sites = new ArrayList<>();
+        if (SecurityUtils.getOrgId() != null) {
+            if (siteId == null) {
+                siteRepository.findAllByOrganizationId(UUID.fromString(SecurityUtils.getOrgId())).forEach(o -> {
+                    sites.add(o.getId());
+                });
+            } else {
+                siteId.forEach(o -> {
+                    if (!SecurityUtils.checkSiteAuthorization(siteRepository, o)) {
+                        throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+                    }
+                    sites.add(UUID.fromString(o));
+                });
+            }
+        } else {
+            sites.add(UUID.fromString(SecurityUtils.getSiteId()));
+        }
+
+        return sites;
     }
 }

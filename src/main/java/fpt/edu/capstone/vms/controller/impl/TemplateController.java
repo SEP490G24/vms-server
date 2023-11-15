@@ -1,5 +1,6 @@
 package fpt.edu.capstone.vms.controller.impl;
 
+import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ITemplateController;
 import fpt.edu.capstone.vms.exception.HttpClientResponse;
 import fpt.edu.capstone.vms.persistence.entity.Template;
@@ -48,7 +49,7 @@ public class TemplateController implements ITemplateController {
     }
 
     @Override
-    public ResponseEntity<?> update(TemplateDto templateDto, UUID id) {
+    public ResponseEntity<?> update(UpdateTemplateDto templateDto, UUID id) {
         try {
             var template = templateService.update(mapper.map(templateDto, Template.class), id);
             return ResponseEntity.ok(template);
@@ -76,17 +77,22 @@ public class TemplateController implements ITemplateController {
             filter.getEnable(),
             filter.getKeyword());
 
-        List<TemplateDto> templateDtos = mapper.map(templateEntityPageable.getContent(), new TypeToken<List<TemplateDto>>() {
+        List<TemplateFilter> templateDtos = mapper.map(templateEntityPageable.getContent(), new TypeToken<List<TemplateFilter>>() {
         }.getType());
 
         return isPageable ? ResponseEntity.ok(new PageImpl(templateDtos, pageable, templateDtos.size()))
-            : ResponseEntity.ok(mapper.map(templateEntity, new TypeToken<List<TemplateDto>>() {
+            : ResponseEntity.ok(mapper.map(templateEntity, new TypeToken<List<TemplateFilter>>() {
         }.getType()));
     }
 
     @Override
-    public ResponseEntity<List<?>> findAllBySiteId(UUID siteId) {
-        return null;
+    public ResponseEntity<List<?>> findAllBySiteId(String siteId) {
+        return ResponseEntity.ok(templateService.finAllBySiteId(siteId));
+    }
+
+    @Override
+    public ResponseEntity<List<?>> findAllBySiteIdAndType(String siteId, Constants.TemplateType type) {
+        return ResponseEntity.ok(templateService.finAllBySiteIdAndType(siteId, type));
     }
 
 }

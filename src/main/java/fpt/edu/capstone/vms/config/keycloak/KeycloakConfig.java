@@ -1,43 +1,28 @@
 package fpt.edu.capstone.vms.config.keycloak;
 
+import lombok.RequiredArgsConstructor;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@RequiredArgsConstructor
 public class KeycloakConfig {
-    @Value("${edu.fpt.capstone.vms.oauth2.keycloak.issuer-uri}")
-    private String issuerUri;
-
-    @Value("${edu.fpt.capstone.vms.oauth2.keycloak.realm}")
-    private String realm;
-
-    @Value("${edu.fpt.capstone.vms.oauth2.keycloak.admin-username}")
-    private String adminUsername;
-
-    @Value("${edu.fpt.capstone.vms.oauth2.keycloak.admin-password}")
-    private String adminPassword;
-
-    @Value("${edu.fpt.capstone.vms.oauth2.keycloak.client-id}")
-    private String clientId;
-
-    @Value("${edu.fpt.capstone.vms.oauth2.keycloak.credentials-secret}")
-    private String credentialsSecret;
+    public final KeycloakProperties keycloakProperties;
 
     @Bean
     public Keycloak keycloak() {
-        String authServerUrl = issuerUri.substring(0, issuerUri.indexOf("/realms/"));
         return KeycloakBuilder.builder()
-            .serverUrl(authServerUrl)
-            .realm(realm)
-            .clientId(clientId)
-            .clientSecret(credentialsSecret)
-            .grantType(OAuth2Constants.PASSWORD)
-            .username(adminUsername)
-            .password(adminPassword)
-            .build();
+                .serverUrl(keycloakProperties.getAuthUrl())
+                .realm(keycloakProperties.getRealm())
+                .clientId(keycloakProperties.getClientId())
+                .clientSecret(keycloakProperties.getClientSecret())
+                .grantType(OAuth2Constants.PASSWORD)
+                .username(keycloakProperties.getUsername())
+                .password(keycloakProperties.getPassword())
+                .build();
+
     }
 }

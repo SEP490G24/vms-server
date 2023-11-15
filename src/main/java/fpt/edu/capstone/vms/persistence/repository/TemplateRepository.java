@@ -1,5 +1,6 @@
 package fpt.edu.capstone.vms.persistence.repository;
 
+import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.persistence.entity.Template;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,7 +21,7 @@ public interface TemplateRepository extends GenericRepository<Template, UUID> {
         "where ((coalesce(:names) is null) or (u.name in :names)) " +
         "and (((cast(:createdOnStart as date) is null ) or (cast(:createdOnEnd as date) is null )) or (u.createdOn between :createdOnStart and :createdOnEnd)) " +
         "and ((:enable is null) or (u.enable = :enable)) " +
-        "and ((cast(:siteId as string) is null) or (u.siteId = :siteId)) " +
+        "and ((coalesce(:siteId) is null) or (u.siteId in :siteId)) " +
         "and ((:keyword is null) " +
         "or ( UPPER(u.name) LIKE %:keyword% " +
         "or UPPER(u.code) LIKE %:keyword% " +
@@ -29,7 +30,7 @@ public interface TemplateRepository extends GenericRepository<Template, UUID> {
         "or UPPER(u.description) LIKE %:keyword% ))")
     Page<Template> filter(Pageable pageable,
                           @Param("names") @Nullable Collection<String> names,
-                          @Param("siteId") @Nullable UUID siteId,
+                          @Param("siteId") @Nullable Collection<UUID> siteId,
                           @Param("createdOnStart") @Nullable LocalDateTime createdOnStart,
                           @Param("createdOnEnd") @Nullable LocalDateTime createdOnEnd,
                           @Param("enable") @Nullable Boolean isEnable,
@@ -39,7 +40,7 @@ public interface TemplateRepository extends GenericRepository<Template, UUID> {
         "where ((coalesce(:names) is null) or (u.name in :names)) " +
         "and (((cast(:createdOnStart as date) is null ) or (cast(:createdOnEnd as date) is null )) or (u.createdOn between :createdOnStart and :createdOnEnd)) " +
         "and ((:enable is null) or (u.enable = :enable)) " +
-        "and ((cast(:siteId as string) is null) or (u.siteId = :siteId)) " +
+        "and ((coalesce(:siteId) is null) or (u.siteId in :siteId)) " +
         "and ((:keyword is null) " +
         "or ( UPPER(u.name) LIKE %:keyword% " +
         "or UPPER(u.code) LIKE %:keyword% " +
@@ -48,11 +49,13 @@ public interface TemplateRepository extends GenericRepository<Template, UUID> {
         "or UPPER(u.description) LIKE %:keyword% ))")
     List<Template> filter(
         @Param("names") @Nullable Collection<String> names,
-        @Param("siteId") @Nullable UUID siteId,
+        @Param("siteId") @Nullable Collection<UUID> siteId,
         @Param("createdOnStart") @Nullable LocalDateTime createdOnStart,
         @Param("createdOnEnd") @Nullable LocalDateTime createdOnEnd,
         @Param("enable") @Nullable Boolean isEnable,
         @Param("keyword") @Nullable String keyword);
 
     List<Template> findAllBySiteIdAndEnableIsTrue(UUID siteId);
+
+    List<Template> findAllBySiteIdAndEnableIsTrueAndType(UUID siteId, Constants.TemplateType type);
 }

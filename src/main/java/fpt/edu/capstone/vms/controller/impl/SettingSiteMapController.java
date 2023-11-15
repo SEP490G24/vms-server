@@ -92,4 +92,9 @@ public class SettingSiteMapController implements ISettingSiteMapController {
         return ResponseEntity.ok(settingSiteService.findAllBySiteIdAndGroupId(siteId, settingGroupId));
     }
 
+    @Override
+    public ResponseEntity<?> setDefault(String siteId) {
+        return ResponseEntity.ok(settingSiteService.setDefaultValueBySite(siteId));
+    }
+
 }

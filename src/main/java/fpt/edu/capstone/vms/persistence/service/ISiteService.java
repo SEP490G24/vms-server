@@ -17,22 +17,28 @@ public interface ISiteService extends IGenericService<Site, UUID> {
 
     Page<Site> filter(Pageable pageable,
                       List<String> names,
-                      UUID orgId,
                       LocalDateTime createdOnStart,
                       LocalDateTime createdOnEnd,
                       String createBy,
                       String lastUpdatedBy,
                       Boolean enable,
+                      Integer provinceId,
+                      Integer districtId,
+                      Integer communeId,
                       String keyword);
 
     List<Site> filter(List<String> names,
-                      UUID orgId,
                       LocalDateTime createdOnStart,
                       LocalDateTime createdOnEnd,
                       String createdBy,
                       String lastUpdatedBy,
                       Boolean enable,
+                      Integer provinceId,
+                      Integer districtId,
+                      Integer communeId,
                       String keyword);
 
     List<Site> findAllByOrganizationId(String organizationId);
+
+    Boolean deleteSite(UUID siteId);
 }

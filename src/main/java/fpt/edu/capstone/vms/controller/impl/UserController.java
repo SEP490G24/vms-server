@@ -42,7 +42,10 @@ public class UserController implements IUserController {
                 filter.getEnable(),
                 filter.getKeyword(),
                 filter.getDepartmentId(),
-                filter.getSiteId())) : ResponseEntity.ok(
+                filter.getSiteId(),
+                filter.getProvinceId(),
+                filter.getDistrictId(),
+                filter.getCommuneId())) : ResponseEntity.ok(
             userService.filter(
                 filter.getUsernames(),
                 filter.getRole(),
@@ -51,7 +54,10 @@ public class UserController implements IUserController {
                 filter.getEnable(),
                 filter.getKeyword(),
                 filter.getDepartmentId(),
-                filter.getSiteId()));
+                filter.getSiteId(),
+                filter.getProvinceId(),
+                filter.getDistrictId(),
+                filter.getCommuneId()));
     }
 
     @Override
@@ -87,7 +93,7 @@ public class UserController implements IUserController {
     @Override
     public ResponseEntity<?> viewMyProfile() {
         String username = SecurityUtils.loginUsername();
-        return ResponseEntity.ok(userService.findByUsername(username));
+        return ResponseEntity.ok(mapper.map(userService.findByUsername(username), ProfileUser.class));
     }
 
     @Override
@@ -106,7 +112,8 @@ public class UserController implements IUserController {
     @Override
     public ResponseEntity<?> changePassword(ChangePasswordUserDto changePasswordUserDto) {
         try {
-            userService.changePasswordUser(changePasswordUserDto);
+            String username = SecurityUtils.loginUsername();
+            userService.changePasswordUser(username, changePasswordUserDto.getOldPassword(), changePasswordUserDto.getNewPassword());
             return ResponseEntity.ok().build();
         } catch (HttpClientErrorException e) {
             return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));

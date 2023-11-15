@@ -13,14 +13,7 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -81,7 +74,7 @@ public interface IUserController {
 
     @PostMapping("/change-password")
     @Operation(summary = "Change Password")
-    @PreAuthorize("hasRole('r:user:find')")
+        //@PreAuthorize("hasRole('r:user:find')")
     ResponseEntity<?> changePassword(@RequestBody ChangePasswordUserDto changePasswordUserDto);
 
 //    @PutMapping("/{username}/role")
@@ -142,13 +135,12 @@ public interface IUserController {
         String phoneNumber;
         String avatar;
         String email;
-        String countryCode;
-        UUID departmentId;
         LocalDate dateOfBirth;
         Constants.Gender gender;
         Integer provinceId;
         Integer communeId;
         Integer districtId;
+        String address;
     }
 
     @Data
@@ -159,8 +151,11 @@ public interface IUserController {
         LocalDateTime createdOnEnd;
         Boolean enable;
         String keyword;
-        String departmentId;
-        String siteId;
+        List<String> departmentId;
+        List<String> siteId;
+        Integer provinceId;
+        Integer districtId;
+        Integer communeId;
     }
 
     @Data
@@ -228,5 +223,35 @@ public interface IUserController {
         Constants.Gender gender;
         @NotNull
         Boolean enable;
+    }
+
+    @Data
+    class ProfileUser {
+
+        //personal info
+        String userName;
+        String firstName;
+        String lastName;
+        Constants.Gender gender;
+        //@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
+        LocalDate dateOfBirth;
+
+        //contact info
+        String phoneNumber;
+        String email;
+
+        //address info
+        Integer provinceId;
+        Integer communeId;
+        Integer districtId;
+        String address;
+        String role;
+
+        //more info
+        String avatar;
+        UUID siteId;
+        String siteName;
+        UUID departmentId;
+        String departmentName;
     }
 }

@@ -5,28 +5,15 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import fpt.edu.capstone.vms.constants.Constants;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.MapKey;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.UUID;
 
 @Data
@@ -59,10 +46,6 @@ public class User extends AbstractBaseEntity<String> {
 
     @Column(name = "email")
     private String email;
-
-    @Column(name = "password")
-    @JsonIgnore
-    private String password;
 
     @Column(name = "phone_number")
     private String phoneNumber;
@@ -120,13 +103,7 @@ public class User extends AbstractBaseEntity<String> {
     @JsonIgnore
     private Department department;
 
-    @OneToMany(mappedBy = "userEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
-    @MapKey(name = "userRoleMapPk.username")
-    @JsonIgnore
-    private Map<String, UserRoleMap> userRoleMaps;
-
     public User update(User userEntity) {
-        if (userEntity.username != null) this.username = userEntity.username;
         if (userEntity.openid != null) this.openid = userEntity.openid;
         if (userEntity.firstName != null) this.firstName = userEntity.firstName;
         if (userEntity.lastName != null) this.lastName = userEntity.lastName;
@@ -135,10 +112,12 @@ public class User extends AbstractBaseEntity<String> {
         if (userEntity.lastLoginTime != null) this.lastLoginTime = userEntity.lastLoginTime;
         if (userEntity.gender != null) this.gender = userEntity.gender;
         if (userEntity.dateOfBirth != null) this.dateOfBirth = userEntity.dateOfBirth;
-        if (userEntity.password != null) this.password = encodePassword(userEntity.password);
         if (userEntity.countryCode != null) this.countryCode = userEntity.countryCode;
         if (userEntity.departmentId != null) this.departmentId = userEntity.departmentId;
         if (userEntity.enable != null) this.enable = userEntity.enable;
+        if (userEntity.provinceId != null) this.provinceId = userEntity.provinceId;
+        if (userEntity.communeId != null) this.communeId = userEntity.communeId;
+        if (userEntity.districtId != null) this.districtId = userEntity.districtId;
         if (userEntity.province != null) this.province = userEntity.province;
         if (userEntity.commune != null) this.commune = userEntity.commune;
         if (userEntity.district != null) this.district = userEntity.district;
@@ -158,13 +137,5 @@ public class User extends AbstractBaseEntity<String> {
         return username;
     }
 
-    public static String encodePassword(String plainPassword) {
-        String salt = BCrypt.gensalt(12);
-        return BCrypt.hashpw(plainPassword, salt);
-    }
-
-    public static boolean checkPassword(String plainPassword, String hashedPassword) {
-        return BCrypt.checkpw(plainPassword, hashedPassword);
-    }
 
 }

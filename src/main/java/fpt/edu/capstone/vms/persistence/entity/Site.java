@@ -1,14 +1,24 @@
 package fpt.edu.capstone.vms.persistence.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
 
-import java.util.Map;
 import java.util.UUID;
 
 
@@ -83,22 +93,13 @@ public class Site extends AbstractBaseEntity<UUID> {
     @Column(name = "enable")
     private Boolean enable;
 
-    @OneToMany(mappedBy = "siteEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
-    @MapKey(name = "pricePackageSiteMapPk.siteId")
-    private Map<UUID, PricePackageSiteMap> pricePackageSiteMaps;
-
-    @OneToMany(mappedBy = "siteEntity", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
-    @MapKey(name = "settingSiteMapPk.siteId")
-    private Map<UUID, SettingSiteMap> settingSiteMaps;
-
     public Site update(Site siteEntity) {
         if (siteEntity.name != null) this.name = siteEntity.name;
-        if (siteEntity.code != null) this.code = siteEntity.code;
         if (siteEntity.organizationId != null) this.organizationId = siteEntity.organizationId;
         if (siteEntity.phoneNumber != null) this.phoneNumber = siteEntity.phoneNumber;
-        if (siteEntity.province != null) this.province = siteEntity.province;
-        if (siteEntity.commune != null) this.commune = siteEntity.commune;
-        if (siteEntity.district != null) this.district = siteEntity.district;
+        if (siteEntity.provinceId != null) this.provinceId = siteEntity.provinceId;
+        if (siteEntity.communeId != null) this.communeId = siteEntity.communeId;
+        if (siteEntity.districtId != null) this.districtId = siteEntity.districtId;
         if (siteEntity.address != null) this.address = siteEntity.address;
         if (siteEntity.taxCode != null) this.taxCode = siteEntity.taxCode;
         if (siteEntity.description != null) this.description = siteEntity.description;

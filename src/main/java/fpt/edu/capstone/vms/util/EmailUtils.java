@@ -76,7 +76,7 @@ public class EmailUtils {
         String replacedTemplate = emailTemplate;
 
         for (Map.Entry<String, String> entry : parameterMap.entrySet()) {
-            String parameter = "{{" + entry.getKey() + "}}";
+            String parameter = "@{" + entry.getKey() + "}";
             String value = entry.getValue();
             replacedTemplate = replacedTemplate.replace(parameter, value);
         }

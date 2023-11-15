@@ -1,8 +1,11 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
+import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ISettingSiteMapController;
+import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.entity.SettingSiteMap;
 import fpt.edu.capstone.vms.persistence.entity.SettingSiteMapPk;
+import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
 import fpt.edu.capstone.vms.persistence.repository.SettingRepository;
 import fpt.edu.capstone.vms.persistence.repository.SettingSiteMapRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
@@ -14,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.HttpClientErrorException;
 
@@ -30,14 +34,16 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
     private final SettingRepository settingRepository;
     private final SiteRepository siteRepository;
     private final UserRepository userRepository;
+    private final AuditLogRepository auditLogRepository;
     private final ModelMapper mapper;
+    private static final String SETTING_SITE_TABLE_NAME = "Setting Site Map";
 
-
-    public SettingSiteMapServiceImpl(SettingSiteMapRepository settingSiteMapRepository, SettingRepository settingRepository, SiteRepository siteRepository, UserRepository userRepository, ModelMapper mapper) {
+    public SettingSiteMapServiceImpl(SettingSiteMapRepository settingSiteMapRepository, SettingRepository settingRepository, SiteRepository siteRepository, UserRepository userRepository, AuditLogRepository auditLogRepository, ModelMapper mapper) {
         this.settingSiteMapRepository = settingSiteMapRepository;
         this.settingRepository = settingRepository;
         this.siteRepository = siteRepository;
         this.userRepository = userRepository;
+        this.auditLogRepository = auditLogRepository;
         this.mapper = mapper;
         this.init(this.settingSiteMapRepository);
     }
@@ -51,10 +57,21 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
      * @return The method is returning a `SettingSiteMap` object.
      */
     @Override
+    @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
     public SettingSiteMap createOrUpdateSettingSiteMap(ISettingSiteMapController.SettingSiteInfo settingSiteInfo) {
+
+        var userDetails = SecurityUtils.getUserDetails();
+        var _siteId = userDetails.isOrganizationAdmin() ? settingSiteInfo.getSiteId() : userDetails.getSiteId();
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, _siteId)) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this");
+        }
 
         if (ObjectUtils.isEmpty(settingSiteInfo)) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Object is null");
+        }
+
+        if (StringUtils.isEmpty(settingSiteInfo.getValue())) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Value is empty");
         }
 
         if (settingSiteInfo.getSettingId() == null || StringUtils.isEmpty(settingSiteInfo.getSiteId())) {
@@ -62,27 +79,15 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
         }
 
         Long settingId = Long.valueOf(settingSiteInfo.getSettingId());
-        UUID siteId = UUID.fromString(settingSiteInfo.getSiteId());
 
-        var site = siteRepository.findById(siteId);
+        var site = siteRepository.findById(UUID.fromString(_siteId));
         if (site.isEmpty())
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SiteId is not correct in database!!");
 
         if (!settingRepository.existsById(settingId))
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SettingId is not correct in database!!");
 
-        var user = userRepository.findByUsername(SecurityUtils.loginUsername());
-
-        if (!site.get().getOrganizationId().equals(UUID.fromString(SecurityUtils.getOrgId()))) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Please login with account of organization");
-        }
-
-        if (ObjectUtils.isEmpty(user) && !user.get().getDepartment().getSiteId().equals(siteId)) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Please login before change data setting!!");
-        }
-
-
-        SettingSiteMapPk pk = new SettingSiteMapPk(settingId, siteId);
+        SettingSiteMapPk pk = new SettingSiteMapPk(settingId, UUID.fromString(_siteId));
         SettingSiteMap settingSiteMap = settingSiteMapRepository.findById(pk).orElse(null);
         if (ObjectUtils.isEmpty(settingSiteMap)) {
             SettingSiteMap createSettingSite = new SettingSiteMap();
@@ -90,9 +95,25 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
             createSettingSite.setValue(settingSiteInfo.getValue());
             createSettingSite.setDescription(settingSiteInfo.getDescription());
             createSettingSite.setStatus(true);
+
+            auditLogRepository.save(new AuditLog(_siteId.toString()
+                , site.get().getOrganizationId().toString()
+                , pk.toString()
+                , SETTING_SITE_TABLE_NAME
+                , Constants.AuditType.CREATE
+                , null
+                , createSettingSite.toString()));
             return settingSiteMapRepository.save(createSettingSite);
         } else {
-            return settingSiteMapRepository.save(settingSiteMap.update(mapper.map(settingSiteInfo, SettingSiteMap.class)));
+            var settingSiteUpdate = settingSiteMapRepository.save(settingSiteMap.update(mapper.map(settingSiteInfo, SettingSiteMap.class)));
+            auditLogRepository.save(new AuditLog(_siteId.toString()
+                , site.get().getOrganizationId().toString()
+                , pk.toString()
+                , SETTING_SITE_TABLE_NAME
+                , Constants.AuditType.UPDATE
+                , settingSiteInfo.toString()
+                , settingSiteUpdate.toString()));
+            return settingSiteUpdate;
         }
     }
 
@@ -126,10 +147,15 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
      */
     @Override
     public ISettingSiteMapController.SettingSiteDTO findAllBySiteIdAndGroupId(String siteId, Integer settingGroupId) {
-        var settingSites = settingSiteMapRepository.findAllBySiteIdAndGroupId(siteId, settingGroupId);
+        var userDetails = SecurityUtils.getUserDetails();
+        var _siteId = userDetails.isOrganizationAdmin() ? siteId : userDetails.getSiteId();
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, _siteId)) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this");
+        }
+        var settingSites = settingSiteMapRepository.findAllBySiteIdAndGroupId(_siteId, settingGroupId);
         ISettingSiteMapController.SettingSiteDTO settingSiteDTO = new ISettingSiteMapController.SettingSiteDTO();
         if (!settingSites.isEmpty()) {
-            settingSiteDTO.setSiteId(siteId);
+            settingSiteDTO.setSiteId(_siteId);
             settingSiteDTO.setSettingGroupId(Long.valueOf(settingGroupId));
             Map<String, String> setting = new HashMap<>();
             settingSites.forEach(o -> {
@@ -143,5 +169,34 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
         }
         return settingSiteDTO;
     }
+
+    @Override
+    @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
+    public Boolean setDefaultValueBySite(String siteId) {
+
+        var userDetails = SecurityUtils.getUserDetails();
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this");
+        }
+        var _siteId = userDetails.isOrganizationAdmin() ? siteId : userDetails.getSiteId();
+
+        var site = siteRepository.findById(UUID.fromString(_siteId)).orElse(null);
+        var settingSites = settingSiteMapRepository.findAllBySettingSiteMapPk_SiteId(UUID.fromString(_siteId));
+        if (!settingSites.isEmpty()) {
+            settingSites.forEach(o -> {
+                settingSiteMapRepository.delete(o);
+                auditLogRepository.save(new AuditLog(_siteId
+                    , site.getOrganizationId().toString()
+                    , o.getSettingSiteMapPk().toString()
+                    , SETTING_SITE_TABLE_NAME
+                    , Constants.AuditType.DELETE
+                    , o.toString()
+                    , null));
+            });
+            return true;
+        }
+        return false;
+    }
+
 
 }

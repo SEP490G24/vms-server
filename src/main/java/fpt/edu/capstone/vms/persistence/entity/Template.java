@@ -2,8 +2,20 @@ package fpt.edu.capstone.vms.persistence.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import fpt.edu.capstone.vms.constants.Constants;
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 import java.util.UUID;
@@ -26,7 +38,7 @@ public class Template extends AbstractBaseEntity<UUID> {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "code")
+    @Column(name = "code", unique = true, updatable = false, nullable = false)
     private String code;
 
     @Column(name = "subject")
@@ -35,7 +47,7 @@ public class Template extends AbstractBaseEntity<UUID> {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "body", columnDefinition = "text")
+    @Column(name = "body", columnDefinition = "text", length = 10000)
     private String body;
 
     @Enumerated(EnumType.STRING)
@@ -65,7 +77,6 @@ public class Template extends AbstractBaseEntity<UUID> {
 
     public Template update(Template template) {
         if (template.name != null) this.name = template.name;
-        if (template.code != null) this.code = template.code;
         if (template.subject != null) this.subject = template.subject;
         if (template.body != null) this.body = template.body;
         if (template.type != null) this.type = template.type;

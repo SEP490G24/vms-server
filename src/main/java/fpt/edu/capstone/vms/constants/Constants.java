@@ -13,15 +13,20 @@ public class Constants {
     }
 
     public static class SettingCode {
-        public static String MAIL_HOST = "mail.host";
-        public static String MAIL_PORT = "mail.port";
-        public static String MAIL_SMTP_AUTH = "mail.smtp.auth";
-        public static String MAIL_DEBUG = "mail.debug";
-        public static String MAIL_PROTOCOL = "mail.protocol";
-        public static String MAIL_TYPE = "mail.type";
-        public static String MAIL_USERNAME = "mail.username";
-        public static String MAIL_PASSWORD = "mail.password";
-        public static String MAIL_SMTP_STARTTLS_ENABLE = "mail.smtp.starttls.enable";
+        /* Setting for Mail */
+        public static final String MAIL_HOST = "mail.host";
+        public static final String MAIL_PORT = "mail.port";
+        public static final String MAIL_SMTP_AUTH = "mail.smtp.auth";
+        public static final String MAIL_DEBUG = "mail.debug";
+        public static final String MAIL_PROTOCOL = "mail.protocol";
+        public static final String MAIL_TYPE = "mail.type";
+        public static final String MAIL_USERNAME = "mail.username";
+        public static final String MAIL_PASSWORD = "mail.password";
+        public static final String MAIL_SMTP_STARTTLS_ENABLE = "mail.smtp.starttls.enable";
+
+        /* Setting for Ticket */
+        public static final String TICKET_TEMPLATE_CONFIRM_EMAIL = "ticket.template.confirm.email";
+        public static final String TICKET_TEMPLATE_CANCEL_EMAIL = "ticket.template.cancel.email";
 
     }
 
@@ -54,8 +59,7 @@ public class Constants {
         CHECK_IN,
         CHECK_OUT,
         CANCEL,
-        REJECT,
-        APPROVED
+        REJECT
     }
 
     public enum Gender {
@@ -82,16 +86,15 @@ public class Constants {
     }
 
     public enum TemplateType {
-        EMAIL,
-        SMS,
-        CANCEL_MEETING,
-        REFUSE_MEETING
+        CANCEL_MEETING_EMAIL,
+        CONFIRM_MEETING_EMAIL
     }
 
     public enum SettingType {
         INPUT,
         SWITCH,
-        SELECT
+        SELECT,
+        API
     }
 
     public enum Purpose {
@@ -110,5 +113,17 @@ public class Constants {
         BAD_WEATHER,
         OVERCROWDED,
         TECHNICAL_ISSUES;
+    }
+
+    public enum AuditType {
+        CREATE,
+        UPDATE,
+        DELETE,
+        NONE
+    }
+
+    public enum StatusAction {
+        DONE,
+        ERROR
     }
 }

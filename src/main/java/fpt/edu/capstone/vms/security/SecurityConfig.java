@@ -61,7 +61,7 @@ public class SecurityConfig {
         httpSecurity
             .addFilterBefore(ipRateLimitingFilter(), UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers(permitAll).permitAll()
+                .requestMatchers("/api/v1/card", "/api/v1/card/*").permitAll()
                 .anyRequest()
                 .authenticated()
             );

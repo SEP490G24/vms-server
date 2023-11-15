@@ -1,7 +1,6 @@
 package fpt.edu.capstone.vms.oauth2;
 
 
-import fpt.edu.capstone.vms.controller.IPermissionController;
 import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.keycloak.sync.models.roles.RoleAttributes;
 import lombok.Data;
@@ -75,8 +74,6 @@ public interface IPermissionResource {
      * @param permissionId variable identify for permission (Keycloak: permissionId is Client roleName).
      */
     void delete(String clientId, String permissionId);
-
-    List filter(IPermissionController.PermissionFilterPayload filterPayload);
 
     @Data
     @Accessors(chain = true)

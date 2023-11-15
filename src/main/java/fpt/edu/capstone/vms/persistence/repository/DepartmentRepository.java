@@ -22,7 +22,7 @@ public interface DepartmentRepository extends GenericRepository<Department, UUID
         "and ((:createBy is null) or (u.createdBy in :createBy)) " +
         "and ((:lastUpdatedBy is null) or (u.lastUpdatedBy in :lastUpdatedBy)) " +
         "and ((:enable is null) or (u.enable = :enable)) " +
-        "and ((cast(:siteId as string) is null) or (u.siteId = :siteId)) " +
+        "and ((coalesce(:siteId) is null) or (u.siteId in :siteId))" +
         "and ((:keyword is null) " +
         "or (u.name LIKE %:keyword% " +
         "or u.code LIKE %:keyword% " +
@@ -30,31 +30,8 @@ public interface DepartmentRepository extends GenericRepository<Department, UUID
         "or u.createdBy LIKE %:keyword% " +
         "or u.lastUpdatedBy LIKE %:keyword%))")
     Page<Department> filter(Pageable pageable,
-                      @Param("names") @Nullable Collection<String> names,
-                      @Param("siteId") @Nullable UUID siteId,
-                      @Param("createdOnStart") @Nullable LocalDateTime createdOnStart,
-                      @Param("createdOnEnd") @Nullable LocalDateTime createdOnEnd,
-                      @Param("createBy") @Nullable String createBy,
-                      @Param("lastUpdatedBy") @Nullable String lastUpdatedBy,
-                      @Param("enable") @Nullable Boolean isEnable,
-                      @Param("keyword") @Nullable String keyword);
-
-    @Query(value = "select u from Department u " +
-        "where ((coalesce(:names) is null) or (u.name in :names)) " +
-        "and (((cast(:createdOnStart as date) is null ) or (cast(:createdOnEnd as date) is null )) or (u.createdOn between :createdOnStart and :createdOnEnd)) " +
-        "and ((:createBy is null) or (u.createdBy in :createBy)) " +
-        "and ((:lastUpdatedBy is null) or (u.lastUpdatedBy in :lastUpdatedBy)) " +
-        "and ((:enable is null) or (u.enable = :enable)) " +
-        "and ((cast(:siteId as string) is null) or (u.siteId = :siteId)) " +
-        "and ((:keyword is null) " +
-        "or (u.name LIKE %:keyword% " +
-        "or u.code LIKE %:keyword% " +
-        "or u.description LIKE %:keyword% " +
-        "or u.createdBy LIKE %:keyword% " +
-        "or u.lastUpdatedBy LIKE %:keyword%))")
-    List<Department> filter(
                             @Param("names") @Nullable Collection<String> names,
-                            @Param("siteId") @Nullable UUID siteId,
+                            @Param("siteId") @Nullable Collection<UUID> siteId,
                             @Param("createdOnStart") @Nullable LocalDateTime createdOnStart,
                             @Param("createdOnEnd") @Nullable LocalDateTime createdOnEnd,
                             @Param("createBy") @Nullable String createBy,
@@ -62,7 +39,35 @@ public interface DepartmentRepository extends GenericRepository<Department, UUID
                             @Param("enable") @Nullable Boolean isEnable,
                             @Param("keyword") @Nullable String keyword);
 
+    @Query(value = "select u from Department u " +
+        "where ((coalesce(:names) is null) or (u.name in :names)) " +
+        "and (((cast(:createdOnStart as date) is null ) or (cast(:createdOnEnd as date) is null )) or (u.createdOn between :createdOnStart and :createdOnEnd)) " +
+        "and ((:createBy is null) or (u.createdBy in :createBy)) " +
+        "and ((:lastUpdatedBy is null) or (u.lastUpdatedBy in :lastUpdatedBy)) " +
+        "and ((:enable is null) or (u.enable = :enable)) " +
+        "and ((coalesce(:siteId) is null) or (u.siteId in :siteId)) " +
+        "and ((:keyword is null) " +
+        "or (u.name LIKE %:keyword% " +
+        "or u.code LIKE %:keyword% " +
+        "or u.description LIKE %:keyword% " +
+        "or u.createdBy LIKE %:keyword% " +
+        "or u.lastUpdatedBy LIKE %:keyword%))")
+    List<Department> filter(
+        @Param("names") @Nullable Collection<String> names,
+        @Param("siteId") @Nullable Collection<UUID> siteId,
+        @Param("createdOnStart") @Nullable LocalDateTime createdOnStart,
+        @Param("createdOnEnd") @Nullable LocalDateTime createdOnEnd,
+        @Param("createBy") @Nullable String createBy,
+        @Param("lastUpdatedBy") @Nullable String lastUpdatedBy,
+        @Param("enable") @Nullable Boolean isEnable,
+        @Param("keyword") @Nullable String keyword);
+
     List<Department> findAllByEnableIsTrue();
+
     boolean existsByCode(String code);
+
+    List<Department> findAllBySiteId(UUID siteId);
+
+    boolean existsByIdAndSiteId(UUID id, UUID siteId);
 
 }
