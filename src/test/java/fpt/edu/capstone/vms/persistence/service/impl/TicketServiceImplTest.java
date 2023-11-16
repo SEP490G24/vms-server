@@ -127,9 +127,20 @@ class TicketServiceImplTest {
     @Test
     @DisplayName("Given Draft Ticket, When Creating, Then Set Status to DRAFT")
     public void givenDraftTicket_WhenCreating_ThenSetStatusToDraft() {
+//        List<ICustomerController.NewCustomers> newCustomers = Collections.singletonList(
+//            new ICustomerController.NewCustomers("John Doe", "123456789112", "john@example.com", null, null, null, null, null, null));
+
+        List<String> oldCustomer = new ArrayList<>();
+        oldCustomer.add("06eb43a7-6ea8-4744-8231-760559fe2c09");
+
         ITicketController.CreateTicketInfo ticketInfo = new ITicketController.CreateTicketInfo();
         ticketInfo.setDraft(true);
-
+        ticketInfo.setPurpose(Constants.Purpose.MEETING);
+        ticketInfo.setStartTime(LocalDateTime.now().minusMinutes(30));
+        ticketInfo.setEndTime(LocalDateTime.now());
+        ticketInfo.setNewCustomers(null);
+        ticketInfo.setOldCustomers(oldCustomer);
+        ticketInfo.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
 
         // Create a mock Jwt object with the necessary claims
         Jwt jwt = mock(Jwt.class);
@@ -141,27 +152,45 @@ class TicketServiceImplTest {
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
 
+        Site site = new Site();
+        site.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+        site.setOrganizationId(UUID.randomUUID());
+        when(siteRepository.findById(UUID.fromString(SecurityUtils.getSiteId()))).thenReturn(java.util.Optional.of(site));
+
+        Customer customer = new Customer();
+        customer.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c09"));
+        when(customerRepository.existsByIdAndAndOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c09"), site.getOrganizationId().toString())).thenReturn(true);
+
+
         Ticket ticket = new Ticket();
+        ticket.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c09"));
         ticket.setStatus(Constants.StatusTicket.DRAFT);
         when(mapper.map(ticketInfo, Ticket.class)).thenReturn(ticket);
+        when(ticketRepository.save(ticket)).thenReturn(ticket);
+        Ticket result = ticketService.create(ticketInfo);
 
-        assertNotNull(ticket);
+        assertNotNull(result);
         assertEquals(Constants.StatusTicket.DRAFT, ticket.getStatus());
     }
 
     @Test
     @DisplayName("Given Pending Ticket, When Creating, Then Set Status to PENDING")
     public void givenPendingTicket_WhenCreating_ThenSetStatusToPending() {
+        List<String> oldCustomer = new ArrayList<>();
+        oldCustomer.add("06eb43a7-6ea8-4744-8231-760559fe2c09");
+
         ITicketController.CreateTicketInfo ticketInfo = new ITicketController.CreateTicketInfo();
         ticketInfo.setDraft(false);
-        ticketInfo.setStartTime(LocalDateTime.now());
-        ticketInfo.setEndTime(LocalDateTime.now().plusHours(1));
+        ticketInfo.setPurpose(Constants.Purpose.MEETING);
+        ticketInfo.setStartTime(LocalDateTime.now().minusMinutes(30));
+        ticketInfo.setEndTime(LocalDateTime.now());
+        ticketInfo.setNewCustomers(null);
+        ticketInfo.setOldCustomers(oldCustomer);
         ticketInfo.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
 
         // Create a mock Jwt object with the necessary claims
         Jwt jwt = mock(Jwt.class);
         when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
-        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c07");
         when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("mocked_username");
         when(authentication.getPrincipal()).thenReturn(jwt);
 
@@ -170,11 +199,50 @@ class TicketServiceImplTest {
         SecurityContextHolder.setContext(securityContext);
 
         when(siteRepository.existsByIdAndOrganizationId(Mockito.any(UUID.class), Mockito.any(UUID.class))).thenReturn(true);
-        when(templateRepository.findById(Mockito.any(UUID.class))).thenReturn(Optional.of(new Template()));
+
+        Site site = new Site();
+        site.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+        site.setOrganizationId(UUID.randomUUID());
+        when(siteRepository.findById(UUID.fromString(SecurityUtils.getSiteId()))).thenReturn(java.util.Optional.of(site));
+
+        Customer customer = new Customer();
+        customer.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c09"));
+        customer.setIdentificationNumber("123456789012");
+        when(customerRepository.existsByIdAndAndOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c09"), site.getOrganizationId().toString())).thenReturn(true);
+
 
         Ticket ticket = new Ticket();
+        ticket.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c09"));
         ticket.setStatus(Constants.StatusTicket.PENDING);
+        ticket.setPurpose(Constants.Purpose.MEETING);
+        ticket.setStartTime(LocalDateTime.now());
+        ticket.setEndTime(LocalDateTime.now().plusHours(1));
+        ticket.setUsername("mocked_username");
+
+        CustomerTicketMap customerTicketMap = new CustomerTicketMap();
+        customerTicketMap.setCustomerTicketMapPk(new CustomerTicketMapPk(customer.getId(), ticket.getId()));
+        List<CustomerTicketMap> customerTicketMaps = new ArrayList<>();
+        customerTicketMaps.add(customerTicketMap);
+        when(customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(ticket.getId())).thenReturn(customerTicketMaps);
+        when(customerRepository.findById(customerTicketMap.getCustomerTicketMapPk().getCustomerId())).thenReturn(Optional.of(customer));
+
+        Template template = new Template();
+        template.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c06"));
+        when(settingUtils.getOrDefault(eq(Constants.SettingCode.TICKET_TEMPLATE_CONFIRM_EMAIL))).thenReturn(template.getId().toString());
+        when(templateRepository.findById(UUID.fromString(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CONFIRM_EMAIL)))).thenReturn(Optional.of(template));
+        Room room = new Room();
+        room.setName("abc");
+        when(roomRepository.findById(ticket.getRoomId())).thenReturn(Optional.of(room));
+        User user = new User();
+        user.setFirstName("Nguyen");
+        user.setLastName("Test");
+        user.setPhoneNumber("098554xxx");
+        user.setEmail("email");
+        when(userRepository.findFirstByUsername(ticket.getUsername())).thenReturn(user);
+
         when(mapper.map(ticketInfo, Ticket.class)).thenReturn(ticket);
+        when(ticketRepository.save(ticket)).thenReturn(ticket);
+        Ticket result = ticketService.create(ticketInfo);
 
         assertNotNull(ticket);
         assertEquals(Constants.StatusTicket.PENDING, ticket.getStatus());
@@ -184,9 +252,19 @@ class TicketServiceImplTest {
     public void testCreatePendingTicketWithInvalidStartTime() {
         ITicketController.CreateTicketInfo ticketInfo = new ITicketController.CreateTicketInfo();
         ticketInfo.setDraft(false);
-        ticketInfo.setStartTime(null); // Invalid start time
-        ticketInfo.setEndTime(LocalDateTime.now().plusHours(1));
+        ticketInfo.setStartTime(LocalDateTime.now()); // Invalid start time
+        ticketInfo.setEndTime(LocalDateTime.now());
         ticketInfo.setSiteId("valid_site_id");
+        ticketInfo.setPurpose(Constants.Purpose.MEETING);
+
+        Ticket ticket = new Ticket();
+        ticket.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c09"));
+        ticket.setStatus(Constants.StatusTicket.PENDING);
+        ticket.setPurpose(Constants.Purpose.MEETING);
+        ticket.setStartTime(null);
+        ticket.setEndTime(LocalDateTime.now().plusHours(1));
+        ticket.setUsername("mocked_username");
+        when(mapper.map(ticketInfo, Ticket.class)).thenReturn(ticket);
 
         Jwt jwt = mock(Jwt.class);
         when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
@@ -198,7 +276,7 @@ class TicketServiceImplTest {
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
 
-        assertThrows(NullPointerException.class, () -> ticketService.create(ticketInfo));
+        assertThrows(HttpClientErrorException.class, () -> ticketService.create(ticketInfo));
     }
 
     @Test
