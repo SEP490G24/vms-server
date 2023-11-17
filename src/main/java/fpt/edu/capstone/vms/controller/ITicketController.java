@@ -74,12 +74,8 @@ public interface ITicketController {
 
     @GetMapping("/{ticketId}")
     @Operation(summary = "Find ticket by id for user")
-    ResponseEntity<?> findByIdForUser(@PathVariable UUID ticketId);
-
-    @GetMapping("/admin/{ticketId}")
-    @Operation(summary = "Find ticket by id for admin")
     @PreAuthorize("hasRole('r:ticket:viewTicketDetail')")
-    ResponseEntity<?> findByIdForAdmin(@PathVariable UUID ticketId, @RequestParam(value = "groupId", required = false) String siteId);
+    ResponseEntity<?> findByIdForUser(@PathVariable UUID ticketId, @RequestParam(value = "siteId", required = false) String siteId);
 
     @PostMapping("/customer/filter")
     @Operation(summary = "Filter ticket and customer ")

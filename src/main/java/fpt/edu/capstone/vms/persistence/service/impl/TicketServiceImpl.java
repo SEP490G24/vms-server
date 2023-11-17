@@ -539,7 +539,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                     throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "IdentificationNumber is incorrect");
                 }
                 Customer customerExist = customerRepository.findByIdentificationNumberAndOrganizationId(customerDto.getIdentificationNumber(), orgId);
-                if (ObjectUtils.isEmpty(customerExist)) {
+                if (customerExist == null) {
                     var _customer = mapper.map(customerDto, Customer.class);
                     _customer.setOrganizationId(orgId);
                     Customer customer = customerRepository.save(_customer);
@@ -769,7 +769,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't not found ticket");
         }
         if (!ticket.getUsername().equals(SecurityUtils.loginUsername())) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Can't not view this ticket");
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "Can't not view this ticket");
         }
         ITicketController.TicketFilterDTO ticketFilterDTO = mapper.map(ticket, ITicketController.TicketFilterDTO.class);
         return ticketFilterDTO;

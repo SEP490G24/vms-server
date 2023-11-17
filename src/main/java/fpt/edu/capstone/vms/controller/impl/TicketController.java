@@ -260,22 +260,17 @@ public class TicketController implements ITicketController {
     }
 
     @Override
-    public ResponseEntity<?> findByIdForUser(UUID ticketId) {
+    public ResponseEntity<?> findByIdForUser(UUID ticketId, String siteId) {
         try {
-            TicketFilterDTO ticketFilterDTO = ticketService.findByTicketForUser(ticketId);
-            setCustomer(ticketFilterDTO);
-            return ResponseEntity.ok(ticketFilterDTO);
-        } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
-        }
-    }
-
-    @Override
-    public ResponseEntity<?> findByIdForAdmin(UUID ticketId, String siteId) {
-        try {
-            TicketFilterDTO ticketFilterDTO = ticketService.findByTicketForAdmin(ticketId, siteId);
-            setCustomer(ticketFilterDTO);
-            return ResponseEntity.ok(ticketFilterDTO);
+            if (SecurityUtils.getUserDetails().isOrganizationAdmin() || SecurityUtils.getUserDetails().isSiteAdmin()) {
+                TicketFilterDTO ticketFilterDTO = ticketService.findByTicketForAdmin(ticketId, siteId);
+                setCustomer(ticketFilterDTO);
+                return ResponseEntity.ok(ticketFilterDTO);
+            } else {
+                TicketFilterDTO ticketFilterDTO = ticketService.findByTicketForUser(ticketId);
+                setCustomer(ticketFilterDTO);
+                return ResponseEntity.ok(ticketFilterDTO);
+            }
         } catch (HttpClientErrorException e) {
             return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
         }

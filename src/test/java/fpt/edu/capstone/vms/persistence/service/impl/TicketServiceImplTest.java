@@ -68,6 +68,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -709,7 +710,7 @@ class TicketServiceImplTest {
         boolean result = ticketService.deleteTicket(ticketId);
 
         assertTrue(result);
-        verify(ticketRepository, Mockito.times(1)).delete(mockTicket);
+        verify(ticketRepository, times(1)).delete(mockTicket);
     }
 
     @Test
@@ -826,7 +827,7 @@ class TicketServiceImplTest {
 
         assertTrue(result);
         assertEquals(Constants.StatusTicket.CANCEL, mockTicket.getStatus());
-        verify(ticketRepository, Mockito.times(1)).save(mockTicket);
+        verify(ticketRepository, times(1)).save(mockTicket);
     }
 
     @Test
@@ -2204,36 +2205,4 @@ class TicketServiceImplTest {
         assertEquals("Mapping error", exception.getMessage());
     }
 
-//    @Test
-//    void testCheckNewCustomers() {
-//
-//        Jwt jwt = mock(Jwt.class);
-//        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c07");
-//        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("mocked_username");
-//        when(authentication.getPrincipal()).thenReturn(jwt);
-//
-//        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
-//        when(securityContext.getAuthentication()).thenReturn(authentication);
-//        SecurityContextHolder.setContext(securityContext);
-//
-//        // Mock data
-//        List<ICustomerController.NewCustomers> newCustomers = Collections.singletonList(
-//            new ICustomerController.NewCustomers("John Doe", "123456789123", "john@example.com", null, null, null, null, null, null));
-//        Ticket ticket = new Ticket();
-//        ticket.setId(UUID.randomUUID());
-//        Room room = new Room();
-//        room.setId(UUID.randomUUID());
-//
-//        Site site = new Site();
-//        site.setId(UUID.randomUUID());
-//        site.setOrganizationId(UUID.randomUUID());
-//        when(siteRepository.findById(UUID.fromString(SecurityUtils.getSiteId()))).thenReturn(java.util.Optional.of(site));
-//
-//        Customer customer = new Customer();
-//        customer.setOrganizationId("06eb43a7-6ea8-4744-8231-760559fe2c07");
-//        when(customerRepository.findByIdentificationNumberAndOrganizationId(newCustomers.get(0).getIdentificationNumber(), "06eb43a7-6ea8-4744-8231-760559fe2c07")).thenReturn(null);
-//
-//        ticketService.checkNewCustomers(newCustomers, ticket, room);
-//
-//    }
 }
