@@ -1959,8 +1959,8 @@ class TicketServiceImplTest {
         HttpClientErrorException exception = assertThrows(HttpClientErrorException.class, () -> ticketService.findByTicketForUser(ticketId));
 
         // Verify that the correct exception is thrown with the expected status code and message
-        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
-        assertEquals("400 Can't not view this ticket", exception.getMessage());
+        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
+        assertEquals("403 Can't not view this ticket", exception.getMessage());
     }
 
     @Test
