@@ -4,12 +4,34 @@ import com.google.zxing.WriterException;
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ICustomerController;
 import fpt.edu.capstone.vms.controller.ITicketController;
-import fpt.edu.capstone.vms.persistence.entity.*;
-import fpt.edu.capstone.vms.persistence.repository.*;
+import fpt.edu.capstone.vms.persistence.entity.AuditLog;
+import fpt.edu.capstone.vms.persistence.entity.Customer;
+import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMap;
+import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMapPk;
+import fpt.edu.capstone.vms.persistence.entity.Reason;
+import fpt.edu.capstone.vms.persistence.entity.Room;
+import fpt.edu.capstone.vms.persistence.entity.Site;
+import fpt.edu.capstone.vms.persistence.entity.Template;
+import fpt.edu.capstone.vms.persistence.entity.Ticket;
+import fpt.edu.capstone.vms.persistence.entity.User;
+import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
+import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
+import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
+import fpt.edu.capstone.vms.persistence.repository.OrganizationRepository;
+import fpt.edu.capstone.vms.persistence.repository.ReasonRepository;
+import fpt.edu.capstone.vms.persistence.repository.RoomRepository;
+import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
+import fpt.edu.capstone.vms.persistence.repository.TemplateRepository;
+import fpt.edu.capstone.vms.persistence.repository.TicketRepository;
+import fpt.edu.capstone.vms.persistence.repository.UserRepository;
 import fpt.edu.capstone.vms.persistence.service.ITicketService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import fpt.edu.capstone.vms.persistence.service.sse.SseEmitterManager;
-import fpt.edu.capstone.vms.util.*;
+import fpt.edu.capstone.vms.util.EmailUtils;
+import fpt.edu.capstone.vms.util.QRcodeUtils;
+import fpt.edu.capstone.vms.util.SecurityUtils;
+import fpt.edu.capstone.vms.util.SettingUtils;
+import fpt.edu.capstone.vms.util.Utils;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +56,12 @@ import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -96,8 +123,14 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     public Ticket create(ITicketController.CreateTicketInfo ticketInfo) {
 
         String username = SecurityUtils.loginUsername();
-        //Tạo meeting
+
         var ticketDto = mapper.map(ticketInfo, Ticket.class);
+        //check purpose
+        if (ticketInfo.getPurpose() == null) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Purpose is empty");
+        }
+
+        //Tạo meeting
         ticketDto.setCode(generateMeetingCode(ticketInfo.getPurpose(), username));
 
         LocalDateTime startTime = ticketInfo.getStartTime();
@@ -130,20 +163,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             return ticket;
         } else {
 
-            if (startTime == null || startTime.toString().trim().isEmpty()) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Start time is empty");
-            }
-
-            if (endTime == null || endTime.toString().trim().isEmpty()) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "End time is empty");
-            }
-
-            //check purpose
-            if (StringUtils.isEmpty(ticketDto.getPurpose().toString())) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Purpose is empty");
-            }
-
-            if (ticketDto.getPurpose().equals("OTHERS")) {
+            if (ticketInfo.getPurpose().equals(Constants.Purpose.OTHERS)) {
                 if (StringUtils.isEmpty(ticketInfo.getPurposeNote())) {
                     throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Purpose other is empty");
                 }
@@ -151,8 +171,10 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
 
             ticketDto.setStatus(Constants.StatusTicket.PENDING);
             Ticket ticket = ticketRepository.save(ticketDto);
-
-            Room room = roomRepository.findById(ticketInfo.getRoomId()).orElse(null);
+            Room room = null;
+            if (ticketInfo.getRoomId() != null) {
+                room = roomRepository.findById(ticketInfo.getRoomId()).orElse(null);
+            }
             setDataCustomer(ticketInfo, ticket);
             var customerTicketMaps = customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(ticket.getId());
             if (customerTicketMaps.isEmpty())
@@ -183,12 +205,12 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     private void checkRoom(ITicketController.CreateTicketInfo ticketInfo, Ticket ticket) {
         Room room = roomRepository.findById(ticketInfo.getRoomId()).orElse(null);
 
-        if (!room.getSiteId().equals(UUID.fromString(ticket.getSiteId())))
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User can not create meeting in this room");
-
         if (ObjectUtils.isEmpty(room)) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Room is null");
         }
+
+        if (!room.getSiteId().equals(UUID.fromString(ticket.getSiteId())))
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User can not create meeting in this room");
 
         if (isRoomBooked(ticketInfo.getRoomId(), ticketInfo.getStartTime(), ticketInfo.getEndTime())) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Room have meeting in this time");
@@ -428,7 +450,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     @Override
     @Transactional(rollbackFor = {Exception.class, Throwable.class, NullPointerException.class})
     public Ticket updateTicket(ITicketController.UpdateTicketInfo ticketInfo) {
-        if (StringUtils.isEmpty(ticketInfo.getId().toString()))
+        if (ticketInfo.getId() == null)
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "TicketId is null");
 
         Ticket ticketMap = mapper.map(ticketInfo, Ticket.class);
@@ -437,24 +459,24 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
 
         Ticket ticket = ticketRepository.findById(ticketInfo.getId()).orElse(null);
 
-        if (!ticket.getUsername().equals(SecurityUtils.loginUsername())) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Ticket is not for you!!");
-        }
-
         if (ObjectUtils.isEmpty(ticket)) {
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't found ticket by id " + ticketInfo.getId());
+        }
+
+        if (!ticket.getUsername().equals(SecurityUtils.loginUsername())) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Ticket is not for you!!");
         }
 
         if (StringUtils.isNotEmpty(ticketMap.getRoomId().toString())) {
             if (ticketInfo.getRoomId().equals(ticket.getRoomId())) {
                 Room room = roomRepository.findById(ticketInfo.getRoomId()).orElse(null);
 
-                if (!room.getSiteId().equals(UUID.fromString(ticket.getSiteId())))
-                    throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User can not create meeting in this room");
-
                 if (ObjectUtils.isEmpty(room)) {
                     throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Room is null");
                 }
+
+                if (!room.getSiteId().equals(UUID.fromString(ticket.getSiteId())))
+                    throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User can not create meeting in this room");
 
                 if (isRoomBooked(ticketInfo.getRoomId(), ticketInfo.getStartTime(), ticketInfo.getEndTime())) {
                     throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Room have meeting in this time");
@@ -473,10 +495,10 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             checkTimeForTicket(updateStartTime, updateEndTime);
         }
 
-        if (StringUtils.isNotEmpty(ticketMap.getPurpose().toString())) {
-            if (!ticketMap.getPurpose().equals(Constants.Purpose.OTHERS) && ticketMap.getPurposeNote() != null) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Purpose Note must be note when Purpose is other");
-            }
+        if (ticketMap.getPurpose() == Constants.Purpose.OTHERS && ticketMap.getPurposeNote() == null) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Purpose Note must not be null when Purpose is other");
+        } else if (ticketMap.getPurpose() != Constants.Purpose.OTHERS && ticketMap.getPurposeNote() != null) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Purpose Note must be null when Purpose is not other");
         }
 
         Ticket oldValue = ticket;
@@ -894,7 +916,8 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             parameterMap.put("startTime", startTime);
             parameterMap.put("endTime", endTime);
             parameterMap.put("address", site.getAddress());
-            parameterMap.put("roomName", room.getName());
+            String roomName = room != null ? room.getName() : "Updating....";
+            parameterMap.put("roomName", roomName);
             parameterMap.put("staffName", user.getFirstName() + " " + user.getLastName());
             parameterMap.put("staffPhone", user.getPhoneNumber());
             parameterMap.put("staffEmail", user.getEmail());
@@ -944,18 +967,18 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         return count > 0;
     }
 
-    /**
-     * The function checks if a user has a ticket within a specified time range.
-     *
-     * @param username  The username of the user for whom we want to check if they have a ticket in the given time range.
-     * @param startTime The start time of the ticket validity period.
-     * @param endTime   The endTime parameter represents the end time of a ticket.
-     * @return The method is returning a boolean value.
-     */
-    private boolean isUserHaveTicketInTime(String username, LocalDateTime startTime, LocalDateTime endTime) {
-        int count = ticketRepository.countByUsernameAndEndTimeGreaterThanEqualAndStartTimeLessThanEqualAndStatusNotLike(username, startTime, endTime, Constants.StatusTicket.CANCEL);
-        return count > 0;
-    }
+//    /**
+//     * The function checks if a user has a ticket within a specified time range.
+//     *
+//     * @param username  The username of the user for whom we want to check if they have a ticket in the given time range.
+//     * @param startTime The start time of the ticket validity period.
+//     * @param endTime   The endTime parameter represents the end time of a ticket.
+//     * @return The method is returning a boolean value.
+//     */
+//    private boolean isUserHaveTicketInTime(String username, LocalDateTime startTime, LocalDateTime endTime) {
+//        int count = ticketRepository.countByUsernameAndEndTimeGreaterThanEqualAndStartTimeLessThanEqualAndStatusNotLike(username, startTime, endTime, Constants.StatusTicket.CANCEL);
+//        return count > 0;
+//    }
 
     /**
      * The function generates a meeting code based on the purpose and current date.
