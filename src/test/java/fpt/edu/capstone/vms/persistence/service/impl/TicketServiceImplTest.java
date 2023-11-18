@@ -5,9 +5,12 @@ import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ICustomerController;
 import fpt.edu.capstone.vms.controller.ITicketController;
 import fpt.edu.capstone.vms.persistence.entity.AuditLog;
+import fpt.edu.capstone.vms.persistence.entity.Commune;
 import fpt.edu.capstone.vms.persistence.entity.Customer;
 import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMap;
 import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMapPk;
+import fpt.edu.capstone.vms.persistence.entity.District;
+import fpt.edu.capstone.vms.persistence.entity.Province;
 import fpt.edu.capstone.vms.persistence.entity.Reason;
 import fpt.edu.capstone.vms.persistence.entity.Room;
 import fpt.edu.capstone.vms.persistence.entity.Site;
@@ -206,6 +209,7 @@ class TicketServiceImplTest {
         Site site = new Site();
         site.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
         site.setOrganizationId(UUID.randomUUID());
+        site.setAddress("address");
         when(siteRepository.findById(UUID.fromString(SecurityUtils.getSiteId()))).thenReturn(java.util.Optional.of(site));
 
         Customer customer = new Customer();
@@ -961,12 +965,13 @@ class TicketServiceImplTest {
         ticketInfo.setId(ticketId);
         ticketInfo.setRoomId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c07"));
         ticketInfo.setPurpose(Constants.Purpose.MEETING);
+        ticketInfo.setStartTime(LocalDateTime.now().minusHours(1));
 
         Ticket mockTicket = new Ticket();
         mockTicket.setId(ticketId);
         mockTicket.setUsername("mocked_username");
-        mockTicket.setStartTime(LocalDateTime.now().plusHours(1));
-        mockTicket.setEndTime(LocalDateTime.now().plusHours(3));
+        mockTicket.setStartTime(LocalDateTime.now().plusHours(3));
+        mockTicket.setEndTime(LocalDateTime.now().plusHours(4));
         mockTicket.setRoomId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c07"));
         mockTicket.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
         when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(mockTicket));
@@ -984,9 +989,18 @@ class TicketServiceImplTest {
         room.setName("abc");
         when(roomRepository.findById(mockTicket.getRoomId())).thenReturn(Optional.of(room));
 
+        Commune commune = new Commune();
+        commune.setName("Kim liên");
+        District district = new District();
+        district.setName("Nam Đàn");
+        Province province = new Province();
+        province.setName("Nghệ An");
         Site site = new Site();
         site.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
         site.setOrganizationId(UUID.randomUUID());
+        site.setProvince(province);
+        site.setDistrict(district);
+        site.setCommune(commune);
         when(siteRepository.findById(UUID.fromString(mockTicket.getSiteId()))).thenReturn(java.util.Optional.of(site));
 
         when(mapper.map(ticketInfo, Ticket.class)).thenReturn(mockTicket);
@@ -1052,6 +1066,7 @@ class TicketServiceImplTest {
         mockTicket.setUsername("mocked_username");
         mockTicket.setPurpose(MEETING); // Not OTHERS
         mockTicket.setPurposeNote("TEST");
+        mockTicket.setStartTime(LocalDateTime.now());
 
 
         Jwt jwt = mock(Jwt.class);
@@ -1096,6 +1111,7 @@ class TicketServiceImplTest {
         mockTicket.setUsername("mocked_username");
         mockTicket.setPurpose(OTHERS);
         mockTicket.setPurposeNote(null);
+        mockTicket.setStartTime(LocalDateTime.now());
 
 
         Jwt jwt = mock(Jwt.class);
@@ -1818,7 +1834,7 @@ class TicketServiceImplTest {
         });
 
         // Call the method under test
-        ticketService.sendEmail(customer, ticket, room, checkInCode);
+        ticketService.sendEmail(customer, ticket, room, checkInCode, false);
 
         // You can add more assertions if needed
     }
@@ -1831,7 +1847,7 @@ class TicketServiceImplTest {
         String checkInCode = "ABCDE";
 
         // Call the method under test and expect a HttpClientErrorException
-        assertThrows(HttpClientErrorException.class, () -> ticketService.sendEmail(null, ticket, room, checkInCode));
+        assertThrows(HttpClientErrorException.class, () -> ticketService.sendEmail(null, ticket, room, checkInCode, false));
 
         // You can add more assertions if needed
     }
@@ -1873,7 +1889,7 @@ class TicketServiceImplTest {
         when(templateRepository.findById(UUID.fromString(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CONFIRM_EMAIL)))).thenReturn(Optional.empty());
 
         // Call the method under test and expect a HttpClientErrorException
-        assertThrows(HttpClientErrorException.class, () -> ticketService.sendEmail(customer, ticket, room, checkInCode));
+        assertThrows(HttpClientErrorException.class, () -> ticketService.sendEmail(customer, ticket, room, checkInCode, false));
 
         // You can add more assertions if needed
     }

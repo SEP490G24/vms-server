@@ -459,6 +459,13 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
 
         Ticket ticket = ticketRepository.findById(ticketInfo.getId()).orElse(null);
 
+        LocalDateTime currentTime = LocalDateTime.now();
+        LocalDateTime startTime = ticket.getStartTime();
+
+        if (!startTime.isAfter(currentTime.plusHours(2))) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Meetings cannot be updated at least 2 hours before they start.");
+        }
+
         if (ObjectUtils.isEmpty(ticket)) {
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't found ticket by id " + ticketInfo.getId());
         }
@@ -484,7 +491,6 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             }
         }
 
-        LocalDateTime startTime = ticket.getStartTime();
         LocalDateTime endTime = ticket.getEndTime();
 
         if (updateStartTime != null && updateEndTime == null && !updateStartTime.isEqual(startTime)) {
@@ -504,10 +510,18 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         Ticket oldValue = ticket;
         ticketRepository.save(ticket.update(ticketMap));
         Room room = roomRepository.findById(ticket.getRoomId()).orElse(null);
+        List<CustomerTicketMap> customerTicketMaps = customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(ticket.getId());
+        if (customerTicketMaps != null) {
+            customerTicketMaps.forEach(o -> {
+                Customer customer = o.getCustomerEntity();
+                sendEmail(customer, ticket, room, o.getCheckInCode(), true);
+            });
+        }
 
         if (ticketInfo.getNewCustomers() != null) {
             checkNewCustomers(ticketInfo.getNewCustomers(), ticket, room);
         }
+
         auditLogRepository.save(new AuditLog(ticket.getSiteId()
             , siteRepository.findById(UUID.fromString(ticket.getSiteId())).orElse(null).getOrganizationId().toString()
             , ticket.getId().toString()
@@ -545,11 +559,11 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                     Customer customer = customerRepository.save(_customer);
                     String checkInCode = generateCheckInCode();
                     createCustomerTicket(ticket, customer.getId(), checkInCode);
-                    sendEmail(customer, ticket, room, checkInCode);
+                    sendEmail(customer, ticket, room, checkInCode, false);
                 } else {
                     String checkInCode = generateCheckInCode();
                     createCustomerTicket(ticket, customerExist.getId(), checkInCode);
-                    sendEmail(customerExist, ticket, room, checkInCode);
+                    sendEmail(customerExist, ticket, room, checkInCode, false);
                 }
             }
         }
@@ -866,7 +880,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     private void sendQr(List<CustomerTicketMap> customerTicketMap, Ticket ticket, Room room) {
         customerTicketMap.forEach(o -> {
             var customer = customerRepository.findById(o.getCustomerTicketMapPk().getCustomerId()).orElse(null);
-            sendEmail(customer, ticket, room, o.getCheckInCode());
+            sendEmail(customer, ticket, room, o.getCheckInCode(), false);
         });
     }
 
@@ -878,7 +892,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
      * @param ticket   The `ticket` parameter is an object of the `Ticket` class. It contains information about a ticket,
      *                 such as its ID and site ID.
      */
-    public void sendEmail(Customer customer, Ticket ticket, Room room, String checkInCode) {
+    public void sendEmail(Customer customer, Ticket ticket, Room room, String checkInCode, boolean isUpdate) {
         String meetingUrl = "https://web-vms.azurewebsites.net/check-in/" + checkInCode;
 
         if (ObjectUtils.isEmpty(customer))
@@ -915,7 +929,8 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             parameterMap.put("dateTime", date);
             parameterMap.put("startTime", startTime);
             parameterMap.put("endTime", endTime);
-            parameterMap.put("address", site.getAddress());
+            String address = site.getAddress() != null ? site.getAddress() : site.getCommune().getName() + ", " + site.getDistrict().getName() + ", " + site.getProvince().getName();
+            parameterMap.put("address", address);
             String roomName = room != null ? room.getName() : "Updating....";
             parameterMap.put("roomName", roomName);
             parameterMap.put("staffName", user.getFirstName() + " " + user.getLastName());
@@ -924,7 +939,14 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             parameterMap.put("checkInCode", checkInCode);
             String replacedTemplate = emailUtils.replaceEmailParameters(template.getBody(), parameterMap);
 
-            emailUtils.sendMailWithQRCode(customer.getEmail(), template.getSubject(), replacedTemplate, qrCodeData, ticket.getSiteId());
+            String subject;
+            if (isUpdate) {
+                subject = "Update information of meeting #" + checkInCode;
+            } else {
+                subject = template.getSubject();
+            }
+
+            emailUtils.sendMailWithQRCode(customer.getEmail(), subject, replacedTemplate, qrCodeData, ticket.getSiteId());
         } catch (WriterException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {
