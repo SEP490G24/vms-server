@@ -97,6 +97,7 @@ public interface ITicketService extends IGenericService<Ticket, UUID> {
 
     Page<ITicketController.TicketByQRCodeResponseDTO> filterTicketAndCustomer(
         Pageable pageable,
+        List<String> sites,
         List<String> names,
         UUID roomId,
         Constants.StatusTicket status,

@@ -220,9 +220,10 @@ public class TicketController implements ITicketController {
     }
 
     @Override
-    public ResponseEntity<?> filterTicketAndCustomer(TicketFilterUser filter, Pageable pageable) {
+    public ResponseEntity<?> filterTicketAndCustomer(TicketFilter filter, Pageable pageable) {
         return ResponseEntity.ok(ticketService.filterTicketAndCustomer(
             pageable,
+            filter.getSites(),
             filter.getNames(),
             filter.getRoomId(),
             filter.getStatus(),

@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 
@@ -18,7 +19,7 @@ public interface IAccessHistoryService extends IGenericService<Ticket, UUID> {
     Page<IAccessHistoryController.AccessHistoryResponseDTO> accessHistory(
         Pageable pageable, String keyword, Constants.StatusTicket status,
         LocalDateTime formCheckInTime, LocalDateTime toCheckInTime,
-        LocalDateTime formCheckOutTime, LocalDateTime toCheckOutTime, String site
+        LocalDateTime formCheckOutTime, LocalDateTime toCheckOutTime, List<String> sites
     );
 
     IAccessHistoryController.AccessHistoryResponseDTO viewAccessHistoryDetail(UUID ticketId, UUID customerId);

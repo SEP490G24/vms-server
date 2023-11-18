@@ -80,7 +80,7 @@ public interface ITicketController {
     @PostMapping("/customer/filter")
     @Operation(summary = "Filter ticket and customer ")
     @PreAuthorize("hasRole('r:ticket:findQRCode')")
-    ResponseEntity<?> filterTicketAndCustomer(@RequestBody @Valid TicketFilterUser ticketFilterUser, Pageable pageable);
+    ResponseEntity<?> filterTicketAndCustomer(@RequestBody @Valid TicketFilter ticketFilter, Pageable pageable);
 
     @PostMapping("/room")
     @Operation(summary = "Filter ticket by room ")

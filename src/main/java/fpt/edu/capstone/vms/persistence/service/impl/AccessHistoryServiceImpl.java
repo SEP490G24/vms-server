@@ -56,11 +56,10 @@ public class AccessHistoryServiceImpl extends GenericServiceImpl<Ticket, UUID> i
     @Override
     public Page<IAccessHistoryController.AccessHistoryResponseDTO> accessHistory(Pageable pageable, String keyword, Constants.StatusTicket status,
                                                                                  LocalDateTime formCheckInTime, LocalDateTime toCheckInTime,
-                                                                                 LocalDateTime formCheckOutTime, LocalDateTime toCheckOutTime, String site) {
+                                                                                 LocalDateTime formCheckOutTime, LocalDateTime toCheckOutTime, List<String> sites) {
         Page<CustomerTicketMap> customerTicketMapPage;
         if (SecurityUtils.getUserDetails().isOrganizationAdmin() || SecurityUtils.getUserDetails().isSiteAdmin()) {
-            List<String> sites = getListSite(site);
-            customerTicketMapPage = customerTicketMapRepository.accessHistory(pageable, sites, formCheckInTime, toCheckInTime, formCheckOutTime, toCheckOutTime, status, keyword, null);
+            customerTicketMapPage = customerTicketMapRepository.accessHistory(pageable, TicketServiceImpl.getListSite(siteRepository, sites), formCheckInTime, toCheckInTime, formCheckOutTime, toCheckOutTime, status, keyword, null);
         } else {
             customerTicketMapPage = customerTicketMapRepository.accessHistory(pageable, null, formCheckInTime, toCheckInTime, formCheckOutTime, toCheckOutTime, status, keyword, SecurityUtils.loginUsername());
         }
@@ -78,7 +77,7 @@ public class AccessHistoryServiceImpl extends GenericServiceImpl<Ticket, UUID> i
     @Override
     public ByteArrayResource export(IAccessHistoryController.AccessHistoryFilter filter) throws JRException {
         Pageable pageable = PageRequest.of(0, 99999);
-        Page<IAccessHistoryController.AccessHistoryResponseDTO> listData = accessHistory(pageable, filter.getKeyword(), filter.getStatus(), filter.getFormCheckInTime(), filter.getToCheckInTime(), filter.getFormCheckOutTime(), filter.getToCheckOutTime(), filter.getSite());
+        Page<IAccessHistoryController.AccessHistoryResponseDTO> listData = accessHistory(pageable, filter.getKeyword(), filter.getStatus(), filter.getFormCheckInTime(), filter.getToCheckInTime(), filter.getFormCheckOutTime(), filter.getToCheckOutTime(), filter.getSites());
         try {
             JasperReport jasperReport = JasperCompileManager.compileReport(getClass().getResourceAsStream(PATH_FILE));
 
@@ -99,20 +98,5 @@ public class AccessHistoryServiceImpl extends GenericServiceImpl<Ticket, UUID> i
         } catch (Exception e) {
             return null;
         }
-    }
-
-    private List<String> getListSite(String site) {
-        List<String> sites = new ArrayList<>();
-        if (site != null) {
-            sites.add(site);
-        } else {
-            if (SecurityUtils.getOrgId() != null) {
-                siteRepository.findAllByOrganizationId(UUID.fromString(SecurityUtils.getOrgId())).forEach(o ->
-                    sites.add(o.getId().toString()));
-            } else {
-                sites.add(UUID.fromString(SecurityUtils.getSiteId()).toString());
-            }
-        }
-        return sites;
     }
 }

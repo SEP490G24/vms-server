@@ -28,6 +28,9 @@ public interface CustomerTicketMapRepository extends GenericRepository<CustomerT
     @Query(value = "select ctm from CustomerTicketMap ctm " +
         " join Ticket t on ctm.ticketEntity.id = t.id " +
         " join Customer c on ctm.customerEntity.id = c.id " +
+        "and ((coalesce(:sites) is null) or (t.siteId in :sites))" +
+        "and (((cast(:startTimeStart as date) is null ) or (cast(:startTimeEnd as date) is null )) or (t.startTime between :startTimeStart and :startTimeEnd)) " +
+        "and (((cast(:endTimeStart as date) is null ) or (cast(:endTimeEnd as date) is null )) or (t.endTime between :endTimeStart and :endTimeEnd)) " +
         "and ((cast(:roomId as string) is null) or (t.roomId = :roomId)) " +
         "and ((cast(:status as string) is null) or (ctm.status = :status)) " +
         "and ((cast(:purpose as string) is null) or (t.purpose = :purpose)) " +
@@ -36,6 +39,11 @@ public interface CustomerTicketMapRepository extends GenericRepository<CustomerT
         "or c.email LIKE %:keyword% " +
         "or c.visitorName LIKE %:keyword% ))")
     Page<CustomerTicketMap> filter(Pageable pageable,
+                                   @Param("sites") @Nullable Collection<String> sites,
+                                   @Param("startTimeStart") @Nullable LocalDateTime startTimeStart,
+                                   @Param("startTimeEnd") @Nullable LocalDateTime startTimeEnd,
+                                   @Param("endTimeStart") @Nullable LocalDateTime endTimeStart,
+                                   @Param("endTimeEnd") @Nullable LocalDateTime endTimeEnd,
                                    @Param("roomId") @Nullable UUID roomId,
                                    @Param("status") @Nullable Constants.StatusTicket status,
                                    @Param("purpose") @Nullable Constants.Purpose purpose,
