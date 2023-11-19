@@ -4,12 +4,34 @@ import com.google.zxing.WriterException;
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ICustomerController;
 import fpt.edu.capstone.vms.controller.ITicketController;
-import fpt.edu.capstone.vms.persistence.entity.*;
-import fpt.edu.capstone.vms.persistence.repository.*;
+import fpt.edu.capstone.vms.persistence.entity.AuditLog;
+import fpt.edu.capstone.vms.persistence.entity.Customer;
+import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMap;
+import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMapPk;
+import fpt.edu.capstone.vms.persistence.entity.Reason;
+import fpt.edu.capstone.vms.persistence.entity.Room;
+import fpt.edu.capstone.vms.persistence.entity.Site;
+import fpt.edu.capstone.vms.persistence.entity.Template;
+import fpt.edu.capstone.vms.persistence.entity.Ticket;
+import fpt.edu.capstone.vms.persistence.entity.User;
+import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
+import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
+import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
+import fpt.edu.capstone.vms.persistence.repository.OrganizationRepository;
+import fpt.edu.capstone.vms.persistence.repository.ReasonRepository;
+import fpt.edu.capstone.vms.persistence.repository.RoomRepository;
+import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
+import fpt.edu.capstone.vms.persistence.repository.TemplateRepository;
+import fpt.edu.capstone.vms.persistence.repository.TicketRepository;
+import fpt.edu.capstone.vms.persistence.repository.UserRepository;
 import fpt.edu.capstone.vms.persistence.service.ITicketService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import fpt.edu.capstone.vms.persistence.service.sse.SseEmitterManager;
-import fpt.edu.capstone.vms.util.*;
+import fpt.edu.capstone.vms.util.EmailUtils;
+import fpt.edu.capstone.vms.util.QRcodeUtils;
+import fpt.edu.capstone.vms.util.SecurityUtils;
+import fpt.edu.capstone.vms.util.SettingUtils;
+import fpt.edu.capstone.vms.util.Utils;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +56,12 @@ import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -601,7 +628,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
 
         return ticketRepository.filter(pageable
             , names
-            , getListSite(siteRepository, sites)
+            , SecurityUtils.getListSiteToString(siteRepository, sites)
             , usernames
             , roomId
             , status
@@ -670,7 +697,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         , String lastUpdatedBy
         , String keyword) {
         return ticketRepository.filter(names
-            , getListSite(siteRepository, sites)
+            , SecurityUtils.getListSiteToString(siteRepository, sites)
             , usernames
             , roomId
             , status
@@ -686,33 +713,6 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             , null
             , keyword);
     }
-
-    public static List<String> getListSite(SiteRepository siteRepository, List<String> siteId) {
-
-        if (SecurityUtils.getOrgId() == null && siteId != null) {
-            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
-        }
-        List<String> sites = new ArrayList<>();
-        if (SecurityUtils.getOrgId() != null) {
-            if (siteId == null) {
-                siteRepository.findAllByOrganizationId(UUID.fromString(SecurityUtils.getOrgId())).forEach(o -> {
-                    sites.add(o.getId().toString());
-                });
-            } else {
-                siteId.forEach(o -> {
-                    if (!SecurityUtils.checkSiteAuthorization(siteRepository, o)) {
-                        throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
-                    }
-                    sites.add(o);
-                });
-            }
-        } else {
-            sites.add(SecurityUtils.getSiteId());
-        }
-
-        return sites;
-    }
-
     @Override
     public ITicketController.TicketByQRCodeResponseDTO findByQRCode(String checkInCode) {
         CustomerTicketMap customerTicketMap = customerTicketMapRepository.findByCheckInCodeIgnoreCase(checkInCode);
@@ -820,7 +820,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     public ITicketController.TicketByRoomResponseDTO filterTicketByRoom(List<String> names, List<String> sites, List<String> usernames, UUID roomId, Constants.StatusTicket status, Constants.Purpose purpose, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, LocalDateTime startTimeStart, LocalDateTime startTimeEnd, LocalDateTime endTimeStart, LocalDateTime endTimeEnd, String createdBy, String lastUpdatedBy, String keyword) {
         List<Room> rooms;
         if (SecurityUtils.getUserDetails().isOrganizationAdmin() || SecurityUtils.getUserDetails().isSiteAdmin()) {
-            rooms = roomRepository.filter(null, SecurityUtils.getListSite(siteRepository, sites), null, null, null, null, null);
+            rooms = roomRepository.filter(null, SecurityUtils.getListSiteToUUID(siteRepository, sites), null, null, null, null, null);
         } else {
             rooms = roomRepository.filter(null, null, null, null, null, null, SecurityUtils.loginUsername());
         }

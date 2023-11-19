@@ -76,22 +76,26 @@ public class SettingSiteMapController implements ISettingSiteMapController {
     }
 
     /**
-     * The function returns a ResponseEntity containing a list of all setting sites associated with a given site ID.
+     * The function returns a ResponseEntity containing the result of calling the findAllBySiteIdAndGroupId method of the
+     * settingSiteService with the given settingGroupId and sites.
      *
-     * @param siteId The siteId parameter is a unique identifier for a site. It is used to retrieve all the setting sites
-     * associated with that particular site.
-     * @return The method is returning a ResponseEntity object containing a List of unknown type.
+     * @param settingGroupId The setting group ID is an integer value that represents the ID of the setting group. It is
+     *                       used to filter the settings based on the group they belong to.
+     * @param sites          A list of site IDs to filter the results by.
+     * @return The method is returning a ResponseEntity object.
      */
     @Override
-    public ResponseEntity<List<?>> findAllBySiteId(String siteId) {
-        return ResponseEntity.ok(settingSiteService.getAllSettingSiteBySiteId(siteId));
+    public ResponseEntity<?> findAllBySiteIdAndGroupId(Integer settingGroupId, List<String> sites) {
+        return ResponseEntity.ok(settingSiteService.findAllBySiteIdAndGroupId(settingGroupId, sites));
     }
 
-    @Override
-    public ResponseEntity<?> findAllBySiteIdAndGroupId(String siteId, Integer settingGroupId) {
-        return ResponseEntity.ok(settingSiteService.findAllBySiteIdAndGroupId(siteId, settingGroupId));
-    }
-
+    /**
+     * The function sets the default value for a specific site and returns a ResponseEntity object.
+     *
+     * @param siteId The siteId parameter is a unique identifier for a specific site. It is used to identify the site for
+     *               which the default value needs to be set.
+     * @return The method is returning a ResponseEntity object.
+     */
     @Override
     public ResponseEntity<?> setDefault(String siteId) {
         return ResponseEntity.ok(settingSiteService.setDefaultValueBySite(siteId));

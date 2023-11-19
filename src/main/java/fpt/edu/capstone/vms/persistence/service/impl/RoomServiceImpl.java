@@ -95,7 +95,7 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
 
     @Override
     public Page<Room> filter(Pageable pageable, List<String> names, List<String> siteId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, Boolean enable, String keyword, String createBy) {
-        List<UUID> sites = SecurityUtils.getListSite(siteRepository, siteId);
+        List<UUID> sites = SecurityUtils.getListSiteToUUID(siteRepository, siteId);
         return roomRepository.filter(
             pageable,
             names,
@@ -108,7 +108,7 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
 
     @Override
     public List<Room> filter(List<String> names, List<String> siteId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, Boolean enable, String keyword, String createBy) {
-        List<UUID> sites = SecurityUtils.getListSite(siteRepository, siteId);
+        List<UUID> sites = SecurityUtils.getListSiteToUUID(siteRepository, siteId);
         return roomRepository.filter(
             names,
             sites,

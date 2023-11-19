@@ -50,15 +50,10 @@ public interface ISettingSiteMapController {
     @PreAuthorize("hasRole('r:setting-site:find')")
     ResponseEntity<List<?>> findAll();
 
-    @GetMapping("/{siteId}")
-    @Operation(summary = "Find All by site id")
-    @PreAuthorize("hasRole('r:setting-site:find')")
-    ResponseEntity<List<?>> findAllBySiteId(@PathVariable String siteId);
-
-    @GetMapping("/site/{siteId}/group/{settingGroupId}")
+    @PostMapping("/group/{settingGroupId}")
     @Operation(summary = "Find All by site id and group id")
     @PreAuthorize("hasRole('r:setting-site:find')")
-    ResponseEntity<?> findAllBySiteIdAndGroupId(@PathVariable String siteId, @PathVariable Integer settingGroupId);
+    ResponseEntity<?> findAllBySiteIdAndGroupId(@PathVariable Integer settingGroupId, @RequestBody List<String> sites);
 
     @GetMapping("/set-default/{siteId}")
     @Operation(summary = "Set default setting for site")

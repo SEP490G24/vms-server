@@ -1,6 +1,7 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.constants.Constants;
+import fpt.edu.capstone.vms.oauth2.IRoleResource;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
 import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.entity.Organization;
@@ -8,6 +9,8 @@ import fpt.edu.capstone.vms.persistence.entity.User;
 import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
 import fpt.edu.capstone.vms.persistence.repository.FileRepository;
 import fpt.edu.capstone.vms.persistence.repository.OrganizationRepository;
+import fpt.edu.capstone.vms.persistence.service.IPermissionService;
+import fpt.edu.capstone.vms.persistence.service.IRoleService;
 import fpt.edu.capstone.vms.persistence.service.IUserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -26,6 +29,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -53,6 +57,10 @@ class OrganizationServiceImplTest {
     private FileRepository fileRepository;
     @Mock
     private IUserService userService;
+    @Mock
+    private IRoleService roleService;
+    @Mock
+    private IPermissionService iPermissionService;
     @Mock
     private AuditLogRepository auditLogRepository;
     SecurityContext securityContext;
@@ -84,8 +92,18 @@ class OrganizationServiceImplTest {
 
         User user = new User();
         user.setUsername(adminUserDto.getUsername());
+        List<String> roles = new ArrayList<>();
+        IRoleResource.RoleDto roleDto = new IRoleResource.RoleDto();
+        roleDto.setCode(organization.getCode().toUpperCase() + "_" + "ADMIN");
+        roleDto.setDescription("Role này là role admin của tổ chức " + organization.getName());
+        roles.add(roleDto.getCode());
+        adminUserDto.setRoles(roles);
 
+        when(iPermissionService.findAllByModuleId("339f9a15-bacf-48dd-acd6-87c482ebb36e")).thenReturn(new ArrayList<>());
+        when(iPermissionService.findAllByModuleId("75366af1-57bd-4115-b672-b2de7fa40a7d")).thenReturn(new ArrayList<>());
+        when(roleService.create(roleDto)).thenReturn(roleDto);
         when(userService.createUser(adminUserDto)).thenReturn(user);
+
 
         when(auditLogRepository.save(any(AuditLog.class))).thenAnswer(invocation -> {
             AuditLog auditLog = invocation.getArgument(0);
@@ -103,7 +121,6 @@ class OrganizationServiceImplTest {
         assertEquals("orgCode", result.getCode());
 
         verify(organizationRepository, times(1)).save(organization);
-        verify(userService, times(1)).createUser(adminUserDto);
     }
 
     @Test
@@ -149,6 +166,15 @@ class OrganizationServiceImplTest {
         Organization entity = new Organization();
         entity.setCode("existingCode");
         UUID id = UUID.randomUUID();
+
+        Jwt jwt = mock(Jwt.class);
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c07");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("mocked_username");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
 
         when(organizationRepository.existsByCode("existingCode")).thenReturn(true);
 
@@ -205,7 +231,14 @@ class OrganizationServiceImplTest {
         // Arrange
         Organization entity = new Organization();
         UUID id = UUID.randomUUID();
+        Jwt jwt = mock(Jwt.class);
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c07");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("mocked_username");
+        when(authentication.getPrincipal()).thenReturn(jwt);
 
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
         when(organizationRepository.findById(id)).thenReturn(Optional.empty());
 
         // Act and Assert

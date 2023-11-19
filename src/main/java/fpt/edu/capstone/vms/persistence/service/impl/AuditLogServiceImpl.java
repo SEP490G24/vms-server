@@ -8,7 +8,12 @@ import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.service.IAuditLogService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import fpt.edu.capstone.vms.util.SecurityUtils;
-import net.sf.jasperreports.engine.*;
+import net.sf.jasperreports.engine.JREmptyDataSource;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperCompileManager;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
 import net.sf.jasperreports.export.SimpleExporterInput;
@@ -21,9 +26,11 @@ import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.time.LocalDateTime;
-import java.util.*;
-
-import static fpt.edu.capstone.vms.persistence.service.impl.TicketServiceImpl.getListSite;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Service
 public class AuditLogServiceImpl extends GenericServiceImpl<AuditLog, UUID> implements IAuditLogService {
@@ -42,16 +49,25 @@ public class AuditLogServiceImpl extends GenericServiceImpl<AuditLog, UUID> impl
     public Page<IAuditLogController.AuditLogFilterDTO> filter(Pageable pageable, List<String> organizations, List<String> sites, Constants.AuditType auditType, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, String createdBy, String tableName, String keyword) {
 
         if (SecurityUtils.getUserDetails().isOrganizationAdmin() || SecurityUtils.getUserDetails().isSiteAdmin()) {
-            List<String> siteList = getListSite(siteRepository, sites);
-            return auditLogRepository.filter(pageable, organizations, siteList, auditType, createdOnStart, createdOnEnd, null, tableName, keyword);
+            List<String> siteList = SecurityUtils.getListSiteToString(siteRepository, sites);
+            return auditLogRepository.filter(pageable, null, siteList, auditType, createdOnStart, createdOnEnd, createdBy, tableName, keyword);
+        } else if (SecurityUtils.getUserDetails().isRealmAdmin()) {
+            return auditLogRepository.filter(pageable, organizations, sites, auditType, createdOnStart, createdOnEnd, createdBy, tableName, keyword);
         } else {
-            return auditLogRepository.filter(pageable, organizations, null, auditType, createdOnStart, createdOnEnd, SecurityUtils.loginUsername(), tableName, keyword);
+            return null;
         }
     }
 
     @Override
     public List<IAuditLogController.AuditLogFilterDTO> filter(List<String> organizations, List<String> sites, Constants.AuditType auditType, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, String createdBy, String tableName, String keyword) {
-        return auditLogRepository.filter(organizations, sites, auditType, createdOnStart, createdOnEnd, createdBy, tableName, keyword);
+        if (SecurityUtils.getUserDetails().isOrganizationAdmin() || SecurityUtils.getUserDetails().isSiteAdmin()) {
+            List<String> siteList = SecurityUtils.getListSiteToString(siteRepository, sites);
+            return auditLogRepository.filter(null, siteList, auditType, createdOnStart, createdOnEnd, createdBy, tableName, keyword);
+        } else if (SecurityUtils.getUserDetails().isRealmAdmin()) {
+            return auditLogRepository.filter(organizations, sites, auditType, createdOnStart, createdOnEnd, createdBy, tableName, keyword);
+        } else {
+            return null;
+        }
     }
 
     @Override
