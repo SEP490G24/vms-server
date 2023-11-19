@@ -111,7 +111,7 @@ public class SecurityUtils {
         }
         List<UUID> sites = new ArrayList<>();
         if (SecurityUtils.getOrgId() != null) {
-            if (siteId == null) {
+            if (siteId.isEmpty()) {
                 siteRepository.findAllByOrganizationId(UUID.fromString(SecurityUtils.getOrgId())).forEach(o -> {
                     sites.add(o.getId());
                 });
@@ -137,7 +137,7 @@ public class SecurityUtils {
         }
         List<String> sites = new ArrayList<>();
         if (SecurityUtils.getOrgId() != null) {
-            if (siteId == null) {
+            if (siteId.isEmpty()) {
                 siteRepository.findAllByOrganizationId(UUID.fromString(SecurityUtils.getOrgId())).forEach(o -> {
                     sites.add(o.getId().toString());
                 });

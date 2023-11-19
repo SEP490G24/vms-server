@@ -8,10 +8,11 @@ import fpt.edu.capstone.vms.persistence.service.ISettingSiteMapService;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -87,7 +88,11 @@ public class SettingSiteMapController implements ISettingSiteMapController {
      */
     @Override
     public ResponseEntity<?> findAllByGroupId(Integer settingGroupId, String siteId) {
-        return ResponseEntity.ok(settingSiteService.findAllBySiteIdAndGroupId(settingGroupId, Collections.singletonList(siteId)));
+        List<String> sites = new ArrayList<>();
+        if (!StringUtils.isEmpty(siteId)) {
+            sites.add(siteId);
+        }
+        return ResponseEntity.ok(settingSiteService.findAllBySiteIdAndGroupId(settingGroupId, sites));
     }
 
     /**
