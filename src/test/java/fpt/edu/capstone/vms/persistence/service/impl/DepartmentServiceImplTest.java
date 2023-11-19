@@ -331,14 +331,6 @@ class DepartmentServiceImplTest {
 
     @Test
     public void testFilterWithNoOrgIdAndNonNullSiteId() {
-        Jwt jwt = mock(Jwt.class);
-        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn(null);
-        when(authentication.getPrincipal()).thenReturn(jwt);
-
-        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
-        when(securityContext.getAuthentication()).thenReturn(authentication);
-        SecurityContextHolder.setContext(securityContext);
-
         List<String> siteId = new ArrayList<>();
         try {
             departmentService.filter(new ArrayList<>(), siteId, null, null, null, null, null, null);
@@ -350,14 +342,6 @@ class DepartmentServiceImplTest {
 
     @Test
     public void testFilterWithOrgIdAndNullSiteId() {
-        Jwt jwt = mock(Jwt.class);
-        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
-        when(authentication.getPrincipal()).thenReturn(jwt);
-
-        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
-        when(securityContext.getAuthentication()).thenReturn(authentication);
-        SecurityContextHolder.setContext(securityContext);
-
         when(siteRepository.findAllByOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"))).thenReturn(new ArrayList<>());
         List<Department> departments = new ArrayList<>();
         when(departmentRepository.filter(any(), any(), any(), any(), any(), any(), any(), any()))
