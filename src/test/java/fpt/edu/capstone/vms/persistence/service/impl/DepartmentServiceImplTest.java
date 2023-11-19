@@ -346,8 +346,8 @@ class DepartmentServiceImplTest {
         List<Department> departments = new ArrayList<>();
         when(departmentRepository.filter(any(), any(), any(), any(), any(), any(), any(), any()))
             .thenReturn(departments);
-
-        List<Department> result = departmentService.filter(new ArrayList<>(), null, null, null, null, null, null, null);
+        List<String> siteId = new ArrayList<>();
+        List<Department> result = departmentService.filter(new ArrayList<>(), siteId, null, null, null, null, null, null);
         assertEquals(departments, result);
     }
 
