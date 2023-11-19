@@ -82,15 +82,6 @@ public class UserController implements IUserController {
     }
 
     @Override
-    public ResponseEntity<?> updateState(UpdateState updateState) {
-        if (userService.updateState(updateState.getEnable(), updateState.getUsername()) > 0) {
-            return ResponseEntity.ok().build();
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    @Override
     public ResponseEntity<?> viewMyProfile() {
         String username = SecurityUtils.loginUsername();
         return ResponseEntity.ok(mapper.map(userService.findByUsername(username), ProfileUser.class));
@@ -119,12 +110,6 @@ public class UserController implements IUserController {
             return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
         }
     }
-
-//    @Override
-//    public ResponseEntity<?> updateRole(String username, List<String> roles) {
-//        userService.updateRole(username, roles);
-//        return ResponseEntity.ok().build();
-//    }
 
     @Override
     public ResponseEntity<Object> importUser(MultipartFile file) {

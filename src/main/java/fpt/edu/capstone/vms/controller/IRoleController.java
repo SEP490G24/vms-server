@@ -60,11 +60,6 @@ public interface IRoleController {
         @PreAuthorize("hasRole('r:role:delete')")
     ResponseEntity<?> delete(@PathVariable("id") String id);
 
-    @PostMapping("/site")
-    @Operation(summary = "Get role by sites")
-        @PreAuthorize("hasRole('r:role:find')")
-    ResponseEntity<?> getBySites(@RequestBody List<String> sites);
-
     @Data
     class RoleBasePayload {
         private String code;

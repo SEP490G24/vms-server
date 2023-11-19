@@ -51,15 +51,7 @@ public interface IUserService {
 
     void changePasswordUser(String username, String oldPassword, String newPassword);
 
-    int updateState(boolean isEnable, String username);
-
-    void handleAuthSuccess(String username);
-
-    void deleteUser(String username);
-
     User findByUsername(String username);
-
-    //void synAccountFromKeycloak();
 
     ByteArrayResource export(IUserController.UserFilterRequest userFilter);
 
@@ -69,5 +61,4 @@ public interface IUserService {
 
     ResponseEntity<ByteArrayResource> downloadExcel() throws IOException;
 
-    //void updateRole(String username, List<String> roles);
 }

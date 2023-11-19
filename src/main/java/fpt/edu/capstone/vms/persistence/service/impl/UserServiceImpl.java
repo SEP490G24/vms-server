@@ -281,7 +281,8 @@ public class UserServiceImpl implements IUserService {
 
         if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
             throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "Can't create user in this site");
-        };
+        }
+        ;
 
         Site site = siteRepository.findById(UUID.fromString(siteId)).orElse(null);
         userDto.setUsername(department.getSite().getCode().toLowerCase() + "_" + userDto.getUsername());
@@ -361,47 +362,10 @@ public class UserServiceImpl implements IUserService {
         }
     }
 
-
-    @Override
-    public int updateState(boolean isEnable, String username) {
-        return userRepository.updateStateByUsername(isEnable, username);
-    }
-
-    @Override
-    public void handleAuthSuccess(String username) {
-        var userOptional = userRepository.findByUsername(username);
-        if (userOptional.isPresent()) {
-            var userEntity = userOptional.get();
-            userEntity.setLastLoginTime(LocalDateTime.now());
-            userRepository.save(userEntity);
-        }
-    }
-
-    @Override
-    public void deleteUser(String username) {
-
-    }
-
     @Override
     public User findByUsername(String username) {
         return userRepository.findFirstByUsername(username);
     }
-
-//    @Override
-//    public void synAccountFromKeycloak() {
-//        List<IUserResource.UserDto> users = userResource.users();
-//
-//        for (IUserResource.UserDto userDto : users) {
-//            if (null != userDto.getRole()) {
-//                User userEntity = userRepository.findFirstByUsername(userDto.getUsername());
-//                if (null == userEntity) {
-//                    userEntity = mapper.map(userDto, User.class);
-//                    userRepository.save(userEntity);
-//                    log.info("Create user {}", userDto.getUsername());
-//                }
-//            }
-//        }
-//    }
 
     @Override
     @Transactional
@@ -490,12 +454,12 @@ public class UserServiceImpl implements IUserService {
     @Override
     public ResponseEntity<ByteArrayResource> downloadExcel() {
         try {
-            ClassPathResource resource = new ClassPathResource("template/Mau-danh-sach-nguoi-dung.xlsx");
+            ClassPathResource resource = new ClassPathResource("template/template-import-users.xlsx");
             byte[] bytes = Files.readAllBytes(resource.getFile().toPath());
             ByteArrayResource byteArrayResource = new ByteArrayResource(bytes);
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-            headers.setContentDispositionFormData("attachment", "Mau-danh-sach-nguoi-dung.xlsx");
+            headers.setContentDispositionFormData("attachment", "template-import-users.xlsx");
             return ResponseEntity
                 .status(HttpStatus.OK)
                 .headers(headers)
@@ -505,12 +469,6 @@ public class UserServiceImpl implements IUserService {
         }
 
     }
-
-//    @Override
-//    public void updateRole(String username, List<String> roles) {
-//        var userEntity = userRepository.findByUsername(username).orElse(null);
-//        userResource.updateRole(userEntity.getOpenid(), roles);
-//    }
 
 
     @Transactional
