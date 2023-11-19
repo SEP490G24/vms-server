@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
@@ -27,7 +28,9 @@ public class RoleControllerImpl implements IRoleController {
     @Override
     public ResponseEntity<?> getAll(String siteId) {
         List<String> sites = new ArrayList<>();
-        sites.add(siteId);
+        if (!StringUtils.isEmpty(siteId)) {
+            sites.add(siteId);
+        }
         return ResponseEntity.ok(roleService.getBySites(SecurityUtils.getListSiteToString(siteRepository, sites)));
     }
 
