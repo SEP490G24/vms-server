@@ -160,7 +160,7 @@ public class SiteController implements ISiteController {
      * @return The method is returning a ResponseEntity object containing a list of objects.
      */
     @Override
-    public ResponseEntity<List<?>> findAllByOrganizationId() {
+    public ResponseEntity<List<?>> findAllByOrganization() {
         return ResponseEntity.ok(mapper.map(siteService.findAllByOrganizationId(SecurityUtils.getOrgId()), new TypeToken<List<SiteFilterDTO>>() {
         }.getType()));
     }

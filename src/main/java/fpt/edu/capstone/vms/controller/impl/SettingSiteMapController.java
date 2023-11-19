@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,13 +25,13 @@ public class SettingSiteMapController implements ISettingSiteMapController {
     /**
      * The function returns a ResponseEntity containing a SettingSiteMap object found by its siteId and settingId.
      *
-     * @param siteId The siteId parameter is a String that represents the unique identifier of a site. It is used to
-     * identify a specific site in the system.
+     * @param siteId    The siteId parameter is a String that represents the unique identifier of a site. It is used to
+     *                  identify a specific site in the system.
      * @param settingId The settingId parameter is of type Long and represents the ID of the setting.
      * @return The method is returning a ResponseEntity object containing a SettingSiteMap object.
      */
     @Override
-    public ResponseEntity<SettingSiteMap> findById( String siteId, Long settingId) {
+    public ResponseEntity<SettingSiteMap> findById(String siteId, Long settingId) {
         SettingSiteMapPk pk = new SettingSiteMapPk(settingId, UUID.fromString(siteId));
         return ResponseEntity.ok(settingSiteService.findById(pk));
     }
@@ -38,9 +39,9 @@ public class SettingSiteMapController implements ISettingSiteMapController {
     /**
      * The function deletes a setting from a site map using the provided site ID and setting ID.
      *
-     * @param siteId The siteId parameter is a String representing the unique identifier of a site.
+     * @param siteId    The siteId parameter is a String representing the unique identifier of a site.
      * @param settingId The settingId parameter is a Long value that represents the unique identifier of a setting in the
-     * system.
+     *                  system.
      * @return The method is returning a ResponseEntity object with a generic type of SettingSiteMap.
      */
     @Override
@@ -53,7 +54,7 @@ public class SettingSiteMapController implements ISettingSiteMapController {
      * The function creates or updates a setting site map and returns a ResponseEntity object.
      *
      * @param settingSiteInfo The parameter "settingSiteInfo" is an object of type SettingSiteInfo. It contains information
-     * related to a setting site map that needs to be created or updated.
+     *                        related to a setting site map that needs to be created or updated.
      * @return The method is returning a ResponseEntity object.
      */
     @Override
@@ -81,12 +82,12 @@ public class SettingSiteMapController implements ISettingSiteMapController {
      *
      * @param settingGroupId The setting group ID is an integer value that represents the ID of the setting group. It is
      *                       used to filter the settings based on the group they belong to.
-     * @param sites          A list of site IDs to filter the results by.
+     * @param siteId          A siteId to filter the results by.
      * @return The method is returning a ResponseEntity object.
      */
     @Override
-    public ResponseEntity<?> findAllBySiteIdAndGroupId(Integer settingGroupId, List<String> sites) {
-        return ResponseEntity.ok(settingSiteService.findAllBySiteIdAndGroupId(settingGroupId, sites));
+    public ResponseEntity<?> findAllByGroupId(Integer settingGroupId, String siteId) {
+        return ResponseEntity.ok(settingSiteService.findAllBySiteIdAndGroupId(settingGroupId, Collections.singletonList(siteId)));
     }
 
     /**
