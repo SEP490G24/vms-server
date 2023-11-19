@@ -236,6 +236,37 @@ public class UserServiceImpl implements IUserService {
         }
     }
 
+
+    @Override
+    @Transactional
+    public User createAdmin(IUserResource.UserDto userDto) {
+        User userEntity = null;
+        // (1) Create user on Keycloak
+        String kcUserId = userResource.create(userDto);
+
+        try {
+            if (!StringUtils.isEmpty(kcUserId)) {
+                userEntity = mapper.map(userDto, User.class).setOpenid(kcUserId);
+                String role = String.join(";", userDto.getRoles());
+                userEntity.setRole(role);
+                User user = userRepository.save(userEntity);
+                auditLogRepository.save(new AuditLog(null
+                    , userDto.getOrgId()
+                    , user.getId()
+                    , USER_TABLE_NAME
+                    , Constants.AuditType.CREATE
+                    , null
+                    , user.toString()));
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            if (null != kcUserId) {
+                userResource.delete(kcUserId);
+            }
+        }
+        return userEntity;
+    }
+
     @Override
     @Transactional
     public User createUser(IUserResource.UserDto userDto) {

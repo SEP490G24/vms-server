@@ -6,6 +6,7 @@ import fpt.edu.capstone.vms.persistence.entity.Organization;
 import fpt.edu.capstone.vms.persistence.service.IOrganizationService;
 import jakarta.ws.rs.QueryParam;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -76,5 +77,27 @@ public class OrganizationController implements IOrganizationController {
                 filter.getLastUpdatedBy(),
                 filter.getEnable(),
                 filter.getKeyword()));
+    }
+
+    @Data
+    class OrganizationDTO {
+        //organization info
+        private String name;
+        private String code;
+        private String website;
+        private String representative;
+        private String description;
+        private String logo;
+        private String contactInfo;
+        private String contactPhoneNumber;
+        private Boolean enable;
+
+        //site info
+        private String phoneNumber;
+        private Integer provinceId;
+        private Integer communeId;
+        private Integer districtId;
+        private String address;
+        private String taxCode;
     }
 }

@@ -45,6 +45,8 @@ public interface IUserService {
 
     User createUser(IUserResource.UserDto userDto);
 
+    User createAdmin(IUserResource.UserDto userDto);
+
     User updateUser(IUserResource.UserDto userDto) throws NotFoundException;
 
     void changePasswordUser(String username, String oldPassword, String newPassword);

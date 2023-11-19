@@ -1,11 +1,15 @@
 package fpt.edu.capstone.vms.oauth2.provider.keycloak;
 
+import fpt.edu.capstone.vms.constants.ErrorApp;
 import fpt.edu.capstone.vms.controller.IRoleController;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.oauth2.IPermissionResource;
 import fpt.edu.capstone.vms.oauth2.IRoleResource;
 import fpt.edu.capstone.vms.persistence.entity.Site;
+import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RolesResource;
 import org.keycloak.representations.idm.RoleRepresentation;
@@ -17,10 +21,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 
 @Slf4j
@@ -29,15 +30,17 @@ public class KeycloakRealmRoleResource implements IRoleResource {
 
     private final RolesResource rolesResource;
     private final ModelMapper mapper;
+    private final SiteRepository siteRepository;
 
     private final String[] ignoreDefaultRoles;
 
     public KeycloakRealmRoleResource(
-            Keycloak keycloak,
-            @Value("${edu.fpt.capstone.vms.oauth2.keycloak.realm}") String realm,
-            @Value("${edu.fpt.capstone.vms.oauth2.keycloak.ignore-default-roles}") String [] ignoreDefaultRoles,
-            ModelMapper mapper) {
+        Keycloak keycloak,
+        @Value("${edu.fpt.capstone.vms.oauth2.keycloak.realm}") String realm,
+        @Value("${edu.fpt.capstone.vms.oauth2.keycloak.ignore-default-roles}") String[] ignoreDefaultRoles,
+        ModelMapper mapper, SiteRepository siteRepository) {
         this.ignoreDefaultRoles = ignoreDefaultRoles;
+        this.siteRepository = siteRepository;
         this.rolesResource = keycloak.realm(realm).roles();
         this.mapper = mapper;
     }
@@ -103,12 +106,43 @@ public class KeycloakRealmRoleResource implements IRoleResource {
     }
 
     @Override
-    public RoleDto create(Site site, RoleDto value) {
+    public RoleDto create(RoleDto value) {
         var roleInsert = new RoleRepresentation();
-        roleInsert.setName(site.getCode() + "_" + value.getCode());
+        String siteId = null;
+        String orgId = null;
+
+        List<String> siteIdList = value.getAttributes().get("site_id");
+        List<String> orgIdList = value.getAttributes().get("org_id");
+
+        if (siteIdList != null && !siteIdList.isEmpty()) {
+            siteId = siteIdList.get(0);
+        }
+
+        if (orgIdList != null && !orgIdList.isEmpty()) {
+            orgId = orgIdList.get(0);
+        }
+        if (orgId != null) {
+            roleInsert.setName(value.getCode());
+        } else if (siteId != null) {
+            Site site = siteRepository.findById(UUID.fromString(siteId)).orElse(null);
+            if (ObjectUtils.isEmpty(site)) throw new CustomException(ErrorApp.BAD_REQUEST);
+            roleInsert.setName((site.getCode() + "_" + value.getCode()).toUpperCase());
+        }
         roleInsert.setAttributes(value.getAttributes());
         roleInsert.setDescription(value.getDescription());
         this.rolesResource.create(roleInsert);
+
+        //add permistion
+        if (value.getPermissionDtos() != null && !value.getPermissionDtos().isEmpty()) {
+            List<IPermissionResource.PermissionDto> stringList = new ArrayList<>();
+            stringList.addAll(value.getPermissionDtos());
+            var roleUpdate = this.rolesResource.get(roleInsert.getName());
+            for (IPermissionResource.PermissionDto p : stringList
+            ) {
+                roleUpdate.addComposites(Collections.singletonList(mapper.map(p, RoleRepresentation.class)));
+            }
+        }
+
         return mapper.map(roleInsert, RoleDto.class);
     }
 

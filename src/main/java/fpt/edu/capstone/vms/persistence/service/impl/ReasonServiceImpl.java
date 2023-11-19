@@ -46,8 +46,9 @@ public class ReasonServiceImpl extends GenericServiceImpl<Reason, UUID> implemen
     public Reason create(IReasonController.ReasonDto reasonDto) {
         if (ObjectUtils.isEmpty(reasonDto))
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Object is empty");
-        if (StringUtils.isEmpty(reasonDto.getSiteId().toString()))
+        if (reasonDto.getSiteId() == null || StringUtils.isEmpty(reasonDto.getSiteId().toString())) {
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "SiteId is null");
+        }
         var reason = mapper.map(reasonDto, Reason.class);
         reason.setEnable(true);
         reasonRepository.save(reason);
