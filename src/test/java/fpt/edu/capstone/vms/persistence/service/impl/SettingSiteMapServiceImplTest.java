@@ -358,7 +358,7 @@ class SettingSiteMapServiceImplTest {
 
         // Verifying the exception status code and message
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
-        assertEquals("400 SettingId or siteId is not null!!", exception.getMessage());
+        assertEquals("400 SettingId is not null!!", exception.getMessage());
 
         // Verifying interactions with dependencies
         verify(auditLogRepository, never()).save(any(AuditLog.class));
