@@ -73,8 +73,8 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Value is empty");
         }
 
-        if (settingSiteInfo.getSettingId() == null || StringUtils.isEmpty(settingSiteInfo.getSiteId())) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SettingId or siteId is not null!!");
+        if (settingSiteInfo.getSettingId() == null) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SettingId is not null!!");
         }
 
         Long settingId = Long.valueOf(settingSiteInfo.getSettingId());
