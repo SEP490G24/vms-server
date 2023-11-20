@@ -16,6 +16,7 @@ public enum ErrorApp {
     INCORRECT_PASSWORD(107, I18n.getMessage("msg.user.error.password")),
     USER_NOT_FOUND(1000, I18n.getMessage("msg.user.notFound")),
     EXPORT_ERROR(2000, I18n.getMessage("msg.export.errorOccurred")),
+    IMPORT_HEADER_ERROR(3000, I18n.getMessage("msg.user.import.header.error")),
 
     ENTITY_CODE_DUPLICATE(101, I18n.getMessage("msg.entity.duplicate")),
     ENTITY_CODE_DUPLICATE_PRODUCTION_SITE(101, I18n.getMessage("msg.production.site.duplicate")),

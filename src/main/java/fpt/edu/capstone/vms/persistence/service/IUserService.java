@@ -57,7 +57,7 @@ public interface IUserService {
 
     Boolean deleteAvatar(String name, String newImage, String username);
 
-    ResponseEntity<Object> importUser(MultipartFile file);
+    ResponseEntity<Object> importUser(String siteId, MultipartFile file);
 
     ResponseEntity<ByteArrayResource> downloadExcel() throws IOException;
 

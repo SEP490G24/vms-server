@@ -8,6 +8,7 @@ import fpt.edu.capstone.vms.constants.ErrorApp;
 import fpt.edu.capstone.vms.controller.IUserController;
 import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.exception.NotFoundException;
+import fpt.edu.capstone.vms.oauth2.IRoleResource;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
 import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.entity.Department;
@@ -72,6 +73,7 @@ public class UserServiceImpl implements IUserService {
     private final ModelMapper mapper;
     final DepartmentRepository departmentRepository;
     private final AuditLogRepository auditLogRepository;
+    private final IRoleResource roleResource;
 
 
     Integer currentRowIndex;
@@ -86,7 +88,8 @@ public class UserServiceImpl implements IUserService {
         GENDER(6),
         DATA_OF_BIRTH(7),
         DEPARTMENT_CODE(8),
-        ENABLE(9);
+        ROLE_CODE(9),
+        ENABLE(10);
         final int value;
 
         UserIndexColumn(int value) {
@@ -99,7 +102,7 @@ public class UserServiceImpl implements IUserService {
     }
 
 
-    static final Integer LAST_COLUMN_INDEX = 9;
+    static final Integer LAST_COLUMN_INDEX = 10;
     static final Map<Integer, String> HEADER_EXCEL_FILE = new HashMap<>();
 
     public static final String USERNAME_ALREADY_EXISTS_MESSAGE = "Username already exist";
@@ -107,6 +110,7 @@ public class UserServiceImpl implements IUserService {
     public static final String INVALID_STATION_CODE_FORMAT_MESSAGE = "Username must not contain special characters";
     public static final String INVALID_PHONE_NUMBER_FORMAT_MESSAGE = "The phone number is not in the correct format";
     public static final String INVALID_EMAIL_FORMAT_MESSAGE = "Email invalidate";
+    public static final String DUPLICATE_ROLE_MESSAGE = "Roles within the same line cannot overlap";
     public static final String MALE = "MALE";
     public static final String FEMALE = "FEMALE";
     public static final String OTHER = "OTHER";
@@ -128,8 +132,9 @@ public class UserServiceImpl implements IUserService {
         HEADER_EXCEL_FILE.put(5, "Email");
         HEADER_EXCEL_FILE.put(6, "Gender");
         HEADER_EXCEL_FILE.put(7, "DateOfBirth");
-        HEADER_EXCEL_FILE.put(8, "DepartmentCode");
-        HEADER_EXCEL_FILE.put(9, "Enable");
+        HEADER_EXCEL_FILE.put(8, "Department");
+        HEADER_EXCEL_FILE.put(9, "Role");
+        HEADER_EXCEL_FILE.put(10, "Status");
     }
 
 
@@ -294,7 +299,6 @@ public class UserServiceImpl implements IUserService {
                 userEntity = mapper.map(userDto, User.class).setOpenid(kcUserId);
                 String role = String.join(";", userDto.getRoles());
                 userEntity.setRole(role);
-//                userEntity.setPassword(encodePassword(userEntity.getPassword()));
                 User user = userRepository.save(userEntity);
                 auditLogRepository.save(new AuditLog(siteId
                     , site.getOrganizationId().toString()
@@ -351,7 +355,8 @@ public class UserServiceImpl implements IUserService {
 
         var userEntity = userRepository.findByUsername(username).orElse(null);
         if (userEntity == null) throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can not found user");
-
+        if (oldPassword == newPassword)
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The new password is the same as the old password");
         if (oldPassword.isEmpty())
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Can not null for new password");
 
@@ -416,7 +421,7 @@ public class UserServiceImpl implements IUserService {
 
     @Transactional
     @Override
-    public ResponseEntity<Object> importUser(MultipartFile file) {
+    public ResponseEntity<Object> importUser(String siteId, MultipartFile file) {
         if (!FileUtils.isValidFileUpload(file, "xls", "xlsx", "XLS", "XLSX")) {
             throw new CustomException(ErrorApp.FILE_NOT_FORMAT);
         }
@@ -424,7 +429,7 @@ public class UserServiceImpl implements IUserService {
             throw new CustomException(ErrorApp.FILE_EMPTY);
         }
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-            Workbook workbook = importExcel(file);
+            Workbook workbook = importExcel(siteId, file);
             if (workbook == null) {
                 return ResponseEntity.ok().build();
             }
@@ -439,7 +444,7 @@ public class UserServiceImpl implements IUserService {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-            headers.setContentDispositionFormData("attachment", "Thong-tin-loi-danh-sach-nguoi-dung.xlsx");
+            headers.setContentDispositionFormData("attachment", "error-import-users.xlsx");
             return ResponseEntity.status(HttpStatus.OK).headers(headers).body(byteData);
 
         } catch (CustomException e) {
@@ -472,7 +477,7 @@ public class UserServiceImpl implements IUserService {
 
 
     @Transactional
-    public Workbook importExcel(MultipartFile file) {
+    public Workbook importExcel(String siteId, MultipartFile file) {
         try {
             this.mapError = new HashMap<>();
 
@@ -489,7 +494,7 @@ public class UserServiceImpl implements IUserService {
                     if (validateHeaderCellInExcelFile(row, LAST_COLUMN_INDEX, HEADER_EXCEL_FILE)) {
                         continue;
                     } else {
-                        throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Header is not in correct format");
+                        throw new CustomException(ErrorApp.IMPORT_HEADER_ERROR);
                     }
                 }
 
@@ -523,8 +528,14 @@ public class UserServiceImpl implements IUserService {
 
 
             //get list combobox
-            List<User> users = userRepository.findAllByEnableIsTrue();
-            List<Department> departments = departmentRepository.findAllByEnableIsTrue();
+            //check siteId
+            List<String> sites = new ArrayList<>();
+            if (!org.springframework.util.StringUtils.isEmpty(siteId)) {
+                sites.add(siteId);
+            }
+            List<User> users = userRepository.findAllBySiteId(SecurityUtils.getListSiteToUUID(siteRepository, sites).get(0));
+            List<Department> departments = departmentRepository.findAllBySiteId(SecurityUtils.getListSiteToUUID(siteRepository, sites).get(0));
+            List<IRoleResource.RoleDto> rolesOfSite = roleResource.getBySites(SecurityUtils.getListSiteToString(siteRepository, sites));
 
             for (Map.Entry<Integer, Map<Integer, String>> entryRow : listRowExcel.entrySet()) {
                 this.currentRowIndex = entryRow.getKey();
@@ -630,9 +641,43 @@ public class UserServiceImpl implements IUserService {
                         continue;
                     }
 
+                    //Department code
+                    if (cellIndex == UserIndexColumn.ROLE_CODE.getValue()) {
+                        if (validateMaxLength(HEADER_EXCEL_FILE.get(9), cellValue, 150) && validateEmptyCell(HEADER_EXCEL_FILE.get(9), cellValue)) {
+                            List<String> rolesName = splitStringByComma(cellValue);
+                            Set<String> uniqueName = new HashSet<>();
+                            List<String> duplicateName = new ArrayList();
+                            List<String> rolesOfUser = new ArrayList<>();
+                            for (String name : rolesName
+                            ) {
+                                Optional<IRoleResource.RoleDto> roleDto = rolesOfSite.stream()
+                                    .filter(x -> name.equalsIgnoreCase(x.getAttributes().get("name").get(0)))
+                                    .findFirst();
+                                if (roleDto.isPresent()) {
+                                    if (uniqueName.contains(name)) {
+                                        if (!duplicateName.contains(name)) {
+                                            duplicateName.add(name);
+                                        }
+                                    } else {
+                                        uniqueName.add(name);
+                                        rolesOfUser.add(roleDto.get().getCode());
+                                    }
+                                } else {
+                                    setErrorNotExist(HEADER_EXCEL_FILE.get(9));
+                                }
+                                dto.setRoles(rolesOfUser);
+                            }
+                            if (!duplicateName.isEmpty()) {
+                                setCommentAndColorError(DUPLICATE_ROLE_MESSAGE + ":" + String.join(", ", duplicateName));
+                            }
+
+                        }
+                        continue;
+                    }
+
                     //Enable
                     if (cellIndex == UserIndexColumn.ENABLE.getValue()) {
-                        if (validateEmptyCell(HEADER_EXCEL_FILE.get(9), cellValue)) {
+                        if (validateEmptyCell(HEADER_EXCEL_FILE.get(10), cellValue)) {
                             dto.setEnable(BooleanUtils.toBoolean(Integer.parseInt(cellValue)));
                         }
                     }
@@ -677,7 +722,7 @@ public class UserServiceImpl implements IUserService {
 
             //Tạo cell header
             int columnIndexForError = LAST_COLUMN_INDEX + 1;
-            workbookSheetWrite.getRow(0).createCell(columnIndexForError).setCellValue("Chi tiết lỗi");
+            workbookSheetWrite.getRow(0).createCell(columnIndexForError).setCellValue("ErrorDescription");
             workbookSheetWrite.getRow(0).getCell(columnIndexForError).setCellStyle(headerCellStyle);
             workbookSheetWrite.setColumnWidth(columnIndexForError, 50 * 256);
             for (Row row : workbookSheetWrite) {
@@ -792,5 +837,17 @@ public class UserServiceImpl implements IUserService {
             setCommentAndColorError(messageIsError);
             return false;
         }
+    }
+
+    public static List<String> splitStringByComma(String input) {
+        List<String> result = new ArrayList<>();
+
+        if (input != null && !input.isEmpty()) {
+            String[] parts = input.split(";");
+            for (String part : parts) {
+                result.add(part.trim());
+            }
+        }
+        return result;
     }
 }

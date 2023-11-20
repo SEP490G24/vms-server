@@ -66,7 +66,7 @@ public interface IUserController {
     @PostMapping("/import")
     @Operation(summary = "Import list of user use excel")
     @PreAuthorize("hasRole('r:user:import')")
-    ResponseEntity<Object> importUser(@RequestBody MultipartFile file);
+    ResponseEntity<Object> importUser(@RequestParam(value = "siteId", required = false) String siteId, @RequestBody MultipartFile file);
 
     @PostMapping("/change-password")
     @Operation(summary = "Change Password")

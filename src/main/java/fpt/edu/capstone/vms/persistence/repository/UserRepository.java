@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public interface UserRepository extends GenericRepository<User, String>, UserRepositoryCustom {
@@ -23,24 +24,12 @@ public interface UserRepository extends GenericRepository<User, String>, UserRep
     @Query("select u from User u where u.username = :username")
     Optional<User> findByUsername(@Param("username") @NonNull String username);
 
-    /*@Query(value = "select u from User u " +
-        "where ((coalesce(:usernames) is null) or (u.username in :usernames)) " +
-        "and ((coalesce(:roles) is null) or (u.role in :roles)) " +
-        "and (((cast(:createdOnStart as date) is null ) or (cast(:createdOnEnd as date) is null )) or (u.createdOn between :createdOnStart and :createdOnEnd))" +
-        "and ((:enable is null) or (u.enable = :enable))" +
-        "and ((:keyword is null) or (u.username LIKE %:keyword% or u.firstName LIKE %:keyword% or u.lastName LIKE %:keyword% or u.email LIKE %:keyword% or u.phoneNumber LIKE %:keyword% ))")
-    Page<User> filter(Pageable pageable,
-                                                @Param("usernames") @Nullable Collection<String> usernames,
-                                                @Param("roles") @Nullable Collection<Constants.UserRole> roles,
-                                                @Param("createdOnStart") @Nullable LocalDateTime createdOnStart,
-                                                @Param("createdOnEnd") @Nullable LocalDateTime createdOnEnd,
-                                                @Param("enable") @Nullable Boolean isEnable,
-                                                @Param("keyword") @Nullable String keyword,
-                                                @Param("departmentId") @Nullable String departmentId);*/
-
     User findFirstByUsername(String username);
 
     List<User> findAllByEnableIsTrue();
 
     List<User> findAllByAvatarIsNotNull();
+
+    @Query("select u from User u join Department d on u.departmentId = d.id where d.siteId = :siteId")
+    List<User> findAllBySiteId(@Param("siteId") @NonNull UUID siteId);
 }

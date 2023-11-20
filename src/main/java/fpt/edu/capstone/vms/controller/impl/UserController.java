@@ -112,8 +112,8 @@ public class UserController implements IUserController {
     }
 
     @Override
-    public ResponseEntity<Object> importUser(MultipartFile file) {
-        return userService.importUser(file);
+    public ResponseEntity<Object> importUser(String siteId, MultipartFile file) {
+        return userService.importUser(siteId, file);
     }
 
 }
