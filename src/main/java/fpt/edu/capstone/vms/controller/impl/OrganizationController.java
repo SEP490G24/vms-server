@@ -4,6 +4,7 @@ import fpt.edu.capstone.vms.controller.IOrganizationController;
 import fpt.edu.capstone.vms.exception.HttpClientResponse;
 import fpt.edu.capstone.vms.persistence.entity.Organization;
 import fpt.edu.capstone.vms.persistence.service.IOrganizationService;
+import fpt.edu.capstone.vms.util.SecurityUtils;
 import jakarta.ws.rs.QueryParam;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,7 +25,16 @@ public class OrganizationController implements IOrganizationController {
 
     @Override
     public ResponseEntity<Organization> findById(UUID id) {
-        return ResponseEntity.ok(organizationService.findById(id));
+        if (SecurityUtils.getUserDetails().isRealmAdmin()) {
+            return ResponseEntity.ok(organizationService.findById(id));
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> viewDetail() {
+        return ResponseEntity.ok(organizationService.findById(UUID.fromString(SecurityUtils.getOrgId())));
     }
 
     @Override
