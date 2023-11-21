@@ -33,8 +33,12 @@ public interface IOrganizationController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Find by id")
-    @PreAuthorize("hasRole('r:organization:find')")
     ResponseEntity<?> findById(@PathVariable UUID id);
+
+    @GetMapping("/view-detail")
+    @Operation(summary = "View detail organization")
+    @PreAuthorize("hasRole('r:organization:find')")
+    ResponseEntity<?> viewDetail();
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete organization")
