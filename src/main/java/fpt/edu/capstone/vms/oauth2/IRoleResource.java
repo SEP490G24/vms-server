@@ -29,6 +29,8 @@ public interface IRoleResource {
      */
     Page<RoleDto> filter(IRoleController.RoleBasePayload roleBasePayload, Pageable pageable);
 
+    List<RoleDto> filter(IRoleController.RoleBasePayload roleBasePayload);
+
     /**
      * Find role by id (Keycloak: role is realm role)
      *

@@ -30,7 +30,12 @@ public class RoleService implements IRoleService {
 
     @Override
     public Page<IRoleResource.RoleDto> filter(IRoleController.RoleBasePayload roleBasePayload, Pageable pageable) {
-        return roleResource.filter(roleBasePayload,pageable);
+        return roleResource.filter(roleBasePayload, pageable);
+    }
+
+    @Override
+    public List<IRoleResource.RoleDto> filter(IRoleController.RoleBasePayload roleBasePayload) {
+        return roleResource.filter(roleBasePayload);
     }
 
 
