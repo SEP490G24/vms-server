@@ -28,10 +28,12 @@ public class DashboardServiceImpl implements IDashboardService {
     @Override
     public List<IDashboardController.DashboardResponse> getTicketStatsByPurpose(IDashboardController.DashboardDTO dashboardDTO, String limit) {
         LocalDate currentTime = LocalDate.now();
-        if ("date".equals(limit)) {
-            return convertToTicketStats(dashboardRepository.countTicketsByPurposeAndDate(java.sql.Date.valueOf(currentTime), SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSites())));
+        if ("week".equals(limit)) {
+            LocalDate weekAgo = currentTime.minusDays(7);
+            return convertToTicketStats(dashboardRepository.countTicketsByPurpose(java.sql.Date.valueOf(currentTime), java.sql.Date.valueOf(weekAgo), SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSites())));
         } else if ("month".equals(limit)) {
-            return convertToTicketStats(dashboardRepository.countTicketsByPurposeAndMonth(currentTime.getMonthValue(), SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSites())));
+            LocalDate monthAgo = currentTime.minusDays(30);
+            return convertToTicketStats(dashboardRepository.countTicketsByPurpose(java.sql.Date.valueOf(currentTime), java.sql.Date.valueOf(monthAgo), SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSites())));
         } else if ("year".equals(limit)) {
             return convertToTicketStats(dashboardRepository.countTicketsByPurposeAndYear(currentTime.getYear(), SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSites())));
         }

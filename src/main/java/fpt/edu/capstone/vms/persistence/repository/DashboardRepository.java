@@ -14,20 +14,9 @@ import java.util.UUID;
 @Repository
 public interface DashboardRepository extends GenericRepository<Ticket, UUID> {
 
-    @Query("SELECT t.purpose, COUNT(t) FROM Ticket t WHERE DATE(t.startTime) = :date " +
+    @Query("SELECT t.purpose, COUNT(t) FROM Ticket t WHERE " +
+        "AND t.startTime >= :startTime AND t.endTime <= :endTime " +
         "and ((coalesce(:sites) is null) or (t.siteId in :sites)) " +
         "GROUP BY t.purpose")
-    List<Object[]> countTicketsByPurposeAndDate(@Param("date") Date date, @Param("sites") @Nullable Collection<String> sites);
-
-    @Query("SELECT t.purpose, COUNT(t) FROM Ticket t WHERE EXTRACT(MONTH FROM t.startTime) = :month " +
-        "and ((coalesce(:sites) is null) or (t.siteId in :sites)) " +
-        "GROUP BY t.purpose")
-    List<Object[]> countTicketsByPurposeAndMonth(@Param("month") int month, @Param("sites") @Nullable Collection<String> sites);
-
-    @Query("SELECT t.purpose, COUNT(t) FROM Ticket t WHERE EXTRACT(YEAR FROM t.startTime) = :year " +
-        "and ((coalesce(:sites) is null) or (t.siteId in :sites)) " +
-        "GROUP BY t.purpose")
-    List<Object[]> countTicketsByPurposeAndYear(@Param("year") int year, @Param("sites") @Nullable Collection<String> sites);
-
-
+    List<Object[]> countTicketsByPurpose(@Param("startTime") Date startTime, @Param("endTime") Date endTime, @Param("sites") @Nullable Collection<String> sites);
 }
