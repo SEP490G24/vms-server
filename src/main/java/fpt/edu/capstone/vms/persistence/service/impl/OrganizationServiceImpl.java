@@ -88,6 +88,10 @@ public class OrganizationServiceImpl extends GenericServiceImpl<Organization, UU
     @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
     public Organization save(Organization entity) {
 
+        if (!SecurityUtils.getUserDetails().isRealmAdmin()) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+        }
+
         if (StringUtils.isEmpty(entity.getCode()))
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code is null");
 

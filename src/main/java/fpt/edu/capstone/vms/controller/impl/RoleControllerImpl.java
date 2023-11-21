@@ -40,8 +40,9 @@ public class RoleControllerImpl implements IRoleController {
     }
 
     @Override
-    public ResponseEntity<?> filter(RoleFilterPayload filterPayload, Pageable pageable) {
-        return ResponseEntity.ok(roleService.filter(filterPayload,pageable));
+    public ResponseEntity<?> filter(RoleFilterPayload filterPayload, boolean isPageable, Pageable pageable) {
+
+        return ResponseEntity.ok(roleService.filter(filterPayload, pageable));
     }
 
     @Override

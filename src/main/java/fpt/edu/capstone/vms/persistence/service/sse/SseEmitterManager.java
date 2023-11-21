@@ -29,15 +29,30 @@ public class SseEmitterManager {
     public void sendSseToClient(ITicketController.CheckInPayload checkInPayload, ITicketController.TicketByQRCodeResponseDTO ticket) {
         CompletableFuture<SseEmitter> emitterFuture = emitters.get(checkInPayload);
         if (emitterFuture != null) {
-            emitterFuture.thenAccept(emitter -> {
-                try {
-                    emitter.send(SseEmitter.event()
-                        .data(ticket)
-                        .name("CHECK_IN_EVENT"));
-                } catch (IOException e) {
-                    // Handle exception
-                }
-            });
+            if (emitterFuture.isDone()) {
+                emitterFuture.thenAccept(emitter -> {
+                    try {
+                        // Log some information to check if this part is reached
+                        System.out.println("Sending SSE event to client");
+
+                        // Make sure 'ticket' and 'checkInPayload' are not null
+                        if (ticket != null && checkInPayload != null) {
+                            emitter.send(SseEmitter.event()
+                                .data(ticket)
+                                .name("CHECK_IN_EVENT"));
+                        } else {
+                            System.out.println("ticket or checkInPayload is null");
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
+            } else {
+                System.out.println("CompletableFuture not yet completed");
+            }
+        } else {
+            System.out.println("No CompletableFuture found for checkInPayload");
         }
     }
+
 }

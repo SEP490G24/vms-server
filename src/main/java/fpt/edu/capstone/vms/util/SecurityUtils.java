@@ -102,9 +102,9 @@ public class SecurityUtils {
 
     public static List<UUID> getListSiteToUUID(SiteRepository siteRepository, List<String> siteId) {
 
-//        if (SecurityUtils.getOrgId() == null && !siteId.isEmpty()) {
-//            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
-//        }
+        if (SecurityUtils.getOrgId() == null && siteId != null) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+        }
         List<UUID> sites = new ArrayList<>();
         if (SecurityUtils.getOrgId() != null) {
             if (siteId == null || siteId.isEmpty()) {
@@ -128,9 +128,9 @@ public class SecurityUtils {
 
     public static List<String> getListSiteToString(SiteRepository siteRepository, List<String> siteId) {
 
-//        if (SecurityUtils.getOrgId() == null && (!siteId.isEmpty())) {
-//            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
-//        }
+        if (SecurityUtils.getOrgId() == null && siteId != null) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+        }
         List<String> sites = new ArrayList<>();
         if (SecurityUtils.getOrgId() != null) {
             if (siteId == null || siteId.isEmpty()) {

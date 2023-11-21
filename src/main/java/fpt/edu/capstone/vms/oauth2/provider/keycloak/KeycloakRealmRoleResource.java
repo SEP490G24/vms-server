@@ -68,7 +68,7 @@ public class KeycloakRealmRoleResource implements IRoleResource {
         var filteredRoles = roles.stream()
             .filter(roleRepresentation -> {
                 if (roleBasePayload.getCode() == null || roleRepresentation.getName().contains(roleBasePayload.getCode())) {
-                    List<String> siteIds = roleBasePayload.getAttributes() != null ? roleBasePayload.getAttributes().get("site_id") : null;
+                    List<String> siteIds = roleBasePayload.getAttributes() != null ? roleBasePayload.getAttributes().get("siteId") : null;
                     List<String> names = roleBasePayload.getAttributes() != null ? roleBasePayload.getAttributes().get("name") : null;
                     return (siteIds == null || siteIds.isEmpty() ||
                         siteIds.stream().anyMatch(siteId ->

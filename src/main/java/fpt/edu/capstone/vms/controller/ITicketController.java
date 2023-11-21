@@ -247,12 +247,6 @@ public interface ITicketController {
     class CheckInPayload {
 
         @NotNull
-        private UUID ticketId;
-
-        @NotNull
-        private UUID customerId;
-
-        @NotNull
         private String checkInCode;
 
         @NotNull
