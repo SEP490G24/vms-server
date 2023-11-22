@@ -22,6 +22,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 
@@ -143,11 +144,14 @@ public class KeycloakRealmRoleResource implements IRoleResource {
         List<String> siteIdList = value.getAttributes().get("site_id");
         List<String> orgIdList = value.getAttributes().get("org_id");
 
-        if (siteIdList != null && !siteIdList.isEmpty()) {
+        if (!CollectionUtils.isEmpty(siteIdList)) {
             siteId = siteIdList.get(0);
+        } else {
+            siteId = SecurityUtils.getSiteId();
+            value.getAttributes().put("site_id", Collections.singletonList(siteId));
         }
 
-        if (orgIdList != null && !orgIdList.isEmpty()) {
+        if (!CollectionUtils.isEmpty(orgIdList)) {
             orgId = orgIdList.get(0);
         }
         if (orgId != null) {
