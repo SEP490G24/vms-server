@@ -188,9 +188,11 @@ public class KeycloakRealmRoleResource implements IRoleResource {
             String siteId = role.getAttributes().get("site_id").get(0);
             List<String> sites = SecurityUtils.getListSiteToString(siteRepository, Collections.emptyList());
             if (sites.contains(siteId)) {
-                var newName = value.getAttributes().get("name").get(0);
-                if (!StringUtils.isEmpty(newName)) {
-                    role.getAttributes().put("name", Collections.singletonList(newName));
+                if (value.getAttributes().get("name") != null) {
+                    var newName = value.getAttributes().get("name").get(0);
+                    if (!StringUtils.isEmpty(newName)) {
+                        role.getAttributes().put("name", Collections.singletonList(newName));
+                    }
                 }
             } else {
                 throw new CustomException(ErrorApp.FORBIDDEN);

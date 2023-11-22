@@ -71,13 +71,11 @@ public interface IRoleController {
     @EqualsAndHashCode(callSuper = true)
     @Data
     class CreateRolePayload extends RoleBasePayload {
-
     }
 
     @EqualsAndHashCode(callSuper = true)
     @Data
     class UpdateRolePayload extends RoleBasePayload {
-        private Set<IPermissionResource.PermissionDto> permissionDtos;
     }
 
     @Data

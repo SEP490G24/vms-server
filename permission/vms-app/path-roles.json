@@ -15,5 +15,11 @@
   "path:site",
   "path:template",
   "path:ticket_result",
-  "path:user"
+  "path:user",
+  "path:role",
+  "path:my_organization",
+  "path:my_site",
+  "path:audit_log",
+  "path:check_in_manager",
+  "path:qr_code_manager"
 ]

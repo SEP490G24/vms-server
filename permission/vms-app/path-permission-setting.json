@@ -1,6 +1,18 @@
 {
   "constraints" : null,
   "roles" : {
+    "path:qr_code_manager" : {
+      "vi" : {
+        "name" : "qr_code_manager",
+        "feature" : "path",
+        "description" : "path:qr_code_manager"
+      },
+      "en" : {
+        "name" : "qr_code_manager",
+        "feature" : "path",
+        "description" : "path:qr_code_manager"
+      }
+    },
     "path:room" : {
       "vi" : {
         "name" : "room",
@@ -85,6 +97,30 @@
         "description" : "path:customer"
       }
     },
+    "path:my_site" : {
+      "vi" : {
+        "name" : "my_site",
+        "feature" : "path",
+        "description" : "path:my_site"
+      },
+      "en" : {
+        "name" : "my_site",
+        "feature" : "path",
+        "description" : "path:my_site"
+      }
+    },
+    "path:audit_log" : {
+      "vi" : {
+        "name" : "audit_log",
+        "feature" : "path",
+        "description" : "path:audit_log"
+      },
+      "en" : {
+        "name" : "audit_log",
+        "feature" : "path",
+        "description" : "path:audit_log"
+      }
+    },
     "path:profile" : {
       "vi" : {
         "name" : "profile",
@@ -133,6 +169,18 @@
         "description" : "path:department"
       }
     },
+    "path:check_in_manager" : {
+      "vi" : {
+        "name" : "check_in_manager",
+        "feature" : "path",
+        "description" : "path:check_in_manager"
+      },
+      "en" : {
+        "name" : "check_in_manager",
+        "feature" : "path",
+        "description" : "path:check_in_manager"
+      }
+    },
     "path:device" : {
       "vi" : {
         "name" : "device",
@@ -169,6 +217,18 @@
         "description" : "path:template"
       }
     },
+    "path:my_organization" : {
+      "vi" : {
+        "name" : "my_organization",
+        "feature" : "path",
+        "description" : "path:my_organization"
+      },
+      "en" : {
+        "name" : "my_organization",
+        "feature" : "path",
+        "description" : "path:my_organization"
+      }
+    },
     "path:dashboard" : {
       "vi" : {
         "name" : "dashboard",
@@ -203,6 +263,18 @@
         "name" : "configuration",
         "feature" : "path",
         "description" : "path:configuration"
+      }
+    },
+    "path:role" : {
+      "vi" : {
+        "name" : "role",
+        "feature" : "path",
+        "description" : "path:role"
+      },
+      "en" : {
+        "name" : "role",
+        "feature" : "path",
+        "description" : "path:role"
       }
     }
   }
