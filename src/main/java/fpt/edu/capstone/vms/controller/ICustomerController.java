@@ -127,6 +127,7 @@ public interface ICustomerController {
     }
 
     @Data
+    @Builder
     class CustomerAvailablePayload {
         LocalDateTime startTime;
         LocalDateTime endTime;
