@@ -15,7 +15,8 @@ import java.util.UUID;
 public interface DashboardRepository extends GenericRepository<Ticket, UUID> {
 
     @Query("SELECT t.purpose, COUNT(t) FROM Ticket t WHERE " +
-        "t.startTime >= :startTime AND t.endTime <= :endTime " +
+        "t.startTime BETWEEN :startTime AND :endTime " +
+        "and t.endTime BETWEEN :startTime AND :endTime " +
         "and ((coalesce(:sites) is null) or (t.siteId in :sites)) " +
         "GROUP BY t.purpose")
     List<Object[]> countTicketsByPurpose(@Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime, @Param("sites") @Nullable Collection<String> sites);

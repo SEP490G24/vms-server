@@ -205,7 +205,6 @@ public class TicketController implements ITicketController {
         CompletableFuture.runAsync(() -> {
             try {
                 // Perform the check-in process
-                emitter.complete();
                 ticketService.checkInCustomer(checkInPayload);
             } catch (Exception e) {
                 // Handle exceptions if needed
