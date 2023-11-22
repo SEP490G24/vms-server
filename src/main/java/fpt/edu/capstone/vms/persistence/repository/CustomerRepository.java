@@ -17,7 +17,13 @@ import java.util.UUID;
 public interface CustomerRepository extends GenericRepository<Customer, UUID> {
     Customer findByIdentificationNumberAndOrganizationId(String identificationNumber, String organizationId);
 
-    List<Customer> findAllByOrganizationId(String organizationId);
+    @Query(value = "SELECT u FROM Customer u " +
+        "WHERE u.organizationId = :organizationId AND u.id NOT IN (" +
+        "SELECT cu.id FROM Customer cu " +
+        "INNER JOIN CustomerTicketMap c ON cu.id = c.customerTicketMapPk.customerId " +
+        "INNER JOIN Ticket t ON t.id = c.customerTicketMapPk.ticketId " +
+        "WHERE cu.organizationId = :organizationId AND t.startTime < :endTime AND t.endTime > :startTime)")
+    List<Customer> findAllByOrganizationId(String organizationId, LocalDateTime startTime, LocalDateTime endTime);
 
     boolean existsByIdAndAndOrganizationId(UUID id, String organizationId);
 

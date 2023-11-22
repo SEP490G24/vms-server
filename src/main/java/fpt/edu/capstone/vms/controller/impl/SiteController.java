@@ -147,7 +147,7 @@ public class SiteController implements ISiteController {
         }.getType());
 
         return isPageable ?
-            ResponseEntity.ok(new PageImpl(siteFilterDTOS, pageable, siteFilterDTOS.size()))
+            ResponseEntity.ok(new PageImpl(siteFilterDTOS, pageable, siteEntityPageable.getTotalElements()))
             : ResponseEntity.ok(mapper.map(siteEntity, new TypeToken<List<SiteFilterDTO>>() {
         }.getType()));
     }

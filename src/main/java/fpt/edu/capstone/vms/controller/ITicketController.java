@@ -16,7 +16,16 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -87,6 +96,11 @@ public interface ITicketController {
     @PreAuthorize("hasRole('r:ticket:room')")
     ResponseEntity<?> filterTicketByRoom(@RequestBody @Valid TicketFilter ticketFilter);
 
+    @PostMapping("/customer/card")
+    @Operation(summary = "add card to customer ")
+    @PreAuthorize("hasRole('r:ticket:add-card')")
+    ResponseEntity<?> addCardToCustomerTicket(@RequestBody @Valid CustomerTicketCardDTO customerTicketCardDTO);
+
     @Data
     class CreateTicketInfo {
 
@@ -152,6 +166,7 @@ public interface ITicketController {
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         private LocalDateTime lastUpdatedOn;
         private String siteId;
+        boolean isBookmark;
         List<ICustomerController.CustomerInfo> Customers;
     }
 
@@ -238,6 +253,7 @@ public interface ITicketController {
         //Info Room
         private UUID roomId;
         private String roomName;
+        private boolean isSecurity;
 
         //Info customer
         ICustomerController.CustomerInfo customerInfo;
@@ -263,5 +279,16 @@ public interface ITicketController {
     class TicketByRoomResponseDTO {
         List<Room> rooms;
         List<TicketFilterDTO> tickets;
+    }
+
+    @Data
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    class CustomerTicketCardDTO {
+        @NotNull
+        String checkInCode;
+        @NotNull
+        String cardId;
     }
 }

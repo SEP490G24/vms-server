@@ -53,10 +53,10 @@ public interface ICustomerController {
     @PreAuthorize("hasRole('r:customer:find')")
     ResponseEntity<?> filter(@RequestBody @Valid CustomerFilter filter, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
-    @GetMapping("/organization")
+    @PostMapping("/available")
     @Operation(summary = "Find all by organization id")
     @PreAuthorize("hasRole('r:customer:find')")
-    ResponseEntity<?> findByOrganzationId();
+    ResponseEntity<?> findByOrganizationId(@RequestBody CustomerAvailablePayload customerAvailablePayload);
 
 
     @Data
@@ -124,5 +124,11 @@ public interface ICustomerController {
         String lastUpdatedBy;
         String keyword;
         String identificationNumber;
+    }
+
+    @Data
+    class CustomerAvailablePayload {
+        LocalDateTime startTime;
+        LocalDateTime endTime;
     }
 }

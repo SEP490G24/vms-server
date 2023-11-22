@@ -66,7 +66,7 @@ public class CustomerServiceImpl extends GenericServiceImpl<Customer, UUID> impl
     }
 
     @Override
-    public List<Customer> findAllByOrganizationId() {
+    public List<Customer> findAllByOrganizationId(ICustomerController.CustomerAvailablePayload customerAvailablePayload) {
         String orgId;
         if (SecurityUtils.getOrgId() == null) {
             Site site = siteRepository.findById(UUID.fromString(SecurityUtils.getSiteId())).orElse(null);
@@ -77,6 +77,6 @@ public class CustomerServiceImpl extends GenericServiceImpl<Customer, UUID> impl
         } else {
             orgId = SecurityUtils.getOrgId();
         }
-        return customerRepository.findAllByOrganizationId(orgId);
+        return customerRepository.findAllByOrganizationId(orgId, customerAvailablePayload.getStartTime(), customerAvailablePayload.getEndTime());
     }
 }

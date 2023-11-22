@@ -261,6 +261,15 @@ public class TicketController implements ITicketController {
     }
 
     @Override
+    public ResponseEntity<?> addCardToCustomerTicket(CustomerTicketCardDTO customerTicketCardDTO) {
+        try {
+            return ResponseEntity.ok(ticketService.addCardCustomerTicket(customerTicketCardDTO));
+        } catch (HttpClientErrorException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
+        }
+    }
+
+    @Override
     public ResponseEntity<?> findByIdForUser(UUID ticketId, String siteId) {
         try {
             if (SecurityUtils.getUserDetails().isOrganizationAdmin() || SecurityUtils.getUserDetails().isSiteAdmin()) {

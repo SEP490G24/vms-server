@@ -4,12 +4,34 @@ import com.google.zxing.WriterException;
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ICustomerController;
 import fpt.edu.capstone.vms.controller.ITicketController;
-import fpt.edu.capstone.vms.persistence.entity.*;
-import fpt.edu.capstone.vms.persistence.repository.*;
+import fpt.edu.capstone.vms.persistence.entity.AuditLog;
+import fpt.edu.capstone.vms.persistence.entity.Customer;
+import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMap;
+import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMapPk;
+import fpt.edu.capstone.vms.persistence.entity.Reason;
+import fpt.edu.capstone.vms.persistence.entity.Room;
+import fpt.edu.capstone.vms.persistence.entity.Site;
+import fpt.edu.capstone.vms.persistence.entity.Template;
+import fpt.edu.capstone.vms.persistence.entity.Ticket;
+import fpt.edu.capstone.vms.persistence.entity.User;
+import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
+import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
+import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
+import fpt.edu.capstone.vms.persistence.repository.OrganizationRepository;
+import fpt.edu.capstone.vms.persistence.repository.ReasonRepository;
+import fpt.edu.capstone.vms.persistence.repository.RoomRepository;
+import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
+import fpt.edu.capstone.vms.persistence.repository.TemplateRepository;
+import fpt.edu.capstone.vms.persistence.repository.TicketRepository;
+import fpt.edu.capstone.vms.persistence.repository.UserRepository;
 import fpt.edu.capstone.vms.persistence.service.ITicketService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import fpt.edu.capstone.vms.persistence.service.sse.SseEmitterManager;
-import fpt.edu.capstone.vms.util.*;
+import fpt.edu.capstone.vms.util.EmailUtils;
+import fpt.edu.capstone.vms.util.QRcodeUtils;
+import fpt.edu.capstone.vms.util.SecurityUtils;
+import fpt.edu.capstone.vms.util.SettingUtils;
+import fpt.edu.capstone.vms.util.Utils;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +56,12 @@ import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -709,6 +736,8 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             sseEmitterManager.sendSseToClient(checkInPayload, mapper.map(customerTicketMap, ITicketController.TicketByQRCodeResponseDTO.class));
         } else if (checkInPayload.getStatus().equals(Constants.StatusTicket.CHECK_OUT)) {
             customerTicketMap.setCheckOutTime(LocalDateTime.now());
+            customerTicketMap.setCheckOut(true);
+            customerTicketMap.setCardId(null);
         }
         customerTicketMapRepository.save(customerTicketMap);
         Ticket ticket = ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId()).orElse(null);
@@ -787,6 +816,36 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         }.getType());
 
         return new PageImpl(ticketByQRCodeResponseDTOS, pageable, customerTicketMaps.getTotalElements());
+    }
+
+    @Override
+    public boolean addCardCustomerTicket(ITicketController.CustomerTicketCardDTO customerTicketCardDTO) {
+        CustomerTicketMap customerTicketMap = customerTicketMapRepository.findByCheckInCodeIgnoreCase(customerTicketCardDTO.getCheckInCode());
+        if (customerTicketMap != null) {
+            Ticket ticket = ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId()).orElse(null);
+            if (!customerTicketMap.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is not check-in, please check in before add card");
+            }
+            if (SecurityUtils.getOrgId() != null) {
+                if (StringUtils.isEmpty(ticket.getSiteId().trim()))
+                    throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SiteId is null");
+                if (!siteRepository.existsByIdAndOrganizationId(UUID.fromString(ticket.getSiteId()), UUID.fromString(SecurityUtils.getOrgId())))
+                    throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "You don't have permission to do this.");
+                settingUtils.loadSettingsSite(ticket.getSiteId());
+            } else {
+                settingUtils.loadSettingsSite(SecurityUtils.getSiteId());
+            }
+            if (!settingUtils.getBoolean(Constants.SettingCode.CONFIGURATION_CARD)) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Site is not using card");
+            }
+            if (customerTicketCardDTO.getCardId() == null) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Card is null");
+            }
+            customerTicketMap.setCardId(customerTicketCardDTO.getCardId());
+            customerTicketMapRepository.save(customerTicketMap);
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -935,19 +994,6 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         int count = ticketRepository.countByRoomIdAndEndTimeGreaterThanEqualAndStartTimeLessThanEqualAndStatusNotLike(roomId, startTime, endTime, Constants.StatusTicket.CANCEL);
         return count > 0;
     }
-
-//    /**
-//     * The function checks if a user has a ticket within a specified time range.
-//     *
-//     * @param username  The username of the user for whom we want to check if they have a ticket in the given time range.
-//     * @param startTime The start time of the ticket validity period.
-//     * @param endTime   The endTime parameter represents the end time of a ticket.
-//     * @return The method is returning a boolean value.
-//     */
-//    private boolean isUserHaveTicketInTime(String username, LocalDateTime startTime, LocalDateTime endTime) {
-//        int count = ticketRepository.countByUsernameAndEndTimeGreaterThanEqualAndStartTimeLessThanEqualAndStatusNotLike(username, startTime, endTime, Constants.StatusTicket.CANCEL);
-//        return count > 0;
-//    }
 
     /**
      * The function generates a meeting code based on the purpose and current date.

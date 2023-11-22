@@ -74,4 +74,8 @@ public interface CustomerTicketMapRepository extends GenericRepository<CustomerT
                                           @Param("keyword") @Nullable String keyword,
                                           @Param("username") @Nullable String username);
 
+
+    CustomerTicketMap existsByCardIdAndCheckOut(String cardId, boolean checkOut);
+
+    CustomerTicketMap findByCardId(String cardId);
 }
