@@ -62,12 +62,19 @@ public class CustomerTicketMap extends AbstractBaseEntity<CustomerTicketMapPk> {
     @Column(name = "check_out_time")
     private LocalDateTime checkOutTime;
 
+    @Column(name = "check_out", nullable = false, columnDefinition = "boolean default false")
+    private boolean checkOut;
+
+    @Column(name = "card_id")
+    private String cardId;
+
     public CustomerTicketMap update(CustomerTicketMap customerTicketMap) {
         if (customerTicketMap.getCreatedBy() != null) this.setCreatedBy(customerTicketMap.getCreatedBy());
         if (customerTicketMap.getCreatedOn() != null) this.setCreatedOn(customerTicketMap.getCreatedOn());
         if (customerTicketMap.status != null) this.status = customerTicketMap.status;
         if (customerTicketMap.reason != null) this.reason = customerTicketMap.reason;
         if (customerTicketMap.reasonNote != null) this.reasonNote = customerTicketMap.reasonNote;
+        if (customerTicketMap.cardId != null) this.cardId = customerTicketMap.cardId;
         return this;
     }
 

@@ -21,6 +21,7 @@ public interface RoomRepository extends GenericRepository<Room, UUID> {
         "and (((cast(:createdOnStart as date) is null ) or (cast(:createdOnEnd as date) is null )) or (u.createdOn between :createdOnStart and :createdOnEnd)) " +
         "and ((:enable is null) or (u.enable = :enable)) " +
         "and ((coalesce(:siteIds) is null) or (u.siteId in :siteIds)) " +
+        "and ((:createdBy is null) or (u.createdBy in :createdBy)) " +
         "and ((:keyword is null) " +
         "or (UPPER(u.name) LIKE %:keyword% " +
         "or UPPER(u.code) LIKE %:keyword% " +
@@ -31,13 +32,15 @@ public interface RoomRepository extends GenericRepository<Room, UUID> {
                       @Param("createdOnStart") @Nullable LocalDateTime createdOnStart,
                       @Param("createdOnEnd") @Nullable LocalDateTime createdOnEnd,
                       @Param("enable") @Nullable Boolean isEnable,
-                      @Param("keyword") @Nullable String keyword);
+                      @Param("keyword") @Nullable String keyword,
+                      @Param("createdBy") @Nullable String createdBy);
 
     @Query(value = "select u from Room u " +
         "where ((coalesce(:names) is null) or (u.name in :names)) " +
         "and (((cast(:createdOnStart as date) is null ) or (cast(:createdOnEnd as date) is null )) or (u.createdOn between :createdOnStart and :createdOnEnd)) " +
         "and ((:enable is null) or (u.enable = :enable)) " +
         "and ((coalesce(:siteIds) is null) or (u.siteId in :siteIds)) " +
+        "and ((:createdBy is null) or (u.createdBy in :createdBy)) " +
         "and ((:keyword is null) " +
         "or ( UPPER(u.name) LIKE %:keyword% " +
         "or UPPER(u.code) LIKE %:keyword% " +
@@ -48,7 +51,8 @@ public interface RoomRepository extends GenericRepository<Room, UUID> {
         @Param("createdOnStart") @Nullable LocalDateTime createdOnStart,
         @Param("createdOnEnd") @Nullable LocalDateTime createdOnEnd,
         @Param("enable") @Nullable Boolean isEnable,
-        @Param("keyword") @Nullable String keyword);
+        @Param("keyword") @Nullable String keyword,
+        @Param("createdBy") @Nullable String createdBy);
 
     List<Room> findAllBySiteIdAndEnableIsTrue(UUID siteId);
 }

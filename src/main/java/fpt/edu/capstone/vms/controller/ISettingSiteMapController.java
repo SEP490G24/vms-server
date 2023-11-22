@@ -8,14 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
@@ -50,15 +43,10 @@ public interface ISettingSiteMapController {
     @PreAuthorize("hasRole('r:setting-site:find')")
     ResponseEntity<List<?>> findAll();
 
-    @GetMapping("/{siteId}")
-    @Operation(summary = "Find All by site id")
-    @PreAuthorize("hasRole('r:setting-site:find')")
-    ResponseEntity<List<?>> findAllBySiteId(@PathVariable String siteId);
-
-    @GetMapping("/site/{siteId}/group/{settingGroupId}")
+    @GetMapping("/group/{settingGroupId}")
     @Operation(summary = "Find All by site id and group id")
     @PreAuthorize("hasRole('r:setting-site:find')")
-    ResponseEntity<?> findAllBySiteIdAndGroupId(@PathVariable String siteId, @PathVariable Integer settingGroupId);
+    ResponseEntity<?> findAllByGroupId(@PathVariable Integer settingGroupId, @RequestParam(value = "siteId", required = false) String siteId);
 
     @GetMapping("/set-default/{siteId}")
     @Operation(summary = "Set default setting for site")

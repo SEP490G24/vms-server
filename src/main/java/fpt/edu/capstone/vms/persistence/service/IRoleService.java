@@ -16,6 +16,8 @@ public interface IRoleService {
 
     Page<IRoleResource.RoleDto> filter(IRoleController.RoleBasePayload roleBasePayload, Pageable pageable);
 
+    List<IRoleResource.RoleDto> filter(IRoleController.RoleBasePayload roleBasePayload);
+
     IRoleResource.RoleDto findById(String id);
 
     IRoleResource.RoleDto create(IRoleResource.RoleDto dto);

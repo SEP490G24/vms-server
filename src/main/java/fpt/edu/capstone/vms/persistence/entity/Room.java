@@ -52,6 +52,12 @@ public class Room extends AbstractBaseEntity<UUID> {
     @JsonIgnore
     private Site site;
 
+    @Column(name = "mac_ip")
+    private String macIp;
+
+    @Column(name = "is_security")
+    private boolean isSecurity;
+
     @Override
     public UUID getId() {
         return id;
@@ -65,6 +71,7 @@ public class Room extends AbstractBaseEntity<UUID> {
     public Room update(Room room) {
         if (room.name != null) this.name = room.name;
         if (room.description != null) this.description = room.description;
+        if (room.macIp != null) this.macIp = room.macIp;
         if (room.enable != null) this.enable = room.enable;
         if (room.getCreatedBy() != null) this.setCreatedBy(room.getCreatedBy());
         if (room.getCreatedOn() != null) this.setCreatedOn(room.getCreatedOn());

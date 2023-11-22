@@ -80,7 +80,7 @@ public class TemplateController implements ITemplateController {
         List<TemplateFilter> templateDtos = mapper.map(templateEntityPageable.getContent(), new TypeToken<List<TemplateFilter>>() {
         }.getType());
 
-        return isPageable ? ResponseEntity.ok(new PageImpl(templateDtos, pageable, templateDtos.size()))
+        return isPageable ? ResponseEntity.ok(new PageImpl(templateDtos, pageable, templateEntityPageable.getTotalElements()))
             : ResponseEntity.ok(mapper.map(templateEntity, new TypeToken<List<TemplateFilter>>() {
         }.getType()));
     }

@@ -9,14 +9,20 @@ public enum ErrorApp {
     FORBIDDEN(403, I18n.getMessage("msg.access.denied")),
     INTERNAL_SERVER(500, I18n.getMessage("msg.internal.server")),
     ENTITY_NOT_FOUND(100, I18n.getMessage("msg.entity.notFound")),
+
+    //User
+    USER_CHANGE_SAME_PASSWORD(150, I18n.getMessage("msg.user.changeSamePassword")),
+    ENTITY_USER_DUPLICATE(106, I18n.getMessage("msg.user.duplicate")),
+    INCORRECT_PASSWORD(107, I18n.getMessage("msg.user.error.password")),
+    USER_NOT_FOUND(1000, I18n.getMessage("msg.user.notFound")),
+    EXPORT_ERROR(2000, I18n.getMessage("msg.export.errorOccurred")),
+    IMPORT_HEADER_ERROR(3000, I18n.getMessage("msg.user.import.header.error")),
+
     ENTITY_CODE_DUPLICATE(101, I18n.getMessage("msg.entity.duplicate")),
     ENTITY_CODE_DUPLICATE_PRODUCTION_SITE(101, I18n.getMessage("msg.production.site.duplicate")),
     ENTITY_REPORT_CONFIG_CODE_DUPLICATE(101, I18n.getMessage("msg.entity.reportConfig.duplicateCode")),
     IS_PARENTS(104, I18n.getMessage("msg.entity.isParents")),
     IS_CHECK_PARENTS(105, I18n.getMessage("msg.entity.isCheckParents")),
-    INCORRECT_PASSWORD(107, I18n.getMessage("msg.user.error.password")),
-    USER_CHANGE_SAME_PASSWORD(150, I18n.getMessage("msg.user.changeSamePassword")),
-    ENTITY_USER_DUPLICATE(106, I18n.getMessage("msg.user.duplicate")),
     ENTITY_EMAIL_DUPLICATE(108, I18n.getMessage("msg.email.duplicate")),
     SERIAL_NOT_FOUND(102, I18n.getMessage("msg.entity.serialNotFound")),
     SERIAL_IS_ACTIVE(103, I18n.getMessage("msg.entity.serialIsActive")),
@@ -34,7 +40,6 @@ public enum ErrorApp {
     NAME_ENTITY_DUPLICATE(107, I18n.getMessage("msg.file.format")),
 
     FILE_HEADER_FORMAT(106, I18n.getMessage("msg.file.formatHeader")),
-    USER_NOT_FOUND(1000, I18n.getMessage("msg.user.notFound")),
 
     MODEL_NOT_IN_WARRANTY(128, I18n.getMessage("msg.entity.modelNotInWarranty")),
     MODEL_IS_EXIST(129, I18n.getMessage("msg.entity.modelIsExist")),

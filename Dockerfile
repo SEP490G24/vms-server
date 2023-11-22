@@ -1,4 +1,5 @@
 FROM maven:3.8.3-openjdk-17 as builder
+ENV TZ=Asia/Ho_Chi_Minh
 WORKDIR /out
 # copy all files to /out in builder
 COPY . .

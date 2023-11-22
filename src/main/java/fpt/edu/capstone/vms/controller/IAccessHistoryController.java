@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 
@@ -48,7 +49,7 @@ public interface IAccessHistoryController {
         private LocalDateTime formCheckOutTime;
         private LocalDateTime toCheckOutTime;
         private Constants.StatusTicket status;
-        String site;
+        List<String> sites;
     }
 
     @Data

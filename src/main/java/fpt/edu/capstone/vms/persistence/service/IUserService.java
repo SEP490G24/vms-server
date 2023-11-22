@@ -45,27 +45,20 @@ public interface IUserService {
 
     User createUser(IUserResource.UserDto userDto);
 
+    User createAdmin(IUserResource.UserDto userDto);
+
     User updateUser(IUserResource.UserDto userDto) throws NotFoundException;
 
     void changePasswordUser(String username, String oldPassword, String newPassword);
 
-    int updateState(boolean isEnable, String username);
-
-    void handleAuthSuccess(String username);
-
-    void deleteUser(String username);
-
     User findByUsername(String username);
-
-    //void synAccountFromKeycloak();
 
     ByteArrayResource export(IUserController.UserFilterRequest userFilter);
 
     Boolean deleteAvatar(String name, String newImage, String username);
 
-    ResponseEntity<Object> importUser(MultipartFile file);
+    ResponseEntity<Object> importUser(String siteId, MultipartFile file);
 
     ResponseEntity<ByteArrayResource> downloadExcel() throws IOException;
 
-    //void updateRole(String username, List<String> roles);
 }

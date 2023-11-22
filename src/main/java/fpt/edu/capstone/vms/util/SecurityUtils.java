@@ -100,14 +100,14 @@ public class SecurityUtils {
         return true;
     }
 
-    public static List<UUID> getListSite(SiteRepository siteRepository, List<String> siteId) {
+    public static List<UUID> getListSiteToUUID(SiteRepository siteRepository, List<String> siteId) {
 
-        if (SecurityUtils.getOrgId() == null && siteId != null) {
+        if (SecurityUtils.getOrgId() == null && siteId != null && !siteId.isEmpty()) {
             throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
         }
         List<UUID> sites = new ArrayList<>();
         if (SecurityUtils.getOrgId() != null) {
-            if (siteId == null) {
+            if (siteId == null || siteId.isEmpty()) {
                 siteRepository.findAllByOrganizationId(UUID.fromString(SecurityUtils.getOrgId())).forEach(o -> {
                     sites.add(o.getId());
                 });
@@ -125,4 +125,31 @@ public class SecurityUtils {
 
         return sites;
     }
+
+    public static List<String> getListSiteToString(SiteRepository siteRepository, List<String> siteId) {
+
+        if (SecurityUtils.getOrgId() == null && (siteId != null && !siteId.isEmpty())) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+        }
+        List<String> sites = new ArrayList<>();
+        if (SecurityUtils.getOrgId() != null) {
+            if (siteId == null || siteId.isEmpty()) {
+                siteRepository.findAllByOrganizationId(UUID.fromString(SecurityUtils.getOrgId())).forEach(o -> {
+                    sites.add(o.getId().toString());
+                });
+            } else {
+                siteId.forEach(o -> {
+                    if (!SecurityUtils.checkSiteAuthorization(siteRepository, o)) {
+                        throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+                    }
+                    sites.add(o);
+                });
+            }
+        } else {
+            sites.add(SecurityUtils.getSiteId());
+        }
+
+        return sites;
+    }
+
 }

@@ -69,7 +69,8 @@ public class RoomController implements IRoomController {
             filter.getCreatedOnStart(),
             filter.getCreatedOnEnd(),
             filter.getEnable(),
-            filter.getKeyword());
+            filter.getKeyword(),
+            filter.getCreateBy());
 
         var roomEntityPageable = roomService.filter(
             pageable,
@@ -78,12 +79,13 @@ public class RoomController implements IRoomController {
             filter.getCreatedOnStart(),
             filter.getCreatedOnEnd(),
             filter.getEnable(),
-            filter.getKeyword());
+            filter.getKeyword(),
+            filter.getCreateBy());
 
         List<RoomFilterResponse> roomDtos = mapper.map(roomEntityPageable.getContent(), new TypeToken<List<RoomFilterResponse>>() {
         }.getType());
 
-        return isPageable ? ResponseEntity.ok(new PageImpl(roomDtos, pageable, roomDtos.size()))
+        return isPageable ? ResponseEntity.ok(new PageImpl(roomDtos, pageable, roomEntityPageable.getTotalElements()))
             : ResponseEntity.ok(mapper.map(roomEntity, new TypeToken<List<RoomFilterResponse>>() {
         }.getType()));
     }

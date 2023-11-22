@@ -273,15 +273,15 @@ class RoomServiceImplTest {
         when(!SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c08")).thenReturn(true);
         when(!SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c07")).thenReturn(true);
         List<Room> expectedRooms = List.of();
-        when(roomRepository.filter(names, siteIds, createdOnStart, createdOnEnd, enable, keyword.toUpperCase())).thenReturn(expectedRooms);
+        when(roomRepository.filter(names, siteIds, createdOnStart, createdOnEnd, enable, keyword.toUpperCase(), null)).thenReturn(expectedRooms);
 
         // When
-        List<Room> filteredRooms = roomService.filter(names, siteId, createdOnStart, createdOnEnd, enable, keyword);
+        List<Room> filteredRooms = roomService.filter(names, siteId, createdOnStart, createdOnEnd, enable, keyword, null);
 
         // Then
         assertNotNull(filteredRooms);
         // Add assertions to check the content of the filteredRooms, depending on the expected behavior
-        verify(roomRepository, times(1)).filter(names, siteIds, createdOnStart, createdOnEnd, enable, keyword.toUpperCase());
+        verify(roomRepository, times(1)).filter(names, siteIds, createdOnStart, createdOnEnd, enable, keyword.toUpperCase(), null);
     }
 
     @Test
@@ -314,14 +314,14 @@ class RoomServiceImplTest {
         when(!SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c08")).thenReturn(true);
         when(!SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c07")).thenReturn(true);
         Page<Room> expectedRooms = new PageImpl<>(List.of());
-        when(roomRepository.filter(pageable, names, siteIds, createdOnStart, createdOnEnd, enable, keyword.toUpperCase())).thenReturn(expectedRooms);
+        when(roomRepository.filter(pageable, names, siteIds, createdOnStart, createdOnEnd, enable, keyword.toUpperCase(), null)).thenReturn(expectedRooms);
 
         // When
-        Page<Room> filteredRoomPage = roomService.filter(pageable, names, siteId, createdOnStart, createdOnEnd, enable, keyword);
+        Page<Room> filteredRoomPage = roomService.filter(pageable, names, siteId, createdOnStart, createdOnEnd, enable, keyword, null);
 
         // Then
         assertNotNull(filteredRoomPage);
         // Add assertions to check the content of the filteredRoomPage, depending on the expected behavior
-        verify(roomRepository, times(1)).filter(pageable, names, siteIds, createdOnStart, createdOnEnd, enable, keyword.toUpperCase());
+        verify(roomRepository, times(1)).filter(pageable, names, siteIds, createdOnStart, createdOnEnd, enable, keyword.toUpperCase(), null);
     }
 }

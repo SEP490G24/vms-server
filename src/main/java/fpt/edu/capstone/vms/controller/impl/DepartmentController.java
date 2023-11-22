@@ -137,7 +137,7 @@ public class DepartmentController implements IDepartmentController {
         List<DepartmentFilterDTO> departmentFilterDTOS = mapper.map(departmentEntityPageable.getContent(), new TypeToken<List<DepartmentFilterDTO>>() {
         }.getType());
 
-        return isPageable ? ResponseEntity.ok(new PageImpl(departmentFilterDTOS, pageable, departmentFilterDTOS.size()))
+        return isPageable ? ResponseEntity.ok(new PageImpl(departmentFilterDTOS, pageable, departmentEntityPageable.getTotalElements()))
             : ResponseEntity.ok(mapper.map(departmentEntity, new TypeToken<List<DepartmentFilterDTO>>() {
         }.getType()));
     }

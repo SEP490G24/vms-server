@@ -35,7 +35,6 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -95,17 +94,6 @@ class SettingSiteMapServiceImplTest {
         Long settingGroupId = 1L;
 
 
-        // Create a mock Jwt object with the necessary claims
-        Jwt jwt = mock(Jwt.class);
-        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
-        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("mocked_username");
-        when(authentication.getPrincipal()).thenReturn(jwt);
-
-        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
-        when(securityContext.getAuthentication()).thenReturn(authentication);
-        SecurityContextHolder.setContext(securityContext);
-
-
         ISettingSiteMapController.SettingSite setting1 = new ISettingSiteMapController.SettingSite();
         setting1.setStatus(true);
         setting1.setCode(code1);
@@ -135,8 +123,11 @@ class SettingSiteMapServiceImplTest {
         });
         settingSiteDTO.setSettings(settings);
 
+        List<String> sites = new ArrayList<>();
+        sites.add("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        when(SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c08")).thenReturn(true);
 
-        ISettingSiteMapController.SettingSiteDTO result = settingSiteMapService.findAllBySiteIdAndGroupId(siteId, Math.toIntExact(settingGroupId));
+        ISettingSiteMapController.SettingSiteDTO result = settingSiteMapService.findAllBySiteIdAndGroupId(Math.toIntExact(settingGroupId), sites);
 
         assertEquals(siteId, result.getSiteId());
         assertEquals(settingGroupId.longValue(), result.getSettingGroupId());
@@ -150,69 +141,17 @@ class SettingSiteMapServiceImplTest {
         String siteId = "06eb43a7-6ea8-4744-8231-760559fe2c08";
         Integer settingGroupId = 1;
 
-        // Create a mock Jwt object with the necessary claims
-        Jwt jwt = mock(Jwt.class);
-        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
-        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("mocked_username");
-        when(authentication.getPrincipal()).thenReturn(jwt);
-
-        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
-        when(securityContext.getAuthentication()).thenReturn(authentication);
-        SecurityContextHolder.setContext(securityContext);
-
         when(settingSiteMapRepository.findAllBySiteIdAndGroupId(siteId, settingGroupId))
             .thenReturn(Collections.emptyList());
 
-        ISettingSiteMapController.SettingSiteDTO result = settingSiteMapService.findAllBySiteIdAndGroupId(siteId, settingGroupId);
+        when(SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c08")).thenReturn(true);
+
+        List<String> sites = new ArrayList<>();
+        ISettingSiteMapController.SettingSiteDTO result = settingSiteMapService.findAllBySiteIdAndGroupId(settingGroupId, sites);
 
         assertEquals(null, result.getSiteId());
         assertEquals(null, result.getSettingGroupId());
         assertEquals(null, result.getSettings());
-    }
-
-    @Test
-    @DisplayName("given siteId, when setting groups exist, return DTO list")
-    void givenSiteId_WhenSettingGroupsExist_ThenReturnDTOList() {
-        UUID siteId = UUID.randomUUID();
-        Object[] group1 = {1L}; // Simulate group 1
-        Object[] group2 = {2L}; // Simulate group 2
-
-        List<Object[]> settingGroupId = new ArrayList<>();
-        settingGroupId.add(group1);
-        settingGroupId.add(group2);
-        when(settingRepository.findAllDistinctGroupIdBySiteId(UUID.randomUUID()))
-            .thenReturn(settingGroupId);
-
-        List<ISettingSiteMapController.SettingSiteDTO> settingSiteDTOs = new ArrayList<>();
-        for (Object[] results : settingGroupId) {
-            Map<String, String> settings = new HashMap<>();
-            ISettingSiteMapController.SettingSiteDTO settingSiteDTO = new ISettingSiteMapController.SettingSiteDTO();
-            settingSiteDTO.setSiteId(siteId.toString());
-            settingSiteDTO.setSettingGroupId((Long) results[0]);
-            settings.put("ABC1", "ABC");
-            settingSiteDTO.setSettings(settings);
-            settingSiteDTOs.add(settingSiteDTO);
-        }
-
-        when(settingSiteMapService.getAllSettingSiteBySiteId(siteId.toString()))
-            .thenReturn(settingSiteDTOs);
-
-        assertEquals(2, settingSiteDTOs.size());
-        assertEquals(1L, settingSiteDTOs.get(0).getSettingGroupId());
-        assertEquals(2L, settingSiteDTOs.get(1).getSettingGroupId());
-    }
-
-    @Test
-    @DisplayName("given siteId, when no setting groups exist, return empty DTO list")
-    void givenSiteId_WhenNoSettingGroupsExist_ThenReturnEmptyDTOList() {
-        UUID siteId = UUID.randomUUID();
-
-        when(settingRepository.findAllDistinctGroupIdBySiteId(siteId))
-            .thenReturn(Collections.emptyList());
-
-        List<ISettingSiteMapController.SettingSiteDTO> result = settingSiteMapService.getAllSettingSiteBySiteId(siteId.toString());
-
-        assertEquals(0, result.size());
     }
 
     @Test
@@ -419,7 +358,7 @@ class SettingSiteMapServiceImplTest {
 
         // Verifying the exception status code and message
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
-        assertEquals("400 SettingId or siteId is not null!!", exception.getMessage());
+        assertEquals("400 SettingId is not null!!", exception.getMessage());
 
         // Verifying interactions with dependencies
         verify(auditLogRepository, never()).save(any(AuditLog.class));
@@ -547,54 +486,22 @@ class SettingSiteMapServiceImplTest {
     }
 
     @Test
-    void testGetAllSettingSiteBySiteId_MultipleSettingGroups() {
-        // Arrange
-        String siteId = "06eb43a7-6ea8-4744-8231-760559fe2c08";
-
-        // Mock settingRepository behavior with multiple setting groups
-        List<Object[]> mockObjects = new ArrayList<>();
-        Object[] mockResult1 = {1L};
-        Object[] mockResult2 = {2L};
-        mockObjects.add(mockResult1);
-        mockObjects.add(mockResult2);
-        when(settingRepository.findAllDistinctGroupIdBySiteId(UUID.fromString(siteId))).thenReturn(mockObjects);
-        when(SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c08")).thenReturn(true);
-
-        ISettingSiteMapController.SettingSiteDTO settingSiteDTO1 = new ISettingSiteMapController.SettingSiteDTO();
-        settingSiteDTO1.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
-        settingSiteDTO1.setSettingGroupId(1L);
-        HashMap<String, String> settings = new HashMap<>();
-        settings.put("a", "a");
-        settings.put("a", "b");
-        settingSiteDTO1.setSettings(settings);
-
-        // Mock the behavior of findAllBySiteIdAndGroupId
-//        when(settingSiteMapService.findAllBySiteIdAndGroupId("06eb43a7-6ea8-4744-8231-760559fe2c08", 1)).thenReturn(settingSiteDTO1);
-
-        // Act
-        List<ISettingSiteMapController.SettingSiteDTO> result = settingSiteMapService.getAllSettingSiteBySiteId(siteId);
-
-        // Assert
-        assertNotNull(result);
-        assertEquals(2, result.size());
-    }
-
-    @Test
     void testFindAllBySiteIdAndGroupId_ThrowNotPermission() {
         // Arrange
         String siteId = "06eb43a7-6ea8-4744-8231-760559fe2c08";
         Integer settingGroupId = 1;
 
         // Mock checkSiteAuthorization to allow access
-        when(SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c08")).thenReturn(false);
-
+        List<String> sites = new ArrayList<>();
+        sites.add("06eb43a7-6ea8-4744-8231-760559fe2c04");
+        when(SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c04")).thenReturn(false);
 
         // Testing the method and expecting a HttpClientErrorException
         HttpClientErrorException exception = assertThrows(HttpClientErrorException.class,
-            () -> settingSiteMapService.findAllBySiteIdAndGroupId(siteId, settingGroupId));
+            () -> settingSiteMapService.findAllBySiteIdAndGroupId(settingGroupId, sites));
 
         // Verifying the exception status code and message
         assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
-        assertEquals("403 You don't have permission to do this", exception.getMessage());
+        assertEquals("403 You don't have permission to do this.", exception.getMessage());
     }
 }

@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.HttpClientErrorException;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -74,8 +73,8 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Value is empty");
         }
 
-        if (settingSiteInfo.getSettingId() == null || StringUtils.isEmpty(settingSiteInfo.getSiteId())) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SettingId or siteId is not null!!");
+        if (settingSiteInfo.getSettingId() == null) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SettingId is not null!!");
         }
 
         Long settingId = Long.valueOf(settingSiteInfo.getSettingId());
@@ -118,55 +117,32 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
     }
 
     /**
-     * The function returns a list of SettingSiteMap objects based on the given siteId.
+     * The function retrieves setting sites based on the given site ID, group ID, and list of sites.
      *
-     * @param siteId The siteId parameter is a unique identifier for a site. It is expected to be a string representation
-     * of a UUID (Universally Unique Identifier).
-     * @return The method is returning a List of SettingSiteMap objects.
+     * @param settingGroupId The settingGroupId parameter is an Integer representing the ID of the setting group.
+     * @param sites          A list of site names (strings)
+     * @return The method is returning an instance of the class `ISettingSiteMapController.SettingSiteDTO`.
      */
     @Override
-    public List<ISettingSiteMapController.SettingSiteDTO> getAllSettingSiteBySiteId(String siteId) {
-        List<ISettingSiteMapController.SettingSiteDTO> settingSiteDTOs = new ArrayList<>();
-        List<Object[]> objects = settingRepository.findAllDistinctGroupIdBySiteId(UUID.fromString(siteId));
-        if (!objects.isEmpty()) {
-            for (Object[] results : objects) {
-                var settingSiteDTO = findAllBySiteIdAndGroupId(siteId, Math.toIntExact((Long) results[0]));
-                settingSiteDTOs.add(settingSiteDTO);
-            }
-        }
-        return settingSiteDTOs;
-    }
-
-
-    /**
-     * The function retrieves a list of SettingSiteDTO objects based on the provided siteId and settingGroupId.
-     *
-     * @param siteId The siteId parameter is a String that represents the ID of a site.
-     * @param settingGroupId The settingGroupId parameter is an Integer that represents the ID of a setting group.
-     * @return The method is returning a list of `ISettingSiteMapController.SettingSiteDTO` objects.
-     */
-    @Override
-    public ISettingSiteMapController.SettingSiteDTO findAllBySiteIdAndGroupId(String siteId, Integer settingGroupId) {
-        var userDetails = SecurityUtils.getUserDetails();
-        var _siteId = userDetails.isOrganizationAdmin() ? siteId : userDetails.getSiteId();
-        if (!SecurityUtils.checkSiteAuthorization(siteRepository, _siteId)) {
-            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this");
-        }
-        var settingSites = settingSiteMapRepository.findAllBySiteIdAndGroupId(_siteId, settingGroupId);
+    public ISettingSiteMapController.SettingSiteDTO findAllBySiteIdAndGroupId(Integer settingGroupId, List<String> sites) {
+        List<String> _sites = SecurityUtils.getListSiteToString(siteRepository, sites);
         ISettingSiteMapController.SettingSiteDTO settingSiteDTO = new ISettingSiteMapController.SettingSiteDTO();
-        if (!settingSites.isEmpty()) {
-            settingSiteDTO.setSiteId(_siteId);
-            settingSiteDTO.setSettingGroupId(Long.valueOf(settingGroupId));
-            Map<String, String> setting = new HashMap<>();
-            settingSites.forEach(o -> {
-                if (StringUtils.isEmpty(o.getPropertyValue())) {
-                    setting.put(o.getCode(), o.getDefaultPropertyValue());
-                } else {
-                    setting.put(o.getCode(), o.getPropertyValue());
-                }
-            });
-            settingSiteDTO.setSettings(setting);
-        }
+        _sites.forEach(siteId -> {
+            var settingSites = settingSiteMapRepository.findAllBySiteIdAndGroupId(siteId.trim(), settingGroupId);
+            if (!settingSites.isEmpty()) {
+                settingSiteDTO.setSiteId(siteId.trim());
+                settingSiteDTO.setSettingGroupId(Long.valueOf(settingGroupId));
+                Map<String, String> setting = new HashMap<>();
+                settingSites.forEach(o -> {
+                    if (StringUtils.isEmpty(o.getPropertyValue())) {
+                        setting.put(o.getCode(), o.getDefaultPropertyValue());
+                    } else {
+                        setting.put(o.getCode(), o.getPropertyValue());
+                    }
+                });
+                settingSiteDTO.setSettings(setting);
+            }
+        });
         return settingSiteDTO;
     }
 

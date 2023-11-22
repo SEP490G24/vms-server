@@ -147,7 +147,7 @@ public class SiteController implements ISiteController {
         }.getType());
 
         return isPageable ?
-            ResponseEntity.ok(new PageImpl(siteFilterDTOS, pageable, siteFilterDTOS.size()))
+            ResponseEntity.ok(new PageImpl(siteFilterDTOS, pageable, siteEntityPageable.getTotalElements()))
             : ResponseEntity.ok(mapper.map(siteEntity, new TypeToken<List<SiteFilterDTO>>() {
         }.getType()));
     }
@@ -160,7 +160,7 @@ public class SiteController implements ISiteController {
      * @return The method is returning a ResponseEntity object containing a list of objects.
      */
     @Override
-    public ResponseEntity<List<?>> findAllByOrganizationId() {
+    public ResponseEntity<List<?>> findAllByOrganization() {
         return ResponseEntity.ok(mapper.map(siteService.findAllByOrganizationId(SecurityUtils.getOrgId()), new TypeToken<List<SiteFilterDTO>>() {
         }.getType()));
     }

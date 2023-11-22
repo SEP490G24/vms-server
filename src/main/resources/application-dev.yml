@@ -2,7 +2,7 @@ edu:
   fpt:
     capstone:
       vms:
-        permitAll: /v3/api-docs/**,/swagger-ui/**,/actuator/**,/favicon.ico,/error,/api/v1/user/filter-available-users
+        permitAll: /v3/api-docs/**,/swagger-ui/**,/actuator/**,/favicon.ico,/error,/api/v1/user/filter-available-users,/api/v1/card,/api/v1/card/**
         oauth2:
           provider: keycloak
           keycloak:

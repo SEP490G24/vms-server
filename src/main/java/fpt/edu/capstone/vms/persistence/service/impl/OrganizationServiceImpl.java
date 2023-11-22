@@ -1,15 +1,14 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.constants.Constants;
+import fpt.edu.capstone.vms.oauth2.IPermissionResource;
+import fpt.edu.capstone.vms.oauth2.IRoleResource;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
 import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.entity.Organization;
 import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
 import fpt.edu.capstone.vms.persistence.repository.OrganizationRepository;
-import fpt.edu.capstone.vms.persistence.service.IFileService;
-import fpt.edu.capstone.vms.persistence.service.IOrganizationService;
-import fpt.edu.capstone.vms.persistence.service.IRoleService;
-import fpt.edu.capstone.vms.persistence.service.IUserService;
+import fpt.edu.capstone.vms.persistence.service.*;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -22,8 +21,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class OrganizationServiceImpl extends GenericServiceImpl<Organization, UUID> implements IOrganizationService {
@@ -31,15 +29,17 @@ public class OrganizationServiceImpl extends GenericServiceImpl<Organization, UU
     private final OrganizationRepository organizationRepository;
     private final IFileService iFileService;
     private final IUserService iUserService;
-    private final IRoleService iRoleService;
+    private final IRoleService roleService;
+    private final IPermissionService permissionService;
     private final AuditLogRepository auditLogRepository;
     private static final String ORGANIZATION_TABLE_NAME = "Organization";
 
-    public OrganizationServiceImpl(OrganizationRepository organizationRepository, IFileService iFileService, IUserService iUserService, IRoleService iRoleService, AuditLogRepository auditLogRepository) {
+    public OrganizationServiceImpl(OrganizationRepository organizationRepository, IFileService iFileService, IUserService iUserService, IRoleService roleService, IPermissionService permissionService, AuditLogRepository auditLogRepository) {
         this.organizationRepository = organizationRepository;
         this.iFileService = iFileService;
         this.iUserService = iUserService;
-        this.iRoleService = iRoleService;
+        this.roleService = roleService;
+        this.permissionService = permissionService;
         this.auditLogRepository = auditLogRepository;
         this.init(organizationRepository);
     }
@@ -88,7 +88,12 @@ public class OrganizationServiceImpl extends GenericServiceImpl<Organization, UU
     @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
     public Organization save(Organization entity) {
 
-        if (StringUtils.isEmpty(entity.getCode())) throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code is null");
+        if (!SecurityUtils.getUserDetails().isRealmAdmin()) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+        }
+
+        if (StringUtils.isEmpty(entity.getCode()))
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code is null");
 
         if (organizationRepository.existsByCode(entity.getCode())) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code of organization is exist");
@@ -98,12 +103,30 @@ public class OrganizationServiceImpl extends GenericServiceImpl<Organization, UU
 
         Organization organization = organizationRepository.save(entity);
 
+        //create role admin for organization
+        IRoleResource.RoleDto roleDto = new IRoleResource.RoleDto();
+        roleDto.setCode(organization.getCode().toUpperCase() + "_" + "ADMIN");
+        roleDto.setDescription("Role này là role admin của tổ chức " + organization.getName());
+        Map<String, List<String>> attributes = new HashMap<>();
+        attributes.put("org_id", List.of(organization.getId().toString()));
+        attributes.put("name", List.of("ADMIN"));
+        roleDto.setAttributes(attributes);
+        List<IPermissionResource.PermissionDto> permissionsApi = permissionService.findAllByModuleId("339f9a15-bacf-48dd-acd6-87c482ebb36e");
+        List<IPermissionResource.PermissionDto> permissionsScreen = permissionService.findAllByModuleId("75366af1-57bd-4115-b672-b2de7fa40a7d");
+        Set<IPermissionResource.PermissionDto> permissionsSet = new HashSet<>();
+        permissionsSet.addAll(permissionsApi);
+        permissionsSet.addAll(permissionsScreen);
+        roleDto.setPermissionDtos(permissionsSet);
+        roleService.create(roleDto);
+
+
         //Create account admin of organization
         IUserResource.UserDto userDto = new IUserResource.UserDto();
         userDto.setUsername(entity.getCode().toLowerCase() + "_" + "admin");
         userDto.setPassword("123456aA@");
         userDto.setOrgId(organization.getId().toString());
-        iUserService.createUser(userDto);
+        userDto.setRoles(List.of(organization.getCode().toUpperCase() + "_" + "ADMIN"));
+        iUserService.createAdmin(userDto);
 
         auditLogRepository.save(new AuditLog(null
             , organization.getId().toString()

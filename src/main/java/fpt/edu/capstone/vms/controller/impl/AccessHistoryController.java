@@ -33,7 +33,7 @@ public class AccessHistoryController implements IAccessHistoryController {
     public ResponseEntity<?> filterAccessHistory(AccessHistoryFilter accessHistoryFilter, Pageable pageable) {
         return ResponseEntity.ok(accessHistoryService.accessHistory(pageable, accessHistoryFilter.getKeyword(), accessHistoryFilter.getStatus(),
             accessHistoryFilter.getFormCheckInTime(), accessHistoryFilter.getToCheckInTime(), accessHistoryFilter.getFormCheckOutTime(),
-            accessHistoryFilter.getToCheckOutTime(), accessHistoryFilter.getSite()));
+            accessHistoryFilter.getToCheckOutTime(), accessHistoryFilter.getSites()));
     }
 
     @Override

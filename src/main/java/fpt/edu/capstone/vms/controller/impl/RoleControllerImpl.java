@@ -4,14 +4,17 @@ package fpt.edu.capstone.vms.controller.impl;
 import fpt.edu.capstone.vms.controller.IRoleController;
 import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.oauth2.IRoleResource;
+import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.service.IRoleService;
+import fpt.edu.capstone.vms.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -19,11 +22,16 @@ import java.util.List;
 public class RoleControllerImpl implements IRoleController {
 
     private final IRoleService roleService;
+    private final SiteRepository siteRepository;
     private final ModelMapper mapper;
 
     @Override
-    public ResponseEntity<?> getAll() {
-        return ResponseEntity.ok(roleService.findAll());
+    public ResponseEntity<?> getAll(String siteId) {
+        List<String> sites = new ArrayList<>();
+        if (!StringUtils.isEmpty(siteId)) {
+            sites.add(siteId);
+        }
+        return ResponseEntity.ok(roleService.getBySites(SecurityUtils.getListSiteToString(siteRepository, sites)));
     }
 
     @Override
@@ -32,8 +40,10 @@ public class RoleControllerImpl implements IRoleController {
     }
 
     @Override
-    public ResponseEntity<?> filter(RoleFilterPayload filterPayload, Pageable pageable) {
-        return ResponseEntity.ok(roleService.filter(filterPayload,pageable));
+    public ResponseEntity<?> filter(RoleFilterPayload filterPayload, boolean isPageable, Pageable pageable) {
+        List<String> sites = filterPayload.getAttributes().get("siteId");
+        filterPayload.getAttributes().put("siteId", SecurityUtils.getListSiteToString(siteRepository, sites));
+        return isPageable ? ResponseEntity.ok(roleService.filter(filterPayload, pageable)) : ResponseEntity.ok(roleService.filter(filterPayload));
     }
 
     @Override
@@ -55,10 +65,5 @@ public class RoleControllerImpl implements IRoleController {
     public ResponseEntity<?> delete(String id) {
         roleService.delete(id);
         return ResponseEntity.ok().build();
-    }
-
-    @Override
-    public ResponseEntity<?> getBySites(List<String> sites) {
-        return ResponseEntity.ok(roleService.getBySites(sites));
     }
 }

@@ -46,6 +46,7 @@ public class SettingServiceImpl extends GenericServiceImpl<Setting, Long> implem
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code is exist");
             }
         }
+
         var settingEntity = settingRepository.findById(id).orElse(null);
 
         if (ObjectUtils.isEmpty(settingEntity))

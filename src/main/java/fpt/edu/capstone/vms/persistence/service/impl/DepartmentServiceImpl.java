@@ -160,7 +160,7 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
      */
     @Override
     public Page<Department> filter(Pageable pageable, List<String> names, List<String> siteId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, String createBy, String lastUpdatedBy, Boolean enable, String keyword) {
-        List<UUID> sites = SecurityUtils.getListSite(siteRepository, siteId);
+        List<UUID> sites = SecurityUtils.getListSiteToUUID(siteRepository, siteId);
         return departmentRepository.filter(
             pageable,
             names,
@@ -195,7 +195,7 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
      */
     @Override
     public List<Department> filter(List<String> names, List<String> siteId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, String createBy, String lastUpdatedBy, Boolean enable, String keyword) {
-        List<UUID> sites = SecurityUtils.getListSite(siteRepository, siteId);
+        List<UUID> sites = SecurityUtils.getListSiteToUUID(siteRepository, siteId);
         return departmentRepository.filter(
             names,
             sites,

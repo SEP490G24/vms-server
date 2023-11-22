@@ -21,7 +21,8 @@ public interface IRoomService extends IGenericService<Room, UUID> {
                       LocalDateTime createdOnStart,
                       LocalDateTime createdOnEnd,
                       Boolean enable,
-                      String keyword);
+                      String keyword,
+                      String createBy);
 
     List<Room> filter(
         List<String> names,
@@ -29,7 +30,8 @@ public interface IRoomService extends IGenericService<Room, UUID> {
         LocalDateTime createdOnStart,
         LocalDateTime createdOnEnd,
         Boolean enable,
-        String keyword);
+        String keyword,
+        String createBy);
 
     List<Room> finAllBySiteId(String siteId);
 }

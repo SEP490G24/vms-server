@@ -66,7 +66,8 @@ public class CustomerController implements ICustomerController {
     }
 
     @Override
-    public ResponseEntity<?> findByOrganzationId() {
-        return ResponseEntity.ok(customerService.findAllByOrganizationId());
+    public ResponseEntity<?> findByOrganizationId(CustomerAvailablePayload customerAvailablePayload) {
+        return ResponseEntity.ok(customerService.findAllByOrganizationId(customerAvailablePayload));
     }
+
 }

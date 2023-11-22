@@ -97,6 +97,7 @@ public interface ITicketService extends IGenericService<Ticket, UUID> {
 
     Page<ITicketController.TicketByQRCodeResponseDTO> filterTicketAndCustomer(
         Pageable pageable,
+        List<String> sites,
         List<String> names,
         UUID roomId,
         Constants.StatusTicket status,
@@ -112,4 +113,8 @@ public interface ITicketService extends IGenericService<Ticket, UUID> {
         Boolean bookmark,
         String keyword
     );
+
+    boolean addCardCustomerTicket(ITicketController.CustomerTicketCardDTO customerTicketCardDTO);
+
+    ITicketController.TicketByRoomResponseDTO filterTicketByRoom(List<String> names, List<String> sites, List<String> usernames, UUID roomId, Constants.StatusTicket status, Constants.Purpose purpose, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, LocalDateTime startTimeStart, LocalDateTime startTimeEnd, LocalDateTime endTimeStart, LocalDateTime endTimeEnd, String createdBy, String lastUpdatedBy, String keyword);
 }

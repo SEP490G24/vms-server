@@ -13,7 +13,12 @@ import fpt.edu.capstone.vms.util.SecurityUtils;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import net.sf.jasperreports.engine.*;
+import net.sf.jasperreports.engine.JREmptyDataSource;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperCompileManager;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
 import net.sf.jasperreports.export.SimpleExporterInput;
@@ -29,7 +34,11 @@ import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -56,11 +65,10 @@ public class AccessHistoryServiceImpl extends GenericServiceImpl<Ticket, UUID> i
     @Override
     public Page<IAccessHistoryController.AccessHistoryResponseDTO> accessHistory(Pageable pageable, String keyword, Constants.StatusTicket status,
                                                                                  LocalDateTime formCheckInTime, LocalDateTime toCheckInTime,
-                                                                                 LocalDateTime formCheckOutTime, LocalDateTime toCheckOutTime, String site) {
+                                                                                 LocalDateTime formCheckOutTime, LocalDateTime toCheckOutTime, List<String> sites) {
         Page<CustomerTicketMap> customerTicketMapPage;
         if (SecurityUtils.getUserDetails().isOrganizationAdmin() || SecurityUtils.getUserDetails().isSiteAdmin()) {
-            List<String> sites = getListSite(site);
-            customerTicketMapPage = customerTicketMapRepository.accessHistory(pageable, sites, formCheckInTime, toCheckInTime, formCheckOutTime, toCheckOutTime, status, keyword, null);
+            customerTicketMapPage = customerTicketMapRepository.accessHistory(pageable, SecurityUtils.getListSiteToString(siteRepository, sites), formCheckInTime, toCheckInTime, formCheckOutTime, toCheckOutTime, status, keyword, null);
         } else {
             customerTicketMapPage = customerTicketMapRepository.accessHistory(pageable, null, formCheckInTime, toCheckInTime, formCheckOutTime, toCheckOutTime, status, keyword, SecurityUtils.loginUsername());
         }
@@ -78,7 +86,7 @@ public class AccessHistoryServiceImpl extends GenericServiceImpl<Ticket, UUID> i
     @Override
     public ByteArrayResource export(IAccessHistoryController.AccessHistoryFilter filter) throws JRException {
         Pageable pageable = PageRequest.of(0, 99999);
-        Page<IAccessHistoryController.AccessHistoryResponseDTO> listData = accessHistory(pageable, filter.getKeyword(), filter.getStatus(), filter.getFormCheckInTime(), filter.getToCheckInTime(), filter.getFormCheckOutTime(), filter.getToCheckOutTime(), filter.getSite());
+        Page<IAccessHistoryController.AccessHistoryResponseDTO> listData = accessHistory(pageable, filter.getKeyword(), filter.getStatus(), filter.getFormCheckInTime(), filter.getToCheckInTime(), filter.getFormCheckOutTime(), filter.getToCheckOutTime(), filter.getSites());
         try {
             JasperReport jasperReport = JasperCompileManager.compileReport(getClass().getResourceAsStream(PATH_FILE));
 
@@ -99,20 +107,5 @@ public class AccessHistoryServiceImpl extends GenericServiceImpl<Ticket, UUID> i
         } catch (Exception e) {
             return null;
         }
-    }
-
-    private List<String> getListSite(String site) {
-        List<String> sites = new ArrayList<>();
-        if (site != null) {
-            sites.add(site);
-        } else {
-            if (SecurityUtils.getOrgId() != null) {
-                siteRepository.findAllByOrganizationId(UUID.fromString(SecurityUtils.getOrgId())).forEach(o ->
-                    sites.add(o.getId().toString()));
-            } else {
-                sites.add(UUID.fromString(SecurityUtils.getSiteId()).toString());
-            }
-        }
-        return sites;
     }
 }

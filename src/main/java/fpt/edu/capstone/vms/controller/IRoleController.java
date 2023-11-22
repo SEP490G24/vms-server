@@ -5,6 +5,7 @@ import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.oauth2.IPermissionResource;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.ws.rs.QueryParam;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.data.domain.Pageable;
@@ -26,7 +27,7 @@ public interface IRoleController {
     @GetMapping("")
     @Operation(summary = "Find all roles")
     @PreAuthorize("hasRole('r:role:find')")
-    ResponseEntity<?> getAll();
+    ResponseEntity<?> getAll(@RequestParam(value = "siteId", required = false) String siteId);
 
     @GetMapping("/{id}")
     @Operation(summary = "Find role by id")
@@ -36,7 +37,7 @@ public interface IRoleController {
     @PostMapping("/filter")
     @Operation(summary = "Filter role")
     @PreAuthorize("hasRole('r:role:find')")
-    ResponseEntity<?> filter(@RequestBody RoleFilterPayload filterPayload, Pageable pageable);
+    ResponseEntity<?> filter(@RequestBody RoleFilterPayload filterPayload, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
     @PostMapping("")
     @Operation(summary = "Create role")
@@ -60,11 +61,6 @@ public interface IRoleController {
         @PreAuthorize("hasRole('r:role:delete')")
     ResponseEntity<?> delete(@PathVariable("id") String id);
 
-    @PostMapping("/site")
-    @Operation(summary = "Get role by sites")
-        @PreAuthorize("hasRole('r:role:find')")
-    ResponseEntity<?> getBySites(@RequestBody List<String> sites);
-
     @Data
     class RoleBasePayload {
         private String code;
@@ -75,13 +71,11 @@ public interface IRoleController {
     @EqualsAndHashCode(callSuper = true)
     @Data
     class CreateRolePayload extends RoleBasePayload {
-
     }
 
     @EqualsAndHashCode(callSuper = true)
     @Data
     class UpdateRolePayload extends RoleBasePayload {
-        private Set<IPermissionResource.PermissionDto> permissionDtos;
     }
 
     @Data

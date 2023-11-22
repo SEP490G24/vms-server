@@ -33,5 +33,5 @@ public interface ICustomerService extends IGenericService<Customer, UUID> {
         String identificationNumber,
         String keyword);
 
-    List<Customer> findAllByOrganizationId();
+    List<Customer> findAllByOrganizationId(ICustomerController.CustomerAvailablePayload customerAvailablePayload);
 }

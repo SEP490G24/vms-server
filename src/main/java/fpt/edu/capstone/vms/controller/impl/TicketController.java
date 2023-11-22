@@ -127,7 +127,7 @@ public class TicketController implements ITicketController {
 
             });
             return isPageable ?
-                ResponseEntity.ok(new PageImpl(ticketFilterPageDTOS, pageable, ticketFilterPageDTOS.size()))
+                ResponseEntity.ok(new PageImpl(ticketFilterPageDTOS, pageable, ticketEntityPageable.getTotalElements()))
                 : ResponseEntity.ok(ticketFilterDTOS);
         } else {
             var ticketEntity = ticketService.filter(
@@ -179,7 +179,7 @@ public class TicketController implements ITicketController {
             });
 
             return isPageable ?
-                ResponseEntity.ok(new PageImpl(ticketFilterPageDTOS, pageable, ticketFilterPageDTOS.size()))
+                ResponseEntity.ok(new PageImpl(ticketFilterPageDTOS, pageable, ticketEntityPageable.getTotalElements()))
                 : ResponseEntity.ok(ticketFilterDTOS);
         }
     }
@@ -220,9 +220,10 @@ public class TicketController implements ITicketController {
     }
 
     @Override
-    public ResponseEntity<?> filterTicketAndCustomer(TicketFilterUser filter, Pageable pageable) {
+    public ResponseEntity<?> filterTicketAndCustomer(TicketFilter filter, Pageable pageable) {
         return ResponseEntity.ok(ticketService.filterTicketAndCustomer(
             pageable,
+            filter.getSites(),
             filter.getNames(),
             filter.getRoomId(),
             filter.getStatus(),
@@ -241,22 +242,45 @@ public class TicketController implements ITicketController {
     }
 
     @Override
-    public ResponseEntity<?> findByIdForUser(UUID ticketId) {
+    public ResponseEntity<?> filterTicketByRoom(TicketFilter filter) {
+        return ResponseEntity.ok(ticketService.filterTicketByRoom(
+            filter.getNames(),
+            filter.getSites(),
+            filter.getUsernames(),
+            filter.getRoomId(),
+            filter.getStatus(),
+            filter.getPurpose(),
+            filter.getCreatedOnStart(),
+            filter.getCreatedOnEnd(),
+            filter.getStartTimeStart(),
+            filter.getStartTimeEnd(),
+            filter.getEndTimeStart(),
+            filter.getEndTimeEnd(),
+            filter.getCreatedBy(),
+            filter.getLastUpdatedBy(), filter.getKeyword()));
+    }
+
+    @Override
+    public ResponseEntity<?> addCardToCustomerTicket(CustomerTicketCardDTO customerTicketCardDTO) {
         try {
-            TicketFilterDTO ticketFilterDTO = ticketService.findByTicketForUser(ticketId);
-            setCustomer(ticketFilterDTO);
-            return ResponseEntity.ok(ticketFilterDTO);
+            return ResponseEntity.ok(ticketService.addCardCustomerTicket(customerTicketCardDTO));
         } catch (HttpClientErrorException e) {
             return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
         }
     }
 
     @Override
-    public ResponseEntity<?> findByIdForAdmin(UUID ticketId, String siteId) {
+    public ResponseEntity<?> findByIdForUser(UUID ticketId, String siteId) {
         try {
-            TicketFilterDTO ticketFilterDTO = ticketService.findByTicketForAdmin(ticketId, siteId);
-            setCustomer(ticketFilterDTO);
-            return ResponseEntity.ok(ticketFilterDTO);
+            if (SecurityUtils.getUserDetails().isOrganizationAdmin() || SecurityUtils.getUserDetails().isSiteAdmin()) {
+                TicketFilterDTO ticketFilterDTO = ticketService.findByTicketForAdmin(ticketId, siteId);
+                setCustomer(ticketFilterDTO);
+                return ResponseEntity.ok(ticketFilterDTO);
+            } else {
+                TicketFilterDTO ticketFilterDTO = ticketService.findByTicketForUser(ticketId);
+                setCustomer(ticketFilterDTO);
+                return ResponseEntity.ok(ticketFilterDTO);
+            }
         } catch (HttpClientErrorException e) {
             return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
         }

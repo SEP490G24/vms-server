@@ -94,8 +94,8 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
     }
 
     @Override
-    public Page<Room> filter(Pageable pageable, List<String> names, List<String> siteId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, Boolean enable, String keyword) {
-        List<UUID> sites = SecurityUtils.getListSite(siteRepository, siteId);
+    public Page<Room> filter(Pageable pageable, List<String> names, List<String> siteId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, Boolean enable, String keyword, String createBy) {
+        List<UUID> sites = SecurityUtils.getListSiteToUUID(siteRepository, siteId);
         return roomRepository.filter(
             pageable,
             names,
@@ -103,19 +103,19 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
             createdOnStart,
             createdOnEnd,
             enable,
-            keyword != null ? keyword.toUpperCase() : null);
+            keyword != null ? keyword.toUpperCase() : null, createBy);
     }
 
     @Override
-    public List<Room> filter(List<String> names, List<String> siteId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, Boolean enable, String keyword) {
-        List<UUID> sites = SecurityUtils.getListSite(siteRepository, siteId);
+    public List<Room> filter(List<String> names, List<String> siteId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, Boolean enable, String keyword, String createBy) {
+        List<UUID> sites = SecurityUtils.getListSiteToUUID(siteRepository, siteId);
         return roomRepository.filter(
             names,
             sites,
             createdOnStart,
             createdOnEnd,
             enable,
-            keyword != null ? keyword.toUpperCase() : null);
+            keyword != null ? keyword.toUpperCase() : null, createBy);
     }
 
 

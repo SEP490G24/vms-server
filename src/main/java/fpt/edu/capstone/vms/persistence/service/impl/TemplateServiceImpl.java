@@ -92,7 +92,7 @@ public class TemplateServiceImpl extends GenericServiceImpl<Template, UUID> impl
 
     @Override
     public Page<Template> filter(Pageable pageable, List<String> names, List<String> siteId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, Boolean enable, String keyword) {
-        List<UUID> sites = SecurityUtils.getListSite(siteRepository, siteId);
+        List<UUID> sites = SecurityUtils.getListSiteToUUID(siteRepository, siteId);
         return templateRepository.filter(
             pageable,
             names,
@@ -105,7 +105,7 @@ public class TemplateServiceImpl extends GenericServiceImpl<Template, UUID> impl
 
     @Override
     public List<Template> filter(List<String> names, List<String> siteId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, Boolean enable, String keyword) {
-        List<UUID> sites = SecurityUtils.getListSite(siteRepository, siteId);
+        List<UUID> sites = SecurityUtils.getListSiteToUUID(siteRepository, siteId);
         return templateRepository.filter(
             names,
             sites,

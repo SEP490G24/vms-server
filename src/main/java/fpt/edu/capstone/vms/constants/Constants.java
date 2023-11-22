@@ -28,6 +28,12 @@ public class Constants {
         public static final String TICKET_TEMPLATE_CONFIRM_EMAIL = "ticket.template.confirm.email";
         public static final String TICKET_TEMPLATE_CANCEL_EMAIL = "ticket.template.cancel.email";
 
+        /* Setting for Configuration */
+
+        public static final String CONFIGURATION_CARD = "configuration.card";
+        public static final String CONFIGURATION_SITE_GUARD = "configuration.site.guard";
+        public static final String CONFIGURATION_SITE_RECEPTIONIST = "configuration.site.receptionist";
+
     }
 
     public static final String[] IGNORE_CLIENT_ID_KEYCLOAK = new String[]{"account", "account-console", "admin-cli", "broker",
@@ -60,6 +66,11 @@ public class Constants {
         CHECK_OUT,
         CANCEL,
         REJECT
+    }
+
+    public enum StatusCheckInCard {
+        APPROVED,
+        DENIED
     }
 
     public enum Gender {

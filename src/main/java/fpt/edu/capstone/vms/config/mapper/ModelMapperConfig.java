@@ -114,6 +114,7 @@ public class ModelMapperConfig {
             .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getTicketEntity().getCreatedOn()), ITicketController.TicketByQRCodeResponseDTO::setCreatedOn))
             .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getTicketEntity().getRoom().getId()), ITicketController.TicketByQRCodeResponseDTO::setRoomId))
             .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getTicketEntity().getRoom().getName()), ITicketController.TicketByQRCodeResponseDTO::setRoomName))
+            .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getTicketEntity().getRoom().isSecurity()), ITicketController.TicketByQRCodeResponseDTO::setSecurity))
             .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getCustomerEntity()), ITicketController.TicketByQRCodeResponseDTO::setCustomerInfo));
 
         // customerTicketMap => AccessHistoryResponseDTO

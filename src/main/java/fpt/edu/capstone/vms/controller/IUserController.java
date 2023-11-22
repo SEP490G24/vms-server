@@ -49,10 +49,6 @@ public interface IUserController {
     @Operation(summary = "Update my profile")
     ResponseEntity<?> updateProfile(@RequestBody @Valid UpdateProfileUserInfo userInfo) throws NotFoundException;
 
-    @PutMapping("/update-state")
-    @Operation(summary = "Update my state")
-    ResponseEntity<?> updateState(@RequestBody @Valid UpdateState updateState);
-
     @GetMapping("/profile")
     @Operation(summary = "View my profile")
     ResponseEntity<?> viewMyProfile();
@@ -70,18 +66,12 @@ public interface IUserController {
     @PostMapping("/import")
     @Operation(summary = "Import list of user use excel")
     @PreAuthorize("hasRole('r:user:import')")
-    ResponseEntity<Object> importUser(@RequestBody MultipartFile file);
+    ResponseEntity<Object> importUser(@RequestParam(value = "siteId", required = false) String siteId, @RequestBody MultipartFile file);
 
     @PostMapping("/change-password")
     @Operation(summary = "Change Password")
-        //@PreAuthorize("hasRole('r:user:find')")
     ResponseEntity<?> changePassword(@RequestBody ChangePasswordUserDto changePasswordUserDto);
 
-//    @PutMapping("/{username}/role")
-//    @Operation(summary = "Update role")
-//    @PreAuthorize("hasRole('r:role:update')")
-//    ResponseEntity<?> updateRole(@PathVariable("username") String username,
-//                                 @RequestBody List<String> roles);
 
     @Data
     class CreateUserInfo {
@@ -180,6 +170,7 @@ public interface IUserController {
         Date dateOfBirth;
         String gender;
         List<String> roles;
+        String roleName;
         Date createdOn;
         Date lastUpdatedOn;
         Boolean enable;

@@ -2,6 +2,7 @@ package fpt.edu.capstone.vms.controller;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import fpt.edu.capstone.vms.constants.Constants;
+import fpt.edu.capstone.vms.persistence.entity.Room;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -70,7 +71,7 @@ public interface ITicketController {
     @Operation(summary = "Filter ticket in site for admin")
     ResponseEntity<?> filterAllBySites(@RequestBody @Valid TicketFilter ticketFilterSite, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
-    @GetMapping("/{checkInCode}")
+    @GetMapping("/check-in/{checkInCode}")
     @Operation(summary = "Find ticket by qrcode")
     @PreAuthorize("hasRole('r:ticket:findQRCode')")
     ResponseEntity<?> findByQRCode(@PathVariable String checkInCode);
@@ -82,17 +83,23 @@ public interface ITicketController {
 
     @GetMapping("/{ticketId}")
     @Operation(summary = "Find ticket by id for user")
-    ResponseEntity<?> findByIdForUser(@PathVariable UUID ticketId);
-
-    @GetMapping("/admin/{ticketId}")
-    @Operation(summary = "Find ticket by id for admin")
     @PreAuthorize("hasRole('r:ticket:viewTicketDetail')")
-    ResponseEntity<?> findByIdForAdmin(@PathVariable UUID ticketId, @RequestParam(value = "groupId", required = false) String siteId);
+    ResponseEntity<?> findByIdForUser(@PathVariable UUID ticketId, @RequestParam(value = "siteId", required = false) String siteId);
 
     @PostMapping("/customer/filter")
     @Operation(summary = "Filter ticket and customer ")
     @PreAuthorize("hasRole('r:ticket:findQRCode')")
-    ResponseEntity<?> filterTicketAndCustomer(@RequestBody @Valid TicketFilterUser ticketFilterUser, Pageable pageable);
+    ResponseEntity<?> filterTicketAndCustomer(@RequestBody @Valid TicketFilter ticketFilter, Pageable pageable);
+
+    @PostMapping("/room")
+    @Operation(summary = "Filter ticket by room ")
+    @PreAuthorize("hasRole('r:ticket:room')")
+    ResponseEntity<?> filterTicketByRoom(@RequestBody @Valid TicketFilter ticketFilter);
+
+    @PostMapping("/customer/card")
+    @Operation(summary = "add card to customer ")
+    @PreAuthorize("hasRole('r:ticket:add-card')")
+    ResponseEntity<?> addCardToCustomerTicket(@RequestBody @Valid CustomerTicketCardDTO customerTicketCardDTO);
 
     @Data
     class CreateTicketInfo {
@@ -144,17 +151,22 @@ public interface ITicketController {
         private String roomName;
         private Constants.Purpose purpose;
         private String purposeNote;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         private LocalDateTime startTime;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         private LocalDateTime endTime;
         private String comment;
         private Constants.StatusTicket status;
         private String username;
         private UUID roomId;
         private String createdBy;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         private LocalDateTime createdOn;
         private String lastUpdatedBy;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         private LocalDateTime lastUpdatedOn;
         private String siteId;
+        boolean isBookmark;
         List<ICustomerController.CustomerInfo> Customers;
     }
 
@@ -166,17 +178,11 @@ public interface ITicketController {
         UUID roomId;
         Constants.StatusTicket status;
         Constants.Purpose purpose;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         LocalDateTime createdOnStart;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         LocalDateTime createdOnEnd;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         LocalDateTime startTimeStart;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         LocalDateTime startTimeEnd;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         LocalDateTime endTimeStart;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         LocalDateTime endTimeEnd;
         String createdBy;
         String lastUpdatedBy;
@@ -190,17 +196,11 @@ public interface ITicketController {
         UUID roomId;
         Constants.StatusTicket status;
         Constants.Purpose purpose;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         LocalDateTime createdOnStart;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         LocalDateTime createdOnEnd;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         LocalDateTime startTimeStart;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         LocalDateTime startTimeEnd;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         LocalDateTime endTimeStart;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         LocalDateTime endTimeEnd;
         String createdBy;
         String lastUpdatedBy;
@@ -221,9 +221,7 @@ public interface ITicketController {
         private Constants.Purpose purpose;
         private String purposeNote;
         private String name;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         private LocalDateTime startTime;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         private LocalDateTime endTime;
         private String description;
         private UUID roomId;
@@ -255,6 +253,7 @@ public interface ITicketController {
         //Info Room
         private UUID roomId;
         private String roomName;
+        private boolean isSecurity;
 
         //Info customer
         ICustomerController.CustomerInfo customerInfo;
@@ -262,12 +261,6 @@ public interface ITicketController {
 
     @Data
     class CheckInPayload {
-
-        @NotNull
-        private UUID ticketId;
-
-        @NotNull
-        private UUID customerId;
 
         @NotNull
         private String checkInCode;
@@ -279,4 +272,23 @@ public interface ITicketController {
         private String reasonNote;
     }
 
+    @Data
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    class TicketByRoomResponseDTO {
+        List<Room> rooms;
+        List<TicketFilterDTO> tickets;
+    }
+
+    @Data
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    class CustomerTicketCardDTO {
+        @NotNull
+        String checkInCode;
+        @NotNull
+        String cardId;
+    }
 }

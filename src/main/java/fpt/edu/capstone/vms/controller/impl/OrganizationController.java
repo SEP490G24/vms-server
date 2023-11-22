@@ -4,8 +4,10 @@ import fpt.edu.capstone.vms.controller.IOrganizationController;
 import fpt.edu.capstone.vms.exception.HttpClientResponse;
 import fpt.edu.capstone.vms.persistence.entity.Organization;
 import fpt.edu.capstone.vms.persistence.service.IOrganizationService;
+import fpt.edu.capstone.vms.util.SecurityUtils;
 import jakarta.ws.rs.QueryParam;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +25,16 @@ public class OrganizationController implements IOrganizationController {
 
     @Override
     public ResponseEntity<Organization> findById(UUID id) {
-        return ResponseEntity.ok(organizationService.findById(id));
+        if (SecurityUtils.getUserDetails().isRealmAdmin()) {
+            return ResponseEntity.ok(organizationService.findById(id));
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> viewDetail() {
+        return ResponseEntity.ok(organizationService.findById(UUID.fromString(SecurityUtils.getOrgId())));
     }
 
     @Override
@@ -76,5 +87,27 @@ public class OrganizationController implements IOrganizationController {
                 filter.getLastUpdatedBy(),
                 filter.getEnable(),
                 filter.getKeyword()));
+    }
+
+    @Data
+    class OrganizationDTO {
+        //organization info
+        private String name;
+        private String code;
+        private String website;
+        private String representative;
+        private String description;
+        private String logo;
+        private String contactInfo;
+        private String contactPhoneNumber;
+        private Boolean enable;
+
+        //site info
+        private String phoneNumber;
+        private Integer provinceId;
+        private Integer communeId;
+        private Integer districtId;
+        private String address;
+        private String taxCode;
     }
 }

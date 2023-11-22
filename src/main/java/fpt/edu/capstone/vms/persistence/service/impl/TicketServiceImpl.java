@@ -116,15 +116,21 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
      *
      * @param ticketInfo An object of type ITicketController.CreateTicketInfo, which contains information about the ticket
      *                   being created.
-     * @return The method is returning a Ticket object.
+     * @return The method is returning a Ticket object
      */
     @Override
     @Transactional(rollbackFor = {Exception.class, Throwable.class, NullPointerException.class})
     public Ticket create(ITicketController.CreateTicketInfo ticketInfo) {
 
         String username = SecurityUtils.loginUsername();
-        //Tạo meeting
+
         var ticketDto = mapper.map(ticketInfo, Ticket.class);
+        //check purpose
+        if (ticketInfo.getPurpose() == null) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Purpose is empty");
+        }
+
+        //Tạo meeting
         ticketDto.setCode(generateMeetingCode(ticketInfo.getPurpose(), username));
 
         LocalDateTime startTime = ticketInfo.getStartTime();
@@ -157,20 +163,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             return ticket;
         } else {
 
-            if (startTime == null || startTime.toString().trim().isEmpty()) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Start time is empty");
-            }
-
-            if (endTime == null || endTime.toString().trim().isEmpty()) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "End time is empty");
-            }
-
-            //check purpose
-            if (StringUtils.isEmpty(ticketDto.getPurpose().toString())) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Purpose is empty");
-            }
-
-            if (ticketDto.getPurpose().equals("OTHERS")) {
+            if (ticketInfo.getPurpose().equals(Constants.Purpose.OTHERS)) {
                 if (StringUtils.isEmpty(ticketInfo.getPurposeNote())) {
                     throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Purpose other is empty");
                 }
@@ -178,8 +171,10 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
 
             ticketDto.setStatus(Constants.StatusTicket.PENDING);
             Ticket ticket = ticketRepository.save(ticketDto);
-
-            Room room = roomRepository.findById(ticketInfo.getRoomId()).orElse(null);
+            Room room = null;
+            if (ticketInfo.getRoomId() != null) {
+                room = roomRepository.findById(ticketInfo.getRoomId()).orElse(null);
+            }
             setDataCustomer(ticketInfo, ticket);
             var customerTicketMaps = customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(ticket.getId());
             if (customerTicketMaps.isEmpty())
@@ -210,12 +205,12 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     private void checkRoom(ITicketController.CreateTicketInfo ticketInfo, Ticket ticket) {
         Room room = roomRepository.findById(ticketInfo.getRoomId()).orElse(null);
 
-        if (!room.getSiteId().equals(UUID.fromString(ticket.getSiteId())))
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User can not create meeting in this room");
-
         if (ObjectUtils.isEmpty(room)) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Room is null");
         }
+
+        if (!room.getSiteId().equals(UUID.fromString(ticket.getSiteId())))
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User can not create meeting in this room");
 
         if (isRoomBooked(ticketInfo.getRoomId(), ticketInfo.getStartTime(), ticketInfo.getEndTime())) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Room have meeting in this time");
@@ -455,7 +450,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     @Override
     @Transactional(rollbackFor = {Exception.class, Throwable.class, NullPointerException.class})
     public Ticket updateTicket(ITicketController.UpdateTicketInfo ticketInfo) {
-        if (StringUtils.isEmpty(ticketInfo.getId().toString()))
+        if (ticketInfo.getId() == null)
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "TicketId is null");
 
         Ticket ticketMap = mapper.map(ticketInfo, Ticket.class);
@@ -464,24 +459,31 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
 
         Ticket ticket = ticketRepository.findById(ticketInfo.getId()).orElse(null);
 
-        if (!ticket.getUsername().equals(SecurityUtils.loginUsername())) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Ticket is not for you!!");
+        LocalDateTime currentTime = LocalDateTime.now();
+        LocalDateTime startTime = ticket.getStartTime();
+
+        if (!startTime.isAfter(currentTime.plusHours(2))) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Meetings cannot be updated at least 2 hours before they start.");
         }
 
         if (ObjectUtils.isEmpty(ticket)) {
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't found ticket by id " + ticketInfo.getId());
         }
 
+        if (!ticket.getUsername().equals(SecurityUtils.loginUsername())) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Ticket is not for you!!");
+        }
+
         if (StringUtils.isNotEmpty(ticketMap.getRoomId().toString())) {
             if (ticketInfo.getRoomId().equals(ticket.getRoomId())) {
                 Room room = roomRepository.findById(ticketInfo.getRoomId()).orElse(null);
 
-                if (!room.getSiteId().equals(UUID.fromString(ticket.getSiteId())))
-                    throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User can not create meeting in this room");
-
                 if (ObjectUtils.isEmpty(room)) {
                     throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Room is null");
                 }
+
+                if (!room.getSiteId().equals(UUID.fromString(ticket.getSiteId())))
+                    throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User can not create meeting in this room");
 
                 if (isRoomBooked(ticketInfo.getRoomId(), ticketInfo.getStartTime(), ticketInfo.getEndTime())) {
                     throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Room have meeting in this time");
@@ -489,7 +491,6 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             }
         }
 
-        LocalDateTime startTime = ticket.getStartTime();
         LocalDateTime endTime = ticket.getEndTime();
 
         if (updateStartTime != null && updateEndTime == null && !updateStartTime.isEqual(startTime)) {
@@ -500,19 +501,27 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             checkTimeForTicket(updateStartTime, updateEndTime);
         }
 
-        if (StringUtils.isNotEmpty(ticketMap.getPurpose().toString())) {
-            if (!ticketMap.getPurpose().equals(Constants.Purpose.OTHERS) && ticketMap.getPurposeNote() != null) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Purpose Note must be note when Purpose is other");
-            }
+        if (ticketMap.getPurpose() == Constants.Purpose.OTHERS && ticketMap.getPurposeNote() == null) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Purpose Note must not be null when Purpose is other");
+        } else if (ticketMap.getPurpose() != Constants.Purpose.OTHERS && ticketMap.getPurposeNote() != null) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Purpose Note must be null when Purpose is not other");
         }
 
         Ticket oldValue = ticket;
         ticketRepository.save(ticket.update(ticketMap));
         Room room = roomRepository.findById(ticket.getRoomId()).orElse(null);
+        List<CustomerTicketMap> customerTicketMaps = customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(ticket.getId());
+        if (customerTicketMaps != null) {
+            customerTicketMaps.forEach(o -> {
+                Customer customer = o.getCustomerEntity();
+                sendEmail(customer, ticket, room, o.getCheckInCode(), true);
+            });
+        }
 
         if (ticketInfo.getNewCustomers() != null) {
             checkNewCustomers(ticketInfo.getNewCustomers(), ticket, room);
         }
+
         auditLogRepository.save(new AuditLog(ticket.getSiteId()
             , siteRepository.findById(UUID.fromString(ticket.getSiteId())).orElse(null).getOrganizationId().toString()
             , ticket.getId().toString()
@@ -524,7 +533,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         return ticket;
     }
 
-    private void checkNewCustomers(List<ICustomerController.NewCustomers> newCustomers, Ticket ticket, Room room) {
+    public void checkNewCustomers(List<ICustomerController.NewCustomers> newCustomers, Ticket ticket, Room room) {
         String orgId;
         if (SecurityUtils.getOrgId() == null) {
             Site site = siteRepository.findById(UUID.fromString(SecurityUtils.getSiteId())).orElse(null);
@@ -544,15 +553,17 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                     throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "IdentificationNumber is incorrect");
                 }
                 Customer customerExist = customerRepository.findByIdentificationNumberAndOrganizationId(customerDto.getIdentificationNumber(), orgId);
-                if (ObjectUtils.isEmpty(customerExist)) {
-                    Customer customer = customerRepository.save(mapper.map(customerDto, Customer.class).setOrganizationId(orgId));
+                if (customerExist == null) {
+                    var _customer = mapper.map(customerDto, Customer.class);
+                    _customer.setOrganizationId(orgId);
+                    Customer customer = customerRepository.save(_customer);
                     String checkInCode = generateCheckInCode();
                     createCustomerTicket(ticket, customer.getId(), checkInCode);
-                    sendEmail(customer, ticket, room, checkInCode);
+                    sendEmail(customer, ticket, room, checkInCode, false);
                 } else {
                     String checkInCode = generateCheckInCode();
                     createCustomerTicket(ticket, customerExist.getId(), checkInCode);
-                    sendEmail(customerExist, ticket, room, checkInCode);
+                    sendEmail(customerExist, ticket, room, checkInCode, false);
                 }
             }
         }
@@ -617,7 +628,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
 
         return ticketRepository.filter(pageable
             , names
-            , getListSite(siteRepository, sites)
+            , SecurityUtils.getListSiteToString(siteRepository, sites)
             , usernames
             , roomId
             , status
@@ -686,7 +697,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         , String lastUpdatedBy
         , String keyword) {
         return ticketRepository.filter(names
-            , getListSite(siteRepository, sites)
+            , SecurityUtils.getListSiteToString(siteRepository, sites)
             , usernames
             , roomId
             , status
@@ -702,33 +713,6 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             , null
             , keyword);
     }
-
-    public static List<String> getListSite(SiteRepository siteRepository, List<String> siteId) {
-
-        if (SecurityUtils.getOrgId() == null && siteId != null) {
-            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
-        }
-        List<String> sites = new ArrayList<>();
-        if (SecurityUtils.getOrgId() != null) {
-            if (siteId == null) {
-                siteRepository.findAllByOrganizationId(UUID.fromString(SecurityUtils.getOrgId())).forEach(o -> {
-                    sites.add(o.getId().toString());
-                });
-            } else {
-                siteId.forEach(o -> {
-                    if (!SecurityUtils.checkSiteAuthorization(siteRepository, o)) {
-                        throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
-                    }
-                    sites.add(o);
-                });
-            }
-        } else {
-            sites.add(SecurityUtils.getSiteId());
-        }
-
-        return sites;
-    }
-
     @Override
     public ITicketController.TicketByQRCodeResponseDTO findByQRCode(String checkInCode) {
         CustomerTicketMap customerTicketMap = customerTicketMapRepository.findByCheckInCodeIgnoreCase(checkInCode);
@@ -752,6 +736,8 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             sseEmitterManager.sendSseToClient(checkInPayload, mapper.map(customerTicketMap, ITicketController.TicketByQRCodeResponseDTO.class));
         } else if (checkInPayload.getStatus().equals(Constants.StatusTicket.CHECK_OUT)) {
             customerTicketMap.setCheckOutTime(LocalDateTime.now());
+            customerTicketMap.setCheckOut(true);
+            customerTicketMap.setCardId(null);
         }
         customerTicketMapRepository.save(customerTicketMap);
         Ticket ticket = ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId()).orElse(null);
@@ -772,7 +758,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't not found ticket");
         }
         if (!ticket.getUsername().equals(SecurityUtils.loginUsername())) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Can't not view this ticket");
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "Can't not view this ticket");
         }
         ITicketController.TicketFilterDTO ticketFilterDTO = mapper.map(ticket, ITicketController.TicketFilterDTO.class);
         return ticketFilterDTO;
@@ -806,6 +792,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
 
     @Override
     public Page<ITicketController.TicketByQRCodeResponseDTO> filterTicketAndCustomer(Pageable pageable
+        , List<String> sites
         , List<String> names
         , UUID roomId
         , Constants.StatusTicket status
@@ -820,7 +807,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         , String lastUpdatedBy
         , Boolean bookmark
         , String keyword) {
-        Page<CustomerTicketMap> customerTicketMaps = customerTicketMapRepository.filter(pageable
+        Page<CustomerTicketMap> customerTicketMaps = customerTicketMapRepository.filter(pageable, sites, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd
             , roomId
             , status
             , purpose
@@ -828,7 +815,63 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         List<ITicketController.TicketByQRCodeResponseDTO> ticketByQRCodeResponseDTOS = mapper.map(customerTicketMaps.getContent(), new TypeToken<List<ITicketController.TicketByQRCodeResponseDTO>>() {
         }.getType());
 
-        return new PageImpl(ticketByQRCodeResponseDTOS, pageable, ticketByQRCodeResponseDTOS.size());
+        return new PageImpl(ticketByQRCodeResponseDTOS, pageable, customerTicketMaps.getTotalElements());
+    }
+
+    @Override
+    public boolean addCardCustomerTicket(ITicketController.CustomerTicketCardDTO customerTicketCardDTO) {
+        CustomerTicketMap customerTicketMap = customerTicketMapRepository.findByCheckInCodeIgnoreCase(customerTicketCardDTO.getCheckInCode());
+        if (customerTicketMap != null) {
+            Ticket ticket = ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId()).orElse(null);
+            if (!customerTicketMap.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is not check-in, please check in before add card");
+            }
+            if (SecurityUtils.getOrgId() != null) {
+                if (StringUtils.isEmpty(ticket.getSiteId().trim()))
+                    throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SiteId is null");
+                if (!siteRepository.existsByIdAndOrganizationId(UUID.fromString(ticket.getSiteId()), UUID.fromString(SecurityUtils.getOrgId())))
+                    throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "You don't have permission to do this.");
+                settingUtils.loadSettingsSite(ticket.getSiteId());
+            } else {
+                settingUtils.loadSettingsSite(SecurityUtils.getSiteId());
+            }
+            if (!settingUtils.getBoolean(Constants.SettingCode.CONFIGURATION_CARD)) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Site is not using card");
+            }
+            if (customerTicketCardDTO.getCardId() == null) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Card is null");
+            }
+            customerTicketMap.setCardId(customerTicketCardDTO.getCardId());
+            customerTicketMapRepository.save(customerTicketMap);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public ITicketController.TicketByRoomResponseDTO filterTicketByRoom(List<String> names, List<String> sites, List<String> usernames, UUID roomId, Constants.StatusTicket status, Constants.Purpose purpose, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, LocalDateTime startTimeStart, LocalDateTime startTimeEnd, LocalDateTime endTimeStart, LocalDateTime endTimeEnd, String createdBy, String lastUpdatedBy, String keyword) {
+        List<Room> rooms;
+        if (SecurityUtils.getUserDetails().isOrganizationAdmin() || SecurityUtils.getUserDetails().isSiteAdmin()) {
+            rooms = roomRepository.filter(null, SecurityUtils.getListSiteToUUID(siteRepository, sites), null, null, null, null, null);
+        } else {
+            rooms = roomRepository.filter(null, null, null, null, null, null, SecurityUtils.loginUsername());
+        }
+
+        List<Ticket> tickets;
+        if (SecurityUtils.getUserDetails().isOrganizationAdmin() || SecurityUtils.getUserDetails().isSiteAdmin()) {
+            tickets = filterAllBySite(null, sites, null, null, status, purpose, createdOnStart, createdOnEnd, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd, null, null, keyword);
+        } else {
+            tickets = filterAllBySite(names, null, null, null, status, purpose, createdOnStart, createdOnEnd, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd, SecurityUtils.loginUsername(), null, keyword);
+        }
+        List<ITicketController.TicketFilterDTO> ticketFilterDTOS = mapper.map(tickets, new TypeToken<List<ITicketController.TicketFilterDTO>>() {
+        }.getType());
+        ticketFilterDTOS.forEach(o -> {
+            setCustomer(o);
+
+        });
+        ITicketController.TicketByRoomResponseDTO ticketByRoomResponseDTO = new ITicketController.TicketByRoomResponseDTO();
+
+        return ticketByRoomResponseDTO.builder().rooms(rooms).tickets(ticketFilterDTOS).build();
     }
 
     /**
@@ -843,7 +886,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     private void sendQr(List<CustomerTicketMap> customerTicketMap, Ticket ticket, Room room) {
         customerTicketMap.forEach(o -> {
             var customer = customerRepository.findById(o.getCustomerTicketMapPk().getCustomerId()).orElse(null);
-            sendEmail(customer, ticket, room, o.getCheckInCode());
+            sendEmail(customer, ticket, room, o.getCheckInCode(), false);
         });
     }
 
@@ -855,7 +898,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
      * @param ticket   The `ticket` parameter is an object of the `Ticket` class. It contains information about a ticket,
      *                 such as its ID and site ID.
      */
-    public void sendEmail(Customer customer, Ticket ticket, Room room, String checkInCode) {
+    public void sendEmail(Customer customer, Ticket ticket, Room room, String checkInCode, boolean isUpdate) {
         String meetingUrl = "https://web-vms.azurewebsites.net/check-in/" + checkInCode;
 
         if (ObjectUtils.isEmpty(customer))
@@ -892,15 +935,24 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             parameterMap.put("dateTime", date);
             parameterMap.put("startTime", startTime);
             parameterMap.put("endTime", endTime);
-            parameterMap.put("address", site.getAddress());
-            parameterMap.put("roomName", room.getName());
+            String address = site.getAddress() != null ? site.getAddress() : site.getCommune().getName() + ", " + site.getDistrict().getName() + ", " + site.getProvince().getName();
+            parameterMap.put("address", address);
+            String roomName = room != null ? room.getName() : "Updating....";
+            parameterMap.put("roomName", roomName);
             parameterMap.put("staffName", user.getFirstName() + " " + user.getLastName());
             parameterMap.put("staffPhone", user.getPhoneNumber());
             parameterMap.put("staffEmail", user.getEmail());
             parameterMap.put("checkInCode", checkInCode);
             String replacedTemplate = emailUtils.replaceEmailParameters(template.getBody(), parameterMap);
 
-            emailUtils.sendMailWithQRCode(customer.getEmail(), template.getSubject(), replacedTemplate, qrCodeData, ticket.getSiteId());
+            String subject;
+            if (isUpdate) {
+                subject = "Update information of meeting #" + checkInCode;
+            } else {
+                subject = template.getSubject();
+            }
+
+            emailUtils.sendMailWithQRCode(customer.getEmail(), subject, replacedTemplate, qrCodeData, ticket.getSiteId());
         } catch (WriterException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {
@@ -940,19 +992,6 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
      */
     boolean isRoomBooked(UUID roomId, LocalDateTime startTime, LocalDateTime endTime) {
         int count = ticketRepository.countByRoomIdAndEndTimeGreaterThanEqualAndStartTimeLessThanEqualAndStatusNotLike(roomId, startTime, endTime, Constants.StatusTicket.CANCEL);
-        return count > 0;
-    }
-
-    /**
-     * The function checks if a user has a ticket within a specified time range.
-     *
-     * @param username  The username of the user for whom we want to check if they have a ticket in the given time range.
-     * @param startTime The start time of the ticket validity period.
-     * @param endTime   The endTime parameter represents the end time of a ticket.
-     * @return The method is returning a boolean value.
-     */
-    private boolean isUserHaveTicketInTime(String username, LocalDateTime startTime, LocalDateTime endTime) {
-        int count = ticketRepository.countByUsernameAndEndTimeGreaterThanEqualAndStartTimeLessThanEqualAndStatusNotLike(username, startTime, endTime, Constants.StatusTicket.CANCEL);
         return count > 0;
     }
 
@@ -1009,5 +1048,13 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         }
 
         return checkInCodeBuilder.toString();
+    }
+
+    private void setCustomer(ITicketController.TicketFilterDTO ticketFilterDTO) {
+        List<ICustomerController.CustomerInfo> customerInfos = new ArrayList<>();
+        customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(ticketFilterDTO.getId()).forEach(a -> {
+            customerInfos.add(mapper.map(customerRepository.findById(a.getCustomerTicketMapPk().getCustomerId()).orElse(null), ICustomerController.CustomerInfo.class));
+        });
+        ticketFilterDTO.setCustomers(customerInfos);
     }
 }
