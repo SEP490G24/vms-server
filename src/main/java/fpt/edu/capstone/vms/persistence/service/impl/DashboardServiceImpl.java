@@ -30,12 +30,13 @@ public class DashboardServiceImpl implements IDashboardService {
         LocalDate currentTime = LocalDate.now();
         if ("week".equals(limit)) {
             LocalDate weekAgo = currentTime.minusDays(7);
-            return convertToTicketStats(dashboardRepository.countTicketsByPurpose(java.sql.Date.valueOf(currentTime), java.sql.Date.valueOf(weekAgo), SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSites())));
+            return convertToTicketStats(dashboardRepository.countTicketsByPurpose(weekAgo.atStartOfDay(), currentTime.atStartOfDay(), SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSites())));
         } else if ("month".equals(limit)) {
             LocalDate monthAgo = currentTime.minusDays(30);
-            return convertToTicketStats(dashboardRepository.countTicketsByPurpose(java.sql.Date.valueOf(currentTime), java.sql.Date.valueOf(monthAgo), SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSites())));
+            return convertToTicketStats(dashboardRepository.countTicketsByPurpose(monthAgo.atStartOfDay(), currentTime.atStartOfDay(), SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSites())));
         } else if ("year".equals(limit)) {
-            return convertToTicketStats(dashboardRepository.countTicketsByPurposeAndYear(currentTime.getYear(), SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSites())));
+            LocalDate yearAgo = currentTime.minusDays(365);
+            return convertToTicketStats(dashboardRepository.countTicketsByPurpose(yearAgo.atStartOfDay(), currentTime.atStartOfDay(), SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSites())));
         }
         return null;
     }

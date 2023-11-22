@@ -8,8 +8,10 @@ import fpt.edu.capstone.vms.oauth2.IPermissionResource;
 import fpt.edu.capstone.vms.oauth2.IRoleResource;
 import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
+import fpt.edu.capstone.vms.util.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RolesResource;
 import org.keycloak.representations.idm.RoleRepresentation;
@@ -178,7 +180,18 @@ public class KeycloakRealmRoleResource implements IRoleResource {
         var roleUpdate = this.rolesResource.get(roleCode);
         if (roleUpdate == null) throw new NotFoundException();
         var role = roleUpdate.toRepresentation();
-        role.setAttributes(value.getAttributes());
+        if (value.getAttributes() != null && role.getAttributes() != null) {
+            String siteId = role.getAttributes().get("site_id").get(0);
+            List<String> sites = SecurityUtils.getListSiteToString(siteRepository, Collections.emptyList());
+            if (sites.contains(siteId)) {
+                var newName = value.getAttributes().get("name").get(0);
+                if (!StringUtils.isEmpty(newName)) {
+                    role.getAttributes().put("name", Collections.singletonList(newName));
+                }
+            } else {
+                throw new CustomException(ErrorApp.FORBIDDEN);
+            }
+        }
         role.setDescription(value.getDescription());
         roleUpdate.update(role);
         return mapper.map(role, RoleDto.class);

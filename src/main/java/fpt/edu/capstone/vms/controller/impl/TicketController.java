@@ -127,7 +127,7 @@ public class TicketController implements ITicketController {
 
             });
             return isPageable ?
-                ResponseEntity.ok(new PageImpl(ticketFilterPageDTOS, pageable, ticketFilterPageDTOS.size()))
+                ResponseEntity.ok(new PageImpl(ticketFilterPageDTOS, pageable, ticketEntityPageable.getTotalElements()))
                 : ResponseEntity.ok(ticketFilterDTOS);
         } else {
             var ticketEntity = ticketService.filter(
@@ -179,7 +179,7 @@ public class TicketController implements ITicketController {
             });
 
             return isPageable ?
-                ResponseEntity.ok(new PageImpl(ticketFilterPageDTOS, pageable, ticketFilterPageDTOS.size()))
+                ResponseEntity.ok(new PageImpl(ticketFilterPageDTOS, pageable, ticketEntityPageable.getTotalElements()))
                 : ResponseEntity.ok(ticketFilterDTOS);
         }
     }

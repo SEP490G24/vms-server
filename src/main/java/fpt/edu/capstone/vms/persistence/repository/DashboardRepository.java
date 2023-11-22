@@ -6,8 +6,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,8 +15,16 @@ import java.util.UUID;
 public interface DashboardRepository extends GenericRepository<Ticket, UUID> {
 
     @Query("SELECT t.purpose, COUNT(t) FROM Ticket t WHERE " +
-        "AND t.startTime >= :startTime AND t.endTime <= :endTime " +
+        "t.startTime >= :startTime AND t.endTime <= :endTime " +
         "and ((coalesce(:sites) is null) or (t.siteId in :sites)) " +
         "GROUP BY t.purpose")
-    List<Object[]> countTicketsByPurpose(@Param("startTime") Date startTime, @Param("endTime") Date endTime, @Param("sites") @Nullable Collection<String> sites);
+    List<Object[]> countTicketsByPurpose(@Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime, @Param("sites") @Nullable Collection<String> sites);
+
+
+//    @Query("SELECT t.startTime, t.purpose, COUNT(t) FROM Ticket t WHERE " +
+//        "t.startTime BETWEEN :startOfDay AND :endOfDay " +
+//        "and ((coalesce(:sites) is null) or (t.siteId in :sites)) " +
+//        "GROUP BY t.startTime, t.purpose")
+//    List<Object[]> countTicketsByPurposeByDate(@Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime  endTime, @Param("sites") @Nullable Collection<String> sites);
+
 }
