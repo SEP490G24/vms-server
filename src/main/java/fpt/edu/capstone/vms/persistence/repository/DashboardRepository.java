@@ -15,17 +15,25 @@ import java.util.UUID;
 public interface DashboardRepository extends GenericRepository<Ticket, UUID> {
 
     @Query("SELECT t.purpose, COUNT(t) FROM Ticket t WHERE " +
-        "t.startTime BETWEEN :startTime AND :endTime " +
-        "and t.endTime BETWEEN :startTime AND :endTime " +
-        "and ((coalesce(:sites) is null) or (t.siteId in :sites)) " +
+        "((:year IS NULL) OR (EXTRACT(YEAR FROM t.startTime) = :year)) " +
+        "AND ((:month IS NULL) OR (EXTRACT(MONTH FROM t.startTime) = :month)) " +
+        "AND ((cast(:startTime as date) is null ) OR (t.startTime BETWEEN :startTime AND :endTime )) " +
+        "AND ((cast(:endTime as date) is null ) OR (t.endTime BETWEEN :startTime AND :endTime)) " +
+        "AND ((COALESCE(:sites) IS NULL) OR (t.siteId IN :sites)) " +
         "GROUP BY t.purpose")
-    List<Object[]> countTicketsByPurpose(@Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime, @Param("sites") @Nullable Collection<String> sites);
+    List<Object[]> countTicketsByPurposeWithPie(
+        @Param("startTime") LocalDateTime startTime,
+        @Param("endTime") LocalDateTime endTime,
+        @Param("year") Integer year,
+        @Param("month") Integer month,
+        @Param("sites") @Nullable Collection<String> sites);
 
-
-//    @Query("SELECT t.startTime, t.purpose, COUNT(t) FROM Ticket t WHERE " +
-//        "t.startTime BETWEEN :startOfDay AND :endOfDay " +
-//        "and ((coalesce(:sites) is null) or (t.siteId in :sites)) " +
-//        "GROUP BY t.startTime, t.purpose")
-//    List<Object[]> countTicketsByPurposeByDate(@Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime  endTime, @Param("sites") @Nullable Collection<String> sites);
+    @Query("SELECT TO_CHAR(t.startTime, 'MM') as formattedMonth, t.purpose, COUNT(t) " +
+        "FROM Ticket t WHERE " +
+        "EXTRACT(YEAR FROM t.startTime) = :year " +
+        "AND ((COALESCE(:sites) IS NULL) OR (t.siteId IN :sites)) " +
+        "GROUP BY formattedMonth, t.purpose " +
+        "ORDER BY formattedMonth, t.purpose")
+    List<Object[]> countTicketsByPurposeByWithMultiLine(@Param("year") Integer year, @Param("sites") @Nullable Collection<String> sites);
 
 }
