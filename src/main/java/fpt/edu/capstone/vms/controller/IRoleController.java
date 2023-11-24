@@ -41,12 +41,12 @@ public interface IRoleController {
 
     @PostMapping("")
     @Operation(summary = "Create role")
-        @PreAuthorize("hasRole('r:role:create')")
+    @PreAuthorize("hasRole('r:role:create')")
     ResponseEntity<?> create(@RequestBody CreateRolePayload payload);
 
     @PutMapping("/{id}")
     @Operation(summary = "Update role")
-        @PreAuthorize("hasRole('r:role:update')")
+    @PreAuthorize("hasRole('r:role:update')")
     ResponseEntity<?> update(@PathVariable("id") String id,
                              @RequestBody UpdateRolePayload payload) throws NotFoundException;
 
@@ -58,7 +58,7 @@ public interface IRoleController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete role")
-        @PreAuthorize("hasRole('r:role:delete')")
+    @PreAuthorize("hasRole('r:role:delete')")
     ResponseEntity<?> delete(@PathVariable("id") String id);
 
     @Data

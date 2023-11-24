@@ -17,6 +17,7 @@ import fpt.edu.capstone.vms.persistence.entity.User;
 import fpt.edu.capstone.vms.persistence.repository.*;
 import fpt.edu.capstone.vms.persistence.service.IUserService;
 import fpt.edu.capstone.vms.util.FileUtils;
+import fpt.edu.capstone.vms.util.PageableUtils;
 import fpt.edu.capstone.vms.util.ResponseUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import jakarta.transaction.Transactional;
@@ -37,6 +38,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -144,8 +146,12 @@ public class UserServiceImpl implements IUserService {
         , LocalDateTime createdOnEnd, Boolean enable
         , String keyword, List<String> departmentIds, List<String> siteIds, Integer provinceId, Integer districtId, Integer communeId) {
         List<UUID> departments = getListDepartments(siteIds, departmentIds);
+        List<Sort.Order> sortColum = new ArrayList<>(PageableUtils.converSort2List(pageable.getSort()));
+        sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.createdOn));
+        sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.lastUpdatedOn));
+        Pageable pageableSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(sortColum));
         return userRepository.filter(
-            pageable,
+            pageableSort,
             usernames,
             role,
             createdOnStart,
