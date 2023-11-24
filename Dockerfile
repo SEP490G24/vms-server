@@ -6,6 +6,7 @@ RUN mvn clean install
 FROM openjdk:17-alpine
 # Install libfreetype6
 RUN apk --no-cache add freetype
+RUN apk --no-cache add ttf-dejavu
 WORKDIR /out
 ARG JAR_FILE=target/*.jar
 ARG CONFIG_FILE=src/main/resources/application-prod.yml
