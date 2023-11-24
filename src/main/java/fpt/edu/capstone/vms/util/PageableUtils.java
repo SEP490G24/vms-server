@@ -11,7 +11,7 @@ import java.util.List;
 @Component
 public final class PageableUtils {
 
-    public static List<Sort.Order> converSort2List(Sort sort) {
+    public static List<Sort.Order> converterSort2List(Sort sort) {
         var results = new ArrayList<Sort.Order>();
         for (Sort.Order order : sort) {
             results.add(order);

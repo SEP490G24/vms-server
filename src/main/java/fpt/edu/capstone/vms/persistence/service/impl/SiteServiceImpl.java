@@ -4,21 +4,31 @@ import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ISiteController;
 import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.entity.Site;
-import fpt.edu.capstone.vms.persistence.repository.*;
+import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
+import fpt.edu.capstone.vms.persistence.repository.CommuneRepository;
+import fpt.edu.capstone.vms.persistence.repository.DistrictRepository;
+import fpt.edu.capstone.vms.persistence.repository.ProvinceRepository;
+import fpt.edu.capstone.vms.persistence.repository.SettingRepository;
+import fpt.edu.capstone.vms.persistence.repository.SettingSiteMapRepository;
+import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.service.ISiteService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
+import fpt.edu.capstone.vms.util.PageableUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -147,8 +157,12 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
         , Integer districtId
         , Integer communeId
         , String keyword) {
+        List<Sort.Order> sortColum = new ArrayList<>(PageableUtils.converterSort2List(pageable.getSort()));
+        sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.createdOn));
+        sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.lastUpdatedOn));
+        Pageable pageableSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(sortColum));
         return siteRepository.filter(
-            pageable,
+            pageableSort,
             names,
             UUID.fromString(SecurityUtils.getOrgId()),
             createdOnStart,
@@ -238,6 +252,24 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
                 settingSiteMapRepository.delete(o);
             });
         }
+    }
+
+    @Override
+    public Site findById(UUID id) {
+        Site site = siteRepository.findById(id).orElse(null);
+        if (SecurityUtils.getOrgId() != null) {
+            if (!UUID.fromString(SecurityUtils.getOrgId()).equals(site.getOrganizationId())) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in organization with organizationId = " + site.getOrganization());
+            }
+        } else {
+            if (StringUtils.isEmpty(SecurityUtils.getSiteId()))
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in site with siteId = " + SecurityUtils.getSiteId());
+
+            if (!SecurityUtils.getSiteId().equals(site.getId().toString())) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in site with siteId = " + SecurityUtils.getSiteId());
+            }
+        }
+        return site;
     }
 
     public void checkAddress(Integer provinceId, Integer districtId, Integer communeId) {

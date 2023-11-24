@@ -142,7 +142,7 @@ public class AuditLogRepositoryCustomImpl implements AuditLogRepositoryCustom {
 
         if (auditType != null) {
             sqlConditional.append("AND u.audit_type = :auditType ");
-            queryParams.put("auditType", auditType);
+            queryParams.put("auditType", auditType.name());
         }
 
         if (createdOnStart != null && createdOnEnd != null) {

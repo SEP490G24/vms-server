@@ -9,6 +9,7 @@ import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.repository.TicketRepository;
 import fpt.edu.capstone.vms.persistence.service.IAccessHistoryService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
+import fpt.edu.capstone.vms.util.PageableUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
@@ -30,10 +31,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -67,14 +70,18 @@ public class AccessHistoryServiceImpl extends GenericServiceImpl<Ticket, UUID> i
                                                                                  LocalDateTime formCheckInTime, LocalDateTime toCheckInTime,
                                                                                  LocalDateTime formCheckOutTime, LocalDateTime toCheckOutTime, List<String> sites) {
         Page<CustomerTicketMap> customerTicketMapPage;
+        List<Sort.Order> sortColum = new ArrayList<>(PageableUtils.converterSort2List(pageable.getSort()));
+        sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.createdOn));
+        sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.lastUpdatedOn));
+        Pageable pageableSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(sortColum));
         if (SecurityUtils.getUserDetails().isOrganizationAdmin() || SecurityUtils.getUserDetails().isSiteAdmin()) {
-            customerTicketMapPage = customerTicketMapRepository.accessHistory(pageable, SecurityUtils.getListSiteToString(siteRepository, sites), formCheckInTime, toCheckInTime, formCheckOutTime, toCheckOutTime, status, keyword, null);
+            customerTicketMapPage = customerTicketMapRepository.accessHistory(pageableSort, SecurityUtils.getListSiteToString(siteRepository, sites), formCheckInTime, toCheckInTime, formCheckOutTime, toCheckOutTime, status, keyword, null);
         } else {
-            customerTicketMapPage = customerTicketMapRepository.accessHistory(pageable, null, formCheckInTime, toCheckInTime, formCheckOutTime, toCheckOutTime, status, keyword, SecurityUtils.loginUsername());
+            customerTicketMapPage = customerTicketMapRepository.accessHistory(pageableSort, null, formCheckInTime, toCheckInTime, formCheckOutTime, toCheckOutTime, status, keyword, SecurityUtils.loginUsername());
         }
         List<IAccessHistoryController.AccessHistoryResponseDTO> accessHistoryResponseDTOS = mapper.map(customerTicketMapPage.getContent(), new TypeToken<List<IAccessHistoryController.AccessHistoryResponseDTO>>() {
         }.getType());
-        return new PageImpl(accessHistoryResponseDTOS, pageable, customerTicketMapPage.getTotalElements());
+        return new PageImpl(accessHistoryResponseDTOS, pageableSort, customerTicketMapPage.getTotalElements());
     }
 
     @Override

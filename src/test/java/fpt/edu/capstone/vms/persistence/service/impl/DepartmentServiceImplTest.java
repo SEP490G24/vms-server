@@ -18,7 +18,9 @@ import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -315,12 +317,13 @@ class DepartmentServiceImplTest {
         String lastUpdatedBy = "admin";
 
         String keyword = "example";
-
+        Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("createdOn"), Sort.Order.desc("lastUpdatedOn")));
+        Pageable pageableSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
         Page<Department> expectedSitePage = new PageImpl<>(List.of());
         when(departmentRepository.filter(pageable, names, sites, createdOnStart, createdOnEnd, createBy, lastUpdatedBy, enable, keyword.toUpperCase())).thenReturn(expectedSitePage);
 
         // When
-        Page<Department> filteredSites = departmentService.filter(pageable, names, siteId, createdOnStart, createdOnEnd, createBy, lastUpdatedBy, enable, keyword.toUpperCase());
+        Page<Department> filteredSites = departmentService.filter(pageableSort, names, siteId, createdOnStart, createdOnEnd, createBy, lastUpdatedBy, enable, keyword.toUpperCase());
 
         // Then
         assertNotNull(filteredSites);

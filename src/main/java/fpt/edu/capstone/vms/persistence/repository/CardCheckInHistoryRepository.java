@@ -5,6 +5,6 @@ import org.springframework.stereotype.Repository;
 
 
 @Repository
-public interface CardCheckInHistoryRepository extends GenericRepository<CardCheckInHistory, Integer> {
+public interface CardCheckInHistoryRepository extends GenericRepository<CardCheckInHistory, Integer>, CardCheckInHistoryRepositoryCustom {
 
 }

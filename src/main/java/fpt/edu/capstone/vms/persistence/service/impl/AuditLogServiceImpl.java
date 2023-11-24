@@ -7,6 +7,7 @@ import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.service.IAuditLogService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
+import fpt.edu.capstone.vms.util.PageableUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import net.sf.jasperreports.engine.JREmptyDataSource;
 import net.sf.jasperreports.engine.JRException;
@@ -22,10 +23,12 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -48,11 +51,16 @@ public class AuditLogServiceImpl extends GenericServiceImpl<AuditLog, UUID> impl
     @Override
     public Page<IAuditLogController.AuditLogFilterDTO> filter(Pageable pageable, List<String> organizations, List<String> sites, Constants.AuditType auditType, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, String createdBy, String tableName, String keyword) {
 
+        List<Sort.Order> sortColum = new ArrayList<>(PageableUtils.converterSort2List(pageable.getSort()));
+        sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.createdOn));
+        sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.lastUpdatedOn));
+        Pageable pageableSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(sortColum));
+
         if (SecurityUtils.getUserDetails().isOrganizationAdmin() || SecurityUtils.getUserDetails().isSiteAdmin()) {
             List<String> siteList = SecurityUtils.getListSiteToString(siteRepository, sites);
-            return auditLogRepository.filter(pageable, null, siteList, auditType, createdOnStart, createdOnEnd, createdBy, tableName, keyword);
+            return auditLogRepository.filter(pageableSort, null, siteList, auditType, createdOnStart, createdOnEnd, createdBy, tableName, keyword);
         } else if (SecurityUtils.getUserDetails().isRealmAdmin()) {
-            return auditLogRepository.filter(pageable, organizations, sites, auditType, createdOnStart, createdOnEnd, createdBy, tableName, keyword);
+            return auditLogRepository.filter(pageableSort, organizations, sites, auditType, createdOnStart, createdOnEnd, createdBy, tableName, keyword);
         } else {
             return null;
         }

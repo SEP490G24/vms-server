@@ -2,6 +2,7 @@ package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.IAuditLogController;
+import fpt.edu.capstone.vms.persistence.entity.Reason;
 import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,7 +12,9 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,7 +23,6 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -85,7 +87,8 @@ class AuditLogServiceImplTest {
     @Test
     void testFilterForOrganizationAdmin() {
         // Mock data
-        Pageable pageable = Pageable.unpaged();
+        Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("createdOn"), Sort.Order.desc("lastUpdatedOn")));
+        Pageable pageableSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
         List<String> organizations = Arrays.asList("org1", "org2");
         List<String> sites = Arrays.asList("site1", "site2");
         Constants.AuditType auditType = Constants.AuditType.CREATE;
@@ -95,19 +98,21 @@ class AuditLogServiceImplTest {
         String tableName = "table";
         String keyword = "search";
 
+        Page<Reason> mockedPage = new PageImpl<>(List.of());
+
+
         // Mock the repository filter method
         when(auditLogRepository.filter(any(Pageable.class), any(List.class), any(List.class), any(Constants.AuditType.class),
             any(LocalDateTime.class), any(LocalDateTime.class), any(String.class), any(String.class), any(String.class)))
-            .thenReturn(new PageImpl<>(Collections.emptyList()));
+            .thenReturn(mockedPage);
 
         // Call the method under test
         Page<IAuditLogController.AuditLogFilterDTO> result = auditLogService.filter(
-            pageable, organizations, sites, auditType, createdOnStart, createdOnEnd, createdBy, tableName, keyword
+            pageableSort, organizations, sites, auditType, createdOnStart, createdOnEnd, createdBy, tableName, keyword
         );
 
-        // Verify that the result is an empty page
+        // Assertions for no results
         assertEquals(null, result);
 
-        // You can add more assertions if needed
     }
 }

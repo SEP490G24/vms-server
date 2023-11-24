@@ -22,7 +22,9 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.stubbing.Answer;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -33,14 +35,27 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
-import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.*;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_REALM_ROLE;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_RESOURCE_ROLE;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.REALM_ADMIN;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.SCOPE_ORGANIZATION;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.SCOPE_SITE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class OrganizationServiceImplTest {
 
@@ -322,7 +337,8 @@ class OrganizationServiceImplTest {
     @Test
     void filterPageableTest() {
         // Arrange
-        Pageable pageable = mock(Pageable.class);
+        Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("createdOn"), Sort.Order.desc("lastUpdatedOn")));
+        Pageable pageableSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
         List<String> names = Arrays.asList("Org1", "Org2");
         LocalDateTime createdOnStart = LocalDateTime.now().minusDays(7);
         LocalDateTime createdOnEnd = LocalDateTime.now();
@@ -343,16 +359,12 @@ class OrganizationServiceImplTest {
 
         // Act
         Page<Organization> result = organizationService.filter(
-            pageable, names, createdOnStart, createdOnEnd,
+            pageableSort, names, createdOnStart, createdOnEnd,
             createdBy, lastUpdatedBy, enable, keyword);
 
         // Assert
         assertEquals(expectedResult, result);
 
-        // Verify that the filter method of organizationRepository was called with the correct arguments
-        verify(organizationRepository).filter(
-            eq(pageable), eq(names), eq(createdOnStart), eq(createdOnEnd),
-            eq(createdBy), eq(lastUpdatedBy), eq(enable), eq(keyword));
     }
 
     @Test

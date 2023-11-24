@@ -101,6 +101,11 @@ public interface ITicketController {
     @PreAuthorize("hasRole('r:ticket:add-card')")
     ResponseEntity<?> addCardToCustomerTicket(@RequestBody @Valid CustomerTicketCardDTO customerTicketCardDTO);
 
+    @GetMapping("/{checkInCode}")
+    @Operation(summary = "Find all card history of customer")
+    @PreAuthorize("hasRole('r:ticket:viewCardCheckInHistory')")
+    ResponseEntity<?> getAllCardHistoryOfCustomer(@PathVariable String checkInCode);
+
     @Data
     class CreateTicketInfo {
 
@@ -290,5 +295,18 @@ public interface ITicketController {
         String checkInCode;
         @NotNull
         String cardId;
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    class CardCheckInHistoryDTO {
+        private Integer id;
+        private String checkInCode;
+        private String cardId;
+        private String macIp;
+        private String roomName;
+        private String status;
+        private String createdOn;
     }
 }

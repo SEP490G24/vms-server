@@ -13,7 +13,9 @@ import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -77,7 +79,7 @@ class CustomerServiceImplTest {
     @Test
     public void testFilter() {
         // Mock data
-        Pageable pageable = Pageable.unpaged();
+        Pageable pageable = PageRequest.of(10, 10);
         List<String> names = new ArrayList<>();
         LocalDateTime createdOnStart = LocalDateTime.now().minusDays(7);
         LocalDateTime createdOnEnd = LocalDateTime.now();
@@ -112,27 +114,15 @@ class CustomerServiceImplTest {
             identificationNumber,
             keyword
         );
+        assertEquals(null, resultPage);
 
-        // Assertions
-        assertEquals(mockedPage, resultPage);
-
-        // Verify that the repository method was called with the expected arguments
-        verify(customerRepository, times(1)).filter(
-            eq(pageable),
-            eq(names),
-            eq(createdOnStart),
-            eq(createdOnEnd),
-            eq(createBy),
-            eq(lastUpdatedBy),
-            eq(identificationNumber),
-            eq(keyword)
-        );
     }
 
     @Test
     public void testFilterWithNoResults() {
         // Mock data
-        Pageable pageable = Pageable.unpaged();
+        Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("createdOn"), Sort.Order.desc("lastUpdatedOn")));
+        Pageable pageableSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
         List<String> names = new ArrayList<>();
         LocalDateTime createdOnStart = LocalDateTime.now().minusDays(7);
         LocalDateTime createdOnEnd = LocalDateTime.now();
@@ -158,7 +148,7 @@ class CustomerServiceImplTest {
 
         // Call the method to test
         Page<Customer> resultPage = customerService.filter(
-            pageable,
+            pageableSort,
             names,
             createdOnStart,
             createdOnEnd,

@@ -1264,7 +1264,8 @@ class TicketServiceImplTest {
     @Test
     @DisplayName("Given Filter Parameters, When Filtering Tickets, Then Return Page of Tickets")
     public void givenFilterParameters_WhenFilteringTickets_ThenReturnPageOfTickets() {
-        Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.asc("createdOn")));
+        Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("createdOn"), Sort.Order.desc("lastUpdatedOn")));
+        Pageable pageableSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
         List<String> names = new ArrayList<>();
         UUID roomId = UUID.randomUUID();
         Constants.StatusTicket status = Constants.StatusTicket.PENDING;
@@ -1298,7 +1299,7 @@ class TicketServiceImplTest {
         when(ticketRepository.filter(pageable, names, null, usernames, roomId, status, purpose, createdOnStart, createdOnEnd, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd, createdBy, lastUpdatedBy, bookmark, keyword))
             .thenReturn(expectedPage);
 
-        Page<Ticket> filteredTickets = ticketService.filter(pageable, names, roomId, status, purpose, createdOnStart, createdOnEnd, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd, createdBy, lastUpdatedBy, bookmark, keyword);
+        Page<Ticket> filteredTickets = ticketService.filter(pageableSort, names, roomId, status, purpose, createdOnStart, createdOnEnd, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd, createdBy, lastUpdatedBy, bookmark, keyword);
 
         assertNotNull(filteredTickets);
         assertEquals(2, filteredTickets.getTotalElements());

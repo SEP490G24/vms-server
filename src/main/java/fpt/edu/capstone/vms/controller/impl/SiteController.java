@@ -27,14 +27,14 @@ public class SiteController implements ISiteController {
      * The function returns a ResponseEntity containing a SiteFilterDTO object mapped from the Site object with the given
      * id.
      *
-     * @param id The parameter "id" is of type UUID, which stands for Universally Unique Identifier. It is a 128-bit value
-     * used to uniquely identify an object or entity in a distributed computing environment. In this code snippet, the
-     * method "findById" is used to retrieve a site object by its id and
+     * @param siteId The parameter "id" is of type UUID, which stands for Universally Unique Identifier. It is a 128-bit value
+     *               used to uniquely identify an object or entity in a distributed computing environment. In this code snippet, the
+     *               method "findById" is used to retrieve a site object by its id and
      * @return The method is returning a ResponseEntity object.
      */
     @Override
-    public ResponseEntity<?> findById(UUID id) {
-        return ResponseEntity.ok(mapper.map(siteService.findById(id), SiteFilterDTO.class));
+    public ResponseEntity<?> findById(String siteId) {
+        return ResponseEntity.ok(mapper.map(siteService.findById(UUID.fromString(siteId)), SiteFilterDTO.class));
     }
 
     /**

@@ -5,6 +5,7 @@ import fpt.edu.capstone.vms.controller.ITicketController;
 import fpt.edu.capstone.vms.exception.HttpClientResponse;
 import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
 import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
+import fpt.edu.capstone.vms.persistence.service.ICardCheckInHistoryService;
 import fpt.edu.capstone.vms.persistence.service.ITicketService;
 import fpt.edu.capstone.vms.persistence.service.sse.SseEmitterManager;
 import fpt.edu.capstone.vms.util.SecurityUtils;
@@ -28,13 +29,15 @@ public class TicketController implements ITicketController {
     private final SseEmitterManager sseEmitterManager;
     private final CustomerTicketMapRepository customerTicketMapRepository;
     private final CustomerRepository customerRepository;
+    private final ICardCheckInHistoryService cardCheckInHistoryService;
     private final ModelMapper mapper;
 
-    public TicketController(ITicketService ticketService, SseEmitterManager sseEmitterManager, CustomerTicketMapRepository customerTicketMapRepository, CustomerRepository customerRepository, ModelMapper mapper) {
+    public TicketController(ITicketService ticketService, SseEmitterManager sseEmitterManager, CustomerTicketMapRepository customerTicketMapRepository, CustomerRepository customerRepository, ICardCheckInHistoryService cardCheckInHistoryService, ModelMapper mapper) {
         this.ticketService = ticketService;
         this.sseEmitterManager = sseEmitterManager;
         this.customerTicketMapRepository = customerTicketMapRepository;
         this.customerRepository = customerRepository;
+        this.cardCheckInHistoryService = cardCheckInHistoryService;
         this.mapper = mapper;
     }
 
@@ -264,6 +267,15 @@ public class TicketController implements ITicketController {
     public ResponseEntity<?> addCardToCustomerTicket(CustomerTicketCardDTO customerTicketCardDTO) {
         try {
             return ResponseEntity.ok(ticketService.addCardCustomerTicket(customerTicketCardDTO));
+        } catch (HttpClientErrorException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getAllCardHistoryOfCustomer(String checkInCode) {
+        try {
+            return ResponseEntity.ok(cardCheckInHistoryService.getAllCardHistoryOfCustomer(checkInCode));
         } catch (HttpClientErrorException e) {
             return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
         }

@@ -8,12 +8,19 @@ import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.entity.Organization;
 import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
 import fpt.edu.capstone.vms.persistence.repository.OrganizationRepository;
-import fpt.edu.capstone.vms.persistence.service.*;
+import fpt.edu.capstone.vms.persistence.service.IFileService;
+import fpt.edu.capstone.vms.persistence.service.IOrganizationService;
+import fpt.edu.capstone.vms.persistence.service.IPermissionService;
+import fpt.edu.capstone.vms.persistence.service.IRoleService;
+import fpt.edu.capstone.vms.persistence.service.IUserService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
+import fpt.edu.capstone.vms.util.PageableUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +28,13 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 @Service
 public class OrganizationServiceImpl extends GenericServiceImpl<Organization, UUID> implements IOrganizationService {
@@ -140,8 +153,12 @@ public class OrganizationServiceImpl extends GenericServiceImpl<Organization, UU
 
     @Override
     public Page<Organization> filter(Pageable pageable, List<String> names, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, String createBy, String lastUpdatedBy, Boolean enable, String keyword) {
+        List<Sort.Order> sortColum = new ArrayList<>(PageableUtils.converterSort2List(pageable.getSort()));
+        sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.createdOn));
+        sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.lastUpdatedOn));
+        Pageable pageableSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(sortColum));
         return organizationRepository.filter(
-            pageable,
+            pageableSort,
             names,
             createdOnStart,
             createdOnEnd,

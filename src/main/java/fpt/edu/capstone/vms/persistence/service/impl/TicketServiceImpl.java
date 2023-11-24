@@ -28,6 +28,7 @@ import fpt.edu.capstone.vms.persistence.service.ITicketService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import fpt.edu.capstone.vms.persistence.service.sse.SseEmitterManager;
 import fpt.edu.capstone.vms.util.EmailUtils;
+import fpt.edu.capstone.vms.util.PageableUtils;
 import fpt.edu.capstone.vms.util.QRcodeUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import fpt.edu.capstone.vms.util.SettingUtils;
@@ -42,7 +43,9 @@ import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -589,7 +592,11 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         List<String> usernames = new ArrayList<>();
         usernames.add(SecurityUtils.loginUsername());
 
-        return ticketRepository.filter(pageable
+        List<Sort.Order> sortColum = new ArrayList<>(PageableUtils.converterSort2List(pageable.getSort()));
+        sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.createdOn));
+        sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.lastUpdatedOn));
+        Pageable pageableSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(sortColum));
+        return ticketRepository.filter(pageableSort
             , names
             , null
             , usernames
@@ -626,7 +633,11 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         , String lastUpdatedBy
         , String keyword) {
 
-        return ticketRepository.filter(pageable
+        List<Sort.Order> sortColum = new ArrayList<>(PageableUtils.converterSort2List(pageable.getSort()));
+        sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.createdOn));
+        sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.lastUpdatedOn));
+        Pageable pageableSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(sortColum));
+        return ticketRepository.filter(pageableSort
             , names
             , SecurityUtils.getListSiteToString(siteRepository, sites)
             , usernames
@@ -807,7 +818,11 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         , String lastUpdatedBy
         , Boolean bookmark
         , String keyword) {
-        Page<CustomerTicketMap> customerTicketMaps = customerTicketMapRepository.filter(pageable, sites, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd
+        List<Sort.Order> sortColum = new ArrayList<>(PageableUtils.converterSort2List(pageable.getSort()));
+        sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.createdOn));
+        sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.lastUpdatedOn));
+        Pageable pageableSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(sortColum));
+        Page<CustomerTicketMap> customerTicketMaps = customerTicketMapRepository.filter(pageableSort, sites, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd
             , roomId
             , status
             , purpose
@@ -840,6 +855,9 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             }
             if (customerTicketCardDTO.getCardId() == null) {
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Card is null");
+            }
+            if (customerTicketMapRepository.existsByCardIdAndStatus(customerTicketCardDTO.getCardId(), Constants.StatusTicket.CHECK_IN)) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Card is exists with customer in this site");
             }
             customerTicketMap.setCardId(customerTicketCardDTO.getCardId());
             customerTicketMapRepository.save(customerTicketMap);

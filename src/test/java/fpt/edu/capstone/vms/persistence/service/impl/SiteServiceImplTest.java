@@ -18,14 +18,19 @@ import fpt.edu.capstone.vms.util.SecurityUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.mockito.stubbing.Answer;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -34,10 +39,16 @@ import org.springframework.web.client.HttpClientErrorException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_REALM_ROLE;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_RESOURCE_ROLE;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.REALM_ADMIN;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.SCOPE_ORGANIZATION;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.SCOPE_SITE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -74,7 +85,7 @@ class SiteServiceImplTest {
     @Mock
     Pageable pageable;
 
-    @InjectMocks
+    ModelMapper mapper;
     SiteServiceImpl siteService;
     SecurityContext securityContext;
     Authentication authentication;
@@ -84,10 +95,19 @@ class SiteServiceImplTest {
         MockitoAnnotations.openMocks(this);
         securityContext = mock(SecurityContext.class);
         authentication = mock(Authentication.class);
+        mapper = mock(ModelMapper.class);
 
+        siteService = new SiteServiceImpl(siteRepository, provinceRepository, districtRepository, communeRepository, settingSiteMapRepository, settingRepository, auditLogRepository, mapper);
         Jwt jwt = mock(Jwt.class);
 
-        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        SecurityUtils.UserDetails userDetails = new SecurityUtils.UserDetails();
+        Collection<? extends GrantedAuthority> authorities = Arrays.asList(
+            new SimpleGrantedAuthority(PREFIX_REALM_ROLE + REALM_ADMIN),
+            new SimpleGrantedAuthority(PREFIX_RESOURCE_ROLE + SCOPE_ORGANIZATION),
+            new SimpleGrantedAuthority(PREFIX_RESOURCE_ROLE + SCOPE_SITE)
+        );
+
+        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn(null);
         when(jwt.getClaim(Constants.Claims.Name)).thenReturn("username");
         when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("preferred_username");
         when(jwt.getClaim(Constants.Claims.GivenName)).thenReturn("given_name");
@@ -95,6 +115,29 @@ class SiteServiceImplTest {
         when(jwt.getClaim(Constants.Claims.FamilyName)).thenReturn("family_name");
         when(jwt.getClaim(Constants.Claims.Email)).thenReturn("email");
         when(authentication.getPrincipal()).thenReturn(jwt);
+        // Mock the behavior of authentication.getAuthorities() using thenAnswer
+        when(authentication.getAuthorities()).thenAnswer((Answer<Collection<? extends GrantedAuthority>>) invocation -> {
+            userDetails.setRealmAdmin(false);
+            userDetails.setOrganizationAdmin(false);
+            userDetails.setSiteAdmin(false);
+
+            // Iterate over the authorities and set flags in userDetails
+            for (GrantedAuthority grantedAuthority : authorities) {
+                switch (grantedAuthority.getAuthority()) {
+                    case PREFIX_REALM_ROLE + REALM_ADMIN:
+                        userDetails.setRealmAdmin(true);
+                        break;
+                    case PREFIX_RESOURCE_ROLE + SCOPE_ORGANIZATION:
+                        userDetails.setOrganizationAdmin(true);
+                        break;
+                    case PREFIX_RESOURCE_ROLE + SCOPE_SITE:
+                        userDetails.setSiteAdmin(true);
+                        break;
+                }
+            }
+
+            return authorities;
+        });
 
         // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
         when(securityContext.getAuthentication()).thenReturn(authentication);
@@ -256,7 +299,8 @@ class SiteServiceImplTest {
 
     @Test
     void filterPageable() {
-
+        Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("createdOn"), Sort.Order.desc("lastUpdatedOn")));
+        Pageable pageableSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
         List<String> names = Arrays.asList("Site1", "Site2");
         UUID orgId = UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08");
         LocalDateTime createdOnStart = LocalDateTime.now().minusDays(7);
@@ -274,7 +318,7 @@ class SiteServiceImplTest {
         when(siteRepository.filter(pageable, names, UUID.fromString(SecurityUtils.getOrgId()), createdOnStart, createdOnEnd, createBy, lastUpdatedBy, enable, provinceId, districtId, communeId, keyword.toUpperCase())).thenReturn(expectedSitePage);
 
         // When
-        Page<Site> filteredSites = siteService.filter(pageable, names, createdOnStart, createdOnEnd, createBy, lastUpdatedBy, enable, provinceId, districtId, communeId, keyword.toUpperCase());
+        Page<Site> filteredSites = siteService.filter(pageableSort, names, createdOnStart, createdOnEnd, createBy, lastUpdatedBy, enable, provinceId, districtId, communeId, keyword.toUpperCase());
 
         // Then
         assertNotNull(filteredSites);
@@ -560,11 +604,14 @@ class SiteServiceImplTest {
 
         ISiteController.UpdateSiteInfo updateSiteInfo = new ISiteController.UpdateSiteInfo();
         updateSiteInfo.setName("Updated Site");
-
+        Site site = new Site();
+        site.setId(siteId);
+        site.setAddress("abc");
+        when(mapper.map(updateSiteInfo, Site.class)).thenReturn(site);
         when(siteRepository.findById(siteId)).thenReturn(Optional.empty());
 
         // Act and Assert
-        assertThrows(NullPointerException.class, () -> siteService.updateSite(updateSiteInfo, siteId));
+        assertThrows(HttpClientErrorException.class, () -> siteService.updateSite(updateSiteInfo, siteId));
         verify(siteRepository, never()).save(Mockito.any());
         verify(auditLogRepository, never()).save(Mockito.any());
     }
@@ -581,13 +628,11 @@ class SiteServiceImplTest {
         existingSite.setId(siteId);
         existingSite.setOrganizationId(UUID.randomUUID());
 
+        when(mapper.map(updateSiteInfo, Site.class)).thenReturn(existingSite);
         when(siteRepository.findById(siteId)).thenReturn(Optional.of(existingSite));
 
-        // Mock SecurityUtils.getSiteId() to return null
-        when(SecurityUtils.getSiteId()).thenReturn(null);
-
         // Act and Assert
-        assertThrows(NullPointerException.class, () -> siteService.updateSite(updateSiteInfo, siteId));
+        assertThrows(HttpClientErrorException.class, () -> siteService.updateSite(updateSiteInfo, siteId));
         verify(siteRepository, never()).save(Mockito.any());
         verify(auditLogRepository, never()).save(Mockito.any());
     }
