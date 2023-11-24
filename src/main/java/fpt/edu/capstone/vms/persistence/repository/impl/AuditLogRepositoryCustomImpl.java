@@ -13,7 +13,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 public class AuditLogRepositoryCustomImpl implements AuditLogRepositoryCustom {
@@ -56,7 +62,7 @@ public class AuditLogRepositoryCustomImpl implements AuditLogRepositoryCustom {
 
         if (auditType != null) {
             sqlConditional.append("AND u.audit_type = :auditType ");
-            queryParams.put("auditType", auditType);
+            queryParams.put("auditType", auditType.name());
         }
 
         if (createdOnStart != null && createdOnEnd != null) {
