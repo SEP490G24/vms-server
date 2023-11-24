@@ -55,6 +55,9 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
         if (!SecurityUtils.checkSiteAuthorization(siteRepository, room.getSiteId().toString())) {
             throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
         }
+        if (roomRepository.existsBySiteIdAndMacIp(room.getSiteId(), roomInfo.getMacIp())) {
+            throw new HttpClientErrorException(HttpStatus.CONFLICT, "MacIp is exists");
+        }
         var updateRoom = roomRepository.save(room.update(roomInfo));
         auditLogRepository.save(new AuditLog(room.getSiteId().toString()
             , site.getOrganizationId().toString()
@@ -79,6 +82,9 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
         }
         if (!SecurityUtils.checkSiteAuthorization(siteRepository, roomDto.getSiteId().toString())) {
             throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+        }
+        if (roomRepository.existsBySiteIdAndMacIp(roomDto.getSiteId(), roomDto.getMacIp())) {
+            throw new HttpClientErrorException(HttpStatus.CONFLICT, "MacIp is exists");
         }
         var room = mapper.map(roomDto, Room.class);
         room.setEnable(true);
