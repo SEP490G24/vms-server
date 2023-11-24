@@ -1,10 +1,12 @@
 FROM maven:3.8.3-openjdk-17 as builder
-RUN apt-get update && apt-get install -y libfreetype6
 WORKDIR /out
 # copy all files to /out in builder
 COPY . .
 RUN mvn clean install
 FROM openjdk:17-alpine
+# Install libfreetype6
+RUN apk --no-cache add freetype
+RUN apk --no-cache add ttf-dejavu
 WORKDIR /out
 ARG JAR_FILE=target/*.jar
 ARG CONFIG_FILE=src/main/resources/application-prod.yml
