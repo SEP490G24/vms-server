@@ -13,6 +13,10 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.Year;
+import java.time.YearMonth;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,12 +34,30 @@ public class DashboardServiceImpl implements IDashboardService {
 
     @Override
     public List<IDashboardController.PurposePieResponse> countTicketsByPurposeWithPie(IDashboardController.DashboardDTO dashboardDTO) {
-        return convertToTicketStats(dashboardRepository.countTicketsByPurposeWithPie(dashboardDTO.getFromTime(), dashboardDTO.getToTime(), dashboardDTO.getYear(), dashboardDTO.getMonth(), SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSites())));
+        if (dashboardDTO.getYear() != null && dashboardDTO.getMonth() == null) {
+            Year year = Year.of(dashboardDTO.getYear());
+            LocalDateTime firstDayOfYear = year.atDay(1).atStartOfDay();
+            LocalDateTime lastDayOfYear = year.atDay(1).with(TemporalAdjusters.lastDayOfYear()).atStartOfDay();
+            return convertToTicketStats(dashboardRepository.countTicketsByPurposeWithPie(firstDayOfYear, lastDayOfYear, SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSites())));
+        } else if (dashboardDTO.getYear() != null && dashboardDTO.getMonth() != null) {
+            Integer yearFromDTO = dashboardDTO.getYear();
+            Integer monthFromDTO = dashboardDTO.getMonth();
+
+            YearMonth yearMonth = YearMonth.of(yearFromDTO, monthFromDTO);
+            LocalDateTime firstDayOfMonth = yearMonth.atDay(1).atStartOfDay();
+            LocalDateTime lastDayOfMonth = yearMonth.atEndOfMonth().atStartOfDay();
+            return convertToTicketStats(dashboardRepository.countTicketsByPurposeWithPie(firstDayOfMonth, lastDayOfMonth, SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSites())));
+        } else {
+            return convertToTicketStats(dashboardRepository.countTicketsByPurposeWithPie(dashboardDTO.getFromTime(), dashboardDTO.getToTime(), SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSites())));
+        }
     }
 
     @Override
     public List<MonthlyMultiLineResponse> countTicketsByPurposeByWithMultiLine(IDashboardController.DashboardDTO dashboardDTO, String limit) {
-        return MonthlyMultiLineResponse.fillMissingData(convertToMonthlyTicketStats(dashboardRepository.countTicketsByPurposeByWithMultiLine(dashboardDTO.getYear(), SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSites()))));
+        Year year = Year.of(dashboardDTO.getYear());
+        LocalDateTime firstDayOfYear = year.atDay(1).atStartOfDay();
+        LocalDateTime lastDayOfYear = year.atDay(1).with(TemporalAdjusters.lastDayOfYear()).atStartOfDay();
+        return MonthlyMultiLineResponse.fillMissingData(convertToMonthlyTicketStats(dashboardRepository.countTicketsByPurposeByWithMultiLine(firstDayOfYear, lastDayOfYear, SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSites()))));
     }
 
     private List<IDashboardController.PurposePieResponse> convertToTicketStats(List<Object[]> result) {
