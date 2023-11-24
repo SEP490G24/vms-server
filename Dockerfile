@@ -1,5 +1,5 @@
 FROM maven:3.8.3-openjdk-17 as builder
-ENV TZ=Asia/Ho_Chi_Minh
+RUN apt-get update && apt-get install -y libfreetype6
 WORKDIR /out
 # copy all files to /out in builder
 COPY . .
