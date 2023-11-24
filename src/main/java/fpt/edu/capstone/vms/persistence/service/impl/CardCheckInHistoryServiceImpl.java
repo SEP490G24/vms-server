@@ -38,6 +38,9 @@ public class CardCheckInHistoryServiceImpl extends GenericServiceImpl<CardCheckI
         var check = checkCardCheckInHistory(cardCheckDTO);
         var cardCheckInHistory = new CardCheckInHistory();
         var customerTicket = customerTicketMapRepository.findByCardId(cardCheckDTO.getCardId());
+        if (customerTicket == null) {
+            return false;
+        }
         cardCheckInHistory.setCheckInCode(customerTicket.getCheckInCode());
         cardCheckInHistory.setMacIp(cardCheckDTO.getMacIp());
         if (check) {
