@@ -17,15 +17,20 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.MockitoAnnotations;
+import org.mockito.stubbing.Answer;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -33,6 +38,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_REALM_ROLE;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_RESOURCE_ROLE;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.REALM_ADMIN;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.SCOPE_ORGANIZATION;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.SCOPE_SITE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -69,6 +79,13 @@ class SettingSiteMapServiceImplTest {
         auditLogRepository = mock(AuditLogRepository.class);
         settingSiteMapService = new SettingSiteMapServiceImpl(settingSiteMapRepository, settingRepository, siteRepository, userRepository, auditLogRepository, mapper);
 
+        SecurityUtils.UserDetails userDetails = new SecurityUtils.UserDetails();
+        Collection<? extends GrantedAuthority> authorities = Arrays.asList(
+            new SimpleGrantedAuthority(PREFIX_REALM_ROLE + REALM_ADMIN),
+            new SimpleGrantedAuthority(PREFIX_RESOURCE_ROLE + SCOPE_ORGANIZATION),
+            new SimpleGrantedAuthority(PREFIX_RESOURCE_ROLE + SCOPE_SITE)
+        );
+
         Jwt jwt = mock(Jwt.class);
 
         when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
@@ -79,7 +96,28 @@ class SettingSiteMapServiceImplTest {
         when(jwt.getClaim(Constants.Claims.FamilyName)).thenReturn("family_name");
         when(jwt.getClaim(Constants.Claims.Email)).thenReturn("email");
         when(authentication.getPrincipal()).thenReturn(jwt);
+        when(authentication.getAuthorities()).thenAnswer((Answer<Collection<? extends GrantedAuthority>>) invocation -> {
+            userDetails.setRealmAdmin(false);
+            userDetails.setOrganizationAdmin(true);
+            userDetails.setSiteAdmin(true);
 
+            // Iterate over the authorities and set flags in userDetails
+            for (GrantedAuthority grantedAuthority : authorities) {
+                switch (grantedAuthority.getAuthority()) {
+                    case PREFIX_REALM_ROLE + REALM_ADMIN:
+                        userDetails.setRealmAdmin(true);
+                        break;
+                    case PREFIX_RESOURCE_ROLE + SCOPE_ORGANIZATION:
+                        userDetails.setOrganizationAdmin(true);
+                        break;
+                    case PREFIX_RESOURCE_ROLE + SCOPE_SITE:
+                        userDetails.setSiteAdmin(true);
+                        break;
+                }
+            }
+
+            return authorities;
+        });
         // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
@@ -219,7 +257,7 @@ class SettingSiteMapServiceImplTest {
     @Test
     void testCreateOrUpdateSettingSiteMap_SettingIdOrSiteIdIsNull() {
         // Mocking input data
-        ISettingSiteMapController.SettingSiteInfo settingSiteInfo = ISettingSiteMapController.SettingSiteInfo.builder().settingId(null).siteId(null).value("abc").build();
+        ISettingSiteMapController.SettingSiteInfo settingSiteInfo = ISettingSiteMapController.SettingSiteInfo.builder().settingId(null).siteId("06eb43a7-6ea8-4744-8231-760559fe2c06").value("abc").build();
 
         // Test case for HttpClientErrorException with HttpStatus.BAD_REQUEST and message "SettingId or siteId is not null!!"
         assertThrows(HttpClientErrorException.class, () -> settingSiteMapService.createOrUpdateSettingSiteMap(settingSiteInfo));
@@ -229,11 +267,9 @@ class SettingSiteMapServiceImplTest {
     void testCreateOrUpdateSettingSiteMap_SuccessfulUpdate() {
         // Mocking input data
         ISettingSiteMapController.SettingSiteInfo settingSiteInfo = ISettingSiteMapController.SettingSiteInfo.builder().settingId(1).siteId("06eb43a7-6ea8-4744-8231-760559fe2c06").value("abc").build();
-        SecurityUtils.UserDetails userDetails = mock(SecurityUtils.UserDetails.class);
-        userDetails.setOrganizationAdmin(false);
-        when(userDetails.isOrganizationAdmin()).thenReturn(false);
         when(SecurityUtils.checkSiteAuthorization(siteRepository, settingSiteInfo.getSiteId())).thenReturn(true);
         Site site = new Site();
+        site.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c06"));
         site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
         // Mocking repository responses
         when(siteRepository.findById(any(UUID.class))).thenReturn(Optional.of(site));
@@ -244,7 +280,6 @@ class SettingSiteMapServiceImplTest {
         existingSettingSiteMap.setSettingSiteMapPk(pk);
         when(settingSiteMapRepository.findById(pk)).thenReturn(Optional.of(existingSettingSiteMap));
         when(mapper.map(settingSiteInfo, SettingSiteMap.class)).thenReturn(existingSettingSiteMap);
-
         when(settingSiteMapRepository.save(existingSettingSiteMap)).thenReturn(existingSettingSiteMap);
         when(auditLogRepository.save(any(AuditLog.class))).thenAnswer(invocation -> {
             AuditLog auditLog = invocation.getArgument(0);
@@ -255,6 +290,7 @@ class SettingSiteMapServiceImplTest {
             return auditLog;
         });
 
+        settingSiteMapService.createOrUpdateSettingSiteMap(settingSiteInfo);
 
         // Test case for successful update
 //        assertDoesNotThrow(() -> settingSiteMapService.createOrUpdateSettingSiteMap(settingSiteInfo));

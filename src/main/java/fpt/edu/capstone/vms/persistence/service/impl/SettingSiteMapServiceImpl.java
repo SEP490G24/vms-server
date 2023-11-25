@@ -60,21 +60,20 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
     public SettingSiteMap createOrUpdateSettingSiteMap(ISettingSiteMapController.SettingSiteInfo settingSiteInfo) {
 
         var userDetails = SecurityUtils.getUserDetails();
+        if (ObjectUtils.isEmpty(settingSiteInfo)) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Object is null");
+        }
+        if (settingSiteInfo.getSettingId() == null) {
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SettingId is not null!!");
+        }
+
         var _siteId = userDetails.isOrganizationAdmin() ? settingSiteInfo.getSiteId() : userDetails.getSiteId();
         if (!SecurityUtils.checkSiteAuthorization(siteRepository, _siteId)) {
             throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this");
         }
 
-        if (ObjectUtils.isEmpty(settingSiteInfo)) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Object is null");
-        }
-
         if (StringUtils.isEmpty(settingSiteInfo.getValue())) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Value is empty");
-        }
-
-        if (settingSiteInfo.getSettingId() == null) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SettingId is not null!!");
         }
 
         Long settingId = Long.valueOf(settingSiteInfo.getSettingId());
