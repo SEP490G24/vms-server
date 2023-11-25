@@ -66,22 +66,15 @@ public class AccessHistoryServiceImpl extends GenericServiceImpl<Ticket, UUID> i
 
 
     @Override
-    public Page<IAccessHistoryController.AccessHistoryResponseDTO> accessHistory(Pageable pageable, String keyword, Constants.StatusTicket status,
-                                                                                 LocalDateTime formCheckInTime, LocalDateTime toCheckInTime,
-                                                                                 LocalDateTime formCheckOutTime, LocalDateTime toCheckOutTime, List<String> sites) {
-        Page<CustomerTicketMap> customerTicketMapPage;
+    public Page<CustomerTicketMap> accessHistory(Pageable pageable, String keyword, Constants.StatusTicket status,
+                                                 LocalDateTime formCheckInTime, LocalDateTime toCheckInTime,
+                                                 LocalDateTime formCheckOutTime, LocalDateTime toCheckOutTime, List<String> sites) {
         List<Sort.Order> sortColum = new ArrayList<>(PageableUtils.converterSort2List(pageable.getSort()));
         sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.createdOn));
         sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.lastUpdatedOn));
         Pageable pageableSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(sortColum));
-        if (SecurityUtils.getUserDetails().isOrganizationAdmin() || SecurityUtils.getUserDetails().isSiteAdmin()) {
-            customerTicketMapPage = customerTicketMapRepository.accessHistory(pageableSort, SecurityUtils.getListSiteToString(siteRepository, sites), formCheckInTime, toCheckInTime, formCheckOutTime, toCheckOutTime, status, keyword, null);
-        } else {
-            customerTicketMapPage = customerTicketMapRepository.accessHistory(pageableSort, null, formCheckInTime, toCheckInTime, formCheckOutTime, toCheckOutTime, status, keyword, SecurityUtils.loginUsername());
-        }
-        List<IAccessHistoryController.AccessHistoryResponseDTO> accessHistoryResponseDTOS = mapper.map(customerTicketMapPage.getContent(), new TypeToken<List<IAccessHistoryController.AccessHistoryResponseDTO>>() {
-        }.getType());
-        return new PageImpl(accessHistoryResponseDTOS, pageableSort, customerTicketMapPage.getTotalElements());
+        Page<CustomerTicketMap> customerTicketMapPage = customerTicketMapRepository.accessHistory(pageableSort, SecurityUtils.getListSiteToString(siteRepository, sites), formCheckInTime, toCheckInTime, formCheckOutTime, toCheckOutTime, status, keyword, null);
+        return customerTicketMapPage;
     }
 
     @Override
@@ -93,7 +86,10 @@ public class AccessHistoryServiceImpl extends GenericServiceImpl<Ticket, UUID> i
     @Override
     public ByteArrayResource export(IAccessHistoryController.AccessHistoryFilter filter) throws JRException {
         Pageable pageable = PageRequest.of(0, 99999);
-        Page<IAccessHistoryController.AccessHistoryResponseDTO> listData = accessHistory(pageable, filter.getKeyword(), filter.getStatus(), filter.getFormCheckInTime(), filter.getToCheckInTime(), filter.getFormCheckOutTime(), filter.getToCheckOutTime(), filter.getSites());
+        Page<CustomerTicketMap> customerTicketMapPage = accessHistory(pageable, filter.getKeyword(), filter.getStatus(), filter.getFormCheckInTime(), filter.getToCheckInTime(), filter.getFormCheckOutTime(), filter.getToCheckOutTime(), filter.getSites());
+        List<IAccessHistoryController.AccessHistoryResponseDTO> accessHistoryResponseDTOS = mapper.map(customerTicketMapPage.getContent(), new TypeToken<List<IAccessHistoryController.AccessHistoryResponseDTO>>() {
+        }.getType());
+        Page<IAccessHistoryController.AccessHistoryResponseDTO> listData = new PageImpl<>(accessHistoryResponseDTOS, pageable, customerTicketMapPage.getTotalElements());
         try {
             JasperReport jasperReport = JasperCompileManager.compileReport(getClass().getResourceAsStream(PATH_FILE));
 
