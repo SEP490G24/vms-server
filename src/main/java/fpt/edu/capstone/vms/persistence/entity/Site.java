@@ -94,18 +94,20 @@ public class Site extends AbstractBaseEntity<UUID> {
     private Boolean enable;
 
     public Site update(Site siteEntity) {
-        if (siteEntity.name != null) this.name = siteEntity.name;
-        if (siteEntity.organizationId != null) this.organizationId = siteEntity.organizationId;
-        if (siteEntity.phoneNumber != null) this.phoneNumber = siteEntity.phoneNumber;
-        if (siteEntity.provinceId != null) this.provinceId = siteEntity.provinceId;
-        if (siteEntity.communeId != null) this.communeId = siteEntity.communeId;
-        if (siteEntity.districtId != null) this.districtId = siteEntity.districtId;
-        if (siteEntity.address != null) this.address = siteEntity.address;
-        if (siteEntity.taxCode != null) this.taxCode = siteEntity.taxCode;
-        if (siteEntity.description != null) this.description = siteEntity.description;
-        if (siteEntity.enable != null) this.enable = siteEntity.enable;
-        if (siteEntity.getCreatedBy() != null) this.setCreatedBy(siteEntity.getCreatedBy());
-        if (siteEntity.getCreatedOn() != null) this.setCreatedOn(siteEntity.getCreatedOn());
+        if (siteEntity != null) {
+            if (siteEntity.name != null) this.name = siteEntity.name;
+            if (siteEntity.organizationId != null) this.organizationId = siteEntity.organizationId;
+            if (siteEntity.phoneNumber != null) this.phoneNumber = siteEntity.phoneNumber;
+            if (siteEntity.provinceId != null) this.provinceId = siteEntity.provinceId;
+            if (siteEntity.communeId != null) this.communeId = siteEntity.communeId;
+            if (siteEntity.districtId != null) this.districtId = siteEntity.districtId;
+            if (siteEntity.address != null) this.address = siteEntity.address;
+            if (siteEntity.taxCode != null) this.taxCode = siteEntity.taxCode;
+            if (siteEntity.description != null) this.description = siteEntity.description;
+            if (siteEntity.enable != null) this.enable = siteEntity.enable;
+            if (siteEntity.getCreatedBy() != null) this.setCreatedBy(siteEntity.getCreatedBy());
+            if (siteEntity.getCreatedOn() != null) this.setCreatedOn(siteEntity.getCreatedOn());
+        }
         return this;
     }
 

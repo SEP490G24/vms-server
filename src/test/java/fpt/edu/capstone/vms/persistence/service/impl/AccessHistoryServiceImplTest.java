@@ -1,6 +1,7 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.constants.Constants;
+import fpt.edu.capstone.vms.controller.IAccessHistoryController;
 import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMap;
 import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
@@ -27,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_REALM_ROLE;
 import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_RESOURCE_ROLE;
@@ -156,4 +158,31 @@ public class AccessHistoryServiceImplTest {
         );
     }
 
+    @Test
+    void testViewAccessHistoryDetail() {
+        // Arrange
+        UUID ticketId = UUID.randomUUID();
+        UUID customerId = UUID.randomUUID();
+
+        // Mocking behavior
+        CustomerTicketMap customerTicketMap = new CustomerTicketMap(); // Create a sample CustomerTicketMap
+        when(customerTicketMapRepository.findByCustomerTicketMapPk_TicketIdAndCustomerTicketMapPk_CustomerId(ticketId, customerId))
+            .thenReturn(customerTicketMap);
+
+        IAccessHistoryController.AccessHistoryResponseDTO expectedResponseDTO = new IAccessHistoryController.AccessHistoryResponseDTO();
+        when(mapper.map(customerTicketMap, IAccessHistoryController.AccessHistoryResponseDTO.class))
+            .thenReturn(expectedResponseDTO);
+
+        // Act
+        IAccessHistoryController.AccessHistoryResponseDTO result = accessHistoryService.viewAccessHistoryDetail(ticketId, customerId);
+
+        // Assert
+        assertEquals(expectedResponseDTO, result);
+
+        // Verify that customerTicketMapRepository.findByCustomerTicketMapPk_TicketIdAndCustomerTicketMapPk_CustomerId was called with the correct parameters
+        verify(customerTicketMapRepository).findByCustomerTicketMapPk_TicketIdAndCustomerTicketMapPk_CustomerId(ticketId, customerId);
+
+        // Verify that mapper.map was called with the correct parameters
+        verify(mapper).map(customerTicketMap, IAccessHistoryController.AccessHistoryResponseDTO.class);
+    }
 }

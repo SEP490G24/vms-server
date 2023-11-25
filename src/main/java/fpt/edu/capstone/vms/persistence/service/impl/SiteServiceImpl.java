@@ -83,9 +83,6 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
             if (siteRepository.existsByCode(entity.getCode())) {
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code of site is exist");
             }
-            if (StringUtils.isEmpty(SecurityUtils.getOrgId())) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "OrganizationId is null");
-            }
 
             checkAddress(entity.getProvinceId(), entity.getDistrictId(), entity.getCommuneId());
             entity.setOrganizationId(UUID.fromString(SecurityUtils.getOrgId()));
@@ -127,9 +124,6 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in organization with organizationId = " + siteEntity.getOrganization());
             }
         } else {
-            if (StringUtils.isEmpty(SecurityUtils.getSiteId()))
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in site with siteId = " + SecurityUtils.getSiteId());
-
             if (!SecurityUtils.getSiteId().equals(siteEntity.getId().toString())) {
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in site with siteId = " + SecurityUtils.getSiteId());
             }
@@ -218,9 +212,6 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in organization with organizationId ");
             }
         } else {
-            if (StringUtils.isEmpty(SecurityUtils.getSiteId()))
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in site with siteId = " + SecurityUtils.getSiteId());
-
             if (!SecurityUtils.getSiteId().equals(siteEntity.getId().toString())) {
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in site with siteId = " + SecurityUtils.getSiteId());
             }
@@ -262,9 +253,6 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in organization with organizationId = " + site.getOrganization());
             }
         } else {
-            if (StringUtils.isEmpty(SecurityUtils.getSiteId()))
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in site with siteId = " + SecurityUtils.getSiteId());
-
             if (!SecurityUtils.getSiteId().equals(site.getId().toString())) {
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in site with siteId = " + SecurityUtils.getSiteId());
             }

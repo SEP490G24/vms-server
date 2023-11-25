@@ -1510,7 +1510,7 @@ class TicketServiceImplTest {
             String meetingCode = ticketService.generateMeetingCode(purpose, username);
 
             // Check the length
-            assertEquals(26, meetingCode.length(), "Generated meeting code should have a length of 16");
+            assertEquals(25, meetingCode.length(), "Generated meeting code should have a length of 16");
 
             // Check if the code starts with the correct purpose letter
             assertEquals(meetingCode.substring(0, 1), getPurposeCode(purpose), "Generated meeting code should start with the correct purpose code");

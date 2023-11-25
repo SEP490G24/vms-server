@@ -2,9 +2,9 @@ package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.controller.IRoleController;
 import fpt.edu.capstone.vms.exception.NotFoundException;
+import fpt.edu.capstone.vms.oauth2.IPermissionResource;
 import fpt.edu.capstone.vms.oauth2.IRoleResource;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
-import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,14 +13,19 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -79,17 +84,14 @@ class RoleServiceTest {
         role2.setCode("SITE_MANAGER");
         List<IRoleResource.RoleDto> mockRoles = Arrays.asList(role1, role2);
 
-        // then
-        //when(roleResource.filter(roleBasePayload)).thenReturn(mockRoles);
-        //List<IRoleResource.RoleDto> roles = roleService.filter(roleBasePayload);
+        when(roleResource.filter(roleBasePayload)).thenReturn(mockRoles);
+        List<IRoleResource.RoleDto> roles = roleService.filter(roleBasePayload);
 
-        // Assert the result
-//        assertEquals(2, roles.size());
-//        assertEquals("ORG_MANAGER", roles.get(0).getCode());
-//        assertEquals("SITE_MANAGER", roles.get(1).getCode());
+        assertEquals(2, roles.size());
+        assertEquals("ORG_MANAGER", roles.get(0).getCode());
+        assertEquals("SITE_MANAGER", roles.get(1).getCode());
 
-        // Verify
-        //Mockito.verify(roleResource, Mockito.times(1)).filter(roleBasePayload);
+        Mockito.verify(roleResource, Mockito.times(1)).filter(roleBasePayload);
     }
 
     @Test
@@ -111,76 +113,100 @@ class RoleServiceTest {
     }
 
     @Test
-    @DisplayName("given role id, when find non existing role, then exception is thrown")
-    void givenRoleId_whenFindNonExistingRole_ThenExceptionThrown() {
+    @DisplayName("given roleBasePayload, when filter page role, then roles are retrieved")
+    void whenFilterPageableRoles_ThenRolesRetrieved() {
+        Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("createdOn"), Sort.Order.desc("lastUpdatedOn")));
+        // given
+        IRoleController.RoleBasePayload roleBasePayload = new IRoleController.RoleBasePayload();
+        roleBasePayload.setCode("MANAGER");
+        IRoleResource.RoleDto role1 = new IRoleResource.RoleDto();
+        role1.setCode("ORG_MANAGER");
+        IRoleResource.RoleDto role2 = new IRoleResource.RoleDto();
+        role2.setCode("SITE_MANAGER");
 
-        //given
-        String nonExistingRoleId = "A";
-        String errorMsg = "Role Not Found : " + nonExistingRoleId;
-        when(roleResource.findById(nonExistingRoleId)).thenThrow(new EntityNotFoundException(errorMsg));
+        Page<IRoleResource.RoleDto> mockedPage = new PageImpl<>(List.of());
 
-        //when
-        EntityNotFoundException throwException = assertThrows(EntityNotFoundException.class, () -> roleService.findById(nonExistingRoleId));
+        when(roleResource.filter(roleBasePayload, pageable)).thenReturn(mockedPage);
+        Page<IRoleResource.RoleDto> roles = roleService.filter(roleBasePayload, pageable);
 
-        // then
-        assertEquals(errorMsg, throwException.getMessage());
+        assertEquals(0, roles.getTotalElements());
+
+        Mockito.verify(roleResource, Mockito.times(1)).filter(roleBasePayload, pageable);
     }
 
-
-//    @Test
-//    @DisplayName("given role data, when create new Role, then Role id is returned")
-//    void givenRoleData_whenCreateRole_ThenRoleReturned() {
-//
-//        //given
-//        IRoleResource.RoleDto roleDto = new IRoleResource.RoleDto();
-//        roleDto.setCode("Test");
-//        //roleDto.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
-//        Site site = new Site();
-//        site.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
-//
-//        //when
-//        when(roleResource.create(site, roleDto)).thenReturn(roleDto);
-//        when(siteRepository.findById(site.getId())).thenReturn(Optional.of(site));
-//
-//        IRoleResource.RoleDto role = roleService.create(roleDto);
-//
-//        //then
-//        assertEquals("Test", role.getCode());
-//    }
-
-//    @Test
-//    @DisplayName("given Role incomplete data, when create new Role, then exception is thrown")
-//    void givenAdIncompleteData_whenCreateAd_ThenExceptionIsThrown() {
-//
-//        //given
-//        IRoleResource.RoleDto roleDto = new IRoleResource.RoleDto();
-//        Site site = new Site();
-//        site.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
-//        String errorMsg = "Unable to save an incomplete entity : " + roleDto;
-//
-//        //when
-//        when(roleResource.create(site, roleDto)).thenThrow(new RuntimeException(errorMsg));
-//        RuntimeException throwException = assertThrows(RuntimeException.class, () -> roleService.create(roleDto));
-//
-//        // then
-//        assertEquals(errorMsg, throwException.getMessage());
-//    }
-
     @Test
-    @DisplayName("given role id, when update non existing role, then exception is thrown")
-    void givenRoleId_whenUpdateNonExistingRole_ThenExceptionThrown() throws NotFoundException {
+    @DisplayName("given role id, when delete existing role, then role are retrieved")
+    void givenRoleId_whenDeleteRole_ThenRoleRetrieved() {
 
         //given
-        String nonExistingRoleId = "A";
+        String existingRoleId = "123";
         IRoleResource.RoleDto roleDto = new IRoleResource.RoleDto();
-        roleDto.setCode("Test");
-        String errorMsg = "Role Not Found : " + nonExistingRoleId;
-        when(roleResource.update(nonExistingRoleId, roleDto)).thenThrow(new EntityNotFoundException(errorMsg));
+        roleDto.setCode("Test123");
 
         //when
-        EntityNotFoundException throwException = assertThrows(EntityNotFoundException.class, () -> roleService.update(nonExistingRoleId, roleDto));
+        roleService.delete(existingRoleId);
+        Mockito.verify(roleResource, Mockito.times(1)).delete(existingRoleId);
 
-        // then
-        assertEquals(errorMsg, throwException.getMessage());
+    }
+
+    @Test
+    void givenSites_whenGetAllRoleBySites_ThenRoleRetrieved() {
+
+        //given
+        String existingRoleId = "123";
+        IRoleResource.RoleDto roleDto = new IRoleResource.RoleDto();
+        roleDto.setCode("Test123");
+
+        List<String> sites = new ArrayList<>();
+        sites.add("123");
+
+        //when
+        List<IRoleResource.RoleDto> roleDtos = roleService.getBySites(sites);
+
+        assertEquals(0, roleDtos.size());
+        Mockito.verify(roleResource, Mockito.times(1)).getBySites(sites);
+
+    }
+
+    @Test
+    void givenRoleDto_whenCreateRole_ThenRoleRetrieved() {
+
+        //given
+        IRoleResource.RoleDto roleDto = new IRoleResource.RoleDto();
+        roleDto.setCode("Test123");
+
+        //when
+        IRoleResource.RoleDto roleDto1 = roleService.create(roleDto);
+        assertEquals(null, roleDto1);
+        Mockito.verify(roleResource, Mockito.times(1)).create(roleDto);
+
+    }
+
+    @Test
+    void givenRoleDto_whenUpdateRole_ThenRoleRetrieved() throws NotFoundException {
+
+        //given
+        IRoleResource.RoleDto roleDto = new IRoleResource.RoleDto();
+        roleDto.setCode("Test123");
+
+        //when
+        IRoleResource.RoleDto roleDto1 = roleService.update("abc", roleDto);
+        assertEquals(null, roleDto1);
+        Mockito.verify(roleResource, Mockito.times(1)).update("abc", roleDto);
+
+    }
+
+    @Test
+    void givenRoleDto_whenUpdatePermission_ThenRoleRetrieved() {
+
+        //given
+        IPermissionResource.PermissionDto permissionDto = new IPermissionResource.PermissionDto();
+        permissionDto.setName("Test123");
+
+        //when
+        IRoleResource.RoleDto roleDto1 = roleService.updatePermission("abc", permissionDto, true);
+        assertEquals(null, roleDto1);
+        Mockito.verify(roleResource, Mockito.times(1)).updatePermission("abc", permissionDto, true);
+
     }
 }

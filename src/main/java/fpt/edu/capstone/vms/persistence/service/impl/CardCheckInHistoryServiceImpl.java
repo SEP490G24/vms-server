@@ -64,7 +64,7 @@ public class CardCheckInHistoryServiceImpl extends GenericServiceImpl<CardCheckI
     public List<ITicketController.CardCheckInHistoryDTO> getAllCardHistoryOfCustomer(String checkInCode) {
         var customerTicket = customerTicketMapRepository.findByCheckInCodeIgnoreCase(checkInCode);
         if (customerTicket != null) {
-            if (SecurityUtils.checkSiteAuthorization(siteRepository, customerTicket.getTicketEntity().getSiteId())) {
+            if (!SecurityUtils.checkSiteAuthorization(siteRepository, customerTicket.getTicketEntity().getSiteId())) {
                 throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to access this site");
             }
             return cardCheckInHistoryRepository.getAllCardHistoryOfCustomer(checkInCode);
@@ -72,8 +72,8 @@ public class CardCheckInHistoryServiceImpl extends GenericServiceImpl<CardCheckI
         return null;
     }
 
-    private boolean checkCardCheckInHistory(ICardController.CardCheckDTO cardCheckDTO) {
-        if (ObjectUtils.isEmpty(cardCheckDTO)) {
+    public boolean checkCardCheckInHistory(ICardController.CardCheckDTO cardCheckDTO) {
+        if (ObjectUtils.isEmpty(cardCheckDTO) || cardCheckDTO == null) {
             return false;
         }
         var customerTicket = customerTicketMapRepository.findByCardId(cardCheckDTO.getCardId());

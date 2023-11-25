@@ -2,10 +2,12 @@ package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ISiteController;
+import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.entity.Commune;
 import fpt.edu.capstone.vms.persistence.entity.District;
 import fpt.edu.capstone.vms.persistence.entity.Province;
 import fpt.edu.capstone.vms.persistence.entity.SettingSiteMap;
+import fpt.edu.capstone.vms.persistence.entity.SettingSiteMapPk;
 import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
 import fpt.edu.capstone.vms.persistence.repository.CommuneRepository;
@@ -53,6 +55,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -199,11 +202,13 @@ class SiteServiceImplTest {
         SecurityContextHolder.setContext(securityContext);
 
         Site savedSite = new Site();
+        savedSite.setId(UUID.randomUUID());
+        savedSite.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
         savedSite.setCode("validCode");
         savedSite.setEnable(true);
         when(siteRepository.save(site)).thenReturn(savedSite);
 
-//        verify(securityUtils, times(1)).getOrgId();
+        siteService.save(site);
 
         assertNotNull(savedSite);
         assertEquals(site.getCode(), savedSite.getCode());
@@ -235,8 +240,11 @@ class SiteServiceImplTest {
         String code = "validCode";
         UUID id = UUID.randomUUID();
 
+        ISiteController.UpdateSiteInfo updateSiteInfo = new ISiteController.UpdateSiteInfo();
+
         Site existingSite = new Site();
         existingSite.setId(id);
+        existingSite.setName("oldName");
         existingSite.setCode(code);
         existingSite.setOrganizationId(orgId);
 
@@ -249,18 +257,25 @@ class SiteServiceImplTest {
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
 
-
-        Site updateSite = new Site();
-        updateSite.setCode("newCode");
-
-        when(siteRepository.existsByCode(updateSite.getCode())).thenReturn(false);
+        when(siteRepository.existsByCode(existingSite.getCode())).thenReturn(false);
         when(siteRepository.findById(id)).thenReturn(Optional.of(existingSite));
+        when(siteRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(auditLogRepository.save(any())).thenReturn(new AuditLog());
 
-        when(siteService.update(updateSite, id)).thenReturn(updateSite);
 
-        assertNotNull(updateSite);
-        assertEquals(updateSite.getCode(), updateSite.getCode());
+        Site result = siteService.updateSite(updateSiteInfo, id);
+
+        assertNotNull(result);
+        // Verify that siteRepository.findById was called with the correct parameters
+        verify(siteRepository).findById(id);
+
+        // Verify that siteRepository.save was called with the correct parameters
+        verify(siteRepository).save(any());
+
+        // Verify that auditLogRepository.save was called with the correct parameters
+        verify(auditLogRepository).save(any());
     }
+
 
     @Test
     void filter() {
@@ -351,6 +366,7 @@ class SiteServiceImplTest {
         // Mock the behavior of settingSiteMapRepository
         List<SettingSiteMap> siteSettingMaps = new ArrayList<>(); // Add some setting maps if needed
         when(settingSiteMapRepository.findAllBySettingSiteMapPk_SiteId(eq(siteEntity.getId()))).thenReturn(siteSettingMaps);
+        when(auditLogRepository.save(any())).thenReturn(new AuditLog());
 
         // Act
         boolean result = siteService.deleteSite(siteId);
@@ -391,7 +407,7 @@ class SiteServiceImplTest {
         // Arrange
         UUID siteId = UUID.randomUUID(); // a valid UUID
         Site siteEntity = new Site(/* initialize your Site entity */);
-        siteEntity.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+        siteEntity.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c06"));
         // Create a mock Jwt object with the necessary claims
         Jwt jwt = mock(Jwt.class);
         when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
@@ -405,18 +421,26 @@ class SiteServiceImplTest {
         // Mock the behavior of the siteRepository
         when(siteRepository.findById(eq(siteId))).thenReturn(Optional.of(siteEntity));
 
-        // Mock the behavior of SecurityUtils or any other necessary mocks for a mismatched organization
 
         // Act and Assert
-        assertThrows(NullPointerException.class, () -> siteService.deleteSite(siteId),
+        assertThrows(HttpClientErrorException.class, () -> siteService.deleteSite(siteId),
             "The current user is not in organization with organizationId ");
     }
 
     @Test
     void deleteSiteBadRequestSiteIdMismatchTest() {
+        Jwt jwt = mock(Jwt.class);
+        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
         // Arrange
         UUID siteId = UUID.randomUUID(); // a valid UUID
         Site siteEntity = new Site(/* initialize your Site entity */);
+        siteEntity.setId(siteId);
 
         // Mock the behavior of the siteRepository
         when(siteRepository.findById(eq(siteId))).thenReturn(Optional.of(siteEntity));
@@ -431,12 +455,18 @@ class SiteServiceImplTest {
     @Test
     void deleteSiteSettingMapTest() {
         // Arrange
+        UUID siteId = UUID.randomUUID();
         Site siteEntity = new Site(/* initialize your Site entity */);
-        List<SettingSiteMap> siteSettingMaps = new ArrayList<>(); // Add some setting maps if needed
+        siteEntity.setId(siteId);
+        siteEntity.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+        SettingSiteMap settingSiteMapEntity = new SettingSiteMap();
+        settingSiteMapEntity.setSettingSiteMapPk(new SettingSiteMapPk(1L, siteId));
 
+        List<SettingSiteMap> siteSettingMaps = new ArrayList<>(); // Add some setting maps if needed
+        siteSettingMaps.add(settingSiteMapEntity);
         // Mock the behavior of settingSiteMapRepository
         when(settingSiteMapRepository.findAllBySettingSiteMapPk_SiteId(eq(siteEntity.getId()))).thenReturn(siteSettingMaps);
-
+        when(auditLogRepository.save(any())).thenReturn(new AuditLog());
         // Act
         siteService.deleteSiteSettingMap(siteEntity);
 
@@ -451,6 +481,7 @@ class SiteServiceImplTest {
                     auditLog.getNewValue() == null)
             );
         }
+        verify(settingSiteMapRepository).findAllBySettingSiteMapPk_SiteId(eq(siteEntity.getId()));
     }
 
     @Test
@@ -612,8 +643,8 @@ class SiteServiceImplTest {
 
         // Act and Assert
         assertThrows(HttpClientErrorException.class, () -> siteService.updateSite(updateSiteInfo, siteId));
-        verify(siteRepository, never()).save(Mockito.any());
-        verify(auditLogRepository, never()).save(Mockito.any());
+        verify(siteRepository, never()).save(any());
+        verify(auditLogRepository, never()).save(any());
     }
 
     @Test
@@ -633,7 +664,104 @@ class SiteServiceImplTest {
 
         // Act and Assert
         assertThrows(HttpClientErrorException.class, () -> siteService.updateSite(updateSiteInfo, siteId));
-        verify(siteRepository, never()).save(Mockito.any());
-        verify(auditLogRepository, never()).save(Mockito.any());
+        verify(siteRepository, never()).save(any());
+        verify(auditLogRepository, never()).save(any());
+    }
+
+    @Test
+    void testUpdateSite_NoPermissionWithSiteId() {
+        // Create a mock Jwt object with the necessary claims
+        Jwt jwt = mock(Jwt.class);
+        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+        // Arrange
+        UUID siteId = UUID.randomUUID();
+
+        ISiteController.UpdateSiteInfo updateSiteInfo = new ISiteController.UpdateSiteInfo();
+        updateSiteInfo.setName("Updated Site");
+
+        Site existingSite = new Site();
+        existingSite.setId(siteId);
+
+        when(mapper.map(updateSiteInfo, Site.class)).thenReturn(existingSite);
+        when(siteRepository.findById(siteId)).thenReturn(Optional.of(existingSite));
+
+        // Act and Assert
+        assertThrows(HttpClientErrorException.class, () -> siteService.updateSite(updateSiteInfo, siteId));
+        verify(siteRepository, never()).save(any());
+        verify(auditLogRepository, never()).save(any());
+    }
+
+    @Test
+    void testFindByIdWithValidOrgId() {
+        UUID id = UUID.randomUUID();
+        UUID orgId = UUID.fromString("3d65906a-c6e3-4e9d-bbc6-ba20938f9cad");
+
+        // Mock the behavior of siteRepository.findById to return a Site with the specified organizationId
+        Site site = new Site();
+        site.setId(id);
+        site.setOrganizationId(orgId);
+        when(siteRepository.findById(id)).thenReturn(java.util.Optional.of(site));
+
+        // Act
+        Site result = siteService.findById(id);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(id, result.getId());
+
+        // Verify that siteRepository.findById was called with the correct parameters
+        verify(siteRepository).findById(id);
+    }
+
+    @Test
+    void testFindByIdWithInvalidOrgId() {
+        // Arrange
+        UUID id = UUID.randomUUID();
+        UUID expectedOrgId = UUID.randomUUID();
+
+        // Mock the behavior of siteRepository.findById to return a Site with a different organizationId
+        Site site = new Site();
+        site.setId(id);
+        site.setOrganizationId(expectedOrgId);
+        when(siteRepository.findById(id)).thenReturn(java.util.Optional.of(site));
+
+        // Act and Assert
+        assertThrows(HttpClientErrorException.class, () -> siteService.findById(id));
+
+        // Verify that siteRepository.findById was called with the correct parameters
+        verify(siteRepository).findById(id);
+    }
+
+    @Test
+    void testFindByIdWithInvalidSiteId() {
+        // Create a mock Jwt object with the necessary claims
+        Jwt jwt = mock(Jwt.class);
+        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        // Arrange
+        UUID id = UUID.randomUUID();
+        UUID expectedOrgId = UUID.randomUUID();
+
+        // Mock the behavior of siteRepository.findById to return a Site with a different organizationId
+        Site site = new Site();
+        site.setId(id);
+        site.setOrganizationId(expectedOrgId);
+        when(siteRepository.findById(id)).thenReturn(java.util.Optional.of(site));
+
+        // Act and Assert
+        assertThrows(HttpClientErrorException.class, () -> siteService.findById(id));
+
+        // Verify that siteRepository.findById was called with the correct parameters
+        verify(siteRepository).findById(id);
     }
 }
