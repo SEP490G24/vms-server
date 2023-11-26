@@ -3,6 +3,7 @@ package fpt.edu.capstone.vms.controller.impl;
 import fpt.edu.capstone.vms.controller.IAccessHistoryController;
 import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMap;
 import fpt.edu.capstone.vms.persistence.service.IAccessHistoryService;
+import fpt.edu.capstone.vms.persistence.service.excel.ExportAccessHistory;
 import net.sf.jasperreports.engine.JRException;
 import org.apache.http.HttpStatus;
 import org.modelmapper.ModelMapper;
@@ -22,10 +23,12 @@ import java.util.UUID;
 public class AccessHistoryController implements IAccessHistoryController {
 
     private final IAccessHistoryService accessHistoryService;
+    private final ExportAccessHistory exportAccessHistory;
     private final ModelMapper mapper;
 
-    public AccessHistoryController(IAccessHistoryService accessHistoryService, ModelMapper mapper) {
+    public AccessHistoryController(IAccessHistoryService accessHistoryService, ExportAccessHistory exportAccessHistory, ModelMapper mapper) {
         this.accessHistoryService = accessHistoryService;
+        this.exportAccessHistory = exportAccessHistory;
         this.mapper = mapper;
     }
 
@@ -50,6 +53,6 @@ public class AccessHistoryController implements IAccessHistoryController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
         headers.setContentDispositionFormData("attachment", "access_history.xlsx");
-        return ResponseEntity.status(HttpStatus.SC_OK).headers(headers).body(accessHistoryService.export(ticketFilterUser));
+        return ResponseEntity.status(HttpStatus.SC_OK).headers(headers).body(exportAccessHistory.export(ticketFilterUser));
     }
 }

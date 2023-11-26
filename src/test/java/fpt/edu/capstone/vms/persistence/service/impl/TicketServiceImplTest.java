@@ -1420,6 +1420,9 @@ class TicketServiceImplTest {
             return auditLog;
         });
 
+        ITicketController.TicketByQRCodeResponseDTO ticketByQRCodeResponseDTO = new ITicketController.TicketByQRCodeResponseDTO();
+        ticketByQRCodeResponseDTO.setSiteId(ticket.getSiteId());
+        when(mapper.map(customerTicketMap, ITicketController.TicketByQRCodeResponseDTO.class)).thenReturn(ticketByQRCodeResponseDTO);
 
         // Call the method under test
         ticketService.checkInCustomer(checkInPayload);
@@ -1469,6 +1472,10 @@ class TicketServiceImplTest {
         when(customerTicketMapRepository.findByCheckInCodeIgnoreCase("ABCDE")).thenReturn(customerTicketMap);
         when(siteRepository.findById(UUID.fromString(siteId))).thenReturn(java.util.Optional.of(new Site()));
         when(siteRepository.findById(UUID.fromString(ticket.getSiteId()))).thenReturn(Optional.of(site));
+
+        ITicketController.TicketByQRCodeResponseDTO ticketByQRCodeResponseDTO = new ITicketController.TicketByQRCodeResponseDTO();
+        ticketByQRCodeResponseDTO.setSiteId(ticket.getSiteId());
+        when(mapper.map(customerTicketMap, ITicketController.TicketByQRCodeResponseDTO.class)).thenReturn(ticketByQRCodeResponseDTO);
 
         // Call the method under test
         ticketService.checkInCustomer(checkOutPayload);
@@ -1585,43 +1592,34 @@ class TicketServiceImplTest {
     }
 
 
-//    @Test
-//    void testFilterTicketAndCustomer() {
-//        // Mock data
-//        Pageable pageable = Pageable.unpaged();
-//        UUID roomId = UUID.randomUUID();
-//        Constants.StatusTicket status = Constants.StatusTicket.PENDING;
-//        Constants.Purpose purpose = Constants.Purpose.CONFERENCES;
-//        String keyword = "search";
-//
-//        CustomerTicketMap ticketMap1 = new CustomerTicketMap();
-//        CustomerTicketMap ticketMap2 = new CustomerTicketMap();
-//        List<CustomerTicketMap> ticketMapList = Arrays.asList(ticketMap1, ticketMap2);
-//
-//        when(customerTicketMapRepository.filter(any(Pageable.class), null, any(LocalDateTime.class), any(LocalDateTime.class), any(LocalDateTime.class), any(LocalDateTime.class), any(UUID.class), any(Constants.StatusTicket.class), any(Constants.Purpose.class), any(String.class)))
-//            .thenReturn(new PageImpl<>(ticketMapList));
-//
-//        ITicketController.TicketByQRCodeResponseDTO responseDTO1 = new ITicketController.TicketByQRCodeResponseDTO();
-//        ITicketController.TicketByQRCodeResponseDTO responseDTO2 = new ITicketController.TicketByQRCodeResponseDTO();
-//        List<ITicketController.TicketByQRCodeResponseDTO> responseDTOList = Arrays.asList(responseDTO1, responseDTO2);
-//
-//        when(mapper.map(ticketMapList, new TypeToken<List<ITicketController.TicketByQRCodeResponseDTO>>() {
-//        }.getType()))
-//            .thenReturn(responseDTOList);
-//
-//        // Call the method under test
-//        Page<ITicketController.TicketByQRCodeResponseDTO> result = ticketService.filterTicketAndCustomer(
-//            pageable, null, null, roomId, status, purpose, null, null, null, null, null, null, null, null, null, keyword
-//        );
-//
-//        // Verify that the repository filter method was called with the correct arguments
-//        Mockito.verify(customerTicketMapRepository).filter(any(Pageable.class), null, any(LocalDateTime.class), any(LocalDateTime.class), any(LocalDateTime.class), any(LocalDateTime.class), any(UUID.class), any(Constants.StatusTicket.class), any(Constants.Purpose.class), any(String.class));
-//
-//        // Verify that the result has the expected content
-//        assertEquals(responseDTOList, result.getContent());
-//
-//        // You can add more assertions if needed
-//    }
+    @Test
+    void testFilterTicketAndCustomer() {
+        // Mock data
+        Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("lastUpdatedOn"), Sort.Order.desc("createdOn")));
+        Pageable pageableSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
+        UUID roomId = UUID.randomUUID();
+        Constants.StatusTicket status = Constants.StatusTicket.PENDING;
+        Constants.Purpose purpose = Constants.Purpose.CONFERENCES;
+        String keyword = "search";
+
+        List<CustomerTicketMap> ticketMapList = new ArrayList<>();
+
+        Page<CustomerTicketMap> customerTicketMapPage = new PageImpl<>(List.of());
+
+        when(customerTicketMapRepository.filter(pageable, null, null, null, null, null, roomId, status, purpose, keyword))
+            .thenReturn(customerTicketMapPage);
+
+        // Call the method under test
+        Page<CustomerTicketMap> result = ticketService.filterTicketAndCustomer(
+            pageableSort, null, null, roomId, status, purpose, null, null, null, null, null, null, null, null, null, keyword
+        );
+
+        // Verify that the repository filter method was called with the correct arguments
+        Mockito.verify(customerTicketMapRepository).filter(pageable, null, null, null, null, null, roomId, status, purpose, keyword);
+
+        // Verify that the result has the expected content
+        assertEquals(ticketMapList, result.getContent());
+    }
 
     @Test
     void testFindByTicketForAdminWithValidTicketAndOrgIdAndSiteId() {

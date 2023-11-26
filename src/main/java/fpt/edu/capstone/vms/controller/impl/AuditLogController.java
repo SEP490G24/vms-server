@@ -2,6 +2,7 @@ package fpt.edu.capstone.vms.controller.impl;
 
 import fpt.edu.capstone.vms.controller.IAuditLogController;
 import fpt.edu.capstone.vms.persistence.entity.AuditLog;
+import fpt.edu.capstone.vms.persistence.service.excel.ExportAuditLog;
 import fpt.edu.capstone.vms.persistence.service.impl.AuditLogServiceImpl;
 import lombok.AllArgsConstructor;
 import net.sf.jasperreports.engine.JRException;
@@ -18,6 +19,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class AuditLogController implements IAuditLogController {
     private final AuditLogServiceImpl auditLogService;
+    private final ExportAuditLog exportAuditLog;
 
     @Override
     public ResponseEntity<AuditLog> findById(UUID id) {
@@ -58,6 +60,6 @@ public class AuditLogController implements IAuditLogController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
         headers.setContentDispositionFormData("attachment", "audit_log.xlsx");
-        return ResponseEntity.status(HttpStatus.SC_OK).headers(headers).body(auditLogService.export(auditLogFilter));
+        return ResponseEntity.status(HttpStatus.SC_OK).headers(headers).body(exportAuditLog.export(auditLogFilter));
     }
 }

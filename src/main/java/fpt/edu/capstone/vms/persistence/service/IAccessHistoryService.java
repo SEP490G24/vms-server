@@ -5,8 +5,6 @@ import fpt.edu.capstone.vms.controller.IAccessHistoryController;
 import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMap;
 import fpt.edu.capstone.vms.persistence.entity.Ticket;
 import fpt.edu.capstone.vms.persistence.service.generic.IGenericService;
-import net.sf.jasperreports.engine.JRException;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -24,6 +22,4 @@ public interface IAccessHistoryService extends IGenericService<Ticket, UUID> {
     );
 
     IAccessHistoryController.AccessHistoryResponseDTO viewAccessHistoryDetail(UUID ticketId, UUID customerId);
-
-    ByteArrayResource export(IAccessHistoryController.AccessHistoryFilter ticketFilterUser) throws JRException;
 }

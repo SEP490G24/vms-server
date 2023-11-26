@@ -3,6 +3,7 @@ package fpt.edu.capstone.vms.controller.impl;
 import fpt.edu.capstone.vms.controller.ICustomerController;
 import fpt.edu.capstone.vms.controller.ITicketController;
 import fpt.edu.capstone.vms.exception.HttpClientResponse;
+import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMap;
 import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
 import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
 import fpt.edu.capstone.vms.persistence.service.ICardCheckInHistoryService;
@@ -15,6 +16,7 @@ import fpt.edu.capstone.vms.util.SseUtils;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -227,7 +229,7 @@ public class TicketController implements ITicketController {
 
     @Override
     public ResponseEntity<?> filterTicketAndCustomer(TicketFilter filter, Pageable pageable) {
-        return ResponseEntity.ok(ticketService.filterTicketAndCustomer(
+        Page<CustomerTicketMap> customerTicketMaps = ticketService.filterTicketAndCustomer(
             pageable,
             filter.getSites(),
             filter.getNames(),
@@ -243,8 +245,10 @@ public class TicketController implements ITicketController {
             filter.getCreatedBy(),
             filter.getLastUpdatedBy(),
             filter.getBookmark(),
-            filter.getKeyword()));
-
+            filter.getKeyword());
+        List<ITicketController.TicketByQRCodeResponseDTO> ticketByQRCodeResponseDTOS = mapper.map(customerTicketMaps.getContent(), new TypeToken<List<ITicketController.TicketByQRCodeResponseDTO>>() {
+        }.getType());
+        return ResponseEntity.ok(new PageImpl(ticketByQRCodeResponseDTOS, pageable, customerTicketMaps.getTotalElements()));
     }
 
     @Override
