@@ -723,7 +723,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                     if (ticket.getStartTime().isBefore(LocalDateTime.now())) {
                         throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Ticket is not started, You can not check out with this ticket");
                     }
-                    ticket.setStatus(Constants.StatusTicket.DONE);
+                    ticket.setStatus(Constants.StatusTicket.COMPLETE);
                     ticketRepository.save(ticket);
                 }
             }
