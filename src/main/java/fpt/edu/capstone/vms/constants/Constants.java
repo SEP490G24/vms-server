@@ -69,7 +69,8 @@ public class Constants {
         CHECK_OUT,
         DONE,
         CANCEL,
-        REJECT
+        REJECT,
+        COMPLETE
     }
 
     public enum StatusCheckInCard {
