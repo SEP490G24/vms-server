@@ -732,7 +732,6 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     @Transactional
     public ITicketController.TicketByQRCodeResponseDTO checkInCustomer(ITicketController.CheckInPayload checkInPayload) {
         CustomerTicketMap customerTicketMap = customerTicketMapRepository.findByCheckInCodeIgnoreCase(checkInPayload.getCheckInCode());
-        customerTicketMap.setStatus(checkInPayload.getStatus());
         customerTicketMap.setReasonId(checkInPayload.getReasonId());
         customerTicketMap.setReasonNote(checkInPayload.getReasonNote());
         if (checkInPayload.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
@@ -745,8 +744,12 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             if (customerTicketMap.getTicketEntity().getEndTime().isBefore(LocalDateTime.now())) {
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Ticket is expired, You can not check in with this ticket");
             }
+            customerTicketMap.setStatus(checkInPayload.getStatus());
             customerTicketMap.setCheckInTime(LocalDateTime.now());
         } else if (checkInPayload.getStatus().equals(Constants.StatusTicket.CHECK_OUT)) {
+            if (!customerTicketMap.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is not check in yet or checked out");
+            }
             customerTicketMap.setCheckOutTime(LocalDateTime.now());
             customerTicketMap.setCheckOut(true);
             customerTicketMap.setCardId(null);
@@ -761,7 +764,9 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                     ticketRepository.save(ticket);
                 }
             }
+            customerTicketMap.setStatus(checkInPayload.getStatus());
         }
+        customerTicketMap.setStatus(checkInPayload.getStatus());
         customerTicketMapRepository.save(customerTicketMap);
         Ticket ticket = ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId()).orElse(null);
 
