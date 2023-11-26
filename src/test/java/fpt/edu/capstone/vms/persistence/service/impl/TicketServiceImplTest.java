@@ -27,7 +27,6 @@ import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.repository.TemplateRepository;
 import fpt.edu.capstone.vms.persistence.repository.TicketRepository;
 import fpt.edu.capstone.vms.persistence.repository.UserRepository;
-import fpt.edu.capstone.vms.persistence.service.sse.SseEmitterManager;
 import fpt.edu.capstone.vms.util.EmailUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import fpt.edu.capstone.vms.util.SettingUtils;
@@ -99,7 +98,6 @@ class TicketServiceImplTest {
 
     SecurityContext securityContext;
     Authentication authentication;
-    SseEmitterManager sseEmitterManager;
 
     ModelMapper mapper;
 
@@ -116,7 +114,6 @@ class TicketServiceImplTest {
         customerTicketMapRepository = mock(CustomerTicketMapRepository.class);
         emailUtils = mock(EmailUtils.class);
         auditLogRepository = mock(AuditLogRepository.class);
-        sseEmitterManager = mock(SseEmitterManager.class);
         reasonRepository = mock(ReasonRepository.class);
         userRepository = mock(UserRepository.class);
         customerRepository = mock(CustomerRepository.class);
@@ -124,8 +121,8 @@ class TicketServiceImplTest {
         ticketService = new TicketServiceImpl(ticketRepository
             , customerRepository, templateRepository
             , mapper, roomRepository, siteRepository
-            , organizationRepository, customerTicketMapRepository
-            , emailUtils, auditLogRepository, settingUtils, userRepository, reasonRepository, sseEmitterManager);
+            , customerTicketMapRepository
+            , emailUtils, auditLogRepository, settingUtils, userRepository, reasonRepository);
     }
 
     @Test

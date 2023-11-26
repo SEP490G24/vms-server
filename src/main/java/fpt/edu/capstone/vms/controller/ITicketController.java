@@ -13,7 +13,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -26,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -76,6 +79,9 @@ public interface ITicketController {
     @PreAuthorize("hasRole('r:ticket:findQRCode')")
     ResponseEntity<?> findByQRCode(@PathVariable String checkInCode);
 
+    @GetMapping(value = "/subscribe/check-in", consumes = MediaType.ALL_VALUE)
+    SseEmitter subscribeCheckIn(@RequestParam(value = "siteId", required = false) String siteId);
+
     @PutMapping("/check-in")
     @Operation(summary = "Check in customer for ticket")
     @PreAuthorize("hasRole('r:ticket:checkIn')")
@@ -86,7 +92,7 @@ public interface ITicketController {
     @PreAuthorize("hasRole('r:ticket:viewTicketDetail')")
     ResponseEntity<?> findByIdForUser(@PathVariable UUID ticketId, @RequestParam(value = "siteId", required = false) String siteId);
 
-    @PostMapping("/customer/filter")
+    @PostMapping("/check-in/filter")
     @Operation(summary = "Filter ticket and customer ")
     @PreAuthorize("hasRole('r:ticket:findQRCode')")
     ResponseEntity<?> filterTicketAndCustomer(@RequestBody @Valid TicketFilter ticketFilter, Pageable pageable);
@@ -237,6 +243,7 @@ public interface ITicketController {
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
+    @Accessors(chain = true)
     class TicketByQRCodeResponseDTO {
         //Ticket Info
         private UUID ticketId;
@@ -253,6 +260,9 @@ public interface ITicketController {
         private String createBy;
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         private LocalDateTime createdOn;
+        private String lastUpdatedBy;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
+        private LocalDateTime lastUpdatedOn;
         private String checkInCode;
 
         //Info Room
