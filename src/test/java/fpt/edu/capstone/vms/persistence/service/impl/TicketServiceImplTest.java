@@ -34,6 +34,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.mockito.stubbing.Answer;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -42,6 +43,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -50,6 +53,8 @@ import org.springframework.web.client.HttpClientErrorException;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +63,11 @@ import java.util.UUID;
 
 import static fpt.edu.capstone.vms.constants.Constants.Purpose.MEETING;
 import static fpt.edu.capstone.vms.constants.Constants.Purpose.OTHERS;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_REALM_ROLE;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_RESOURCE_ROLE;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.REALM_ADMIN;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.SCOPE_ORGANIZATION;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.SCOPE_SITE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -123,6 +133,47 @@ class TicketServiceImplTest {
             , mapper, roomRepository, siteRepository
             , customerTicketMapRepository
             , emailUtils, auditLogRepository, settingUtils, userRepository, reasonRepository);
+
+        Jwt jwt = mock(Jwt.class);
+
+        SecurityUtils.UserDetails userDetails = new SecurityUtils.UserDetails();
+        Collection<? extends GrantedAuthority> authorities = Arrays.asList(
+            new SimpleGrantedAuthority(PREFIX_REALM_ROLE + REALM_ADMIN),
+            new SimpleGrantedAuthority(PREFIX_RESOURCE_ROLE + SCOPE_ORGANIZATION),
+            new SimpleGrantedAuthority(PREFIX_RESOURCE_ROLE + SCOPE_SITE)
+        );
+
+
+        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c07");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("mocked_username");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        when(authentication.getAuthorities()).thenAnswer((Answer<Collection<? extends GrantedAuthority>>) invocation -> {
+            userDetails.setRealmAdmin(false);
+            userDetails.setOrganizationAdmin(true);
+            userDetails.setSiteAdmin(false);
+
+            // Iterate over the authorities and set flags in userDetails
+            for (GrantedAuthority grantedAuthority : authorities) {
+                switch (grantedAuthority.getAuthority()) {
+                    case PREFIX_REALM_ROLE + REALM_ADMIN:
+                        userDetails.setRealmAdmin(true);
+                        break;
+                    case PREFIX_RESOURCE_ROLE + SCOPE_ORGANIZATION:
+                        userDetails.setOrganizationAdmin(true);
+                        break;
+                    case PREFIX_RESOURCE_ROLE + SCOPE_SITE:
+                        userDetails.setSiteAdmin(true);
+                        break;
+                }
+            }
+
+            return authorities;
+        });
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
     }
 
     @Test
@@ -1401,7 +1452,9 @@ class TicketServiceImplTest {
         Site site = new Site();
         site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
         Ticket ticket = new Ticket();
+        ticket.setEndTime(LocalDateTime.now().plusHours(1));
         ticket.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        customerTicketMap.setTicketEntity(ticket);
         when(ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId())).thenReturn(Optional.of(ticket));
         when(siteRepository.findById(UUID.fromString(ticket.getSiteId()))).thenReturn(Optional.of(site));
 
@@ -1461,6 +1514,7 @@ class TicketServiceImplTest {
         customerTicketMap.setCheckInTime(currentTime.minusHours(1));  // Set a past check-in time
 
         Ticket ticket = new Ticket();
+        ticket.setStartTime(currentTime.plusHours(1));
         ticket.setId(customerTicketMap.getCustomerTicketMapPk().getTicketId());
         ticket.setSiteId(siteId);
         when(ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId())).thenReturn(java.util.Optional.of(ticket));
@@ -2215,4 +2269,79 @@ class TicketServiceImplTest {
         assertEquals("Mapping error", exception.getMessage());
     }
 
+    @Test
+    void testFilterTicketByRoom() {
+        // Test data
+        List<String> names = List.of("Room1", "Room2");
+        List<String> sites = new ArrayList<>();
+        List<String> usernames = List.of("user1", "user2");
+        UUID roomId = UUID.randomUUID();
+        Constants.StatusTicket status = Constants.StatusTicket.PENDING;
+        Constants.Purpose purpose = Constants.Purpose.MEETING;
+        LocalDateTime createdOnStart = LocalDateTime.now().minusDays(7);
+        LocalDateTime createdOnEnd = LocalDateTime.now();
+        LocalDateTime startTimeStart = LocalDateTime.now().minusHours(2);
+        LocalDateTime startTimeEnd = LocalDateTime.now();
+        LocalDateTime endTimeStart = LocalDateTime.now().plusHours(1);
+        LocalDateTime endTimeEnd = LocalDateTime.now().plusHours(3);
+        String createdBy = "admin";
+        String lastUpdatedBy = "admin";
+        String keyword = "search";
+
+        // Mock behavior
+        // Assuming you have proper implementations for filterAllBySite and roomRepository.filter
+        List<Ticket> tickets = List.of(new Ticket(), new Ticket());
+        when(ticketService.filterAllBySite(null, sites, null, null, status, purpose, createdOnStart, createdOnEnd, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd, createdBy, lastUpdatedBy, keyword))
+            .thenReturn(tickets);
+
+        List<Room> rooms = new ArrayList<>();
+        when(roomRepository.filter(null, SecurityUtils.getListSiteToUUID(siteRepository, sites), null, null, null, null, null)).thenReturn(rooms);
+
+        // Execute the method
+        ITicketController.TicketByRoomResponseDTO result = ticketService.filterTicketByRoom(
+            names, sites, usernames, roomId, status, purpose, createdOnStart, createdOnEnd,
+            startTimeStart, startTimeEnd, endTimeStart, endTimeEnd, createdBy, lastUpdatedBy, keyword
+        );
+
+        // Assertions
+        assertNotNull(result);
+        assertEquals(rooms, result.getRooms());
+        assertEquals(0, result.getTickets().size());
+
+        verify(roomRepository).filter(null, SecurityUtils.getListSiteToUUID(siteRepository, sites), null, null, null, null, null);
+    }
+
+    @Test
+    void testAddCardCustomerTicket() {
+        // Test data
+        String checkInCode = "CHECK_IN_CODE";
+        String orgId = "ORG_ID";
+        String siteId = "SITE_ID";
+        String cardId = "CARD_ID";
+
+        // Mock behavior
+        CustomerTicketMap customerTicketMap = new CustomerTicketMap();
+        customerTicketMap.setCustomerTicketMapPk(new CustomerTicketMapPk(UUID.randomUUID(), UUID.randomUUID()));
+        customerTicketMap.setStatus(Constants.StatusTicket.CHECK_IN);
+        when(customerTicketMapRepository.findByCheckInCodeIgnoreCase(checkInCode)).thenReturn(customerTicketMap);
+
+        Ticket ticket = new Ticket();
+        ticket.setSiteId(siteId);
+        when(ticketRepository.findById(any(UUID.class))).thenReturn(java.util.Optional.of(ticket));
+
+        when(siteRepository.existsByIdAndOrganizationId(any(UUID.class), any(UUID.class))).thenReturn(true);
+
+        when(settingUtils.getBoolean(Constants.SettingCode.CONFIGURATION_CARD)).thenReturn(true);
+
+        when(customerTicketMapRepository.existsByCardIdAndStatus(cardId, Constants.StatusTicket.CHECK_IN)).thenReturn(false);
+
+        // Execute the method
+        boolean result = ticketService.addCardCustomerTicket(new ITicketController.CustomerTicketCardDTO(checkInCode, cardId));
+
+        // Assertions
+        assertTrue(result);
+
+        // Verify method calls
+        verify(customerTicketMapRepository).save(any());
+    }
 }

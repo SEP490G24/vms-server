@@ -81,11 +81,13 @@ public class CardCheckInHistoryServiceImpl extends GenericServiceImpl<CardCheckI
             var ticket = ticketRepository.findById(customerTicket.getCustomerTicketMapPk().getTicketId()).orElse(null);
             LocalDateTime timeNow = LocalDateTime.now();
             if (customerTicket.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
+                // check in time > time now
                 if (customerTicket.getCheckInTime().isAfter(timeNow)) {
                     return false;
                 }
             }
             if (customerTicket.getStatus().equals(Constants.StatusTicket.CHECK_OUT)) {
+                // check out time < time now
                 if (customerTicket.getCheckOutTime().isBefore(timeNow)) {
                     return false;
                 }

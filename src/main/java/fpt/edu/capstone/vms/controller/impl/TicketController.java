@@ -253,7 +253,7 @@ public class TicketController implements ITicketController {
 
     @Override
     public ResponseEntity<?> filterTicketByRoom(TicketFilter filter) {
-        return ResponseEntity.ok(ticketService.filterTicketByRoom(
+        TicketByRoomResponseDTO ticketByRoomResponseDTO = ticketService.filterTicketByRoom(
             filter.getNames(),
             filter.getSites(),
             filter.getUsernames(),
@@ -267,7 +267,17 @@ public class TicketController implements ITicketController {
             filter.getEndTimeStart(),
             filter.getEndTimeEnd(),
             filter.getCreatedBy(),
-            filter.getLastUpdatedBy(), filter.getKeyword()));
+            filter.getLastUpdatedBy(), filter.getKeyword());
+        List<ITicketController.TicketFilterDTO> ticketFilterDTOS = mapper.map(ticketByRoomResponseDTO.getTickets(), new TypeToken<List<ITicketController.TicketFilterDTO>>() {
+        }.getType());
+        ticketFilterDTOS.forEach(o -> {
+            setCustomer(o);
+        });
+
+        TicketByRoomResponse ticketByRoomResponse = new TicketByRoomResponse();
+        ticketByRoomResponse.setRooms(ticketByRoomResponseDTO.getRooms());
+        ticketByRoomResponse.setTickets(ticketFilterDTOS);
+        return ResponseEntity.ok(ticketByRoomResponse);
     }
 
     @Override

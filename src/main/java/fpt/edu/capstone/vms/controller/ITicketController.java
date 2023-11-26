@@ -3,6 +3,7 @@ package fpt.edu.capstone.vms.controller;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.persistence.entity.Room;
+import fpt.edu.capstone.vms.persistence.entity.Ticket;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -292,6 +293,15 @@ public interface ITicketController {
     @AllArgsConstructor
     @NoArgsConstructor
     class TicketByRoomResponseDTO {
+        List<Room> rooms;
+        List<Ticket> tickets;
+    }
+
+    @Data
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    class TicketByRoomResponse {
         List<Room> rooms;
         List<TicketFilterDTO> tickets;
     }

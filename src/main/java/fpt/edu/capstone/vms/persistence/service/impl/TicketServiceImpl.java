@@ -38,7 +38,6 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.TypeToken;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -737,11 +736,25 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         customerTicketMap.setReasonId(checkInPayload.getReasonId());
         customerTicketMap.setReasonNote(checkInPayload.getReasonNote());
         if (checkInPayload.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
+            if (customerTicketMap.getTicketEntity().getEndTime().isBefore(LocalDateTime.now())) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Ticket is expired, You can not check in with this ticket");
+            }
             customerTicketMap.setCheckInTime(LocalDateTime.now());
         } else if (checkInPayload.getStatus().equals(Constants.StatusTicket.CHECK_OUT)) {
             customerTicketMap.setCheckOutTime(LocalDateTime.now());
             customerTicketMap.setCheckOut(true);
             customerTicketMap.setCardId(null);
+            Integer count = customerTicketMapRepository.countAllByStatusAndAndCustomerTicketMapPk_TicketId(Constants.StatusTicket.CHECK_IN, customerTicketMap.getCustomerTicketMapPk().getTicketId());
+            if (count == 0) {
+                Ticket ticket = ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId()).orElse(null);
+                if (ticket != null) {
+                    if (ticket.getStartTime().isBefore(LocalDateTime.now())) {
+                        throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Ticket is not started, You can not check out with this ticket");
+                    }
+                    ticket.setStatus(Constants.StatusTicket.DONE);
+                    ticketRepository.save(ticket);
+                }
+            }
         }
         customerTicketMapRepository.save(customerTicketMap);
         Ticket ticket = ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId()).orElse(null);
@@ -864,27 +877,18 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     @Override
     public ITicketController.TicketByRoomResponseDTO filterTicketByRoom(List<String> names, List<String> sites, List<String> usernames, UUID roomId, Constants.StatusTicket status, Constants.Purpose purpose, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, LocalDateTime startTimeStart, LocalDateTime startTimeEnd, LocalDateTime endTimeStart, LocalDateTime endTimeEnd, String createdBy, String lastUpdatedBy, String keyword) {
         List<Room> rooms;
-        if (SecurityUtils.getUserDetails().isOrganizationAdmin() || SecurityUtils.getUserDetails().isSiteAdmin()) {
-            rooms = roomRepository.filter(null, SecurityUtils.getListSiteToUUID(siteRepository, sites), null, null, null, null, null);
-        } else {
-            rooms = roomRepository.filter(null, null, null, null, null, null, SecurityUtils.loginUsername());
-        }
-
         List<Ticket> tickets;
         if (SecurityUtils.getUserDetails().isOrganizationAdmin() || SecurityUtils.getUserDetails().isSiteAdmin()) {
             tickets = filterAllBySite(null, sites, null, null, status, purpose, createdOnStart, createdOnEnd, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd, null, null, keyword);
+            rooms = roomRepository.filter(null, SecurityUtils.getListSiteToUUID(siteRepository, sites), null, null, null, null, null);
         } else {
             tickets = filterAllBySite(names, null, null, null, status, purpose, createdOnStart, createdOnEnd, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd, SecurityUtils.loginUsername(), null, keyword);
+            rooms = roomRepository.filter(null, null, null, null, null, null, SecurityUtils.loginUsername());
         }
-        List<ITicketController.TicketFilterDTO> ticketFilterDTOS = mapper.map(tickets, new TypeToken<List<ITicketController.TicketFilterDTO>>() {
-        }.getType());
-        ticketFilterDTOS.forEach(o -> {
-            setCustomer(o);
-
-        });
         ITicketController.TicketByRoomResponseDTO ticketByRoomResponseDTO = new ITicketController.TicketByRoomResponseDTO();
-
-        return ticketByRoomResponseDTO.builder().rooms(rooms).tickets(ticketFilterDTOS).build();
+        ticketByRoomResponseDTO.setTickets(tickets);
+        ticketByRoomResponseDTO.setRooms(rooms);
+        return ticketByRoomResponseDTO;
     }
 
     /**
