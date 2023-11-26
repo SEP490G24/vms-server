@@ -91,7 +91,6 @@ class CardCheckInHistoryServiceImplTest {
 
         Ticket ticketMock = new Ticket();
         Room roomMock = new Room();
-        roomMock.setMacIp("sampleMacIp");
         ticketMock.setRoom(roomMock);
         when(ticketRepository.findById(pk.getTicketId())).thenReturn(java.util.Optional.of(ticketMock));
         // Act
@@ -166,7 +165,6 @@ class CardCheckInHistoryServiceImplTest {
 
         Ticket ticketMock = new Ticket();
         Room roomMock = new Room();
-        roomMock.setMacIp("sampleMacIp");
         ticketMock.setRoom(roomMock);
         when(ticketRepository.findById(pk.getTicketId())).thenReturn(java.util.Optional.of(ticketMock));
         // Act
@@ -206,7 +204,6 @@ class CardCheckInHistoryServiceImplTest {
 
         Ticket ticketMock = new Ticket();
         Room roomMock = new Room();
-        roomMock.setMacIp("sampleMacIp");
         ticketMock.setRoom(roomMock);
         when(ticketRepository.findById(pk.getTicketId())).thenReturn(java.util.Optional.of(ticketMock));
         // Act
@@ -246,7 +243,6 @@ class CardCheckInHistoryServiceImplTest {
 
         Ticket ticketMock = new Ticket();
         Room roomMock = new Room();
-        roomMock.setMacIp("sampleMacIp1");
         ticketMock.setRoom(roomMock);
         when(ticketRepository.findById(pk.getTicketId())).thenReturn(java.util.Optional.of(ticketMock));
         // Act

@@ -77,6 +77,11 @@ public class Constants {
         DENIED
     }
 
+    public enum DeviceType {
+        SCAN_CARD,
+        DOOR
+    }
+
     public enum Gender {
         FEMALE,
         MALE,

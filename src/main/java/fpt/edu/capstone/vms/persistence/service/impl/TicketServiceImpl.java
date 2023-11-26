@@ -736,6 +736,12 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         customerTicketMap.setReasonId(checkInPayload.getReasonId());
         customerTicketMap.setReasonNote(checkInPayload.getReasonNote());
         if (checkInPayload.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
+            if (customerTicketMap.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is checked in");
+            }
+            if (customerTicketMap.isCheckOut()) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is checked out");
+            }
             if (customerTicketMap.getTicketEntity().getEndTime().isBefore(LocalDateTime.now())) {
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Ticket is expired, You can not check in with this ticket");
             }
@@ -1065,13 +1071,5 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         }
 
         return checkInCodeBuilder.toString();
-    }
-
-    private void setCustomer(ITicketController.TicketFilterDTO ticketFilterDTO) {
-        List<ICustomerController.CustomerInfo> customerInfos = new ArrayList<>();
-        customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(ticketFilterDTO.getId()).forEach(a -> {
-            customerInfos.add(mapper.map(customerRepository.findById(a.getCustomerTicketMapPk().getCustomerId()).orElse(null), ICustomerController.CustomerInfo.class));
-        });
-        ticketFilterDTO.setCustomers(customerInfos);
     }
 }

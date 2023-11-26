@@ -1443,6 +1443,7 @@ class TicketServiceImplTest {
         checkInPayload.setCheckInCode("checkInCode");
 
         CustomerTicketMap customerTicketMap = new CustomerTicketMap();
+        customerTicketMap.setStatus(Constants.StatusTicket.PENDING);
         customerTicketMap.setCustomerTicketMapPk(new CustomerTicketMapPk(UUID.randomUUID(), UUID.randomUUID()));
 
         // Mock repository behavior
