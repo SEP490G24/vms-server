@@ -3,6 +3,7 @@ package fpt.edu.capstone.vms.controller;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.persistence.entity.Room;
+import fpt.edu.capstone.vms.persistence.entity.Ticket;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -13,7 +14,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -26,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -76,6 +80,9 @@ public interface ITicketController {
     @PreAuthorize("hasRole('r:ticket:findQRCode')")
     ResponseEntity<?> findByQRCode(@PathVariable String checkInCode);
 
+    @GetMapping(value = "/subscribe/check-in", consumes = MediaType.ALL_VALUE)
+    SseEmitter subscribeCheckIn(@RequestParam(value = "siteId", required = false) String siteId);
+
     @PutMapping("/check-in")
     @Operation(summary = "Check in customer for ticket")
     @PreAuthorize("hasRole('r:ticket:checkIn')")
@@ -86,7 +93,7 @@ public interface ITicketController {
     @PreAuthorize("hasRole('r:ticket:viewTicketDetail')")
     ResponseEntity<?> findByIdForUser(@PathVariable UUID ticketId, @RequestParam(value = "siteId", required = false) String siteId);
 
-    @PostMapping("/customer/filter")
+    @PostMapping("/check-in/filter")
     @Operation(summary = "Filter ticket and customer ")
     @PreAuthorize("hasRole('r:ticket:findQRCode')")
     ResponseEntity<?> filterTicketAndCustomer(@RequestBody @Valid TicketFilter ticketFilter, Pageable pageable);
@@ -100,6 +107,11 @@ public interface ITicketController {
     @Operation(summary = "add card to customer ")
     @PreAuthorize("hasRole('r:ticket:add-card')")
     ResponseEntity<?> addCardToCustomerTicket(@RequestBody @Valid CustomerTicketCardDTO customerTicketCardDTO);
+
+    @GetMapping("/{checkInCode}")
+    @Operation(summary = "Find all card history of customer")
+    @PreAuthorize("hasRole('r:ticket:viewCardCheckInHistory')")
+    ResponseEntity<?> getAllCardHistoryOfCustomer(@PathVariable String checkInCode);
 
     @Data
     class CreateTicketInfo {
@@ -232,6 +244,7 @@ public interface ITicketController {
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
+    @Accessors(chain = true)
     class TicketByQRCodeResponseDTO {
         //Ticket Info
         private UUID ticketId;
@@ -248,6 +261,9 @@ public interface ITicketController {
         private String createBy;
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         private LocalDateTime createdOn;
+        private String lastUpdatedBy;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
+        private LocalDateTime lastUpdatedOn;
         private String checkInCode;
 
         //Info Room
@@ -278,6 +294,15 @@ public interface ITicketController {
     @NoArgsConstructor
     class TicketByRoomResponseDTO {
         List<Room> rooms;
+        List<Ticket> tickets;
+    }
+
+    @Data
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    class TicketByRoomResponse {
+        List<Room> rooms;
         List<TicketFilterDTO> tickets;
     }
 
@@ -290,5 +315,18 @@ public interface ITicketController {
         String checkInCode;
         @NotNull
         String cardId;
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    class CardCheckInHistoryDTO {
+        private Integer id;
+        private String checkInCode;
+        private String cardId;
+        private String macIp;
+        private String roomName;
+        private String status;
+        private String createdOn;
     }
 }

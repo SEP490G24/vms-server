@@ -2,6 +2,7 @@ package fpt.edu.capstone.vms.persistence.service;
 
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ITicketController;
+import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMap;
 import fpt.edu.capstone.vms.persistence.entity.Ticket;
 import fpt.edu.capstone.vms.persistence.service.generic.IGenericService;
 import org.springframework.data.domain.Page;
@@ -89,13 +90,13 @@ public interface ITicketService extends IGenericService<Ticket, UUID> {
 
     ITicketController.TicketByQRCodeResponseDTO findByQRCode(String checkInCode);
 
-    void checkInCustomer(ITicketController.CheckInPayload checkInPayload);
+    ITicketController.TicketByQRCodeResponseDTO checkInCustomer(ITicketController.CheckInPayload checkInPayload);
 
     ITicketController.TicketFilterDTO findByTicketForUser(UUID ticketId);
 
     ITicketController.TicketFilterDTO findByTicketForAdmin(UUID ticketId, String siteId);
 
-    Page<ITicketController.TicketByQRCodeResponseDTO> filterTicketAndCustomer(
+    Page<CustomerTicketMap> filterTicketAndCustomer(
         Pageable pageable,
         List<String> sites,
         List<String> names,

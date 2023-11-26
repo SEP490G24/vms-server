@@ -3,13 +3,20 @@ package fpt.edu.capstone.vms.controller.impl;
 import fpt.edu.capstone.vms.controller.ICustomerController;
 import fpt.edu.capstone.vms.controller.ITicketController;
 import fpt.edu.capstone.vms.exception.HttpClientResponse;
+import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMap;
 import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
 import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
+import fpt.edu.capstone.vms.persistence.service.ICardCheckInHistoryService;
 import fpt.edu.capstone.vms.persistence.service.ITicketService;
-import fpt.edu.capstone.vms.persistence.service.sse.SseEmitterManager;
+import fpt.edu.capstone.vms.persistence.service.sse.checkIn.SseCheckInEmitterManager;
+import fpt.edu.capstone.vms.persistence.service.sse.checkIn.SseCheckInSession;
+import fpt.edu.capstone.vms.util.JacksonUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
+import fpt.edu.capstone.vms.util.SseUtils;
+import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -20,21 +27,23 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 @RestController
+@Log4j2
 public class TicketController implements ITicketController {
     private final ITicketService ticketService;
-    private final SseEmitterManager sseEmitterManager;
+    private final SseCheckInEmitterManager sseCheckInEmitterManager;
     private final CustomerTicketMapRepository customerTicketMapRepository;
     private final CustomerRepository customerRepository;
+    private final ICardCheckInHistoryService cardCheckInHistoryService;
     private final ModelMapper mapper;
 
-    public TicketController(ITicketService ticketService, SseEmitterManager sseEmitterManager, CustomerTicketMapRepository customerTicketMapRepository, CustomerRepository customerRepository, ModelMapper mapper) {
+    public TicketController(ITicketService ticketService, SseCheckInEmitterManager sseCheckInEmitterManager, CustomerTicketMapRepository customerTicketMapRepository, CustomerRepository customerRepository, ICardCheckInHistoryService cardCheckInHistoryService, ModelMapper mapper) {
         this.ticketService = ticketService;
-        this.sseEmitterManager = sseEmitterManager;
+        this.sseCheckInEmitterManager = sseCheckInEmitterManager;
         this.customerTicketMapRepository = customerTicketMapRepository;
         this.customerRepository = customerRepository;
+        this.cardCheckInHistoryService = cardCheckInHistoryService;
         this.mapper = mapper;
     }
 
@@ -190,38 +199,37 @@ public class TicketController implements ITicketController {
     }
 
     @Override
+    public SseEmitter subscribeCheckIn(String siteId) {
+        if (!SecurityUtils.getUserDetails().isOrganizationAdmin()) {
+            siteId = SecurityUtils.getSiteId();
+        }
+        var key = SseCheckInSession.builder()
+            .siteId(siteId)
+            .username(SecurityUtils.loginUsername())
+            .sessionId(UUID.randomUUID())
+            .build();
+        log.info("Call API /subscribeCheckIn with sse session: {}", JacksonUtils.toJson(key));
+        SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
+        SseUtils.sendInitEvent(sseEmitter);
+        sseCheckInEmitterManager.addSubscribeEmitter(key, sseEmitter);
+        sseEmitter.onCompletion(() -> sseCheckInEmitterManager.removeEmitter(key));
+        sseEmitter.onTimeout(() -> sseCheckInEmitterManager.removeEmitter(key));
+        sseEmitter.onError((e) -> sseCheckInEmitterManager.removeEmitter(key));
+        return sseEmitter;
+    }
+
+    @Override
     public ResponseEntity<?> checkIn(CheckInPayload checkInPayload) {
-        // Create a new emitter for the client
-        SseEmitter emitter = new SseEmitter();
-
-        // Add the emitter to the manager
-        sseEmitterManager.addEmitter(checkInPayload, emitter);
-
-        // Set up completion and timeout handlers
-        emitter.onCompletion(() -> sseEmitterManager.removeEmitter(checkInPayload, emitter));
-        emitter.onTimeout(() -> sseEmitterManager.removeEmitter(checkInPayload, emitter));
-
-        // Start a new thread to handle the check-in process
-        CompletableFuture.runAsync(() -> {
-            try {
-                // Perform the check-in process
-                ticketService.checkInCustomer(checkInPayload);
-            } catch (Exception e) {
-                // Handle exceptions if needed
-                e.printStackTrace();
-            } finally {
-                // Complete the emitter (close the connection)
-                emitter.complete();
-            }
-        });
-
+        // Perform the check-in process
+        var ticketByQRCodeResponseDTO = ticketService.checkInCustomer(checkInPayload);
         // Return the emitter immediately to the client
-        return ResponseEntity.ok(emitter);
+        sseCheckInEmitterManager.broadcast(ticketByQRCodeResponseDTO.getSiteId(), ticketByQRCodeResponseDTO);
+        return ResponseEntity.ok(ticketByQRCodeResponseDTO);
     }
 
     @Override
     public ResponseEntity<?> filterTicketAndCustomer(TicketFilter filter, Pageable pageable) {
-        return ResponseEntity.ok(ticketService.filterTicketAndCustomer(
+        Page<CustomerTicketMap> customerTicketMaps = ticketService.filterTicketAndCustomer(
             pageable,
             filter.getSites(),
             filter.getNames(),
@@ -237,13 +245,15 @@ public class TicketController implements ITicketController {
             filter.getCreatedBy(),
             filter.getLastUpdatedBy(),
             filter.getBookmark(),
-            filter.getKeyword()));
-
+            filter.getKeyword());
+        List<ITicketController.TicketByQRCodeResponseDTO> ticketByQRCodeResponseDTOS = mapper.map(customerTicketMaps.getContent(), new TypeToken<List<ITicketController.TicketByQRCodeResponseDTO>>() {
+        }.getType());
+        return ResponseEntity.ok(new PageImpl(ticketByQRCodeResponseDTOS, pageable, customerTicketMaps.getTotalElements()));
     }
 
     @Override
     public ResponseEntity<?> filterTicketByRoom(TicketFilter filter) {
-        return ResponseEntity.ok(ticketService.filterTicketByRoom(
+        TicketByRoomResponseDTO ticketByRoomResponseDTO = ticketService.filterTicketByRoom(
             filter.getNames(),
             filter.getSites(),
             filter.getUsernames(),
@@ -257,13 +267,32 @@ public class TicketController implements ITicketController {
             filter.getEndTimeStart(),
             filter.getEndTimeEnd(),
             filter.getCreatedBy(),
-            filter.getLastUpdatedBy(), filter.getKeyword()));
+            filter.getLastUpdatedBy(), filter.getKeyword());
+        List<ITicketController.TicketFilterDTO> ticketFilterDTOS = mapper.map(ticketByRoomResponseDTO.getTickets(), new TypeToken<List<ITicketController.TicketFilterDTO>>() {
+        }.getType());
+        ticketFilterDTOS.forEach(o -> {
+            setCustomer(o);
+        });
+
+        TicketByRoomResponse ticketByRoomResponse = new TicketByRoomResponse();
+        ticketByRoomResponse.setRooms(ticketByRoomResponseDTO.getRooms());
+        ticketByRoomResponse.setTickets(ticketFilterDTOS);
+        return ResponseEntity.ok(ticketByRoomResponse);
     }
 
     @Override
     public ResponseEntity<?> addCardToCustomerTicket(CustomerTicketCardDTO customerTicketCardDTO) {
         try {
             return ResponseEntity.ok(ticketService.addCardCustomerTicket(customerTicketCardDTO));
+        } catch (HttpClientErrorException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getAllCardHistoryOfCustomer(String checkInCode) {
+        try {
+            return ResponseEntity.ok(cardCheckInHistoryService.getAllCardHistoryOfCustomer(checkInCode));
         } catch (HttpClientErrorException e) {
             return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
         }

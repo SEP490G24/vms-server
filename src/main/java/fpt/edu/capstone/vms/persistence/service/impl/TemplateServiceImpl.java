@@ -9,11 +9,14 @@ import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.repository.TemplateRepository;
 import fpt.edu.capstone.vms.persistence.service.ITemplateService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
+import fpt.edu.capstone.vms.util.PageableUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +24,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -93,8 +97,12 @@ public class TemplateServiceImpl extends GenericServiceImpl<Template, UUID> impl
     @Override
     public Page<Template> filter(Pageable pageable, List<String> names, List<String> siteId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, Boolean enable, String keyword) {
         List<UUID> sites = SecurityUtils.getListSiteToUUID(siteRepository, siteId);
+        List<Sort.Order> sortColum = new ArrayList<>(PageableUtils.converterSort2List(pageable.getSort()));
+        sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.createdOn));
+        sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.lastUpdatedOn));
+        Pageable pageableSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(sortColum));
         return templateRepository.filter(
-            pageable,
+            pageableSort,
             names,
             sites,
             createdOnStart,

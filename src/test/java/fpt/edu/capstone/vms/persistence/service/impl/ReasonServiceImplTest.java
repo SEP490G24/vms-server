@@ -13,7 +13,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.client.HttpClientErrorException;
 
@@ -23,8 +25,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ActiveProfiles("test")
 @Tag("UnitTest")
@@ -121,7 +127,8 @@ class ReasonServiceImplTest {
     @DisplayName("given pageable and filter criteria, when filter Reasons, then Page<Reason> is returned")
     void givenPageableAndFilterCriteria_whenFilterReasons_thenPageOfReasonReturned() {
         // Given
-        Pageable pageable = mock(Pageable.class);
+        Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("createdOn"), Sort.Order.desc("lastUpdatedOn")));
+        Pageable pageableSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
         List<String> names = Arrays.asList("Reason1", "Reason2");
         UUID siteId = UUID.randomUUID();
         LocalDateTime createdOnStart = LocalDateTime.now().minusDays(7);
@@ -129,12 +136,11 @@ class ReasonServiceImplTest {
         Boolean enable = true;
         String keyword = "example";
 
-        List<Reason> filteredReasons = Arrays.asList(new Reason(), new Reason());
-        Page<Reason> expectedPage = new PageImpl<>(filteredReasons);
-        when(reasonRepository.filter(pageable, names, siteId, createdOnStart, createdOnEnd, enable, keyword.toUpperCase())).thenReturn(expectedPage);
+        Page<Reason> filteredReasons = new PageImpl<>(List.of());
+        when(reasonRepository.filter(pageable, names, siteId, createdOnStart, createdOnEnd, enable, keyword.toUpperCase())).thenReturn(filteredReasons);
 
         // When
-        Page<Reason> filteredReasonPage = reasonService.filter(pageable, names, siteId, createdOnStart, createdOnEnd, enable, keyword.toUpperCase());
+        Page<Reason> filteredReasonPage = reasonService.filter(pageableSort, names, siteId, createdOnStart, createdOnEnd, enable, keyword.toUpperCase());
 
         // Then
         assertNotNull(filteredReasonPage);

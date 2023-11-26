@@ -1,21 +1,26 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
+import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.IReasonController;
 import fpt.edu.capstone.vms.persistence.entity.Reason;
 import fpt.edu.capstone.vms.persistence.repository.ReasonRepository;
 import fpt.edu.capstone.vms.persistence.service.IReasonService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
+import fpt.edu.capstone.vms.util.PageableUtils;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -57,8 +62,12 @@ public class ReasonServiceImpl extends GenericServiceImpl<Reason, UUID> implemen
 
     @Override
     public Page<Reason> filter(Pageable pageable, List<String> names, UUID siteId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, Boolean enable, String keyword) {
+        List<Sort.Order> sortColum = new ArrayList<>(PageableUtils.converterSort2List(pageable.getSort()));
+        sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.createdOn));
+        sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.lastUpdatedOn));
+        Pageable pageableSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(sortColum));
         return reasonRepository.filter(
-            pageable,
+            pageableSort,
             names,
             siteId,
             createdOnStart,

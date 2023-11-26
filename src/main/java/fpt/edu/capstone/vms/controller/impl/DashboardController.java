@@ -16,7 +16,12 @@ public class DashboardController implements IDashboardController {
     final IDashboardService dashboardService;
 
     @Override
-    public ResponseEntity<?> getTicketStatsByPurpose(DashboardDTO dashboardDTO, String limit) {
-        return ResponseEntity.ok(dashboardService.getTicketStatsByPurpose(dashboardDTO, limit));
+    public ResponseEntity<?> countTicketsByPurposeWithPie(DashboardDTO dashboardDTO) {
+        return ResponseEntity.ok(dashboardService.countTicketsByPurposeWithPie(dashboardDTO));
+    }
+
+    @Override
+    public ResponseEntity<?> countTicketsByPurposeByWithMultiLine(DashboardDTO dashboardDTO, String limit) {
+        return ResponseEntity.ok(dashboardService.countTicketsByPurposeByWithMultiLine(dashboardDTO, limit));
     }
 }

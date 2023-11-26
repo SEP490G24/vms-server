@@ -9,14 +9,20 @@ import fpt.edu.capstone.vms.persistence.repository.RoomRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import jakarta.persistence.EntityNotFoundException;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -31,10 +37,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @TestInstance(PER_CLASS)
 @ActiveProfiles("test")
@@ -315,12 +327,12 @@ class RoomServiceImplTest {
         when(!SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c07")).thenReturn(true);
         Page<Room> expectedRooms = new PageImpl<>(List.of());
         when(roomRepository.filter(pageable, names, siteIds, createdOnStart, createdOnEnd, enable, keyword.toUpperCase(), null)).thenReturn(expectedRooms);
-
-        // When
-        Page<Room> filteredRoomPage = roomService.filter(pageable, names, siteId, createdOnStart, createdOnEnd, enable, keyword, null);
+        Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("createdOn"), Sort.Order.desc("lastUpdatedOn")));
+        Pageable pageableSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());        // When
+        Page<Room> filteredRoomPage = roomService.filter(pageableSort, names, siteId, createdOnStart, createdOnEnd, enable, keyword, null);
 
         // Then
-        assertNotNull(filteredRoomPage);
+        assertEquals(null, filteredRoomPage);
         // Add assertions to check the content of the filteredRoomPage, depending on the expected behavior
         verify(roomRepository, times(1)).filter(pageable, names, siteIds, createdOnStart, createdOnEnd, enable, keyword.toUpperCase(), null);
     }

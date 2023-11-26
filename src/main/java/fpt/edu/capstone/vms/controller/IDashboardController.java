@@ -25,21 +25,28 @@ import java.util.UUID;
 @PreAuthorize("isAuthenticated()")
 public interface IDashboardController {
 
-    @PostMapping("/purpose")
+    @PostMapping("/purpose/pie")
     @Operation(summary = "Statistics of meetings by purpose")
-    ResponseEntity<?> getTicketStatsByPurpose(@RequestBody DashboardDTO dashboardDTO, @QueryParam("limit") String limit);
+    ResponseEntity<?> countTicketsByPurposeWithPie(@RequestBody DashboardDTO dashboardDTO);
+
+    @PostMapping("/purpose/dual-line")
+    @Operation(summary = "Statistics of meetings by purpose")
+    ResponseEntity<?> countTicketsByPurposeByWithMultiLine(@RequestBody DashboardDTO dashboardDTO, @QueryParam("limit") String limit);
+
 
     @Data
     class DashboardDTO {
         private LocalDateTime fromTime;
         private LocalDateTime toTime;
+        private Integer year;
+        private Integer month;
         List<String> sites;
     }
 
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    class DashboardResponse {
+    class PurposePieResponse {
         private Constants.Purpose type;
         private int value;
     }

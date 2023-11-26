@@ -2,6 +2,9 @@ package fpt.edu.capstone.vms.constants;
 
 public class Constants {
 
+    public static final String createdOn = "createdOn";
+    public static final String  lastUpdatedOn = "lastUpdatedOn";
+
     public static class Claims {
         public static String OrgId = "org_id";
         public static String SiteId = "site_id";
@@ -64,6 +67,7 @@ public class Constants {
         PENDING,
         CHECK_IN,
         CHECK_OUT,
+        DONE,
         CANCEL,
         REJECT
     }

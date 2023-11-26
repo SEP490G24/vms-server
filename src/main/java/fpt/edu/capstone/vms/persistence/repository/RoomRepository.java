@@ -55,4 +55,6 @@ public interface RoomRepository extends GenericRepository<Room, UUID> {
         @Param("createdBy") @Nullable String createdBy);
 
     List<Room> findAllBySiteIdAndEnableIsTrue(UUID siteId);
+
+    boolean existsBySiteIdAndMacIp(UUID siteId, String macIp);
 }

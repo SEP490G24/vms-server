@@ -13,7 +13,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 public class AuditLogRepositoryCustomImpl implements AuditLogRepositoryCustom {
@@ -36,8 +42,8 @@ public class AuditLogRepositoryCustomImpl implements AuditLogRepositoryCustom {
         }
         String sqlCountAll = "SELECT COUNT(1) ";
         String sqlGetData = "SELECT u.id, u.code, u.site_id, s.name, u.organization_id, o.name," +
-            " u.primary_key, u.table_name, u.audit_type, u.old_value, u.new_value, u.created_on," +
-            " u.created_by ";
+            " u.primary_key, u.table_name, u.audit_type, u.old_value, u.new_value, u.created_on as createdOn," +
+            " u.created_by, u.last_updated_on as lastUpdatedOn, u.last_updated_by ";
         StringBuilder sqlConditional = new StringBuilder();
         sqlConditional.append("FROM audit_log u ");
         sqlConditional.append("LEFT JOIN site s ON cast(s.id as text) = u.site_id ");
@@ -56,7 +62,7 @@ public class AuditLogRepositoryCustomImpl implements AuditLogRepositoryCustom {
 
         if (auditType != null) {
             sqlConditional.append("AND u.audit_type = :auditType ");
-            queryParams.put("auditType", auditType);
+            queryParams.put("auditType", auditType.name());
         }
 
         if (createdOnStart != null && createdOnEnd != null) {
@@ -100,6 +106,8 @@ public class AuditLogRepositoryCustomImpl implements AuditLogRepositoryCustom {
             auditLogFilter.setNewValue((String) object[10]);
             auditLogFilter.setCreateOn((Date) object[11]);
             auditLogFilter.setCreateBy((String) object[12]);
+            auditLogFilter.setLastUpdatedOn((Date) object[13]);
+            auditLogFilter.setLastUpdatedBy((String) object[14]);
             listData.add(auditLogFilter);
         }
         Query queryCountAll = entityManager.createNativeQuery(sqlCountAll + sqlConditional);
@@ -117,7 +125,7 @@ public class AuditLogRepositoryCustomImpl implements AuditLogRepositoryCustom {
         String orderByClause = "";
         String sqlGetData = "SELECT u.id, u.code, u.site_id, s.name, u.organization_id, o.name," +
             " u.primary_key, u.table_name, u.audit_type, u.old_value, u.new_value, u.created_on," +
-            " u.created_by ";
+            " u.created_by, u.last_updated_on, u.last_updated_by ";
         StringBuilder sqlConditional = new StringBuilder();
         sqlConditional.append("FROM audit_log u ");
         sqlConditional.append("LEFT JOIN site s ON cast(s.id as string) = u.site_id ");
@@ -136,7 +144,7 @@ public class AuditLogRepositoryCustomImpl implements AuditLogRepositoryCustom {
 
         if (auditType != null) {
             sqlConditional.append("AND u.audit_type = :auditType ");
-            queryParams.put("auditType", auditType);
+            queryParams.put("auditType", auditType.name());
         }
 
         if (createdOnStart != null && createdOnEnd != null) {
@@ -177,6 +185,8 @@ public class AuditLogRepositoryCustomImpl implements AuditLogRepositoryCustom {
             auditLogFilter.setNewValue((String) object[10]);
             auditLogFilter.setCreateOn((Date) object[11]);
             auditLogFilter.setCreateBy((String) object[12]);
+            auditLogFilter.setLastUpdatedOn((Date) object[13]);
+            auditLogFilter.setLastUpdatedBy((String) object[14]);
             listData.add(auditLogFilter);
         }
         return listData;

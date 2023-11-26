@@ -20,7 +20,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -313,14 +315,15 @@ class TemplateServiceImplTest {
         // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
-
+        Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("createdOn"), Sort.Order.desc("lastUpdatedOn")));
+        Pageable pageableSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
         when(!SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c08")).thenReturn(true);
         when(!SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c07")).thenReturn(true);
         Page<Template> expectedTemplatePage = new PageImpl<>(List.of());
         when(templateRepository.filter(pageable, names, siteIds, createdOnStart, createdOnEnd, enable, keyword.toUpperCase())).thenReturn(expectedTemplatePage);
 
         // When
-        Page<Template> filteredTemplatePage = templateService.filter(pageable, names, siteId, createdOnStart, createdOnEnd, enable, keyword);
+        Page<Template> filteredTemplatePage = templateService.filter(pageableSort, names, siteId, createdOnStart, createdOnEnd, enable, keyword);
 
         // Then
         assertNotNull(filteredTemplatePage);

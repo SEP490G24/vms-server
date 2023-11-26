@@ -78,4 +78,8 @@ public interface CustomerTicketMapRepository extends GenericRepository<CustomerT
     CustomerTicketMap existsByCardIdAndCheckOut(String cardId, boolean checkOut);
 
     CustomerTicketMap findByCardId(String cardId);
+
+    boolean existsByCardIdAndStatus(String cardId, Constants.StatusTicket statusTicket);
+
+    Integer countAllByStatusAndAndCustomerTicketMapPk_TicketId(Constants.StatusTicket statusTicket, UUID ticketId);
 }

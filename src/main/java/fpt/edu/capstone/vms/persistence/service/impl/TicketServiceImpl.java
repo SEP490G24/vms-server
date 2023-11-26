@@ -17,7 +17,6 @@ import fpt.edu.capstone.vms.persistence.entity.User;
 import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
 import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
 import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
-import fpt.edu.capstone.vms.persistence.repository.OrganizationRepository;
 import fpt.edu.capstone.vms.persistence.repository.ReasonRepository;
 import fpt.edu.capstone.vms.persistence.repository.RoomRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
@@ -26,8 +25,8 @@ import fpt.edu.capstone.vms.persistence.repository.TicketRepository;
 import fpt.edu.capstone.vms.persistence.repository.UserRepository;
 import fpt.edu.capstone.vms.persistence.service.ITicketService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
-import fpt.edu.capstone.vms.persistence.service.sse.SseEmitterManager;
 import fpt.edu.capstone.vms.util.EmailUtils;
+import fpt.edu.capstone.vms.util.PageableUtils;
 import fpt.edu.capstone.vms.util.QRcodeUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import fpt.edu.capstone.vms.util.SettingUtils;
@@ -39,10 +38,10 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.TypeToken;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,6 +60,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -74,14 +74,12 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     final TemplateRepository templateRepository;
     final CustomerRepository customerRepository;
     final SiteRepository siteRepository;
-    final OrganizationRepository organizationRepository;
     final CustomerTicketMapRepository customerTicketMapRepository;
     final EmailUtils emailUtils;
     final AuditLogRepository auditLogRepository;
     final SettingUtils settingUtils;
     final UserRepository userRepository;
     final ReasonRepository reasonRepository;
-    final SseEmitterManager sseEmitterManager;
 
 
     private static final String TICKET_TABLE_NAME = "Ticket";
@@ -90,22 +88,20 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
 
     public TicketServiceImpl(TicketRepository ticketRepository, CustomerRepository customerRepository,
                              TemplateRepository templateRepository, ModelMapper mapper, RoomRepository roomRepository,
-                             SiteRepository siteRepository, OrganizationRepository organizationRepository,
-                             CustomerTicketMapRepository customerTicketMapRepository, EmailUtils emailUtils, AuditLogRepository auditLogRepository, SettingUtils settingUtils, UserRepository userRepository, ReasonRepository reasonRepository, SseEmitterManager sseEmitterManager) {
+                             SiteRepository siteRepository,
+                             CustomerTicketMapRepository customerTicketMapRepository, EmailUtils emailUtils, AuditLogRepository auditLogRepository, SettingUtils settingUtils, UserRepository userRepository, ReasonRepository reasonRepository) {
         this.ticketRepository = ticketRepository;
         this.templateRepository = templateRepository;
         this.customerRepository = customerRepository;
         this.mapper = mapper;
         this.roomRepository = roomRepository;
         this.siteRepository = siteRepository;
-        this.organizationRepository = organizationRepository;
         this.customerTicketMapRepository = customerTicketMapRepository;
         this.emailUtils = emailUtils;
         this.auditLogRepository = auditLogRepository;
         this.settingUtils = settingUtils;
         this.userRepository = userRepository;
         this.reasonRepository = reasonRepository;
-        this.sseEmitterManager = sseEmitterManager;
         this.init(ticketRepository);
     }
 
@@ -589,7 +585,11 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         List<String> usernames = new ArrayList<>();
         usernames.add(SecurityUtils.loginUsername());
 
-        return ticketRepository.filter(pageable
+        List<Sort.Order> sortColum = new ArrayList<>(PageableUtils.converterSort2List(pageable.getSort()));
+        sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.createdOn));
+        sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.lastUpdatedOn));
+        Pageable pageableSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(sortColum));
+        return ticketRepository.filter(pageableSort
             , names
             , null
             , usernames
@@ -626,7 +626,11 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         , String lastUpdatedBy
         , String keyword) {
 
-        return ticketRepository.filter(pageable
+        List<Sort.Order> sortColum = new ArrayList<>(PageableUtils.converterSort2List(pageable.getSort()));
+        sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.createdOn));
+        sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.lastUpdatedOn));
+        Pageable pageableSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(sortColum));
+        return ticketRepository.filter(pageableSort
             , names
             , SecurityUtils.getListSiteToString(siteRepository, sites)
             , usernames
@@ -713,6 +717,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             , null
             , keyword);
     }
+
     @Override
     public ITicketController.TicketByQRCodeResponseDTO findByQRCode(String checkInCode) {
         CustomerTicketMap customerTicketMap = customerTicketMapRepository.findByCheckInCodeIgnoreCase(checkInCode);
@@ -725,30 +730,46 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
 
     @Override
     @Transactional
-    public void checkInCustomer(ITicketController.CheckInPayload checkInPayload) {
+    public ITicketController.TicketByQRCodeResponseDTO checkInCustomer(ITicketController.CheckInPayload checkInPayload) {
         CustomerTicketMap customerTicketMap = customerTicketMapRepository.findByCheckInCodeIgnoreCase(checkInPayload.getCheckInCode());
         customerTicketMap.setStatus(checkInPayload.getStatus());
         customerTicketMap.setReasonId(checkInPayload.getReasonId());
         customerTicketMap.setReasonNote(checkInPayload.getReasonNote());
         if (checkInPayload.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
+            if (customerTicketMap.getTicketEntity().getEndTime().isBefore(LocalDateTime.now())) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Ticket is expired, You can not check in with this ticket");
+            }
             customerTicketMap.setCheckInTime(LocalDateTime.now());
-            // Gửi SSE tới ReactJS
-            sseEmitterManager.sendSseToClient(checkInPayload, mapper.map(customerTicketMap, ITicketController.TicketByQRCodeResponseDTO.class));
         } else if (checkInPayload.getStatus().equals(Constants.StatusTicket.CHECK_OUT)) {
             customerTicketMap.setCheckOutTime(LocalDateTime.now());
             customerTicketMap.setCheckOut(true);
             customerTicketMap.setCardId(null);
+            Integer count = customerTicketMapRepository.countAllByStatusAndAndCustomerTicketMapPk_TicketId(Constants.StatusTicket.CHECK_IN, customerTicketMap.getCustomerTicketMapPk().getTicketId());
+            if (count == 0) {
+                Ticket ticket = ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId()).orElse(null);
+                if (ticket != null) {
+                    if (ticket.getStartTime().isBefore(LocalDateTime.now())) {
+                        throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Ticket is not started, You can not check out with this ticket");
+                    }
+                    ticket.setStatus(Constants.StatusTicket.DONE);
+                    ticketRepository.save(ticket);
+                }
+            }
         }
         customerTicketMapRepository.save(customerTicketMap);
         Ticket ticket = ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId()).orElse(null);
 
+        assert ticket != null;
         auditLogRepository.save(new AuditLog(ticket.getSiteId()
-            , siteRepository.findById(UUID.fromString(ticket.getSiteId())).orElse(null).getOrganizationId().toString()
+            , Objects.requireNonNull(siteRepository.findById(UUID.fromString(ticket.getSiteId())).orElse(null)).getOrganizationId().toString()
             , customerTicketMap.getId().toString()
             , CUSTOMER_TICKET_TABLE_NAME
             , Constants.AuditType.CREATE
             , null
             , customerTicketMap.toString()));
+        var ticketByQRCodeResponseDTO = mapper.map(customerTicketMap, ITicketController.TicketByQRCodeResponseDTO.class);
+        ticketByQRCodeResponseDTO.setSiteId(ticket.getSiteId());
+        return ticketByQRCodeResponseDTO;
     }
 
     @Override
@@ -791,7 +812,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     }
 
     @Override
-    public Page<ITicketController.TicketByQRCodeResponseDTO> filterTicketAndCustomer(Pageable pageable
+    public Page<CustomerTicketMap> filterTicketAndCustomer(Pageable pageable
         , List<String> sites
         , List<String> names
         , UUID roomId
@@ -807,15 +828,17 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         , String lastUpdatedBy
         , Boolean bookmark
         , String keyword) {
-        Page<CustomerTicketMap> customerTicketMaps = customerTicketMapRepository.filter(pageable, sites, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd
+        List<Sort.Order> sortColum = new ArrayList<>(PageableUtils.converterSort2List(pageable.getSort()));
+        sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.lastUpdatedOn));
+        sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.createdOn));
+        Pageable pageableSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(sortColum));
+        Page<CustomerTicketMap> customerTicketMaps = customerTicketMapRepository.filter(pageableSort, sites, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd
             , roomId
             , status
             , purpose
             , keyword);
-        List<ITicketController.TicketByQRCodeResponseDTO> ticketByQRCodeResponseDTOS = mapper.map(customerTicketMaps.getContent(), new TypeToken<List<ITicketController.TicketByQRCodeResponseDTO>>() {
-        }.getType());
 
-        return new PageImpl(ticketByQRCodeResponseDTOS, pageable, customerTicketMaps.getTotalElements());
+        return customerTicketMaps;
     }
 
     @Override
@@ -841,6 +864,9 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             if (customerTicketCardDTO.getCardId() == null) {
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Card is null");
             }
+            if (customerTicketMapRepository.existsByCardIdAndStatus(customerTicketCardDTO.getCardId(), Constants.StatusTicket.CHECK_IN)) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Card is exists with customer in this site");
+            }
             customerTicketMap.setCardId(customerTicketCardDTO.getCardId());
             customerTicketMapRepository.save(customerTicketMap);
             return true;
@@ -851,27 +877,18 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     @Override
     public ITicketController.TicketByRoomResponseDTO filterTicketByRoom(List<String> names, List<String> sites, List<String> usernames, UUID roomId, Constants.StatusTicket status, Constants.Purpose purpose, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, LocalDateTime startTimeStart, LocalDateTime startTimeEnd, LocalDateTime endTimeStart, LocalDateTime endTimeEnd, String createdBy, String lastUpdatedBy, String keyword) {
         List<Room> rooms;
-        if (SecurityUtils.getUserDetails().isOrganizationAdmin() || SecurityUtils.getUserDetails().isSiteAdmin()) {
-            rooms = roomRepository.filter(null, SecurityUtils.getListSiteToUUID(siteRepository, sites), null, null, null, null, null);
-        } else {
-            rooms = roomRepository.filter(null, null, null, null, null, null, SecurityUtils.loginUsername());
-        }
-
         List<Ticket> tickets;
         if (SecurityUtils.getUserDetails().isOrganizationAdmin() || SecurityUtils.getUserDetails().isSiteAdmin()) {
             tickets = filterAllBySite(null, sites, null, null, status, purpose, createdOnStart, createdOnEnd, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd, null, null, keyword);
+            rooms = roomRepository.filter(null, SecurityUtils.getListSiteToUUID(siteRepository, sites), null, null, null, null, null);
         } else {
             tickets = filterAllBySite(names, null, null, null, status, purpose, createdOnStart, createdOnEnd, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd, SecurityUtils.loginUsername(), null, keyword);
+            rooms = roomRepository.filter(null, null, null, null, null, null, SecurityUtils.loginUsername());
         }
-        List<ITicketController.TicketFilterDTO> ticketFilterDTOS = mapper.map(tickets, new TypeToken<List<ITicketController.TicketFilterDTO>>() {
-        }.getType());
-        ticketFilterDTOS.forEach(o -> {
-            setCustomer(o);
-
-        });
         ITicketController.TicketByRoomResponseDTO ticketByRoomResponseDTO = new ITicketController.TicketByRoomResponseDTO();
-
-        return ticketByRoomResponseDTO.builder().rooms(rooms).tickets(ticketFilterDTOS).build();
+        ticketByRoomResponseDTO.setTickets(tickets);
+        ticketByRoomResponseDTO.setRooms(rooms);
+        return ticketByRoomResponseDTO;
     }
 
     /**

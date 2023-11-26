@@ -7,6 +7,8 @@ import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
 import fpt.edu.capstone.vms.persistence.entity.User;
 import fpt.edu.capstone.vms.persistence.service.IUserService;
+import fpt.edu.capstone.vms.persistence.service.excel.ExportUser;
+import fpt.edu.capstone.vms.persistence.service.excel.ImportUser;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -21,13 +23,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-
 @RestController
 @AllArgsConstructor
 public class UserController implements IUserController {
 
     private final IUserService userService;
+    private final ImportUser importUser;
+    private final ExportUser exportUser;
     private final ModelMapper mapper;
 
     @Override
@@ -92,12 +94,12 @@ public class UserController implements IUserController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
         headers.setContentDispositionFormData("attachment", "users.xlsx");
-        return ResponseEntity.status(HttpStatus.SC_OK).headers(headers).body(userService.export(userFilter));
+        return ResponseEntity.status(HttpStatus.SC_OK).headers(headers).body(exportUser.export(userFilter));
     }
 
     @Override
-    public ResponseEntity<ByteArrayResource> downloadExcel() throws IOException {
-        return userService.downloadExcel();
+    public ResponseEntity<ByteArrayResource> downloadExcel() {
+        return importUser.downloadExcel();
     }
 
     @Override
@@ -113,7 +115,7 @@ public class UserController implements IUserController {
 
     @Override
     public ResponseEntity<Object> importUser(String siteId, MultipartFile file) {
-        return userService.importUser(siteId, file);
+        return importUser.importUser(siteId, file);
     }
 
 }

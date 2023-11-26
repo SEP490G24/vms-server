@@ -5,13 +5,9 @@ import fpt.edu.capstone.vms.controller.IUserController;
 import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
 import fpt.edu.capstone.vms.persistence.entity.User;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -53,12 +49,7 @@ public interface IUserService {
 
     User findByUsername(String username);
 
-    ByteArrayResource export(IUserController.UserFilterRequest userFilter);
-
     Boolean deleteAvatar(String name, String newImage, String username);
 
-    ResponseEntity<Object> importUser(String siteId, MultipartFile file);
-
-    ResponseEntity<ByteArrayResource> downloadExcel() throws IOException;
 
 }
