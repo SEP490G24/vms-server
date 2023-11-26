@@ -32,7 +32,7 @@ public interface DashboardRepository extends GenericRepository<Ticket, UUID> {
         "AND ((COALESCE(:sites) IS NULL) OR (t.siteId IN :sites)) " +
         "GROUP BY day, t.purpose " +
         "ORDER BY day, t.purpose")
-    List<Object[]> countTicketsByPurposeByWithMultiLine(
+    List<Object[]> countTicketsByPurposeWithMultiLine(
         @Param("startTime") LocalDateTime startTime,
         @Param("endTime") LocalDateTime endTime,
         @Param("sites") @Nullable Collection<String> sites);
@@ -53,6 +53,33 @@ public interface DashboardRepository extends GenericRepository<Ticket, UUID> {
         "and (((cast(:startTime as date) is null ) AND (cast(:endTime as date) is null )) OR (t.checkInTime BETWEEN :startTime AND :endTime )) " +
         "AND ((COALESCE(:sites) IS NULL) OR (t.ticketEntity.siteId IN :sites)) ")
     Integer countTotalVisits(
+        @Param("startTime") LocalDateTime startTime,
+        @Param("endTime") LocalDateTime endTime,
+        @Param("status") @Nullable Collection<Constants.StatusTicket> status,
+        @Param("sites") @Nullable Collection<String> sites);
+
+    @Query("SELECT TO_CHAR(t.startTime, 'YYYY-MM-DD') as day, t.status, COUNT(t) " +
+        "FROM Ticket t WHERE " +
+        "((COALESCE(:status) IS NULL) OR (t.status IN :status)) " +
+        "AND ((cast(:startTime as date) is null ) OR (t.startTime BETWEEN :startTime AND :endTime )) " +
+        "AND ((cast(:endTime as date) is null ) OR (t.endTime BETWEEN :startTime AND :endTime)) " +
+        "AND ((COALESCE(:sites) IS NULL) OR (t.siteId IN :sites)) " +
+        "GROUP BY day, t.status " +
+        "ORDER BY day, t.status")
+    List<Object[]> countTicketsByStatusWithStackedColumn(
+        @Param("startTime") LocalDateTime startTime,
+        @Param("endTime") LocalDateTime endTime,
+        @Param("status") @Nullable Collection<Constants.StatusTicket> status,
+        @Param("sites") @Nullable Collection<String> sites);
+
+    @Query("SELECT TO_CHAR(t.checkInTime, 'YYYY-MM-DD') as day, t.status, COUNT(t) " +
+        "FROM CustomerTicketMap t WHERE " +
+        "((COALESCE(:status) IS NULL) OR (t.status IN :status)) " +
+        "and (((cast(:startTime as date) is null ) AND (cast(:endTime as date) is null )) OR (t.checkInTime BETWEEN :startTime AND :endTime )) " +
+        "AND ((COALESCE(:sites) IS NULL) OR (t.ticketEntity.siteId IN :sites)) " +
+        "GROUP BY day, t.status " +
+        "ORDER BY day, t.status")
+    List<Object[]> countVisitsByStatusWithStackedColumn(
         @Param("startTime") LocalDateTime startTime,
         @Param("endTime") LocalDateTime endTime,
         @Param("status") @Nullable Collection<Constants.StatusTicket> status,

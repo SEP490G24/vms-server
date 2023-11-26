@@ -22,21 +22,29 @@ import java.util.List;
 @PreAuthorize("isAuthenticated()")
 public interface IDashboardController {
 
-    @PostMapping("/purpose/pie")
+    @PostMapping("/ticket/purpose/pie")
     @Operation(summary = "Statistics of meetings by purpose with pie")
     ResponseEntity<?> countTicketsByPurposeWithPie(@RequestBody DashboardDTO dashboardDTO);
 
-    @PostMapping("/purpose/multi-line")
+    @PostMapping("/ticket/purpose/multi-line")
     @Operation(summary = "Statistics of meetings by purpose with multi line")
     ResponseEntity<?> countTicketsByPurposeByWithMultiLine(@RequestBody DashboardDTO dashboardDTO);
 
-    @PostMapping("/ticket")
+    @PostMapping("/ticket/status")
     @Operation(summary = "Statistics number of ticket by status")
     ResponseEntity<?> countTicketsByStatus(@RequestBody DashboardDTO dashboardDTO);
 
-    @PostMapping("/visits")
+    @PostMapping("/ticket/status/stacked-column")
+    @Operation(summary = "Statistics number of ticket by status with stacked column")
+    ResponseEntity<?> countTicketsByStatusWithStackedColumn(@RequestBody DashboardDTO dashboardDTO);
+
+    @PostMapping("/visits/status")
     @Operation(summary = "Statistics number of visits to the building")
     ResponseEntity<?> countVisitsByStatus(@RequestBody DashboardDTO dashboardDTO);
+
+    @PostMapping("/visits/status/stacked-column")
+    @Operation(summary = "Statistics number of visits by status with stacked column")
+    ResponseEntity<?> countVisitsByStatusWithStackedColumn(@RequestBody DashboardDTO dashboardDTO);
 
 
     @Data
