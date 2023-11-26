@@ -732,9 +732,6 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     @Transactional
     public ITicketController.TicketByQRCodeResponseDTO checkInCustomer(ITicketController.CheckInPayload checkInPayload) {
         CustomerTicketMap customerTicketMap = customerTicketMapRepository.findByCheckInCodeIgnoreCase(checkInPayload.getCheckInCode());
-        customerTicketMap.setReasonId(checkInPayload.getReasonId());
-        customerTicketMap.setReasonNote(checkInPayload.getReasonNote());
-        customerTicketMap.setCheckInTime(LocalDateTime.now());
         if (checkInPayload.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
             if (customerTicketMap.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is checked in");
@@ -766,6 +763,16 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                 }
             }
             customerTicketMap.setStatus(checkInPayload.getStatus());
+        } else if (checkInPayload.getStatus().equals(Constants.StatusTicket.REJECT)) {
+            if (customerTicketMap.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is checked in");
+            }
+            if (customerTicketMap.isCheckOut()) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is checked out");
+            }
+            customerTicketMap.setReasonId(checkInPayload.getReasonId());
+            customerTicketMap.setReasonNote(checkInPayload.getReasonNote());
+            customerTicketMap.setCheckInTime(LocalDateTime.now());
         }
         customerTicketMap.setStatus(checkInPayload.getStatus());
         customerTicketMapRepository.save(customerTicketMap);
