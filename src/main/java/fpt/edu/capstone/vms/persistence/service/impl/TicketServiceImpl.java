@@ -734,6 +734,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         CustomerTicketMap customerTicketMap = customerTicketMapRepository.findByCheckInCodeIgnoreCase(checkInPayload.getCheckInCode());
         customerTicketMap.setReasonId(checkInPayload.getReasonId());
         customerTicketMap.setReasonNote(checkInPayload.getReasonNote());
+        customerTicketMap.setCheckInTime(LocalDateTime.now());
         if (checkInPayload.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
             if (customerTicketMap.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is checked in");
@@ -760,7 +761,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                     if (ticket.getStartTime().isBefore(LocalDateTime.now())) {
                         throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Ticket is not started, You can not check out with this ticket");
                     }
-                    ticket.setStatus(Constants.StatusTicket.DONE);
+                    ticket.setStatus(Constants.StatusTicket.COMPLETE);
                     ticketRepository.save(ticket);
                 }
             }
@@ -839,11 +840,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         , String lastUpdatedBy
         , Boolean bookmark
         , String keyword) {
-        List<Sort.Order> sortColum = new ArrayList<>(PageableUtils.converterSort2List(pageable.getSort()));
-        sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.lastUpdatedOn));
-        sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.createdOn));
-        Pageable pageableSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(sortColum));
-        Page<CustomerTicketMap> customerTicketMaps = customerTicketMapRepository.filter(pageableSort, sites, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd
+        Page<CustomerTicketMap> customerTicketMaps = customerTicketMapRepository.filter(pageable, sites, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd
             , roomId
             , status
             , purpose
