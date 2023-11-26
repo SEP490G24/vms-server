@@ -72,7 +72,7 @@ public interface ITicketController {
     ResponseEntity<?> updateMeeting(@RequestBody @Valid UpdateTicketInfo updateTicketInfo);
 
     @PostMapping("/filter")
-    @Operation(summary = "Filter ticket in site for admin")
+    @Operation(summary = "Filter all ticket in site for admin")
     ResponseEntity<?> filterAllBySites(@RequestBody @Valid TicketFilter ticketFilterSite, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
     @GetMapping("/check-in/{checkInCode}")
@@ -89,9 +89,9 @@ public interface ITicketController {
     ResponseEntity<?> checkIn(@RequestBody @Valid CheckInPayload checkInPayload);
 
     @GetMapping("/{ticketId}")
-    @Operation(summary = "Find ticket by id for user")
+    @Operation(summary = "View Detail ticket by id")
     @PreAuthorize("hasRole('r:ticket:viewTicketDetail')")
-    ResponseEntity<?> findByIdForUser(@PathVariable UUID ticketId, @RequestParam(value = "siteId", required = false) String siteId);
+    ResponseEntity<?> viewDetailTicket(@PathVariable UUID ticketId, @RequestParam(value = "siteId", required = false) String siteId);
 
     @PostMapping("/check-in/filter")
     @Operation(summary = "Filter ticket and customer ")

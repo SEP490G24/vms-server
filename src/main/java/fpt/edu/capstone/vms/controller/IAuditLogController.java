@@ -71,11 +71,8 @@ public interface IAuditLogController {
     class AuditLogFilter {
         private List<String> siteId;
         private List<String> organizationId;
-        private String primaryKey;
         private String tableName;
         private Constants.AuditType auditType;
-        private String oldValue;
-        private String newValue;
         private String createBy;
         private LocalDateTime createdOnStart;
         private LocalDateTime createdOnEnd;

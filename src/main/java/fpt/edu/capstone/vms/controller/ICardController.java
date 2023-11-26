@@ -25,6 +25,10 @@ public interface ICardController {
     @Operation(summary = "Create new card")
     ResponseEntity<?> checkCard(@RequestBody @Valid CardCheckDTO cardDto);
 
+    @PostMapping("/scan")
+    @Operation(summary = "Scan card")
+    ResponseEntity<?> scanCard(@RequestBody @Valid CardCheckDTO cardDto);
+
     @Data
     @Builder
     @AllArgsConstructor

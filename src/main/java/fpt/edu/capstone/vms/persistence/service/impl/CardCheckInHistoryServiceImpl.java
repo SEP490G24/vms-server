@@ -93,8 +93,8 @@ public class CardCheckInHistoryServiceImpl extends GenericServiceImpl<CardCheckI
                 }
             }
             if (ticket != null) {
-                if (ticket.getRoom().getMacIp() != null) {
-                    if (cardCheckDTO.getMacIp() != null && !cardCheckDTO.getMacIp().equals(ticket.getRoom().getMacIp())) {
+                if (ticket.getRoom() != null && ticket.getRoom().getDevice() != null) {
+                    if (cardCheckDTO.getMacIp() != null && !cardCheckDTO.getMacIp().equals(ticket.getRoom().getDevice().getMacIp())) {
                         return false;
                     }
                 }

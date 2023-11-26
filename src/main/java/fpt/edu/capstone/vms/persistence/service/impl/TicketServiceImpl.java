@@ -4,11 +4,33 @@ import com.google.zxing.WriterException;
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ICustomerController;
 import fpt.edu.capstone.vms.controller.ITicketController;
-import fpt.edu.capstone.vms.persistence.entity.*;
-import fpt.edu.capstone.vms.persistence.repository.*;
+import fpt.edu.capstone.vms.persistence.entity.AuditLog;
+import fpt.edu.capstone.vms.persistence.entity.Customer;
+import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMap;
+import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMapPk;
+import fpt.edu.capstone.vms.persistence.entity.Reason;
+import fpt.edu.capstone.vms.persistence.entity.Room;
+import fpt.edu.capstone.vms.persistence.entity.Site;
+import fpt.edu.capstone.vms.persistence.entity.Template;
+import fpt.edu.capstone.vms.persistence.entity.Ticket;
+import fpt.edu.capstone.vms.persistence.entity.User;
+import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
+import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
+import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
+import fpt.edu.capstone.vms.persistence.repository.ReasonRepository;
+import fpt.edu.capstone.vms.persistence.repository.RoomRepository;
+import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
+import fpt.edu.capstone.vms.persistence.repository.TemplateRepository;
+import fpt.edu.capstone.vms.persistence.repository.TicketRepository;
+import fpt.edu.capstone.vms.persistence.repository.UserRepository;
 import fpt.edu.capstone.vms.persistence.service.ITicketService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
-import fpt.edu.capstone.vms.util.*;
+import fpt.edu.capstone.vms.util.EmailUtils;
+import fpt.edu.capstone.vms.util.PageableUtils;
+import fpt.edu.capstone.vms.util.QRcodeUtils;
+import fpt.edu.capstone.vms.util.SecurityUtils;
+import fpt.edu.capstone.vms.util.SettingUtils;
+import fpt.edu.capstone.vms.util.Utils;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +55,13 @@ import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -704,15 +732,22 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     @Transactional
     public ITicketController.TicketByQRCodeResponseDTO checkInCustomer(ITicketController.CheckInPayload checkInPayload) {
         CustomerTicketMap customerTicketMap = customerTicketMapRepository.findByCheckInCodeIgnoreCase(checkInPayload.getCheckInCode());
-        customerTicketMap.setStatus(checkInPayload.getStatus());
-        customerTicketMap.setReasonId(checkInPayload.getReasonId());
-        customerTicketMap.setReasonNote(checkInPayload.getReasonNote());
-        customerTicketMap.setCheckInTime(LocalDateTime.now());
         if (checkInPayload.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
+            if (customerTicketMap.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is checked in");
+            }
+            if (customerTicketMap.isCheckOut()) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is checked out");
+            }
             if (customerTicketMap.getTicketEntity().getEndTime().isBefore(LocalDateTime.now())) {
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Ticket is expired, You can not check in with this ticket");
             }
+            customerTicketMap.setStatus(checkInPayload.getStatus());
+            customerTicketMap.setCheckInTime(LocalDateTime.now());
         } else if (checkInPayload.getStatus().equals(Constants.StatusTicket.CHECK_OUT)) {
+            if (!customerTicketMap.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is not check in yet or checked out");
+            }
             customerTicketMap.setCheckOutTime(LocalDateTime.now());
             customerTicketMap.setCheckOut(true);
             customerTicketMap.setCardId(null);
@@ -727,7 +762,19 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                     ticketRepository.save(ticket);
                 }
             }
+            customerTicketMap.setStatus(checkInPayload.getStatus());
+        } else if (checkInPayload.getStatus().equals(Constants.StatusTicket.REJECT)) {
+            if (customerTicketMap.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is checked in");
+            }
+            if (customerTicketMap.isCheckOut()) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is checked out");
+            }
+            customerTicketMap.setReasonId(checkInPayload.getReasonId());
+            customerTicketMap.setReasonNote(checkInPayload.getReasonNote());
+            customerTicketMap.setCheckInTime(LocalDateTime.now());
         }
+        customerTicketMap.setStatus(checkInPayload.getStatus());
         customerTicketMapRepository.save(customerTicketMap);
         Ticket ticket = ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId()).orElse(null);
 
@@ -1033,13 +1080,5 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         }
 
         return checkInCodeBuilder.toString();
-    }
-
-    private void setCustomer(ITicketController.TicketFilterDTO ticketFilterDTO) {
-        List<ICustomerController.CustomerInfo> customerInfos = new ArrayList<>();
-        customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(ticketFilterDTO.getId()).forEach(a -> {
-            customerInfos.add(mapper.map(customerRepository.findById(a.getCustomerTicketMapPk().getCustomerId()).orElse(null), ICustomerController.CustomerInfo.class));
-        });
-        ticketFilterDTO.setCustomers(customerInfos);
     }
 }

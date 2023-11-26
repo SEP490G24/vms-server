@@ -1,5 +1,6 @@
 package fpt.edu.capstone.vms.persistence.service.sse.checkIn;
 
+import fpt.edu.capstone.vms.controller.ICardController;
 import fpt.edu.capstone.vms.controller.ITicketController;
 import fpt.edu.capstone.vms.util.JacksonUtils;
 import lombok.extern.log4j.Log4j2;
@@ -15,6 +16,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Log4j2
 public class SseCheckInEmitterManager {
     public static final String CHECK_IN_EVENT = "CHECK_IN_EVENT";
+    public static final String SCAN_CARD_EVENT = "SCAN_CARD_EVENT";
+
     private final Map<SseCheckInSession, SseEmitter> emitterMap = new ConcurrentHashMap<>();
 
     public void addSubscribeEmitter(SseCheckInSession sseCheckInSession, SseEmitter emitter) {
@@ -45,5 +48,22 @@ public class SseCheckInEmitterManager {
     public void broadcast(String siteId, ITicketController.TicketByQRCodeResponseDTO ticket) {
         List<SseEmitter> emitters = emitterMap.entrySet().stream().filter((entry) -> entry.getKey().getSiteId().equals(siteId)).map(Map.Entry::getValue).toList();
         emitters.forEach(sseEmitter -> sendSseToClient(sseEmitter, ticket));
+    }
+
+    public void sendSseToClient(SseEmitter sseEmitter, ICardController.CardCheckDTO cardCheckDTO) {
+        if (sseEmitter != null) {
+            try {
+                sseEmitter.send(SseEmitter.event()
+                    .data(JacksonUtils.toJson(cardCheckDTO))
+                    .name(SCAN_CARD_EVENT));
+            } catch (IOException e) {
+                log.error(e.getMessage(), e);
+            }
+        }
+    }
+
+    public void broadcast(String siteId, ICardController.CardCheckDTO cardCheckDTO) {
+        List<SseEmitter> emitters = emitterMap.entrySet().stream().filter((entry) -> entry.getKey().getSiteId().equals(siteId)).map(Map.Entry::getValue).toList();
+        emitters.forEach(sseEmitter -> sendSseToClient(sseEmitter, cardCheckDTO));
     }
 }
