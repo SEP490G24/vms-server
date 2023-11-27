@@ -20,5 +20,3 @@ services:
       - POSTGRES_PASSWORD=Password123
       - REDIS_HOST=localhost
       - REDIS_PORT=6379
-      - TZ=Asia/Ho_Chi_Minh
-      - WEBSITE_TIME_ZONE=Asia/Ho_Chi_Minh
