@@ -1451,6 +1451,7 @@ class TicketServiceImplTest {
         Site site = new Site();
         site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
         Ticket ticket = new Ticket();
+        ticket.setStartTime(LocalDateTime.now().minusHours(1));
         ticket.setEndTime(LocalDateTime.now().plusHours(1));
         ticket.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
         customerTicketMap.setTicketEntity(ticket);

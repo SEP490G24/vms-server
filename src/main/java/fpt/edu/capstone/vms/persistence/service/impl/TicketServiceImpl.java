@@ -742,8 +742,12 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             if (customerTicketMap.getTicketEntity().getEndTime().isBefore(LocalDateTime.now())) {
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Ticket is expired, You can not check in with this ticket");
             }
+            if (customerTicketMap.getTicketEntity().getStartTime().isAfter(LocalDateTime.now())) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Ticket is not started, You can not check in with this ticket");
+            }
             customerTicketMap.setStatus(checkInPayload.getStatus());
             customerTicketMap.setCheckInTime(LocalDateTime.now());
+            customerTicketMapRepository.save(customerTicketMap);
         } else if (checkInPayload.getStatus().equals(Constants.StatusTicket.CHECK_OUT)) {
             if (!customerTicketMap.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is not check in yet or checked out");
@@ -763,6 +767,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                 }
             }
             customerTicketMap.setStatus(checkInPayload.getStatus());
+            customerTicketMapRepository.save(customerTicketMap);
         } else if (checkInPayload.getStatus().equals(Constants.StatusTicket.REJECT)) {
             if (customerTicketMap.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is checked in");
@@ -770,12 +775,18 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             if (customerTicketMap.isCheckOut()) {
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is checked out");
             }
+            if (customerTicketMap.getTicketEntity().getEndTime().isBefore(LocalDateTime.now())) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Ticket is expired time, You can not reject with this ticket");
+            }
+            if (customerTicketMap.getTicketEntity().getStartTime().isAfter(LocalDateTime.now())) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Ticket is not started, You can not reject with this ticket");
+            }
             customerTicketMap.setReasonId(checkInPayload.getReasonId());
             customerTicketMap.setReasonNote(checkInPayload.getReasonNote());
             customerTicketMap.setCheckInTime(LocalDateTime.now());
+            customerTicketMap.setStatus(checkInPayload.getStatus());
+            customerTicketMapRepository.save(customerTicketMap);
         }
-        customerTicketMap.setStatus(checkInPayload.getStatus());
-        customerTicketMapRepository.save(customerTicketMap);
         Ticket ticket = ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId()).orElse(null);
 
         assert ticket != null;
