@@ -65,24 +65,33 @@ public class MultiLineResponse {
     private static List<MultiLineResponse> mergeCheckInAndCheckOut(List<MultiLineResponse> dailyCounts) {
         Map<String, Integer> mergedCounts = new HashMap<>();
 
+        // Tạo danh sách kết quả
+        List<MultiLineResponse> result = new ArrayList<>();
+
         for (MultiLineResponse record : dailyCounts) {
             String day = record.getTime();
             String status = record.getType();
+            int value = record.getValue();
 
             if (status.equals("CHECK_IN") || status.equals("CHECK_OUT")) {
                 // Gộp thành trạng thái APPROVE
-                mergedCounts.merge(day, record.getValue(), Integer::sum);
+                mergedCounts.merge(day, value, Integer::sum);
             } else {
-                // Giữ nguyên các trạng thái khác
-                mergedCounts.put(day, record.getValue());
+                // Giữ nguyên các trạng thái khác và thêm vào danh sách kết quả
+                result.add(new MultiLineResponse(day, status, value));
             }
         }
 
-        // Chuyển đổi Map thành List<MultiLineResponse>
-        return mergedCounts.entrySet().stream()
-            .map(entry -> new MultiLineResponse(entry.getKey(), "APPROVE", entry.getValue()))
-            .collect(Collectors.toList());
+        // Thêm các phần tử có status là "APPROVE"
+        for (Map.Entry<String, Integer> entry : mergedCounts.entrySet()) {
+            result.add(new MultiLineResponse(entry.getKey(), "APPROVE", entry.getValue()));
+        }
+
+        return result;
     }
+
+
+
 
     private static List<String> getAllMonthsInYear() {
         List<String> allMonths = new ArrayList<>();

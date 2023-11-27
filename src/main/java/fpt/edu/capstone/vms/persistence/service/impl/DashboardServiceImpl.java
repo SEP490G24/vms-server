@@ -3,6 +3,7 @@ package fpt.edu.capstone.vms.persistence.service.impl;
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.IDashboardController;
 import fpt.edu.capstone.vms.persistence.dto.dashboard.MultiLineResponse;
+import fpt.edu.capstone.vms.persistence.entity.Ticket;
 import fpt.edu.capstone.vms.persistence.repository.DashboardRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.service.IDashboardService;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.YearMonth;
+import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -211,6 +213,25 @@ public class DashboardServiceImpl implements IDashboardService {
             int currentMonth = currentYearMonth.getMonthValue();
             return MultiLineResponse.formatDataWithWeekInMonth(convertToMonthlyTicketStats(dashboardRepository.countTicketsByStatusWithStackedColumn(firstDayOfMonth, lastDayOfMonth, visitsStatus, SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSites()))), currentYear, currentMonth, visitsStatusStrings);
         }
+    }
+
+    @Override
+    public IDashboardController.TicketsPeriodResponse countTicketsPeriod(IDashboardController.DashboardDTO dashboardDTO) {
+
+        LocalDateTime currentTime = LocalDateTime.now();
+        LocalDateTime timeMinus1Hours = currentTime.minus(1, ChronoUnit.HOURS);
+        LocalDateTime timePlus1Hour = currentTime.plus(1, ChronoUnit.HOURS);
+        List<String> sites = SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSites());
+
+        List<Ticket> upcomingMeetings = dashboardRepository.getUpcomingMeetings(currentTime,timePlus1Hour,sites);
+        List<Ticket> ongoingMeetings = dashboardRepository.getOngoingMeetings(currentTime,sites);
+        List<Ticket> recentlyFinishedMeetings = dashboardRepository.getRecentlyFinishedMeetings(timeMinus1Hours,currentTime,sites);
+
+        return IDashboardController.TicketsPeriodResponse.builder()
+            .upcomingMeetings(upcomingMeetings)
+            .ongoingMeetings(ongoingMeetings)
+            .recentlyFinishedMeetings(recentlyFinishedMeetings)
+            .build();
     }
 
     private List<IDashboardController.PurposePieResponse> mapToPurposePieResponse(List<Object[]> result) {

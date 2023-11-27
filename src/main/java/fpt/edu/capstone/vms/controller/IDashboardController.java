@@ -1,6 +1,7 @@
 package fpt.edu.capstone.vms.controller;
 
 import fpt.edu.capstone.vms.constants.Constants;
+import fpt.edu.capstone.vms.persistence.entity.Ticket;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
@@ -46,11 +47,12 @@ public interface IDashboardController {
     @Operation(summary = "Statistics number of visits by status with stacked column")
     ResponseEntity<?> countVisitsByStatusWithStackedColumn(@RequestBody DashboardDTO dashboardDTO);
 
+    @PostMapping("/tickets/period")
+    @Operation(summary = "Statistics number of ticket in period")
+    ResponseEntity<?> countTicketsPeriod(@RequestBody DashboardDTO dashboardDTO);
 
     @Data
     class DashboardDTO {
-        private LocalDateTime fromTime;
-        private LocalDateTime toTime;
         private Integer year;
         private Integer month;
         private List<Constants.StatusTicket> status;
@@ -89,6 +91,16 @@ public interface IDashboardController {
         private int totalAcceptanceVisitsWithCondition;
         private int totalRejectVisits;
         private int totalRejectVisitsWithCondition;
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    class TicketsPeriodResponse {
+        private List<Ticket> upcomingMeetings;
+        private List<Ticket> ongoingMeetings;
+        private List<Ticket> recentlyFinishedMeetings;
     }
 
 }

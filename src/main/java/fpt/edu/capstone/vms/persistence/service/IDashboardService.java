@@ -17,4 +17,6 @@ public interface IDashboardService {
     List<MultiLineResponse> countTicketsByStatusWithStackedColumn(IDashboardController.DashboardDTO dashboardDTO);
 
     List<MultiLineResponse> countVisitsByStatusWithStackedColumn(IDashboardController.DashboardDTO dashboardDTO);
+
+    IDashboardController.TicketsPeriodResponse countTicketsPeriod(IDashboardController.DashboardDTO dashboardDTO);
 }

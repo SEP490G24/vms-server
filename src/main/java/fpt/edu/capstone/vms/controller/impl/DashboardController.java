@@ -44,4 +44,9 @@ public class DashboardController implements IDashboardController {
     public ResponseEntity<?> countVisitsByStatusWithStackedColumn(DashboardDTO dashboardDTO) {
         return ResponseEntity.ok(dashboardService.countVisitsByStatusWithStackedColumn(dashboardDTO));
     }
+
+    @Override
+    public ResponseEntity<?> countTicketsPeriod(DashboardDTO dashboardDTO) {
+        return ResponseEntity.ok(dashboardService.countTicketsPeriod(dashboardDTO));
+    }
 }

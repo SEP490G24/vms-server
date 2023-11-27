@@ -84,4 +84,32 @@ public interface DashboardRepository extends GenericRepository<Ticket, UUID> {
         @Param("endTime") LocalDateTime endTime,
         @Param("status") @Nullable Collection<Constants.StatusTicket> status,
         @Param("sites") @Nullable Collection<String> sites);
+
+    @Query("SELECT t FROM Ticket t WHERE " +
+        " (t.startTime BETWEEN :startTime AND :endTime) " +
+        "AND ((COALESCE(:sites) IS NULL) OR (t.siteId IN :sites)) " +
+        "ORDER BY t.startTime DESC")
+    List<Ticket> getUpcomingMeetings(
+        @Param("startTime") LocalDateTime startTime,
+        @Param("endTime") LocalDateTime endTime,
+        @Param("sites") @Nullable Collection<String> sites);
+
+
+    @Query("SELECT t FROM Ticket t WHERE " +
+        "(cast(:currentTime as date) BETWEEN t.startTime AND t.endTime) " +
+        "AND ((COALESCE(:sites) IS NULL) OR (t.siteId IN :sites)) " +
+        "ORDER BY t.startTime DESC")
+    List<Ticket> getOngoingMeetings(
+        @Param("currentTime") LocalDateTime currentTime,
+        @Param("sites") @Nullable Collection<String> sites);
+
+
+    @Query("SELECT t FROM Ticket t WHERE " +
+        " (t.endTime BETWEEN :startTime AND :endTime) " +
+        "AND ((COALESCE(:sites) IS NULL) OR (t.siteId IN :sites)) ")
+    List<Ticket> getRecentlyFinishedMeetings(
+        @Param("startTime") LocalDateTime startTime,
+        @Param("endTime") LocalDateTime endTime,
+        @Param("sites") @Nullable Collection<String> sites);
+
 }
