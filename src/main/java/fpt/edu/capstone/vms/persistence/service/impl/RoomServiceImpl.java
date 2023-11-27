@@ -5,6 +5,7 @@ import fpt.edu.capstone.vms.controller.IRoomController;
 import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.entity.Room;
 import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
+import fpt.edu.capstone.vms.persistence.repository.DeviceRepository;
 import fpt.edu.capstone.vms.persistence.repository.RoomRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.service.IRoomService;
@@ -36,13 +37,15 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
     private static final String ROOM_TABLE_NAME = "Room";
     private final AuditLogRepository auditLogRepository;
     private final SiteRepository siteRepository;
+    private final DeviceRepository deviceRepository;
 
 
-    public RoomServiceImpl(RoomRepository roomRepository, ModelMapper mapper, AuditLogRepository auditLogRepository, SiteRepository siteRepository) {
+    public RoomServiceImpl(RoomRepository roomRepository, ModelMapper mapper, AuditLogRepository auditLogRepository, SiteRepository siteRepository, DeviceRepository deviceRepository) {
         this.roomRepository = roomRepository;
         this.mapper = mapper;
         this.auditLogRepository = auditLogRepository;
         this.siteRepository = siteRepository;
+        this.deviceRepository = deviceRepository;
         this.init(roomRepository);
     }
 
@@ -59,8 +62,17 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
         if (!SecurityUtils.checkSiteAuthorization(siteRepository, room.getSiteId().toString())) {
             throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
         }
-        if (roomRepository.existsBySiteIdAndMacIp(room.getSiteId(), roomInfo.getMacIp())) {
-            throw new HttpClientErrorException(HttpStatus.CONFLICT, "MacIp is exists");
+        if (roomInfo.getDeviceId() != null) {
+            var device = deviceRepository.findById(roomInfo.getDeviceId()).orElse(null);
+            if (ObjectUtils.isEmpty(device)) {
+                throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Device is null");
+            }
+            if (!SecurityUtils.checkSiteAuthorization(siteRepository, device.getSiteId().toString())) {
+                throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+            }
+            if (device.getDeviceType().equals(Constants.DeviceType.SCAN_CARD)) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Device type is scan card");
+            }
         }
         var updateRoom = roomRepository.save(room.update(roomInfo));
         auditLogRepository.save(new AuditLog(room.getSiteId().toString()
@@ -87,8 +99,17 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
         if (!SecurityUtils.checkSiteAuthorization(siteRepository, roomDto.getSiteId().toString())) {
             throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
         }
-        if (roomRepository.existsBySiteIdAndMacIp(roomDto.getSiteId(), roomDto.getMacIp())) {
-            throw new HttpClientErrorException(HttpStatus.CONFLICT, "MacIp is exists");
+        if (roomDto.getDeviceId() != null) {
+            var device = deviceRepository.findById(roomDto.getDeviceId()).orElse(null);
+            if (ObjectUtils.isEmpty(device)) {
+                throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Device is null");
+            }
+            if (!SecurityUtils.checkSiteAuthorization(siteRepository, device.getSiteId().toString())) {
+                throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+            }
+            if (device.getDeviceType().equals(Constants.DeviceType.SCAN_CARD)) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Device type is scan card");
+            }
         }
         var room = mapper.map(roomDto, Room.class);
         room.setEnable(true);

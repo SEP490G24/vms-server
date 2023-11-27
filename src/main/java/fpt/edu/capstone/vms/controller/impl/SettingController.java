@@ -6,7 +6,6 @@ import fpt.edu.capstone.vms.persistence.entity.Setting;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.service.ISettingService;
 import fpt.edu.capstone.vms.util.SecurityUtils;
-import fpt.edu.capstone.vms.util.SmsUtils;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -102,11 +101,4 @@ public class SettingController implements ISettingController {
             return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
         }
     }
-
-    @Override
-    public ResponseEntity<?> sendSMS() {
-        return ResponseEntity.ok(SmsUtils.sendSms("test", "+84357531557"));
-    }
-
-
 }

@@ -6,6 +6,7 @@ import fpt.edu.capstone.vms.exception.HttpClientResponse;
 import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMap;
 import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
 import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
+import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.service.ICardCheckInHistoryService;
 import fpt.edu.capstone.vms.persistence.service.ITicketService;
 import fpt.edu.capstone.vms.persistence.service.sse.checkIn.SseCheckInEmitterManager;
@@ -19,6 +20,7 @@ import org.modelmapper.TypeToken;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
@@ -36,14 +38,16 @@ public class TicketController implements ITicketController {
     private final CustomerTicketMapRepository customerTicketMapRepository;
     private final CustomerRepository customerRepository;
     private final ICardCheckInHistoryService cardCheckInHistoryService;
+    private final SiteRepository siteRepository;
     private final ModelMapper mapper;
 
-    public TicketController(ITicketService ticketService, SseCheckInEmitterManager sseCheckInEmitterManager, CustomerTicketMapRepository customerTicketMapRepository, CustomerRepository customerRepository, ICardCheckInHistoryService cardCheckInHistoryService, ModelMapper mapper) {
+    public TicketController(ITicketService ticketService, SseCheckInEmitterManager sseCheckInEmitterManager, CustomerTicketMapRepository customerTicketMapRepository, CustomerRepository customerRepository, ICardCheckInHistoryService cardCheckInHistoryService, SiteRepository siteRepository, ModelMapper mapper) {
         this.ticketService = ticketService;
         this.sseCheckInEmitterManager = sseCheckInEmitterManager;
         this.customerTicketMapRepository = customerTicketMapRepository;
         this.customerRepository = customerRepository;
         this.cardCheckInHistoryService = cardCheckInHistoryService;
+        this.siteRepository = siteRepository;
         this.mapper = mapper;
     }
 
@@ -200,7 +204,11 @@ public class TicketController implements ITicketController {
 
     @Override
     public SseEmitter subscribeCheckIn(String siteId) {
-        if (!SecurityUtils.getUserDetails().isOrganizationAdmin()) {
+        if (SecurityUtils.getOrgId() != null) {
+            if (SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
+                throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to access this site");
+            }
+        } else {
             siteId = SecurityUtils.getSiteId();
         }
         var key = SseCheckInSession.builder()
@@ -299,7 +307,7 @@ public class TicketController implements ITicketController {
     }
 
     @Override
-    public ResponseEntity<?> findByIdForUser(UUID ticketId, String siteId) {
+    public ResponseEntity<?> viewDetailTicket(UUID ticketId, String siteId) {
         try {
             if (SecurityUtils.getUserDetails().isOrganizationAdmin() || SecurityUtils.getUserDetails().isSiteAdmin()) {
                 TicketFilterDTO ticketFilterDTO = ticketService.findByTicketForAdmin(ticketId, siteId);

@@ -21,7 +21,32 @@ public class DashboardController implements IDashboardController {
     }
 
     @Override
-    public ResponseEntity<?> countTicketsByPurposeByWithMultiLine(DashboardDTO dashboardDTO, String limit) {
-        return ResponseEntity.ok(dashboardService.countTicketsByPurposeByWithMultiLine(dashboardDTO, limit));
+    public ResponseEntity<?> countTicketsByPurposeByWithMultiLine(DashboardDTO dashboardDTO) {
+        return ResponseEntity.ok(dashboardService.countTicketsByPurposeByWithMultiLine(dashboardDTO));
+    }
+
+    @Override
+    public ResponseEntity<?> countTicketsByStatus(DashboardDTO dashboardDTO) {
+        return ResponseEntity.ok(dashboardService.countTicketsByStatus(dashboardDTO));
+    }
+
+    @Override
+    public ResponseEntity<?> countTicketsByStatusWithStackedColumn(DashboardDTO dashboardDTO) {
+        return ResponseEntity.ok(dashboardService.countTicketsByStatusWithStackedColumn(dashboardDTO));
+    }
+
+    @Override
+    public ResponseEntity<?> countVisitsByStatus(DashboardDTO dashboardDTO) {
+        return ResponseEntity.ok(dashboardService.countVisitsByStatus(dashboardDTO));
+    }
+
+    @Override
+    public ResponseEntity<?> countVisitsByStatusWithStackedColumn(DashboardDTO dashboardDTO) {
+        return ResponseEntity.ok(dashboardService.countVisitsByStatusWithStackedColumn(dashboardDTO));
+    }
+
+    @Override
+    public ResponseEntity<?> countTicketsPeriod(DashboardDTO dashboardDTO) {
+        return ResponseEntity.ok(dashboardService.countTicketsPeriod(dashboardDTO));
     }
 }

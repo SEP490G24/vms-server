@@ -12,15 +12,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -36,7 +28,7 @@ public interface IRoomController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Find by id")
-    @PreAuthorize("hasRole('r:room:find')")
+    @PreAuthorize("hasRole('r:room:detail')")
     ResponseEntity<?> findById(@PathVariable UUID id);
 
     @DeleteMapping("/{id}")
@@ -46,7 +38,7 @@ public interface IRoomController {
 
     @GetMapping
     @Operation(summary = "Get all")
-    @PreAuthorize("hasRole('r:room:find')")
+    @PreAuthorize("hasRole('r:room:filter')")
     ResponseEntity<List<?>> findAll();
 
     @PostMapping()
@@ -61,12 +53,12 @@ public interface IRoomController {
 
     @PostMapping("/filter")
     @Operation(summary = "Filter")
-    @PreAuthorize("hasRole('r:room:find')")
+    @PreAuthorize("hasRole('r:room:filter')")
     ResponseEntity<?> filter(@RequestBody @Valid RoomFilterDTO roomFilterDTO, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
     @GetMapping("/site/{siteId}")
     @Operation(summary = "Get all room by siteId")
-    @PreAuthorize("hasRole('r:room:find')")
+    @PreAuthorize("hasRole('r:room:filter')")
     ResponseEntity<List<?>> findAllBySiteId(@PathVariable String siteId);
 
     @Data
@@ -78,7 +70,7 @@ public interface IRoomController {
         private String code;
         @NotNull
         private String name;
-        private String macIp;
+        private Integer deviceId;
         @NotNull
         private boolean isSecurity;
         private String description;
@@ -96,7 +88,7 @@ public interface IRoomController {
     class UpdateRoomDto {
         private String code;
         private String name;
-        private String macIp;
+        private Integer deviceId;
         private String description;
         private Boolean enable;
     }

@@ -19,16 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.time.LocalDateTime;
@@ -45,11 +36,12 @@ public interface ITicketController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete ticket")
+    @PreAuthorize("hasRole('r:ticket:delete')")
     ResponseEntity<?> delete(@PathVariable String id);
 
     @GetMapping
     @Operation(summary = "Get all ticket")
-    @PreAuthorize("hasRole('r:ticket:find')")
+    @PreAuthorize("hasRole('r:ticket:filter')")
     ResponseEntity<List<?>> findAll();
 
     @PostMapping()
@@ -72,7 +64,8 @@ public interface ITicketController {
     ResponseEntity<?> updateMeeting(@RequestBody @Valid UpdateTicketInfo updateTicketInfo);
 
     @PostMapping("/filter")
-    @Operation(summary = "Filter ticket in site for admin")
+    @Operation(summary = "Filter all ticket in site for admin")
+    @PreAuthorize("hasRole('r:ticket:filter')")
     ResponseEntity<?> filterAllBySites(@RequestBody @Valid TicketFilter ticketFilterSite, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
     @GetMapping("/check-in/{checkInCode}")
@@ -89,9 +82,9 @@ public interface ITicketController {
     ResponseEntity<?> checkIn(@RequestBody @Valid CheckInPayload checkInPayload);
 
     @GetMapping("/{ticketId}")
-    @Operation(summary = "Find ticket by id for user")
-    @PreAuthorize("hasRole('r:ticket:viewTicketDetail')")
-    ResponseEntity<?> findByIdForUser(@PathVariable UUID ticketId, @RequestParam(value = "siteId", required = false) String siteId);
+    @Operation(summary = "View Detail ticket by id")
+    @PreAuthorize("hasRole('r:ticket:detail')")
+    ResponseEntity<?> viewDetailTicket(@PathVariable UUID ticketId, @RequestParam(value = "siteId", required = false) String siteId);
 
     @PostMapping("/check-in/filter")
     @Operation(summary = "Filter ticket and customer ")

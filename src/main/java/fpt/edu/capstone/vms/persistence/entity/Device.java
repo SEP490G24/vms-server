@@ -1,13 +1,13 @@
 package fpt.edu.capstone.vms.persistence.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import fpt.edu.capstone.vms.constants.Constants;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,20 +23,20 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-@Table(schema = "vms", name = "room_site")
+@Table(schema = "vms", name = "device")
 @Builder
 @EqualsAndHashCode(callSuper = true)
-public class Room extends AbstractBaseEntity<UUID> {
+public class Device extends AbstractBaseEntity<Integer> {
 
+    @Column(name = "id")
     @Id
-    @Column(name = "id", length = 64)
     @GeneratedValue
-    private UUID id;
+    private Integer id;
 
     @Column(name = "name")
     private String name;
 
-    @Column(name = "code", unique = true, updatable = false, nullable = false)
+    @Column(name = "code")
     private String code;
 
     @Column(name = "description")
@@ -48,38 +48,48 @@ public class Room extends AbstractBaseEntity<UUID> {
     @Column(name = "site_id")
     private UUID siteId;
 
+    @Column(name = "mac_ip", unique = true)
+    private String macIp;
+
+    @Column(name = "device_type")
+    private Constants.DeviceType deviceType;
+
     @ManyToOne
     @JoinColumn(name = "site_id", referencedColumnName = "id", insertable = false, updatable = false)
     @JsonIgnore
     private Site site;
 
-    @Column(name = "device_id")
-    private Integer deviceId;
-
-    @OneToOne
-    @JoinColumn(name = "device_id", referencedColumnName = "id", insertable = false, updatable = false)
-    private Device device;
-
-    @Column(name = "is_security")
-    private boolean isSecurity;
 
     @Override
-    public UUID getId() {
-        return id;
-    }
-
-    @Override
-    public void setId(UUID id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
-    public Room update(Room room) {
-        if (room.name != null) this.name = room.name;
-        if (room.description != null) this.description = room.description;
-        if (room.enable != null) this.enable = room.enable;
-        if (room.deviceId != null) this.deviceId = room.deviceId;
-        if (room.getCreatedBy() != null) this.setCreatedBy(room.getCreatedBy());
-        if (room.getCreatedOn() != null) this.setCreatedOn(room.getCreatedOn());
+    @Override
+    public Integer getId() {
+        return id;
+    }
+
+    public Device update(Device device) {
+        if (device.getName() != null) {
+            this.name = device.getName();
+        }
+        if (device.getCode() != null) {
+            this.code = device.getCode();
+        }
+        if (device.getDescription() != null) {
+            this.description = device.getDescription();
+        }
+        if (device.getMacIp() != null) {
+            this.macIp = device.getMacIp();
+        }
+        if (device.getCreatedBy() != null) {
+            this.setCreatedBy(device.getCreatedBy());
+        }
+        if (device.getLastUpdatedBy() != null) {
+            this.setLastUpdatedBy(device.getLastUpdatedBy());
+        }
+
         return this;
     }
 }

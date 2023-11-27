@@ -1,148 +1,232 @@
 {
   "constraints" : null,
   "roles" : {
-    "r:organization:find" : {
-      "vi" : {
-        "name" : "find",
-        "feature" : "organization",
-        "description" : "r:organization:find"
+    "r:setting-group:filter": {
+      "vi": {
+        "name": "filter",
+        "feature": "setting-group",
+        "description": "r:setting-group:filter"
       },
-      "en" : {
-        "name" : "find",
-        "feature" : "organization",
-        "description" : "r:organization:find"
+      "en": {
+        "name": "filter",
+        "feature": "setting-group",
+        "description": "r:setting-group:filter"
+      }
+    },
+    "r:dashboard:view": {
+      "vi": {
+        "name": "view",
+        "feature": "dashboard",
+        "description": "r:dashboard:view"
+      },
+      "en": {
+        "name": "view",
+        "feature": "dashboard",
+        "description": "r:dashboard:view"
       }
     },
     "r:permission:find" : {
       "vi" : {
-        "name" : "find",
-        "feature" : "permission",
-        "description" : "r:permission:find"
+        "name": "find",
+        "feature": "permission",
+        "description": "r:permission:find"
       },
-      "en" : {
-        "name" : "find",
-        "feature" : "permission",
-        "description" : "r:permission:find"
+      "en": {
+        "name": "find",
+        "feature": "permission",
+        "description": "r:permission:find"
       }
     },
-    "r:file:upload" : {
-      "vi" : {
-        "name" : "upload",
-        "feature" : "file",
-        "description" : "r:file:upload"
+    "r:template:filter": {
+      "vi": {
+        "name": "filter",
+        "feature": "template",
+        "description": "r:template:filter"
       },
-      "en" : {
-        "name" : "upload",
-        "feature" : "file",
-        "description" : "r:file:upload"
+      "en": {
+        "name": "filter",
+        "feature": "template",
+        "description": "r:template:filter"
+      }
+    },
+    "r:organization:filter": {
+      "vi": {
+        "name": "filter",
+        "feature": "organization",
+        "description": "r:organization:filter"
+      },
+      "en": {
+        "name": "filter",
+        "feature": "organization",
+        "description": "r:organization:filter"
+      }
+    },
+    "r:setting-group:detail": {
+      "vi": {
+        "name": "detail",
+        "feature": "setting-group",
+        "description": "r:setting-group:detail"
+      },
+      "en": {
+        "name": "detail",
+        "feature": "setting-group",
+        "description": "r:setting-group:detail"
+      }
+    },
+    "r:file:upload": {
+      "vi": {
+        "name": "upload",
+        "feature": "file",
+        "description": "r:file:upload"
+      },
+      "en": {
+        "name": "upload",
+        "feature": "file",
+        "description": "r:file:upload"
       }
     },
     "r:user:export" : {
       "vi" : {
-        "name" : "export",
-        "feature" : "user",
-        "description" : "r:user:export"
+        "name": "export",
+        "feature": "user",
+        "description": "r:user:export"
       },
-      "en" : {
-        "name" : "export",
-        "feature" : "user",
-        "description" : "r:user:export"
+      "en": {
+        "name": "export",
+        "feature": "user",
+        "description": "r:user:export"
       }
     },
-    "r:room:create" : {
-      "vi" : {
-        "name" : "create",
-        "feature" : "room",
-        "description" : "r:room:create"
+    "r:department:create": {
+      "vi": {
+        "name": "create",
+        "feature": "department",
+        "description": "r:department:create"
       },
-      "en" : {
-        "name" : "create",
-        "feature" : "room",
-        "description" : "r:room:create"
+      "en": {
+        "name": "create",
+        "feature": "department",
+        "description": "r:department:create"
       }
     },
-    "r:department:create" : {
-      "vi" : {
-        "name" : "create",
-        "feature" : "department",
-        "description" : "r:department:create"
+    "r:room:create": {
+      "vi": {
+        "name": "create",
+        "feature": "room",
+        "description": "r:room:create"
       },
-      "en" : {
-        "name" : "create",
-        "feature" : "department",
-        "description" : "r:department:create"
+      "en": {
+        "name": "create",
+        "feature": "room",
+        "description": "r:room:create"
       }
     },
-    "r:card:delete" : {
-      "vi" : {
-        "name" : "delete",
-        "feature" : "card",
-        "description" : "r:card:delete"
+    "r:ticket:filter": {
+      "vi": {
+        "name": "filter",
+        "feature": "ticket",
+        "description": "r:ticket:filter"
       },
-      "en" : {
-        "name" : "delete",
-        "feature" : "card",
-        "description" : "r:card:delete"
+      "en": {
+        "name": "filter",
+        "feature": "ticket",
+        "description": "r:ticket:filter"
       }
     },
-    "r:customer:create" : {
-      "vi" : {
-        "name" : "create",
-        "feature" : "customer",
-        "description" : "r:customer:create"
+    "r:setting:detail": {
+      "vi": {
+        "name": "detail",
+        "feature": "setting",
+        "description": "r:setting:detail"
       },
-      "en" : {
-        "name" : "create",
-        "feature" : "customer",
-        "description" : "r:customer:create"
+      "en": {
+        "name": "detail",
+        "feature": "setting",
+        "description": "r:setting:detail"
       }
     },
-    "r:ticket:checkIn" : {
-      "vi" : {
-        "name" : "checkIn",
-        "feature" : "ticket",
-        "description" : "r:ticket:checkIn"
+    "r:setting-site:filter": {
+      "vi": {
+        "name": "filter",
+        "feature": "setting-site",
+        "description": "r:setting-site:filter"
       },
-      "en" : {
-        "name" : "checkIn",
-        "feature" : "ticket",
-        "description" : "r:ticket:checkIn"
+      "en": {
+        "name": "filter",
+        "feature": "setting-site",
+        "description": "r:setting-site:filter"
       }
     },
-    "r:ticket:viewTicketDetail" : {
-      "vi" : {
-        "name" : "viewTicketDetail",
-        "feature" : "ticket",
-        "description" : "r:ticket:viewTicketDetail"
+    "r:template:detail": {
+      "vi": {
+        "name": "detail",
+        "feature": "template",
+        "description": "r:template:detail"
       },
-      "en" : {
-        "name" : "viewTicketDetail",
-        "feature" : "ticket",
-        "description" : "r:ticket:viewTicketDetail"
+      "en": {
+        "name": "detail",
+        "feature": "template",
+        "description": "r:template:detail"
       }
     },
-    "r:reason:update" : {
-      "vi" : {
-        "name" : "update",
-        "feature" : "reason",
-        "description" : "r:reason:update"
+    "r:customer:create": {
+      "vi": {
+        "name": "create",
+        "feature": "customer",
+        "description": "r:customer:create"
       },
-      "en" : {
-        "name" : "update",
-        "feature" : "reason",
-        "description" : "r:reason:update"
+      "en": {
+        "name": "create",
+        "feature": "customer",
+        "description": "r:customer:create"
       }
     },
-    "r:setting:find" : {
-      "vi" : {
-        "name" : "find",
-        "feature" : "setting",
-        "description" : "r:setting:find"
+    "r:reason:update": {
+      "vi": {
+        "name": "update",
+        "feature": "reason",
+        "description": "r:reason:update"
       },
-      "en" : {
-        "name" : "find",
-        "feature" : "setting",
-        "description" : "r:setting:find"
+      "en": {
+        "name": "update",
+        "feature": "reason",
+        "description": "r:reason:update"
+      }
+    },
+    "r:ticket:checkIn": {
+      "vi": {
+        "name": "checkIn",
+        "feature": "ticket",
+        "description": "r:ticket:checkIn"
+      },
+      "en": {
+        "name": "checkIn",
+        "feature": "ticket",
+        "description": "r:ticket:checkIn"
+      }
+    },
+    "r:ticket:detail": {
+      "vi": {
+        "name": "detail",
+        "feature": "ticket",
+        "description": "r:ticket:detail"
+      },
+      "en": {
+        "name": "detail",
+        "feature": "ticket",
+        "description": "r:ticket:detail"
+      }
+    },
+    "r:setting:filter": {
+      "vi": {
+        "name": "filter",
+        "feature": "setting",
+        "description": "r:setting:filter"
+      },
+      "en": {
+        "name": "filter",
+        "feature": "setting",
+        "description": "r:setting:filter"
       }
     },
     "r:ticket:room" : {
@@ -157,30 +241,6 @@
         "description" : "r:ticket:room"
       }
     },
-    "r:template:find" : {
-      "vi" : {
-        "name" : "find",
-        "feature" : "template",
-        "description" : "r:template:find"
-      },
-      "en" : {
-        "name" : "find",
-        "feature" : "template",
-        "description" : "r:template:find"
-      }
-    },
-    "r:setting-site:find" : {
-      "vi" : {
-        "name" : "find",
-        "feature" : "setting-site",
-        "description" : "r:setting-site:find"
-      },
-      "en" : {
-        "name" : "find",
-        "feature" : "setting-site",
-        "description" : "r:setting-site:find"
-      }
-    },
     "r:reason:delete" : {
       "vi" : {
         "name" : "delete",
@@ -191,18 +251,6 @@
         "name" : "delete",
         "feature" : "reason",
         "description" : "r:reason:delete"
-      }
-    },
-    "r:permission:update" : {
-      "vi" : {
-        "name" : "update",
-        "feature" : "permission",
-        "description" : "r:permission:update"
-      },
-      "en" : {
-        "name" : "update",
-        "feature" : "permission",
-        "description" : "r:permission:update"
       }
     },
     "r:site:update" : {
@@ -238,55 +286,55 @@
       "en" : {
         "name" : "create",
         "feature" : "template",
-        "description" : "r:template:create"
+        "description": "r:template:create"
       }
     },
-    "r:site:find" : {
-      "vi" : {
-        "name" : "find",
-        "feature" : "site",
-        "description" : "r:site:find"
+    "r:customer:filter": {
+      "vi": {
+        "name": "filter",
+        "feature": "customer",
+        "description": "r:customer:filter"
       },
-      "en" : {
-        "name" : "find",
-        "feature" : "site",
-        "description" : "r:site:find"
+      "en": {
+        "name": "filter",
+        "feature": "customer",
+        "description": "r:customer:filter"
       }
     },
-    "r:access-history:detail" : {
-      "vi" : {
-        "name" : "detail",
+    "r:ticket:viewCardCheckInHistory": {
+      "vi": {
+        "name": "viewCardCheckInHistory",
+        "feature": "ticket",
+        "description": "r:ticket:viewCardCheckInHistory"
+      },
+      "en": {
+        "name": "viewCardCheckInHistory",
+        "feature": "ticket",
+        "description": "r:ticket:viewCardCheckInHistory"
+      }
+    },
+    "r:access-history:detail": {
+      "vi": {
+        "name": "detail",
+        "feature": "access-history",
+        "description": "r:access-history:detail"
+      },
+      "en": {
+        "name": "detail",
         "feature" : "access-history",
         "description" : "r:access-history:detail"
-      },
-      "en" : {
-        "name" : "detail",
-        "feature" : "access-history",
-        "description" : "r:access-history:detail"
       }
     },
-    "r:user:find" : {
-      "vi" : {
-        "name" : "find",
-        "feature" : "user",
-        "description" : "r:user:find"
+    "r:setting-site:detail": {
+      "vi": {
+        "name": "detail",
+        "feature": "setting-site",
+        "description": "r:setting-site:detail"
       },
-      "en" : {
-        "name" : "find",
-        "feature" : "user",
-        "description" : "r:user:find"
-      }
-    },
-    "r:setting-group:create" : {
-      "vi" : {
-        "name" : "create",
-        "feature" : "setting-group",
-        "description" : "r:setting-group:create"
-      },
-      "en" : {
-        "name" : "create",
-        "feature" : "setting-group",
-        "description" : "r:setting-group:create"
+      "en": {
+        "name": "detail",
+        "feature": "setting-site",
+        "description": "r:setting-site:detail"
       }
     },
     "r:role:delete" : {
@@ -301,136 +349,232 @@
         "description" : "r:role:delete"
       }
     },
-    "r:permission:create" : {
-      "vi" : {
-        "name" : "create",
-        "feature" : "permission",
-        "description" : "r:permission:create"
+    "r:setting-group:create": {
+      "vi": {
+        "name": "create",
+        "feature": "setting-group",
+        "description": "r:setting-group:create"
       },
-      "en" : {
-        "name" : "create",
-        "feature" : "permission",
-        "description" : "r:permission:create"
+      "en": {
+        "name": "create",
+        "feature": "setting-group",
+        "description": "r:setting-group:create"
       }
     },
-    "r:organization:delete" : {
-      "vi" : {
-        "name" : "delete",
-        "feature" : "organization",
-        "description" : "r:organization:delete"
+    "r:audit-log:filter": {
+      "vi": {
+        "name": "filter",
+        "feature": "audit-log",
+        "description": "r:audit-log:filter"
       },
-      "en" : {
-        "name" : "delete",
-        "feature" : "organization",
-        "description" : "r:organization:delete"
+      "en": {
+        "name": "filter",
+        "feature": "audit-log",
+        "description": "r:audit-log:filter"
       }
     },
-    "r:setting-group:update" : {
-      "vi" : {
-        "name" : "update",
+    "r:room:detail": {
+      "vi": {
+        "name": "detail",
+        "feature": "room",
+        "description": "r:room:detail"
+      },
+      "en": {
+        "name": "detail",
+        "feature": "room",
+        "description": "r:room:detail"
+      }
+    },
+    "r:template:update": {
+      "vi": {
+        "name": "update",
+        "feature": "template",
+        "description": "r:template:update"
+      },
+      "en": {
+        "name": "update",
+        "feature": "template",
+        "description": "r:template:update"
+      }
+    },
+    "r:reason:detail": {
+      "vi": {
+        "name": "detail",
+        "feature": "reason",
+        "description": "r:reason:detail"
+      },
+      "en": {
+        "name": "detail",
+        "feature": "reason",
+        "description": "r:reason:detail"
+      }
+    },
+    "r:department:filter": {
+      "vi": {
+        "name": "filter",
+        "feature": "department",
+        "description": "r:department:filter"
+      },
+      "en": {
+        "name": "filter",
+        "feature": "department",
+        "description": "r:department:filter"
+      }
+    },
+    "r:audit-log:delete": {
+      "vi": {
+        "name": "delete",
+        "feature": "audit-log",
+        "description": "r:audit-log:delete"
+      },
+      "en": {
+        "name": "delete",
+        "feature": "audit-log",
+        "description": "r:audit-log:delete"
+      }
+    },
+    "r:device:create": {
+      "vi": {
+        "name": "create",
+        "feature": "device",
+        "description": "r:device:create"
+      },
+      "en": {
+        "name": "create",
+        "feature": "device",
+        "description": "r:device:create"
+      }
+    },
+    "r:setting-group:update": {
+      "vi": {
+        "name": "update",
+        "feature": "setting-group",
+        "description": "r:setting-group:update"
+      },
+      "en": {
+        "name": "update",
         "feature" : "setting-group",
         "description" : "r:setting-group:update"
-      },
-      "en" : {
-        "name" : "update",
-        "feature" : "setting-group",
-        "description" : "r:setting-group:update"
       }
     },
-    "r:department:find" : {
-      "vi" : {
-        "name" : "find",
-        "feature" : "department",
-        "description" : "r:department:find"
+    "r:site:detail": {
+      "vi": {
+        "name": "detail",
+        "feature": "site",
+        "description": "r:site:detail"
       },
-      "en" : {
-        "name" : "find",
-        "feature" : "department",
-        "description" : "r:department:find"
-      }
-    },
-    "r:room:find" : {
-      "vi" : {
-        "name" : "find",
-        "feature" : "room",
-        "description" : "r:room:find"
-      },
-      "en" : {
-        "name" : "find",
-        "feature" : "room",
-        "description" : "r:room:find"
+      "en": {
+        "name": "detail",
+        "feature": "site",
+        "description": "r:site:detail"
       }
     },
     "r:room:update" : {
       "vi" : {
-        "name" : "update",
-        "feature" : "room",
-        "description" : "r:room:update"
+        "name": "update",
+        "feature": "room",
+        "description": "r:room:update"
       },
-      "en" : {
-        "name" : "update",
-        "feature" : "room",
-        "description" : "r:room:update"
+      "en": {
+        "name": "update",
+        "feature": "room",
+        "description": "r:room:update"
       }
     },
-    "r:user:import" : {
-      "vi" : {
-        "name" : "import",
-        "feature" : "user",
-        "description" : "r:user:import"
+    "r:ticket:delete": {
+      "vi": {
+        "name": "delete",
+        "feature": "ticket",
+        "description": "r:ticket:delete"
       },
-      "en" : {
-        "name" : "import",
-        "feature" : "user",
-        "description" : "r:user:import"
+      "en": {
+        "name": "delete",
+        "feature": "ticket",
+        "description": "r:ticket:delete"
       }
     },
-    "r:access-history:export" : {
-      "vi" : {
-        "name" : "export",
-        "feature" : "access-history",
-        "description" : "r:access-history:export"
+    "r:user:import": {
+      "vi": {
+        "name": "import",
+        "feature": "user",
+        "description": "r:user:import"
       },
-      "en" : {
-        "name" : "export",
-        "feature" : "access-history",
-        "description" : "r:access-history:export"
+      "en": {
+        "name": "import",
+        "feature": "user",
+        "description": "r:user:import"
       }
     },
-    "r:room:delete" : {
-      "vi" : {
-        "name" : "delete",
-        "feature" : "room",
-        "description" : "r:room:delete"
+    "r:audit-log:export": {
+      "vi": {
+        "name": "export",
+        "feature": "audit-log",
+        "description": "r:audit-log:export"
       },
-      "en" : {
-        "name" : "delete",
-        "feature" : "room",
-        "description" : "r:room:delete"
+      "en": {
+        "name": "export",
+        "feature": "audit-log",
+        "description": "r:audit-log:export"
+      }
+    },
+    "r:role:premission:update": {
+      "vi": {
+        "name": "premission",
+        "feature": "role",
+        "description": "r:role:premission:update"
+      },
+      "en": {
+        "name": "premission",
+        "feature": "role",
+        "description": "r:role:premission:update"
+      }
+    },
+    "r:access-history:export": {
+      "vi": {
+        "name": "export",
+        "feature": "access-history",
+        "description": "r:access-history:export"
+      },
+      "en": {
+        "name": "export",
+        "feature": "access-history",
+        "description": "r:access-history:export"
       }
     },
     "r:department:delete" : {
       "vi" : {
-        "name" : "delete",
-        "feature" : "department",
-        "description" : "r:department:delete"
+        "name": "delete",
+        "feature": "department",
+        "description": "r:department:delete"
       },
-      "en" : {
-        "name" : "delete",
-        "feature" : "department",
-        "description" : "r:department:delete"
+      "en": {
+        "name": "delete",
+        "feature": "department",
+        "description": "r:department:delete"
       }
     },
-    "r:role:find" : {
-      "vi" : {
-        "name" : "find",
-        "feature" : "role",
-        "description" : "r:role:find"
+    "r:room:delete": {
+      "vi": {
+        "name": "delete",
+        "feature": "room",
+        "description": "r:room:delete"
       },
-      "en" : {
-        "name" : "find",
-        "feature" : "role",
-        "description" : "r:role:find"
+      "en": {
+        "name": "delete",
+        "feature": "room",
+        "description": "r:room:delete"
+      }
+    },
+    "r:device:find": {
+      "vi": {
+        "name": "find",
+        "feature": "device",
+        "description": "r:device:find"
+      },
+      "en": {
+        "name": "find",
+        "feature": "device",
+        "description": "r:device:find"
       }
     },
     "r:ticket:create" : {
@@ -443,18 +587,6 @@
         "name" : "create",
         "feature" : "ticket",
         "description" : "r:ticket:create"
-      }
-    },
-    "r:ticket:find" : {
-      "vi" : {
-        "name" : "find",
-        "feature" : "ticket",
-        "description" : "r:ticket:find"
-      },
-      "en" : {
-        "name" : "find",
-        "feature" : "ticket",
-        "description" : "r:ticket:find"
       }
     },
     "r:setting-site:delete" : {
@@ -471,38 +603,62 @@
     },
     "r:department:update" : {
       "vi" : {
-        "name" : "update",
-        "feature" : "department",
-        "description" : "r:department:update"
+        "name": "update",
+        "feature": "department",
+        "description": "r:department:update"
       },
-      "en" : {
-        "name" : "update",
-        "feature" : "department",
-        "description" : "r:department:update"
+      "en": {
+        "name": "update",
+        "feature": "department",
+        "description": "r:department:update"
       }
     },
-    "r:setting:delete" : {
-      "vi" : {
-        "name" : "delete",
-        "feature" : "setting",
-        "description" : "r:setting:delete"
+    "r:reason:filter": {
+      "vi": {
+        "name": "filter",
+        "feature": "reason",
+        "description": "r:reason:filter"
       },
-      "en" : {
-        "name" : "delete",
-        "feature" : "setting",
-        "description" : "r:setting:delete"
+      "en": {
+        "name": "filter",
+        "feature": "reason",
+        "description": "r:reason:filter"
       }
     },
-    "r:user:update" : {
-      "vi" : {
-        "name" : "update",
-        "feature" : "user",
-        "description" : "r:user:update"
+    "r:setting:delete": {
+      "vi": {
+        "name": "delete",
+        "feature": "setting",
+        "description": "r:setting:delete"
       },
-      "en" : {
-        "name" : "update",
-        "feature" : "user",
-        "description" : "r:user:update"
+      "en": {
+        "name": "delete",
+        "feature": "setting",
+        "description": "r:setting:delete"
+      }
+    },
+    "r:role:filter": {
+      "vi": {
+        "name": "filter",
+        "feature": "role",
+        "description": "r:role:filter"
+      },
+      "en": {
+        "name": "filter",
+        "feature": "role",
+        "description": "r:role:filter"
+      }
+    },
+    "r:user:update": {
+      "vi": {
+        "name": "update",
+        "feature": "user",
+        "description": "r:user:update"
+      },
+      "en": {
+        "name": "update",
+        "feature": "user",
+        "description": "r:user:update"
       }
     },
     "r:site:create" : {
@@ -519,50 +675,74 @@
     },
     "r:setting:update" : {
       "vi" : {
-        "name" : "update",
-        "feature" : "setting",
-        "description" : "r:setting:update"
+        "name": "update",
+        "feature": "setting",
+        "description": "r:setting:update"
       },
-      "en" : {
-        "name" : "update",
-        "feature" : "setting",
-        "description" : "r:setting:update"
+      "en": {
+        "name": "update",
+        "feature": "setting",
+        "description": "r:setting:update"
       }
     },
-    "r:ticket:cancel" : {
-      "vi" : {
-        "name" : "cancel",
-        "feature" : "ticket",
-        "description" : "r:ticket:cancel"
+    "r:role:detail": {
+      "vi": {
+        "name": "detail",
+        "feature": "role",
+        "description": "r:role:detail"
       },
-      "en" : {
-        "name" : "cancel",
-        "feature" : "ticket",
-        "description" : "r:ticket:cancel"
+      "en": {
+        "name": "detail",
+        "feature": "role",
+        "description": "r:role:detail"
       }
     },
-    "r:access-history:filter" : {
-      "vi" : {
-        "name" : "filter",
-        "feature" : "access-history",
-        "description" : "r:access-history:filter"
+    "r:ticket:cancel": {
+      "vi": {
+        "name": "cancel",
+        "feature": "ticket",
+        "description": "r:ticket:cancel"
       },
-      "en" : {
-        "name" : "filter",
-        "feature" : "access-history",
-        "description" : "r:access-history:filter"
+      "en": {
+        "name": "cancel",
+        "feature": "ticket",
+        "description": "r:ticket:cancel"
       }
     },
-    "r:organization:create" : {
-      "vi" : {
-        "name" : "create",
-        "feature" : "organization",
-        "description" : "r:organization:create"
+    "r:device:update": {
+      "vi": {
+        "name": "update",
+        "feature": "device",
+        "description": "r:device:update"
       },
-      "en" : {
-        "name" : "create",
-        "feature" : "organization",
-        "description" : "r:organization:create"
+      "en": {
+        "name": "update",
+        "feature": "device",
+        "description": "r:device:update"
+      }
+    },
+    "r:department:detail": {
+      "vi": {
+        "name": "detail",
+        "feature": "department",
+        "description": "r:department:detail"
+      },
+      "en": {
+        "name": "detail",
+        "feature": "department",
+        "description": "r:department:detail"
+      }
+    },
+    "r:access-history:filter": {
+      "vi": {
+        "name": "filter",
+        "feature": "access-history",
+        "description": "r:access-history:filter"
+      },
+      "en": {
+        "name": "filter",
+        "feature": "access-history",
+        "description": "r:access-history:filter"
       }
     },
     "r:role:update" : {
@@ -586,29 +766,53 @@
       "en" : {
         "name" : "findQRCode",
         "feature" : "ticket",
-        "description" : "r:ticket:findQRCode"
+        "description": "r:ticket:findQRCode"
       }
     },
-    "r:setting-group:find" : {
-      "vi" : {
-        "name" : "find",
-        "feature" : "setting-group",
-        "description" : "r:setting-group:find"
+    "r:audit-log:detail": {
+      "vi": {
+        "name": "detail",
+        "feature": "audit-log",
+        "description": "r:audit-log:detail"
       },
-      "en" : {
-        "name" : "find",
-        "feature" : "setting-group",
-        "description" : "r:setting-group:find"
+      "en": {
+        "name": "detail",
+        "feature": "audit-log",
+        "description": "r:audit-log:detail"
       }
     },
-    "r:ticket:update" : {
-      "vi" : {
-        "name" : "update",
-        "feature" : "ticket",
-        "description" : "r:ticket:update"
+    "r:setting-site:set-default": {
+      "vi": {
+        "name": "set-default",
+        "feature": "setting-site",
+        "description": "r:setting-site:set-default"
       },
-      "en" : {
-        "name" : "update",
+      "en": {
+        "name": "set-default",
+        "feature": "setting-site",
+        "description": "r:setting-site:set-default"
+      }
+    },
+    "r:room:filter": {
+      "vi": {
+        "name": "filter",
+        "feature": "room",
+        "description": "r:room:filter"
+      },
+      "en": {
+        "name": "filter",
+        "feature": "room",
+        "description": "r:room:filter"
+      }
+    },
+    "r:ticket:update": {
+      "vi": {
+        "name": "update",
+        "feature": "ticket",
+        "description": "r:ticket:update"
+      },
+      "en": {
+        "name": "update",
         "feature" : "ticket",
         "description" : "r:ticket:update"
       }
@@ -629,96 +833,132 @@
       "vi" : {
         "name" : "create",
         "feature" : "reason",
-        "description" : "r:reason:create"
+        "description": "r:reason:create"
       },
-      "en" : {
-        "name" : "create",
-        "feature" : "reason",
-        "description" : "r:reason:create"
+      "en": {
+        "name": "create",
+        "feature": "reason",
+        "description": "r:reason:create"
       }
     },
-    "r:customer:find" : {
-      "vi" : {
-        "name" : "find",
-        "feature" : "customer",
-        "description" : "r:customer:find"
+    "r:user:filter": {
+      "vi": {
+        "name": "filter",
+        "feature": "user",
+        "description": "r:user:filter"
       },
-      "en" : {
-        "name" : "find",
-        "feature" : "customer",
-        "description" : "r:customer:find"
+      "en": {
+        "name": "filter",
+        "feature": "user",
+        "description": "r:user:filter"
       }
     },
-    "r:user:create" : {
-      "vi" : {
-        "name" : "create",
-        "feature" : "user",
-        "description" : "r:user:create"
+    "r:user:download-template": {
+      "vi": {
+        "name": "download-template",
+        "feature": "user",
+        "description": "r:user:download-template"
       },
-      "en" : {
-        "name" : "create",
-        "feature" : "user",
-        "description" : "r:user:create"
+      "en": {
+        "name": "download-template",
+        "feature": "user",
+        "description": "r:user:download-template"
       }
     },
-    "r:role:create" : {
-      "vi" : {
-        "name" : "create",
-        "feature" : "role",
-        "description" : "r:role:create"
+    "r:customer:detail": {
+      "vi": {
+        "name": "detail",
+        "feature": "customer",
+        "description": "r:customer:detail"
       },
-      "en" : {
-        "name" : "create",
-        "feature" : "role",
-        "description" : "r:role:create"
+      "en": {
+        "name": "detail",
+        "feature": "customer",
+        "description": "r:customer:detail"
       }
     },
-    "r:organization:update" : {
+    "r:user:create": {
       "vi" : {
-        "name" : "update",
-        "feature" : "organization",
-        "description" : "r:organization:update"
+        "name": "create",
+        "feature": "user",
+        "description": "r:user:create"
       },
-      "en" : {
-        "name" : "update",
-        "feature" : "organization",
-        "description" : "r:organization:update"
+      "en": {
+        "name": "create",
+        "feature": "user",
+        "description": "r:user:create"
+      }
+    },
+    "r:ticket:add-card": {
+      "vi": {
+        "name": "add-card",
+        "feature": "ticket",
+        "description": "r:ticket:add-card"
+      },
+      "en": {
+        "name": "add-card",
+        "feature": "ticket",
+        "description": "r:ticket:add-card"
+      }
+    },
+    "r:role:create": {
+      "vi": {
+        "name": "create",
+        "feature": "role",
+        "description": "r:role:create"
+      },
+      "en": {
+        "name": "create",
+        "feature": "role",
+        "description": "r:role:create"
       }
     },
     "r:setting-site:create" : {
       "vi" : {
-        "name" : "create",
-        "feature" : "setting-site",
-        "description" : "r:setting-site:create"
+        "name": "create",
+        "feature": "setting-site",
+        "description": "r:setting-site:create"
       },
-      "en" : {
-        "name" : "create",
-        "feature" : "setting-site",
-        "description" : "r:setting-site:create"
+      "en": {
+        "name": "create",
+        "feature": "setting-site",
+        "description": "r:setting-site:create"
       }
     },
-    "r:setting-group:delete" : {
-      "vi" : {
-        "name" : "delete",
-        "feature" : "setting-group",
-        "description" : "r:setting-group:delete"
+    "r:template:delete": {
+      "vi": {
+        "name": "delete",
+        "feature": "template",
+        "description": "r:template:delete"
       },
-      "en" : {
-        "name" : "delete",
-        "feature" : "setting-group",
-        "description" : "r:setting-group:delete"
+      "en": {
+        "name": "delete",
+        "feature": "template",
+        "description": "r:template:delete"
       }
     },
-    "r:permission:delete" : {
-      "vi" : {
-        "name" : "delete",
-        "feature" : "permission",
-        "description" : "r:permission:delete"
+    "r:site:filter": {
+      "vi": {
+        "name": "filter",
+        "feature": "site",
+        "description": "r:site:filter"
       },
-      "en" : {
-        "name" : "delete",
-        "feature" : "permission",
-        "description" : "r:permission:delete"
+      "en": {
+        "name": "filter",
+        "feature": "site",
+        "description": "r:site:filter"
+      }
+    },
+    "r:setting-group:delete": {
+      "vi": {
+        "name": "delete",
+        "feature": "setting-group",
+        "description": "r:setting-group:delete"
+      },
+      "en": {
+        "name": "delete",
+        "feature": "setting-group",
+        "description": "r:setting-group:delete"
       }
     }
   }

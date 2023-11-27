@@ -9,15 +9,7 @@ import lombok.Data;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,7 +25,7 @@ public interface IDepartmentController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Find by id department")
-    @PreAuthorize("hasRole('r:department:find')")
+    @PreAuthorize("hasRole('r:department:detail')")
     ResponseEntity<?> findById(@PathVariable UUID id);
 
     @DeleteMapping("/{id}")
@@ -43,7 +35,7 @@ public interface IDepartmentController {
 
     @GetMapping
     @Operation(summary = "Get all department")
-    @PreAuthorize("hasRole('r:department:find')")
+    @PreAuthorize("hasRole('r:department:filter')")
     ResponseEntity<List<?>> findAll();
 
     @PostMapping()
@@ -58,12 +50,12 @@ public interface IDepartmentController {
 
     @PostMapping("/filter")
     @Operation(summary = "Filter department")
-    @PreAuthorize("hasRole('r:department:find')")
+    @PreAuthorize("hasRole('r:department:filter')")
     ResponseEntity<?> filter(@RequestBody @Valid DepartmentFilter siteFilter, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
     @PostMapping("/site/{siteId}")
     @Operation(summary = "Find all department by site")
-    @PreAuthorize("hasRole('r:department:find')")
+    @PreAuthorize("hasRole('r:department:filter')")
     ResponseEntity<?> findAllBySite(@PathVariable String siteId);
 
 

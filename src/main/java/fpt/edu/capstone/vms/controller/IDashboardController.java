@@ -1,9 +1,9 @@
 package fpt.edu.capstone.vms.controller;
 
 import fpt.edu.capstone.vms.constants.Constants;
+import fpt.edu.capstone.vms.persistence.entity.Ticket;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.ws.rs.QueryParam;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,10 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 
 @RestController
@@ -25,21 +22,46 @@ import java.util.UUID;
 @PreAuthorize("isAuthenticated()")
 public interface IDashboardController {
 
-    @PostMapping("/purpose/pie")
-    @Operation(summary = "Statistics of meetings by purpose")
+    @PostMapping("/ticket/purpose/pie")
+    @Operation(summary = "Statistics of meetings by purpose with pie")
+    @PreAuthorize("hasRole('r:dashboard:view')")
     ResponseEntity<?> countTicketsByPurposeWithPie(@RequestBody DashboardDTO dashboardDTO);
 
-    @PostMapping("/purpose/dual-line")
-    @Operation(summary = "Statistics of meetings by purpose")
-    ResponseEntity<?> countTicketsByPurposeByWithMultiLine(@RequestBody DashboardDTO dashboardDTO, @QueryParam("limit") String limit);
+    @PostMapping("/ticket/purpose/multi-line")
+    @Operation(summary = "Statistics of meetings by purpose with multi line")
+    @PreAuthorize("hasRole('r:dashboard:view')")
+    ResponseEntity<?> countTicketsByPurposeByWithMultiLine(@RequestBody DashboardDTO dashboardDTO);
 
+    @PostMapping("/ticket/status")
+    @Operation(summary = "Statistics number of ticket by status")
+    @PreAuthorize("hasRole('r:dashboard:view')")
+    ResponseEntity<?> countTicketsByStatus(@RequestBody DashboardDTO dashboardDTO);
+
+    @PostMapping("/ticket/status/stacked-column")
+    @Operation(summary = "Statistics number of ticket by status with stacked column")
+    @PreAuthorize("hasRole('r:dashboard:view')")
+    ResponseEntity<?> countTicketsByStatusWithStackedColumn(@RequestBody DashboardDTO dashboardDTO);
+
+    @PostMapping("/visits/status")
+    @Operation(summary = "Statistics number of visits to the building")
+    @PreAuthorize("hasRole('r:dashboard:view')")
+    ResponseEntity<?> countVisitsByStatus(@RequestBody DashboardDTO dashboardDTO);
+
+    @PostMapping("/visits/status/stacked-column")
+    @Operation(summary = "Statistics number of visits by status with stacked column")
+    @PreAuthorize("hasRole('r:dashboard:view')")
+    ResponseEntity<?> countVisitsByStatusWithStackedColumn(@RequestBody DashboardDTO dashboardDTO);
+
+    @PostMapping("/tickets/period")
+    @Operation(summary = "Statistics number of ticket in period")
+    @PreAuthorize("hasRole('r:dashboard:view')")
+    ResponseEntity<?> countTicketsPeriod(@RequestBody DashboardDTO dashboardDTO);
 
     @Data
     class DashboardDTO {
-        private LocalDateTime fromTime;
-        private LocalDateTime toTime;
         private Integer year;
         private Integer month;
+        private List<Constants.StatusTicket> status;
         List<String> sites;
     }
 
@@ -52,41 +74,39 @@ public interface IDashboardController {
     }
 
     @Data
-    @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    class AccessHistoryResponseDTO {
-
-        private UUID id;
-
-        //Ticket Info
-        private UUID ticketId;
-        private String ticketCode;
-        private String ticketName;
-        private Constants.Purpose purpose;
-        private Constants.StatusTicket ticketStatus;
-        private Date startTime;
-        private Date endTime;
-        private String createBy;
-        private Date createdOn;
-
-        //Info Room
-        private UUID roomId;
-        private String roomName;
-
-        //Info customer
-        private UUID customerId;
-        private String visitorName;
-        private String identificationNumber;
-        private String email;
-        private String phoneNumber;
-        private Constants.Gender gender;
-        private String description;
-
-        //access history
-
-        private Date checkInTime;
-        private Date checkOutTime;
-        private Constants.StatusTicket ticketCustomerStatus;
+    @Builder
+    class TotalTicketResponse {
+        private int totalTicket;
+        private int totalTicketWithCondition;
+        private int totalCompletedTicket;
+        private int totalCompletedTicketWithCondition;
+        private int totalCancelTicket;
+        private int totalCancelTicketWithCondition;
     }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    class TotalVisitsResponse {
+        private int totalVisits;
+        private int totalVisitsWithCondition;
+        private int totalAcceptanceVisits;
+        private int totalAcceptanceVisitsWithCondition;
+        private int totalRejectVisits;
+        private int totalRejectVisitsWithCondition;
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    class TicketsPeriodResponse {
+        private List<Ticket> upcomingMeetings;
+        private List<Ticket> ongoingMeetings;
+        private List<Ticket> recentlyFinishedMeetings;
+    }
+
 }

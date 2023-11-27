@@ -1,13 +1,14 @@
-version: '3'
+version: "3"
 services:
   api-server:
-    build: .
+    image: vmsacr.azurecr.io/api-vms:latest
     ports:
-      - 8000:8000
-    container_name: api-server
+      - "8000:8000"
+    container_name: api-vms
     environment:
       - SERVER_PORT=8000
-      - KEYCLOAK_HOST=localhost:9080
+      - KEYCLOAK_SCHEMA=https
+      - KEYCLOAK_HOST=idm-vms.azurewebsites.net
       - KEYCLOAK_REALM=vms
       - KEYCLOAK_REALM_ADMIN_PASS=admin
       - KEYCLOAK_REALM_ADMIN_USER=admin
@@ -19,10 +20,3 @@ services:
       - POSTGRES_PASSWORD=Password123
       - REDIS_HOST=localhost
       - REDIS_PORT=6379
-    networks:
-      - vms
-
-networks:
-  vms:
-    name: vms-network
-    driver: bridge

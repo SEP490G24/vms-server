@@ -32,7 +32,7 @@ public interface IUserController {
 
     @PostMapping("/filter")
     @Operation(summary = "Filter")
-    @PreAuthorize("hasRole('r:user:find')")
+    @PreAuthorize("hasRole('r:user:filter')")
     ResponseEntity<?> filter(@RequestBody UserFilterRequest userFilterRequest, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
     @PostMapping("")
@@ -60,7 +60,7 @@ public interface IUserController {
 
     @GetMapping("/import")
     @Operation(summary = "download template import user")
-    @PreAuthorize("hasRole('r:user:import')")
+    @PreAuthorize("hasRole('r:user:download-template')")
     ResponseEntity<ByteArrayResource> downloadExcel() throws IOException;
 
     @PostMapping("/import")

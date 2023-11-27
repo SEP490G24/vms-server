@@ -25,7 +25,7 @@ public interface ISettingSiteMapController {
 
     @GetMapping("/{siteId}/{settingId}")
     @Operation(summary = "Find by id")
-    @PreAuthorize("hasRole('r:setting-site:find')")
+    @PreAuthorize("hasRole('r:setting-site:detail')")
     ResponseEntity<?> findById(@PathVariable String siteId, @PathVariable Long settingId);
 
     @DeleteMapping("/{siteId}/{settingId}")
@@ -40,17 +40,17 @@ public interface ISettingSiteMapController {
 
     @GetMapping
     @Operation(summary = "Get all")
-    @PreAuthorize("hasRole('r:setting-site:find')")
+    @PreAuthorize("hasRole('r:setting-site:filter')")
     ResponseEntity<List<?>> findAll();
 
     @GetMapping("/group/{settingGroupId}")
     @Operation(summary = "Find All by site id and group id")
-    @PreAuthorize("hasRole('r:setting-site:find')")
+    @PreAuthorize("hasRole('r:setting-site:filter')")
     ResponseEntity<?> findAllByGroupId(@PathVariable Integer settingGroupId, @RequestParam(value = "siteId", required = false) String siteId);
 
     @GetMapping("/set-default/{siteId}")
     @Operation(summary = "Set default setting for site")
-    @PreAuthorize("hasRole('r:setting-site:delete')")
+    @PreAuthorize("hasRole('r:setting-site:set-default')")
     ResponseEntity<?> setDefault(@PathVariable String siteId);
 
     @Data

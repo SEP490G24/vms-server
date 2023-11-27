@@ -4,6 +4,7 @@ package fpt.edu.capstone.vms.config.mapper;
 import fpt.edu.capstone.vms.controller.IAccessHistoryController;
 import fpt.edu.capstone.vms.controller.ICustomerController;
 import fpt.edu.capstone.vms.controller.IDepartmentController;
+import fpt.edu.capstone.vms.controller.IDeviceController;
 import fpt.edu.capstone.vms.controller.IRoomController;
 import fpt.edu.capstone.vms.controller.ISiteController;
 import fpt.edu.capstone.vms.controller.ITemplateController;
@@ -14,6 +15,7 @@ import fpt.edu.capstone.vms.oauth2.IUserResource;
 import fpt.edu.capstone.vms.persistence.entity.Customer;
 import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMap;
 import fpt.edu.capstone.vms.persistence.entity.Department;
+import fpt.edu.capstone.vms.persistence.entity.Device;
 import fpt.edu.capstone.vms.persistence.entity.Room;
 import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.entity.Template;
@@ -85,7 +87,12 @@ public class ModelMapperConfig {
 
         // room => roomDto
         modelMapper.createTypeMap(Room.class, IRoomController.RoomFilterResponse.class)
-            .addMappings(mapping -> mapping.map((room -> room.getSite().getName()), IRoomController.RoomFilterResponse::setSiteName));
+            .addMappings(mapping -> mapping.map((room -> room.getSite().getName()), IRoomController.RoomFilterResponse::setSiteName))
+            .addMappings(mapping -> mapping.map((room -> room.getDevice().getMacIp()), IRoomController.RoomFilterResponse::setMacIp));
+
+        // device => DeviceFilterResponse
+        modelMapper.createTypeMap(Device.class, IDeviceController.DeviceFilterResponse.class)
+            .addMappings(mapping -> mapping.map((room -> room.getSite().getName()), IDeviceController.DeviceFilterResponse::setSiteName));
 
         // template => TemplateFilter
         modelMapper.createTypeMap(Template.class, ITemplateController.TemplateFilter.class)

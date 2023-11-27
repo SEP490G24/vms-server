@@ -1438,11 +1438,10 @@ class TicketServiceImplTest {
         // Mock input parameters
         ITicketController.CheckInPayload checkInPayload = new ITicketController.CheckInPayload();
         checkInPayload.setStatus(Constants.StatusTicket.CHECK_IN);
-        checkInPayload.setReasonId(UUID.randomUUID());
-        checkInPayload.setReasonNote("ReasonNote");
         checkInPayload.setCheckInCode("checkInCode");
 
         CustomerTicketMap customerTicketMap = new CustomerTicketMap();
+        customerTicketMap.setStatus(Constants.StatusTicket.PENDING);
         customerTicketMap.setCustomerTicketMapPk(new CustomerTicketMapPk(UUID.randomUUID(), UUID.randomUUID()));
 
         // Mock repository behavior
@@ -1452,6 +1451,7 @@ class TicketServiceImplTest {
         Site site = new Site();
         site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
         Ticket ticket = new Ticket();
+        ticket.setStartTime(LocalDateTime.now().minusHours(1));
         ticket.setEndTime(LocalDateTime.now().plusHours(1));
         ticket.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
         customerTicketMap.setTicketEntity(ticket);
@@ -1482,8 +1482,6 @@ class TicketServiceImplTest {
 
         // Verify that the customerTicketMap has been updated with the new status, reasonId, and reasonNote
         assertEquals(checkInPayload.getStatus(), customerTicketMap.getStatus());
-        assertEquals(checkInPayload.getReasonId(), customerTicketMap.getReasonId());
-        assertEquals(checkInPayload.getReasonNote(), customerTicketMap.getReasonNote());
 
         // Verify that the customerTicketMapRepository.save() has been called
         verify(customerTicketMapRepository).save(customerTicketMap);
@@ -1649,7 +1647,7 @@ class TicketServiceImplTest {
     @Test
     void testFilterTicketAndCustomer() {
         // Mock data
-        Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("lastUpdatedOn"), Sort.Order.desc("createdOn")));
+        Pageable pageable = PageRequest.of(0, 10);
         Pageable pageableSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
         UUID roomId = UUID.randomUUID();
         Constants.StatusTicket status = Constants.StatusTicket.PENDING;

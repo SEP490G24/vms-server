@@ -732,15 +732,26 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     @Transactional
     public ITicketController.TicketByQRCodeResponseDTO checkInCustomer(ITicketController.CheckInPayload checkInPayload) {
         CustomerTicketMap customerTicketMap = customerTicketMapRepository.findByCheckInCodeIgnoreCase(checkInPayload.getCheckInCode());
-        customerTicketMap.setStatus(checkInPayload.getStatus());
-        customerTicketMap.setReasonId(checkInPayload.getReasonId());
-        customerTicketMap.setReasonNote(checkInPayload.getReasonNote());
         if (checkInPayload.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
+            if (customerTicketMap.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is checked in");
+            }
+            if (customerTicketMap.isCheckOut()) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is checked out");
+            }
             if (customerTicketMap.getTicketEntity().getEndTime().isBefore(LocalDateTime.now())) {
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Ticket is expired, You can not check in with this ticket");
             }
+            if (customerTicketMap.getTicketEntity().getStartTime().isAfter(LocalDateTime.now())) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Ticket is not started, You can not check in with this ticket");
+            }
+            customerTicketMap.setStatus(checkInPayload.getStatus());
             customerTicketMap.setCheckInTime(LocalDateTime.now());
+            customerTicketMapRepository.save(customerTicketMap);
         } else if (checkInPayload.getStatus().equals(Constants.StatusTicket.CHECK_OUT)) {
+            if (!customerTicketMap.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is not check in yet or checked out");
+            }
             customerTicketMap.setCheckOutTime(LocalDateTime.now());
             customerTicketMap.setCheckOut(true);
             customerTicketMap.setCardId(null);
@@ -751,12 +762,31 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                     if (ticket.getStartTime().isBefore(LocalDateTime.now())) {
                         throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Ticket is not started, You can not check out with this ticket");
                     }
-                    ticket.setStatus(Constants.StatusTicket.DONE);
+                    ticket.setStatus(Constants.StatusTicket.COMPLETE);
                     ticketRepository.save(ticket);
                 }
             }
+            customerTicketMap.setStatus(checkInPayload.getStatus());
+            customerTicketMapRepository.save(customerTicketMap);
+        } else if (checkInPayload.getStatus().equals(Constants.StatusTicket.REJECT)) {
+            if (customerTicketMap.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is checked in");
+            }
+            if (customerTicketMap.isCheckOut()) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is checked out");
+            }
+            if (customerTicketMap.getTicketEntity().getEndTime().isBefore(LocalDateTime.now())) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Ticket is expired time, You can not reject with this ticket");
+            }
+            if (customerTicketMap.getTicketEntity().getStartTime().isAfter(LocalDateTime.now())) {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Ticket is not started, You can not reject with this ticket");
+            }
+            customerTicketMap.setReasonId(checkInPayload.getReasonId());
+            customerTicketMap.setReasonNote(checkInPayload.getReasonNote());
+            customerTicketMap.setCheckInTime(LocalDateTime.now());
+            customerTicketMap.setStatus(checkInPayload.getStatus());
+            customerTicketMapRepository.save(customerTicketMap);
         }
-        customerTicketMapRepository.save(customerTicketMap);
         Ticket ticket = ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId()).orElse(null);
 
         assert ticket != null;
@@ -828,11 +858,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         , String lastUpdatedBy
         , Boolean bookmark
         , String keyword) {
-        List<Sort.Order> sortColum = new ArrayList<>(PageableUtils.converterSort2List(pageable.getSort()));
-        sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.lastUpdatedOn));
-        sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.createdOn));
-        Pageable pageableSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(sortColum));
-        Page<CustomerTicketMap> customerTicketMaps = customerTicketMapRepository.filter(pageableSort, sites, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd
+        Page<CustomerTicketMap> customerTicketMaps = customerTicketMapRepository.filter(pageable, sites, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd
             , roomId
             , status
             , purpose
@@ -1065,13 +1091,5 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         }
 
         return checkInCodeBuilder.toString();
-    }
-
-    private void setCustomer(ITicketController.TicketFilterDTO ticketFilterDTO) {
-        List<ICustomerController.CustomerInfo> customerInfos = new ArrayList<>();
-        customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(ticketFilterDTO.getId()).forEach(a -> {
-            customerInfos.add(mapper.map(customerRepository.findById(a.getCustomerTicketMapPk().getCustomerId()).orElse(null), ICustomerController.CustomerInfo.class));
-        });
-        ticketFilterDTO.setCustomers(customerInfos);
     }
 }

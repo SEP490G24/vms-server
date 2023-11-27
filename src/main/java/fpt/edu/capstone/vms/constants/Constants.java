@@ -69,12 +69,18 @@ public class Constants {
         CHECK_OUT,
         DONE,
         CANCEL,
-        REJECT
+        REJECT,
+        COMPLETE
     }
 
     public enum StatusCheckInCard {
         APPROVED,
         DENIED
+    }
+
+    public enum DeviceType {
+        SCAN_CARD,
+        DOOR
     }
 
     public enum Gender {
