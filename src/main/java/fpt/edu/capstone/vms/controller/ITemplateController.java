@@ -13,15 +13,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -36,38 +28,41 @@ public interface ITemplateController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Find by id")
+    @PreAuthorize("hasRole('r:template:detail')")
     ResponseEntity<?> findById(@PathVariable UUID id);
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete")
+    @PreAuthorize("hasRole('r:template:delete')")
     ResponseEntity<?> delete(@PathVariable UUID id);
 
     @GetMapping
     @Operation(summary = "Get all")
+    @PreAuthorize("hasRole('r:template:filter')")
     ResponseEntity<List<?>> findAll();
 
     @PostMapping()
-    @Operation(summary = "Create new agent")
     @PreAuthorize("hasRole('r:template:create')")
     ResponseEntity<?> create(@RequestBody @Valid TemplateDto templateDto);
 
     @PutMapping("/{id}")
     @Operation(summary = "Update site")
+    @PreAuthorize("hasRole('r:template:update')")
     ResponseEntity<?> update(@RequestBody UpdateTemplateDto templateDto, @PathVariable UUID id);
 
     @PostMapping("/filter")
     @Operation(summary = "Filter")
-    @PreAuthorize("hasRole('r:template:find')")
+    @PreAuthorize("hasRole('r:template:filter')")
     ResponseEntity<?> filter(@RequestBody @Valid TemplateFilterDTO templateFilterDTO, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
     @GetMapping("/site/{siteId}")
     @Operation(summary = "Get all template by siteId")
-    @PreAuthorize("hasRole('r:template:find')")
+    @PreAuthorize("hasRole('r:template:filter')")
     ResponseEntity<List<?>> findAllBySiteId(@PathVariable String siteId);
 
     @GetMapping("/site/{siteId}/{type}")
     @Operation(summary = "Get all template by siteId and type")
-    @PreAuthorize("hasRole('r:template:find')")
+    @PreAuthorize("hasRole('r:template:filter')")
     ResponseEntity<List<?>> findAllBySiteIdAndType(@PathVariable String siteId, @PathVariable Constants.TemplateType type);
 
     @Data

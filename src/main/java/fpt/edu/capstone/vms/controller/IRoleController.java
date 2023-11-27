@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @RestController
 @Tag(name = "Roles Service")
@@ -26,17 +25,17 @@ public interface IRoleController {
 
     @GetMapping("")
     @Operation(summary = "Find all roles")
-    @PreAuthorize("hasRole('r:role:find')")
+    @PreAuthorize("hasRole('r:role:filter')")
     ResponseEntity<?> getAll(@RequestParam(value = "siteId", required = false) String siteId);
 
     @GetMapping("/{id}")
     @Operation(summary = "Find role by id")
-    @PreAuthorize("hasRole('r:role:find')")
+    @PreAuthorize("hasRole('r:role:detail')")
     ResponseEntity<?> getById(@PathVariable("id") String id);
 
     @PostMapping("/filter")
     @Operation(summary = "Filter role")
-    @PreAuthorize("hasRole('r:role:find')")
+    @PreAuthorize("hasRole('r:role:filter')")
     ResponseEntity<?> filter(@RequestBody RoleFilterPayload filterPayload, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
     @PostMapping("")
@@ -52,7 +51,7 @@ public interface IRoleController {
 
     @PutMapping("/{id}/permission")
     @Operation(summary = "Update permission")
-    @PreAuthorize("hasRole('r:role:update')")
+    @PreAuthorize("hasRole('r:role:premission:update')")
     ResponseEntity<?> updatePermission(@PathVariable("id") String id,
                                        @RequestBody UpdateRolePermissionPayload payload);
 

@@ -147,8 +147,10 @@ public class KeycloakRealmRoleResource implements IRoleResource {
         if (!CollectionUtils.isEmpty(siteIdList)) {
             siteId = siteIdList.get(0);
         } else {
-            siteId = SecurityUtils.getSiteId();
-            value.getAttributes().put("site_id", Collections.singletonList(siteId));
+            if (!SecurityUtils.getUserDetails().isRealmAdmin()) {
+                siteId = SecurityUtils.getSiteId();
+                value.getAttributes().put("site_id", Collections.singletonList(siteId));
+            }
         }
 
         if (!CollectionUtils.isEmpty(orgIdList)) {

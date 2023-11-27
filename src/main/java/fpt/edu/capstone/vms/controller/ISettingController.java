@@ -8,16 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -31,7 +22,7 @@ public interface ISettingController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Find by id")
-    @PreAuthorize("hasRole('r:setting:find')")
+    @PreAuthorize("hasRole('r:setting:detail')")
     ResponseEntity<?> findById(@PathVariable Long id);
 
     @DeleteMapping("/{id}")
@@ -46,18 +37,12 @@ public interface ISettingController {
 
     @GetMapping
     @Operation(summary = "Get all")
-    @PreAuthorize("hasRole('r:setting:find')")
+    @PreAuthorize("hasRole('r:setting:filter')")
     ResponseEntity<List<?>> findAll(@RequestParam(value = "groupId", required = false) Integer groupId, @RequestParam(value = "siteId", required = false) String siteId);
 
     @PostMapping()
-    @Operation(summary = "Create new agent")
     @PreAuthorize("hasRole('r:setting:create')")
     ResponseEntity<?> createSetting(@RequestBody @Valid CreateSettingInfo settingInfo);
-
-    @PostMapping("/sms")
-    @Operation(summary = "Create new agent")
-//    @PreAuthorize("hasRole('r:setting:create')")
-    ResponseEntity<?> sendSMS();
 
     @Data
     class CreateSettingInfo {

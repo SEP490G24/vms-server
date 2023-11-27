@@ -29,6 +29,7 @@ public interface IReasonController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Find by id")
+    @PreAuthorize("hasRole('r:reason:detail')")
     ResponseEntity<?> findById(@PathVariable UUID id);
 
     @DeleteMapping("/{id}")
@@ -38,6 +39,7 @@ public interface IReasonController {
 
     @GetMapping
     @Operation(summary = "Get all")
+    @PreAuthorize("hasRole('r:reason:filter')")
     ResponseEntity<List<?>> findAll();
 
     @PostMapping()
@@ -52,10 +54,12 @@ public interface IReasonController {
 
     @PostMapping("/filter")
     @Operation(summary = "Filter")
+    @PreAuthorize("hasRole('r:reason:filter')")
     ResponseEntity<?> filter(@RequestBody @Valid ReasonFilterDTO reasonFilterDTO, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
     @GetMapping("/site/{siteId}")
     @Operation(summary = "Get all reason by siteId")
+    @PreAuthorize("hasRole('r:reason:filter')")
     ResponseEntity<List<?>> findAllBySiteId(@PathVariable UUID siteId);
 
     @Data

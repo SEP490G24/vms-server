@@ -9,14 +9,7 @@ import net.sf.jasperreports.engine.JRException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -33,19 +26,22 @@ public interface IAuditLogController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Find by id")
+    @PreAuthorize("hasRole('r:audit-log:detail')")
     ResponseEntity<?> findById(@PathVariable UUID id);
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete audit log")
+    @PreAuthorize("hasRole('r:audit-log:delete')")
     ResponseEntity<?> delete(@PathVariable UUID id);
 
     @PostMapping("/filter")
     @Operation(summary = "Filter")
+    @PreAuthorize("hasRole('r:audit-log:filter')")
     ResponseEntity<?> filter(@RequestBody AuditLogFilter auditLogFilter, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
     @PostMapping("/export")
     @Operation(summary = "Export audit log")
-        //@PreAuthorize("hasRole('r:audit-log:export')")
+    @PreAuthorize("hasRole('r:audit-log:export')")
     ResponseEntity<?> export(AuditLogFilter auditLogFilter) throws JRException;
 
     @Data

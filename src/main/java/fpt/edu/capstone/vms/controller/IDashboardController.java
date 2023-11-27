@@ -12,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -25,30 +24,37 @@ public interface IDashboardController {
 
     @PostMapping("/ticket/purpose/pie")
     @Operation(summary = "Statistics of meetings by purpose with pie")
+    @PreAuthorize("hasRole('r:dashboard:view')")
     ResponseEntity<?> countTicketsByPurposeWithPie(@RequestBody DashboardDTO dashboardDTO);
 
     @PostMapping("/ticket/purpose/multi-line")
     @Operation(summary = "Statistics of meetings by purpose with multi line")
+    @PreAuthorize("hasRole('r:dashboard:view')")
     ResponseEntity<?> countTicketsByPurposeByWithMultiLine(@RequestBody DashboardDTO dashboardDTO);
 
     @PostMapping("/ticket/status")
     @Operation(summary = "Statistics number of ticket by status")
+    @PreAuthorize("hasRole('r:dashboard:view')")
     ResponseEntity<?> countTicketsByStatus(@RequestBody DashboardDTO dashboardDTO);
 
     @PostMapping("/ticket/status/stacked-column")
     @Operation(summary = "Statistics number of ticket by status with stacked column")
+    @PreAuthorize("hasRole('r:dashboard:view')")
     ResponseEntity<?> countTicketsByStatusWithStackedColumn(@RequestBody DashboardDTO dashboardDTO);
 
     @PostMapping("/visits/status")
     @Operation(summary = "Statistics number of visits to the building")
+    @PreAuthorize("hasRole('r:dashboard:view')")
     ResponseEntity<?> countVisitsByStatus(@RequestBody DashboardDTO dashboardDTO);
 
     @PostMapping("/visits/status/stacked-column")
     @Operation(summary = "Statistics number of visits by status with stacked column")
+    @PreAuthorize("hasRole('r:dashboard:view')")
     ResponseEntity<?> countVisitsByStatusWithStackedColumn(@RequestBody DashboardDTO dashboardDTO);
 
     @PostMapping("/tickets/period")
     @Operation(summary = "Statistics number of ticket in period")
+    @PreAuthorize("hasRole('r:dashboard:view')")
     ResponseEntity<?> countTicketsPeriod(@RequestBody DashboardDTO dashboardDTO);
 
     @Data
