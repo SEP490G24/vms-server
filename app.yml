@@ -1,9 +1,9 @@
-version: '3'
+version: "3"
 services:
   api-server:
     image: vmsacr.azurecr.io/api-vms:latest
     ports:
-      - 8000:8000
+      - "8000:8000"
     container_name: api-vms
     environment:
       - SERVER_PORT=8000
