@@ -109,7 +109,7 @@ public class UserServiceImpl implements IUserService {
      */
     List<UUID> getListDepartments(List<String> siteIds, List<String> departmentIds) {
 
-        if (SecurityUtils.getOrgId() == null && siteIds != null) {
+        if (SecurityUtils.getOrgId() == null && siteIds != null && !siteIds.isEmpty()) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "You don't have permission to do this.");
         }
         List<UUID> departments = new ArrayList<>();
