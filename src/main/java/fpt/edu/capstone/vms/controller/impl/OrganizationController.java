@@ -34,7 +34,11 @@ public class OrganizationController implements IOrganizationController {
 
     @Override
     public ResponseEntity<?> viewDetail() {
-        return ResponseEntity.ok(organizationService.findById(UUID.fromString(SecurityUtils.getOrgId())));
+        if (SecurityUtils.getUserDetails().isRealmAdmin() || SecurityUtils.getUserDetails().isOrganizationAdmin()) {
+            return ResponseEntity.ok(organizationService.findById(UUID.fromString(SecurityUtils.getOrgId())));
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -44,14 +48,22 @@ public class OrganizationController implements IOrganizationController {
 
     @Override
     public ResponseEntity<List<?>> findAll() {
-        return ResponseEntity.ok(organizationService.findAll());
+        if (SecurityUtils.getUserDetails().isRealmAdmin()) {
+            return ResponseEntity.ok(organizationService.findAll());
+        } else {
+            return null;
+        }
     }
 
     @Override
     public ResponseEntity<?> createOrganization(CreateOrganizationInfo organizationInfo) {
         try {
-            var organization = organizationService.save(mapper.map(organizationInfo, Organization.class));
-            return ResponseEntity.ok(organization);
+            if (SecurityUtils.getUserDetails().isRealmAdmin()) {
+                var organization = organizationService.save(mapper.map(organizationInfo, Organization.class));
+                return ResponseEntity.ok(organization);
+            } else {
+                return null;
+            }
         } catch (HttpClientErrorException e) {
             return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
         }
@@ -60,8 +72,12 @@ public class OrganizationController implements IOrganizationController {
     @Override
     public ResponseEntity<?> updateOrganization(UpdateOrganizationInfo updateOrganizationInfo, UUID id) {
         try {
-            var organization = organizationService.update(mapper.map(updateOrganizationInfo, Organization.class), id);
-            return ResponseEntity.ok(organization);
+            if (SecurityUtils.getUserDetails().isRealmAdmin()) {
+                var organization = organizationService.update(mapper.map(updateOrganizationInfo, Organization.class), id);
+                return ResponseEntity.ok(organization);
+            } else {
+                return null;
+            }
         } catch (HttpClientErrorException e) {
             return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
         }
@@ -69,24 +85,28 @@ public class OrganizationController implements IOrganizationController {
 
     @Override
     public ResponseEntity<?> filter(OrganizationFilter filter, @QueryParam("isPageable") boolean isPageable, Pageable pageable) {
-        return isPageable ? ResponseEntity.ok(
-            organizationService.filter(
-                pageable,
-                filter.getNames(),
-                filter.getCreatedOnStart(),
-                filter.getCreatedOnEnd(),
-                filter.getCreateBy(),
-                filter.getLastUpdatedBy(),
-                filter.getEnable(),
-                filter.getKeyword())) : ResponseEntity.ok(
-            organizationService.filter(
-                filter.getNames(),
-                filter.getCreatedOnStart(),
-                filter.getCreatedOnEnd(),
-                filter.getCreateBy(),
-                filter.getLastUpdatedBy(),
-                filter.getEnable(),
-                filter.getKeyword()));
+        if (SecurityUtils.getUserDetails().isRealmAdmin()) {
+            return isPageable ? ResponseEntity.ok(
+                organizationService.filter(
+                    pageable,
+                    filter.getNames(),
+                    filter.getCreatedOnStart(),
+                    filter.getCreatedOnEnd(),
+                    filter.getCreateBy(),
+                    filter.getLastUpdatedBy(),
+                    filter.getEnable(),
+                    filter.getKeyword())) : ResponseEntity.ok(
+                organizationService.filter(
+                    filter.getNames(),
+                    filter.getCreatedOnStart(),
+                    filter.getCreatedOnEnd(),
+                    filter.getCreateBy(),
+                    filter.getLastUpdatedBy(),
+                    filter.getEnable(),
+                    filter.getKeyword()));
+        } else {
+            return null;
+        }
     }
 
     @Data

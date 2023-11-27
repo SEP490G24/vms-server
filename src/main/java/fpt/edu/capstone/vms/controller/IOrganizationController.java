@@ -37,32 +37,26 @@ public interface IOrganizationController {
 
     @GetMapping("/view-detail")
     @Operation(summary = "View detail organization")
-    @PreAuthorize("hasRole('r:organization:find')")
     ResponseEntity<?> viewDetail();
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete organization")
-    @PreAuthorize("hasRole('r:organization:delete')")
     ResponseEntity<?> delete(@PathVariable UUID id);
 
     @GetMapping
     @Operation(summary = "Get all organization")
-    @PreAuthorize("hasRole('r:organization:find')")
     ResponseEntity<List<?>> findAll();
 
     @PostMapping()
     @Operation(summary = "Create new organization")
-    @PreAuthorize("hasRole('r:organization:create')")
     ResponseEntity<?> createOrganization(@RequestBody @Valid CreateOrganizationInfo organizationInfo);
 
     @PatchMapping("/{id}")
     @Operation(summary = "Update organization")
-    @PreAuthorize("hasRole('r:organization:update')")
     ResponseEntity<?> updateOrganization(@RequestBody @Valid UpdateOrganizationInfo organizationInfo, @PathVariable UUID id);
 
     @PostMapping("/filter")
     @Operation(summary = "Filter organization")
-    @PreAuthorize("hasRole('r:organization:find')")
     ResponseEntity<?> filter(@RequestBody OrganizationFilter organizationFilter, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
     @Data
