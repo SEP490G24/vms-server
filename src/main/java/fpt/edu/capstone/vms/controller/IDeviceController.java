@@ -14,6 +14,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -28,11 +30,21 @@ import java.util.UUID;
 
 
 @RestController
-@Tag(name = "Room Service")
+@Tag(name = "Device Service")
 @RequestMapping("/api/v1/device")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @PreAuthorize("isAuthenticated()")
 public interface IDeviceController {
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Find by id")
+    @PreAuthorize("hasRole('r:device:detail')")
+    ResponseEntity<?> findById(@PathVariable Integer id);
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete")
+    @PreAuthorize("hasRole('r:device:delete')")
+    ResponseEntity<?> delete(@PathVariable Integer id);
 
     @PostMapping()
     @Operation(summary = "Create new device")

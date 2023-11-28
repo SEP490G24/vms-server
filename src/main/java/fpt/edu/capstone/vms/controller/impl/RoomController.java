@@ -28,17 +28,20 @@ public class RoomController implements IRoomController {
 
     @Override
     public ResponseEntity<Room> findById(UUID id) {
-        return ResponseEntity.ok(roomService.findById(id));
+        var room = roomService.findById(id);
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, room.getSiteId().toString())) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "Not permission");
+        }
+        return ResponseEntity.ok(room);
     }
 
     @Override
     public ResponseEntity<Room> delete(UUID id) {
+        var room = roomService.findById(id);
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, room.getSiteId().toString())) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "Not permission");
+        }
         return roomService.delete(id);
-    }
-
-    @Override
-    public ResponseEntity<List<?>> findAll() {
-        return ResponseEntity.ok(roomService.findAll());
     }
 
     @Override

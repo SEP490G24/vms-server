@@ -104,18 +104,19 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
         if (ObjectUtils.isEmpty(departmentInfo))
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Object is empty");
 
-        if (StringUtils.isEmpty(departmentInfo.getSiteId()))
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "SiteId is null");
+        if (SecurityUtils.getOrgId() != null) {
+            if (!SecurityUtils.checkSiteAuthorization(siteRepository, departmentInfo.getSiteId().toString())) {
+                throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+            }
+        } else {
+            departmentInfo.setSiteId(SecurityUtils.getSiteId());
+        }
 
         if (StringUtils.isEmpty(departmentInfo.getCode())) {
             throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code is null");
         }
 
         UUID siteId = UUID.fromString(departmentInfo.getSiteId());
-
-        if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId.toString())) {
-            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "Can't update department in this site");
-        }
 
         var site = siteRepository.findById(siteId).orElse(null);
 

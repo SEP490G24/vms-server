@@ -3,7 +3,9 @@ package fpt.edu.capstone.vms.controller.impl;
 import fpt.edu.capstone.vms.controller.IDeviceController;
 import fpt.edu.capstone.vms.exception.HttpClientResponse;
 import fpt.edu.capstone.vms.persistence.entity.Device;
+import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.service.IDeviceService;
+import fpt.edu.capstone.vms.util.SecurityUtils;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
@@ -20,7 +22,26 @@ import java.util.List;
 @AllArgsConstructor
 public class DeviceController implements IDeviceController {
     private final IDeviceService deviceService;
+    private final SiteRepository siteRepository;
     private final ModelMapper mapper;
+
+    @Override
+    public ResponseEntity<?> findById(Integer id) {
+        var device = deviceService.findById(id);
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, device.getSiteId().toString())) {
+            throw new HttpClientErrorException(org.springframework.http.HttpStatus.FORBIDDEN, "Not permission");
+        }
+        return ResponseEntity.ok(device);
+    }
+
+    @Override
+    public ResponseEntity<?> delete(Integer id) {
+        var device = deviceService.findById(id);
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, device.getSiteId().toString())) {
+            throw new HttpClientErrorException(org.springframework.http.HttpStatus.FORBIDDEN, "Not permission");
+        }
+        return deviceService.delete(id);
+    }
 
     @Override
     public ResponseEntity<?> create(DeviceDto roomDto) {

@@ -17,7 +17,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.*;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_REALM_ROLE;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_RESOURCE_ROLE;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.REALM_ADMIN;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.SCOPE_ORGANIZATION;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.SCOPE_SITE;
 
 
 public class SecurityUtils {
@@ -96,6 +100,22 @@ public class SecurityUtils {
 
         if (!checkDepartment) {
             return false;
+        }
+        return true;
+    }
+
+    public static Boolean checkOrganizationAuthor(SiteRepository siteRepository, String organizationId) {
+
+        if (SecurityUtils.getOrgId() != null) {
+            if (!SecurityUtils.getOrgId().equals(organizationId)) {
+                return false;
+            }
+        } else {
+            if (SecurityUtils.getSiteId() == null) return false;
+            var check = siteRepository.existsByIdAndOrganizationId(UUID.fromString(SecurityUtils.getSiteId()), UUID.fromString(organizationId));
+            if (!check) {
+                return false;
+            }
         }
         return true;
     }

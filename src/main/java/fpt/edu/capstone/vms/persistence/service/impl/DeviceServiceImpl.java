@@ -12,7 +12,6 @@ import fpt.edu.capstone.vms.persistence.service.IDeviceService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import fpt.edu.capstone.vms.util.PageableUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -78,19 +77,21 @@ public class DeviceServiceImpl extends GenericServiceImpl<Device, Integer> imple
     public Device create(IDeviceController.DeviceDto deviceDto) {
         if (ObjectUtils.isEmpty(deviceDto))
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Object is empty");
-        if (StringUtils.isEmpty(deviceDto.getSiteId().toString()))
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "SiteId is null");
+        if (SecurityUtils.getOrgId() != null) {
+            if (!SecurityUtils.checkSiteAuthorization(siteRepository, deviceDto.getSiteId().toString())) {
+                throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+            }
+        } else {
+            deviceDto.setSiteId(UUID.fromString(SecurityUtils.getSiteId()));
+        }
         var site = siteRepository.findById(deviceDto.getSiteId()).orElse(null);
         if (ObjectUtils.isEmpty(site)) {
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Site is null");
         }
-        if (!SecurityUtils.checkSiteAuthorization(siteRepository, deviceDto.getSiteId().toString())) {
-            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
-        }
         var device = mapper.map(deviceDto, Device.class);
         device.setEnable(true);
         var deviceSave = deviceRepository.save(device);
-        auditLogRepository.save(new AuditLog(deviceDto.getSiteId().toString()
+        auditLogRepository.save(new AuditLog(site.getId().toString()
             , site.getOrganizationId().toString()
             , deviceSave.getId().toString()
             , DEVICE_TABLE_NAME

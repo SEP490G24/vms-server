@@ -4,7 +4,9 @@ import fpt.edu.capstone.vms.controller.ISettingSiteMapController;
 import fpt.edu.capstone.vms.exception.HttpClientResponse;
 import fpt.edu.capstone.vms.persistence.entity.SettingSiteMap;
 import fpt.edu.capstone.vms.persistence.entity.SettingSiteMapPk;
+import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.service.ISettingSiteMapService;
+import fpt.edu.capstone.vms.util.SecurityUtils;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +24,7 @@ public class SettingSiteMapController implements ISettingSiteMapController {
 
     private final ISettingSiteMapService settingSiteService;
     private final ModelMapper mapper;
+    private final SiteRepository siteRepository;
 
     /**
      * The function returns a ResponseEntity containing a SettingSiteMap object found by its siteId and settingId.
@@ -33,6 +36,9 @@ public class SettingSiteMapController implements ISettingSiteMapController {
      */
     @Override
     public ResponseEntity<SettingSiteMap> findById(String siteId, Long settingId) {
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
+            throw new HttpClientErrorException(org.springframework.http.HttpStatus.FORBIDDEN, "Not permission");
+        }
         SettingSiteMapPk pk = new SettingSiteMapPk(settingId, UUID.fromString(siteId));
         return ResponseEntity.ok(settingSiteService.findById(pk));
     }
@@ -47,6 +53,9 @@ public class SettingSiteMapController implements ISettingSiteMapController {
      */
     @Override
     public ResponseEntity<SettingSiteMap> delete(String siteId, Long settingId) {
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
+            throw new HttpClientErrorException(org.springframework.http.HttpStatus.FORBIDDEN, "Not permission");
+        }
         SettingSiteMapPk pk = new SettingSiteMapPk(settingId, UUID.fromString(siteId));
         return settingSiteService.delete(pk);
     }
