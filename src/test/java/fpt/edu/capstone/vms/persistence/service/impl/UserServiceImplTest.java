@@ -2,8 +2,11 @@ package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.IUserController;
+import fpt.edu.capstone.vms.oauth2.IRoleResource;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
 import fpt.edu.capstone.vms.persistence.entity.AuditLog;
+import fpt.edu.capstone.vms.persistence.entity.Department;
+import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.entity.User;
 import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
 import fpt.edu.capstone.vms.persistence.repository.DepartmentRepository;
@@ -15,8 +18,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -34,9 +35,11 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -51,39 +54,41 @@ import static org.mockito.Mockito.when;
 @DisplayName("User Service Unit Tests")
 class UserServiceImplTest {
 
-    @InjectMocks
     UserServiceImpl userService;
     SecurityContext securityContext;
     Authentication authentication;
 
-    @Mock
     SiteRepository siteRepository;
-    @Mock
     UserRepository userRepository;
-    @Mock
     FileRepository fileRepository;
-    @Mock
     FileServiceImpl fileService;
-    @Mock
     IUserResource userResource;
+    IRoleResource roleResource;
+
+    ModelMapper mapper;
+    DepartmentRepository departmentRepository;
+    AuditLogRepository auditLogRepository;
+
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.initMocks(this);
+        siteRepository = mock(SiteRepository.class);
+        userRepository = mock(UserRepository.class);
+        fileRepository = mock(FileRepository.class);
+        fileService = mock(FileServiceImpl.class);
+        userResource = mock(IUserResource.class);
+        roleResource = mock(IRoleResource.class);
+        mapper = mock(ModelMapper.class);
+        departmentRepository = mock(DepartmentRepository.class);
+        auditLogRepository = mock(AuditLogRepository.class);
+        securityContext = mock(SecurityContext.class);
+        authentication = mock(Authentication.class);
+        userService = new UserServiceImpl(userRepository, fileRepository, fileService, userResource, siteRepository, mapper, departmentRepository, auditLogRepository, roleResource);
     }
-
-    @Mock
-    ModelMapper mapper;
-    @Mock
-    DepartmentRepository departmentRepository;
-    @Mock
-    AuditLogRepository auditLogRepository;
-
 
     @Test
     void testFilter() {
-        securityContext = mock(SecurityContext.class);
-        authentication = mock(Authentication.class);
         // Mock SecurityContext and Authentication
         Jwt jwt = mock(Jwt.class);
 
@@ -141,23 +146,8 @@ class UserServiceImplTest {
             communeId
         );
 
-//        // Verify that userRepository.filter was called with the correct parameters
-//        verify(userRepository).filter(
-//            pageable,
-//            usernames,
-//            role,
-//            createdOnStart,
-//            createdOnEnd,
-//            enable,
-//            keyword,
-//            departmentIds1, // Since getListDepartments is mocked, an empty list is expected here
-//            provinceId,
-//            districtId,
-//            communeId
-//        );
-
         // Verify that the result is as expected
-        assertEquals(null, result);
+        assertEquals(expectedPage, result);
     }
 
     @Test
@@ -190,5 +180,70 @@ class UserServiceImplTest {
 
         // Add more assertions based on the expected behavior of your method
         assertEquals("admin", result.getId()); // Adjust this based on the actual behavior of your method
+    }
+
+    @Test
+    void testCreateUser() {
+        // Mock SecurityContext and Authentication
+        Jwt jwt = mock(Jwt.class);
+
+        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("3d65906a-c6e3-4e9d-bbc6-ba20938f9cad");
+        when(jwt.getClaim(Constants.Claims.Name)).thenReturn("username");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("preferred_username");
+        when(jwt.getClaim(Constants.Claims.GivenName)).thenReturn("given_name");
+        when(jwt.getClaim(Constants.Claims.FamilyName)).thenReturn("family_name");
+        when(jwt.getClaim(Constants.Claims.Email)).thenReturn("email");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        // Mock input data
+        IUserResource.UserDto userDto = new IUserResource.UserDto();
+        userDto.setDepartmentId(UUID.randomUUID()); // Set the departmentId accordingly
+        userDto.setUsername("testUser");
+        userDto.setRoles(Arrays.asList("ROLE_USER"));
+
+        Department department = new Department();
+        department.setSiteId(UUID.fromString("3d65906a-c6e3-4e9d-bbc6-ba20938f9cad")); // Set the siteId accordingly
+        department.setCode("VMS");
+        when(departmentRepository.findById(userDto.getDepartmentId())).thenReturn(Optional.of(department));
+
+
+        Site site = new Site();
+        site.setCode("VMS"); // Set the code accordingly (e.g. VMS)
+        site.setOrganizationId(UUID.randomUUID()); // Set the organizationId accordingly
+        when(siteRepository.findById(any(UUID.class))).thenReturn(Optional.of(site));
+
+        department.setSite(site);
+        // Mock external service calls
+        User userEntity = new User();
+        userEntity.setUsername("admin");
+        userEntity.setOpenid("keycloakUserId");
+        // Mock external service calls
+        when(userResource.create(any(IUserResource.UserDto.class))).thenReturn("keycloakUserId");
+        when(mapper.map(userDto, User.class)).thenReturn(userEntity);
+        when(userRepository.save(any(User.class))).thenReturn(userEntity);
+
+        // Call the method
+        User result = userService.createUser(userDto);
+
+        // Mock repository save calls
+
+        // Mock repository save for audit log
+        when(auditLogRepository.save(any(AuditLog.class))).thenReturn(mock(AuditLog.class));
+
+
+        // Verify the interactions and assertions
+        verify(siteRepository, times(1)).findById(any(UUID.class));
+        verify(userResource, times(1)).create(any(IUserResource.UserDto.class));
+        verify(userRepository, times(1)).save(any(User.class));
+        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
+
+        // Add more assertions based on the expected behavior of your method
+        assertNotNull(result);
+        assertEquals("keycloakUserId", result.getOpenid());
+        // Add assertions based on the expected structure and content of the result
     }
 }

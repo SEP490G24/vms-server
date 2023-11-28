@@ -60,4 +60,9 @@ public interface DeviceRepository extends GenericRepository<Device, Integer> {
         @Param("createdBy") @Nullable String createdBy);
 
     Device findByMacIp(String macIp);
+
+    @Query(value = "select u from Device u " +
+        "left join Room r on r.deviceId = u.id " +
+        "where ((coalesce(:siteIds) is null) or (u.siteId in :siteIds)) and r.deviceId is null and u.deviceType = 'DOOR'")
+    List<Device> findAllWithNotUseInSite(@Param("siteIds") Collection<UUID> siteIds);
 }

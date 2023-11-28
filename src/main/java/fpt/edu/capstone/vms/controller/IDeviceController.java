@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
@@ -47,6 +48,12 @@ public interface IDeviceController {
     @Operation(summary = "Filter")
     @PreAuthorize("hasRole('r:device:find')")
     ResponseEntity<?> filter(@RequestBody @Valid DeviceFilterDTO deviceFilterDTO, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
+
+    @PostMapping("/not-use")
+    @Operation(summary = "Find all device with not use in site")
+    @PreAuthorize("hasRole('r:device:find')")
+    ResponseEntity<?> findAllWithNotUseInSite(@RequestParam("siteId") String siteId);
+
 
     @Data
     @Builder

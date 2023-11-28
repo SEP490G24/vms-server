@@ -3,6 +3,7 @@ package fpt.edu.capstone.vms.persistence.service.impl;
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.IDashboardController;
 import fpt.edu.capstone.vms.persistence.dto.dashboard.MultiLineResponse;
+import fpt.edu.capstone.vms.persistence.entity.Ticket;
 import fpt.edu.capstone.vms.persistence.repository.DashboardRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.util.SecurityUtils;
@@ -584,6 +585,41 @@ class DashboardServiceImplTest {
 
         // Add more assertions based on the expected behavior of your method
         assertNotNull(result);
+        // Add assertions based on the expected structure and content of the result
+    }
+
+    @Test
+    void testCountTicketsPeriod() {
+        // Initialize mocks
+        MockitoAnnotations.openMocks(this);
+
+        // Mock input data
+        IDashboardController.DashboardDTO dashboardDTO = new IDashboardController.DashboardDTO();
+        dashboardDTO.setSites(new ArrayList<>());
+
+        // Mock external service calls
+        when(dashboardRepository.getUpcomingMeetings(any(LocalDateTime.class), any(LocalDateTime.class), anyList()))
+            .thenReturn(Arrays.asList(new Ticket(/* Your mocked data */)));
+        when(dashboardRepository.getOngoingMeetings(any(LocalDateTime.class), anyList()))
+            .thenReturn(Arrays.asList(new Ticket(/* Your mocked data */)));
+        when(dashboardRepository.getRecentlyFinishedMeetings(any(LocalDateTime.class), any(LocalDateTime.class), anyList()))
+            .thenReturn(Arrays.asList(new Ticket(/* Your mocked data */)));
+
+        // Mock repository calls
+
+        // Call the method
+        IDashboardController.TicketsPeriodResponse result = dashboardService.countTicketsPeriod(dashboardDTO);
+
+        // Verify the interactions and assertions
+        verify(dashboardRepository, times(1)).getUpcomingMeetings(any(LocalDateTime.class), any(LocalDateTime.class), anyList());
+        verify(dashboardRepository, times(1)).getOngoingMeetings(any(LocalDateTime.class), anyList());
+        verify(dashboardRepository, times(1)).getRecentlyFinishedMeetings(any(LocalDateTime.class), any(LocalDateTime.class), anyList());
+
+        // Add more assertions based on the expected behavior of your method
+        assertNotNull(result);
+        assertNotNull(result.getUpcomingMeetings());
+        assertNotNull(result.getOngoingMeetings());
+        assertNotNull(result.getRecentlyFinishedMeetings());
         // Add assertions based on the expected structure and content of the result
     }
 }

@@ -34,4 +34,6 @@ public interface IDeviceService extends IGenericService<Device, Integer> {
         Boolean enable,
         String keyword,
         String createBy);
+
+    List<Device> findAllWithNotUseInSite(List<String> siteIds);
 }

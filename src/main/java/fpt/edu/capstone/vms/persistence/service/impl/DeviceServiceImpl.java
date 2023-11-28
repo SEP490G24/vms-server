@@ -131,4 +131,10 @@ public class DeviceServiceImpl extends GenericServiceImpl<Device, Integer> imple
             keyword != null ? keyword.toUpperCase() : null, createBy);
     }
 
+    @Override
+    public List<Device> findAllWithNotUseInSite(List<String> siteIds) {
+        List<UUID> sites = SecurityUtils.getListSiteToUUID(siteRepository, siteIds);
+        return deviceRepository.findAllWithNotUseInSite(sites);
+    }
+
 }
