@@ -5,6 +5,7 @@ import fpt.edu.capstone.vms.persistence.repository.DepartmentRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -17,7 +18,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.*;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_REALM_ROLE;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_RESOURCE_ROLE;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.REALM_ADMIN;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.SCOPE_ORGANIZATION;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.SCOPE_SITE;
 
 
 public class SecurityUtils {
@@ -98,6 +103,24 @@ public class SecurityUtils {
             return false;
         }
         return true;
+    }
+
+    public static String getSiteIdToString(SiteRepository siteRepository, String siteId) {
+
+        if (SecurityUtils.getOrgId() == null && siteId != null && StringUtils.isEmpty(siteId)) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+        }
+        String siteIdString = "";
+        if (SecurityUtils.getOrgId() != null) {
+            if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
+                throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+            }
+            siteIdString = siteId;
+        } else {
+            siteIdString = SecurityUtils.getSiteId();
+        }
+
+        return siteIdString;
     }
 
     public static List<UUID> getListSiteToUUID(SiteRepository siteRepository, List<String> siteId) {

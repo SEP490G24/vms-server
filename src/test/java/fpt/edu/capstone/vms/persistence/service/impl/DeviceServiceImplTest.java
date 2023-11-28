@@ -102,6 +102,7 @@ class DeviceServiceImplTest {
 
         device.setId(1);
         Site site = new Site();
+        site.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
         site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
         when(mapper.map(deviceDto, Device.class)).thenReturn(device);
         when(deviceRepository.findByMacIp(device.getMacIp())).thenReturn(device);
