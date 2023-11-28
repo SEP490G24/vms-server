@@ -1,5 +1,6 @@
 package fpt.edu.capstone.vms.persistence.repository;
 
+import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.persistence.entity.Reason;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -50,5 +51,5 @@ public interface ReasonRepository extends GenericRepository<Reason, UUID> {
         @Param("enable") @Nullable Boolean isEnable,
         @Param("keyword") @Nullable String keyword);
 
-    List<Reason> findAllBySiteIdAndEnableIsTrue(UUID siteId);
+    List<Reason> findAllByType(Constants.Reason reason);
 }

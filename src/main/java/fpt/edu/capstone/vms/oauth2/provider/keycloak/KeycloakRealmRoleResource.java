@@ -71,7 +71,7 @@ public class KeycloakRealmRoleResource implements IRoleResource {
         var filteredRoles = roles.stream()
             .filter(roleRepresentation -> {
                 if (roleBasePayload.getCode() == null || roleRepresentation.getName().contains(roleBasePayload.getCode())) {
-                    List<String> siteIds = roleBasePayload.getAttributes() != null ? roleBasePayload.getAttributes().get("siteId") : null;
+                    List<String> siteIds = roleBasePayload.getAttributes() != null ? roleBasePayload.getAttributes().get("siteIds") : null;
                     List<String> names = roleBasePayload.getAttributes() != null ? roleBasePayload.getAttributes().get("name") : null;
                     return (siteIds == null || siteIds.isEmpty() ||
                         siteIds.stream().anyMatch(siteId ->
@@ -101,24 +101,30 @@ public class KeycloakRealmRoleResource implements IRoleResource {
     @Override
     public List<RoleDto> filter(IRoleController.RoleBasePayload roleBasePayload) {
         List<RoleRepresentation> roles = this.rolesResource.list(false);
-
-        var filteredRoles = roles.stream()
-            .filter(roleRepresentation -> {
-                if (roleBasePayload.getCode() == null || roleRepresentation.getName().contains(roleBasePayload.getCode())) {
-                    List<String> siteIds = roleBasePayload.getAttributes() != null ? roleBasePayload.getAttributes().get("siteId") : null;
-                    List<String> names = roleBasePayload.getAttributes() != null ? roleBasePayload.getAttributes().get("name") : null;
-                    return (siteIds == null || siteIds.isEmpty() ||
-                        siteIds.stream().anyMatch(siteId ->
-                            roleRepresentation.getAttributes().get("site_id") != null &&
-                                roleRepresentation.getAttributes().get("site_id").contains(siteId)))
-                        && (names == null || names.isEmpty() ||
-                        names.stream().anyMatch(name ->
-                            roleRepresentation.getAttributes().get("name") != null &&
-                                roleRepresentation.getAttributes().get("name").get(0).contains(name)));
-                }
-                return false;
-            })
-            .toList();
+        List<RoleRepresentation> filteredRoles;
+        if (SecurityUtils.getUserDetails().isRealmAdmin()) {
+            filteredRoles = roles.stream()
+                .filter(roleRepresentation -> roleRepresentation.getAttributes().containsKey("org_id"))
+                .toList();
+        } else {
+            filteredRoles = roles.stream()
+                .filter(roleRepresentation -> {
+                    if (roleBasePayload.getCode() == null || roleRepresentation.getName().contains(roleBasePayload.getCode())) {
+                        List<String> siteIds = roleBasePayload.getAttributes() != null ? roleBasePayload.getAttributes().get("siteIds") : null;
+                        List<String> names = roleBasePayload.getAttributes() != null ? roleBasePayload.getAttributes().get("name") : null;
+                        return (siteIds == null || siteIds.isEmpty() ||
+                            siteIds.stream().anyMatch(siteId ->
+                                roleRepresentation.getAttributes().get("site_id") != null &&
+                                    roleRepresentation.getAttributes().get("site_id").contains(siteId)))
+                            && (names == null || names.isEmpty() ||
+                            names.stream().anyMatch(name ->
+                                roleRepresentation.getAttributes().get("name") != null &&
+                                    roleRepresentation.getAttributes().get("name").get(0).contains(name)));
+                    }
+                    return false;
+                })
+                .toList();
+        }
         var results = (List<RoleDto>) mapper.map(filteredRoles, new TypeToken<List<RoleDto>>() {
         }.getType());
         results.forEach(this::updatePermission4Role);
