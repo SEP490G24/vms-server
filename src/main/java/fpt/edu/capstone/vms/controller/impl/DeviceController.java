@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -70,6 +71,12 @@ public class DeviceController implements IDeviceController {
         return isPageable ? ResponseEntity.ok(new PageImpl(deviceFilterResponses, pageable, deviceEntityPageable.getTotalElements()))
             : ResponseEntity.ok(mapper.map(deviceEntity, new TypeToken<List<DeviceFilterResponse>>() {
         }.getType()));
+    }
+
+    @Override
+    public ResponseEntity<?> findAllWithNotUseInSite(String siteId) {
+        List<String> sites = new ArrayList<>();
+        return ResponseEntity.ok(deviceService.findAllWithNotUseInSite(sites));
     }
 
 
