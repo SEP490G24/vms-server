@@ -28,7 +28,7 @@ import java.util.UUID;
 
 
 @RestController
-@Tag(name = "Room Service")
+@Tag(name = "Device Service")
 @RequestMapping("/api/v1/device")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @PreAuthorize("isAuthenticated()")
