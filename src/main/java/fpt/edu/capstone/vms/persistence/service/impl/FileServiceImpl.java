@@ -7,6 +7,8 @@ import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.azure.storage.blob.models.BlobItem;
 import com.azure.storage.common.StorageSharedKeyCredential;
 import fpt.edu.capstone.vms.constants.Constants;
+import fpt.edu.capstone.vms.constants.ErrorApp;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.persistence.entity.File;
 import fpt.edu.capstone.vms.persistence.repository.FileRepository;
 import fpt.edu.capstone.vms.persistence.service.IFileService;
@@ -14,10 +16,8 @@ import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
@@ -55,7 +55,7 @@ public class FileServiceImpl extends GenericServiceImpl<File, UUID> implements I
         var newFile = fileRepository.findByName(newImage);
 
         if (ObjectUtils.isEmpty(newFile))
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can not found image in file");
+            throw new CustomException(ErrorApp.FILE_NOT_FOUND);
         BlobClient blobClient = getBlobClient(oldImage);
         blobClient.deleteIfExists();
         if (!ObjectUtils.isEmpty(oldFile)) {
@@ -68,7 +68,7 @@ public class FileServiceImpl extends GenericServiceImpl<File, UUID> implements I
     @Override
     public File uploadImage(MultipartFile file) {
         if (file.isEmpty()) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "File empty");
+            throw new CustomException(ErrorApp.FILE_EMPTY);
         }
         log.info("Upload image");
         // Get original file name
@@ -77,7 +77,7 @@ public class FileServiceImpl extends GenericServiceImpl<File, UUID> implements I
         String extension = originalFilename.substring(originalFilename.lastIndexOf(".") + 1);
 
         if (!isValidImageExtension(extension)) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Invalid image file extension.");
+            throw new CustomException(ErrorApp.FILE_INVALID_IMAGE_EXTENSION);
         }
 
         // generate url for image
@@ -86,7 +86,7 @@ public class FileServiceImpl extends GenericServiceImpl<File, UUID> implements I
             long fileSizeInMB = file.getSize() / (1024 * 1024);
 
             if (fileSizeInMB > 10) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "File over 10mb");
+                throw new CustomException(ErrorApp.FILE_OVER_SIZE);
             }
 
             ByteArrayOutputStream thumbnailOutputStream = new ByteArrayOutputStream();

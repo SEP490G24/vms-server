@@ -47,12 +47,6 @@ public interface ITicketController {
     @Operation(summary = "Delete ticket")
     @PreAuthorize("hasRole('r:ticket:delete')")
     ResponseEntity<?> delete(@PathVariable String id);
-
-    @GetMapping
-    @Operation(summary = "Get all ticket")
-    @PreAuthorize("hasRole('r:ticket:filter')")
-    ResponseEntity<List<?>> findAll();
-
     @PostMapping()
     @Operation(summary = "Create new ticket")
     @PreAuthorize("hasRole('r:ticket:create')")

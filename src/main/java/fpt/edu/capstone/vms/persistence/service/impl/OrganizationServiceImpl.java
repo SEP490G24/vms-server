@@ -1,6 +1,8 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.constants.Constants;
+import fpt.edu.capstone.vms.constants.ErrorApp;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.oauth2.IPermissionResource;
 import fpt.edu.capstone.vms.oauth2.IRoleResource;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
@@ -8,7 +10,11 @@ import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.entity.Organization;
 import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
 import fpt.edu.capstone.vms.persistence.repository.OrganizationRepository;
-import fpt.edu.capstone.vms.persistence.service.*;
+import fpt.edu.capstone.vms.persistence.service.IFileService;
+import fpt.edu.capstone.vms.persistence.service.IOrganizationService;
+import fpt.edu.capstone.vms.persistence.service.IPermissionService;
+import fpt.edu.capstone.vms.persistence.service.IRoleService;
+import fpt.edu.capstone.vms.persistence.service.IUserService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import fpt.edu.capstone.vms.util.PageableUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
@@ -17,14 +23,18 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 @Service
 public class OrganizationServiceImpl extends GenericServiceImpl<Organization, UUID> implements IOrganizationService {
@@ -52,24 +62,24 @@ public class OrganizationServiceImpl extends GenericServiceImpl<Organization, UU
     public Organization update(Organization entity, UUID id) {
 
         if (StringUtils.isEmpty(id.toString())) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Id of organization is null");
+            throw new CustomException(ErrorApp.ORGANIZATION_ID_NULL);
         }
 
         if (StringUtils.isEmpty(entity.getCode())) {
             if (organizationRepository.existsByCode(entity.getCode())) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code of organization is exist");
+                throw new CustomException(ErrorApp.ORGANIZATION_CODE_EXIST);
             }
         }
 
         if (!SecurityUtils.getOrgId().equals(id.toString())) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "You are not in organization to update");
+            throw new CustomException(ErrorApp.ORGANIZATION_NOT_PERMISSION);
         }
-        if (ObjectUtils.isEmpty(entity)) throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Object is empty");
+        if (ObjectUtils.isEmpty(entity)) throw new CustomException(ErrorApp.OBJECT_NOT_EMPTY);
         var organizationEntity = organizationRepository.findById(id).orElse(null);
 
         var oldOrganization = organizationEntity;
         if (ObjectUtils.isEmpty(organizationEntity))
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't found organization by id: " + id);
+            throw new CustomException(ErrorApp.ORGANIZATION_NOT_FOUND);
 
         if (entity.getLogo() != null && !entity.getLogo().equals(organizationEntity.getLogo())) {
             if (iFileService.deleteImage(organizationEntity.getLogo(), entity.getLogo())) {
@@ -92,16 +102,16 @@ public class OrganizationServiceImpl extends GenericServiceImpl<Organization, UU
     public Organization save(Organization entity) {
 
         if (!SecurityUtils.getUserDetails().isRealmAdmin()) {
-            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+            throw new CustomException(ErrorApp.ORGANIZATION_NOT_PERMISSION);
         }
 
         if (StringUtils.isEmpty(entity.getCode()))
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code is null");
+            throw new CustomException(ErrorApp.OBJECT_CODE_NULL);
 
         if (organizationRepository.existsByCode(entity.getCode())) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code of organization is exist");
+            throw new CustomException(ErrorApp.ORGANIZATION_CODE_EXIST);
         }
-        if (ObjectUtils.isEmpty(entity)) throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Object is empty");
+        if (ObjectUtils.isEmpty(entity)) throw new CustomException(ErrorApp.OBJECT_NOT_EMPTY);
         entity.setEnable(true);
 
         Organization organization = organizationRepository.save(entity);
