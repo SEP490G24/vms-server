@@ -5,7 +5,6 @@ import fpt.edu.capstone.vms.persistence.repository.DepartmentRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import lombok.Data;
 import lombok.experimental.Accessors;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -105,22 +104,20 @@ public class SecurityUtils {
         return true;
     }
 
-    public static String getSiteIdToString(SiteRepository siteRepository, String siteId) {
+    public static Boolean checkOrganizationAuthor(SiteRepository siteRepository, String organizationId) {
 
-        if (SecurityUtils.getOrgId() == null && siteId != null && StringUtils.isEmpty(siteId)) {
-            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
-        }
-        String siteIdString = "";
         if (SecurityUtils.getOrgId() != null) {
-            if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
-                throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+            if (!SecurityUtils.getOrgId().equals(organizationId)) {
+                return false;
             }
-            siteIdString = siteId;
         } else {
-            siteIdString = SecurityUtils.getSiteId();
+            if (SecurityUtils.getSiteId() == null) return false;
+            var check = siteRepository.existsByIdAndOrganizationId(UUID.fromString(SecurityUtils.getSiteId()), UUID.fromString(organizationId));
+            if (!check) {
+                return false;
+            }
         }
-
-        return siteIdString;
+        return true;
     }
 
     public static List<UUID> getListSiteToUUID(SiteRepository siteRepository, List<String> siteId) {

@@ -8,7 +8,15 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -20,19 +28,8 @@ import java.util.List;
 @PreAuthorize("isAuthenticated()")
 public interface ISettingController {
 
-    @GetMapping("/{id}")
-    @Operation(summary = "Find by id")
-    @PreAuthorize("hasRole('r:setting:detail')")
-    ResponseEntity<?> findById(@PathVariable Long id);
-
-    @DeleteMapping("/{id}")
-    @Operation(summary = "Delete")
-    @PreAuthorize("hasRole('r:setting:delete')")
-    ResponseEntity<?> delete(@PathVariable Long id);
-
     @PutMapping("/{id}")
     @Operation(summary = "Update setting site")
-    @PreAuthorize("hasRole('r:setting:update')")
     ResponseEntity<?> updateSettingGroup(@PathVariable Long id, @RequestBody @Valid UpdateSettingInfo settingInfo);
 
     @GetMapping
@@ -41,7 +38,6 @@ public interface ISettingController {
     ResponseEntity<List<?>> findAll(@RequestParam(value = "groupId", required = false) Integer groupId, @RequestParam(value = "siteId", required = false) String siteId);
 
     @PostMapping()
-    @PreAuthorize("hasRole('r:setting:create')")
     ResponseEntity<?> createSetting(@RequestBody @Valid CreateSettingInfo settingInfo);
 
     @Data

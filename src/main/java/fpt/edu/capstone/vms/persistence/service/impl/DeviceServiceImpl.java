@@ -77,8 +77,14 @@ public class DeviceServiceImpl extends GenericServiceImpl<Device, Integer> imple
     public Device create(IDeviceController.DeviceDto deviceDto) {
         if (ObjectUtils.isEmpty(deviceDto))
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Object is empty");
-        String siteId = SecurityUtils.getSiteIdToString(siteRepository, deviceDto.getSiteId().toString());
-        var site = siteRepository.findById(UUID.fromString(siteId)).orElse(null);
+        if (SecurityUtils.getOrgId() != null) {
+            if (!SecurityUtils.checkSiteAuthorization(siteRepository, deviceDto.getSiteId().toString())) {
+                throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+            }
+        } else {
+            deviceDto.setSiteId(UUID.fromString(SecurityUtils.getSiteId()));
+        }
+        var site = siteRepository.findById(deviceDto.getSiteId()).orElse(null);
         if (ObjectUtils.isEmpty(site)) {
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Site is null");
         }

@@ -23,15 +23,6 @@ public class SettingController implements ISettingController {
     private final SiteRepository siteRepository;
     private final ModelMapper mapper;
 
-    @Override
-    public ResponseEntity<Setting> findById(Long id) {
-        return ResponseEntity.ok(settingService.findById(id));
-    }
-
-    @Override
-    public ResponseEntity<Setting> delete(Long id) {
-        return settingService.delete(id);
-    }
 
     /**
      * The function updates a setting group with the provided ID and returns a ResponseEntity with the updated setting or
@@ -47,8 +38,12 @@ public class SettingController implements ISettingController {
     @Override
     public ResponseEntity<?> updateSettingGroup(Long id, UpdateSettingInfo settingInfo) {
         try {
-            var setting = settingService.update(mapper.map(settingInfo, Setting.class), id);
-            return ResponseEntity.ok(setting);
+            if (SecurityUtils.getUserDetails().isRealmAdmin()) {
+                var setting = settingService.update(mapper.map(settingInfo, Setting.class), id);
+                return ResponseEntity.ok(setting);
+            } else {
+                throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this");
+            }
         } catch (HttpClientErrorException e) {
             return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
         }
@@ -95,8 +90,12 @@ public class SettingController implements ISettingController {
     @Override
     public ResponseEntity<?> createSetting(CreateSettingInfo settingInfo) {
         try {
-            var setting = settingService.save(mapper.map(settingInfo, Setting.class));
-            return ResponseEntity.ok(setting);
+            if (SecurityUtils.getUserDetails().isRealmAdmin()) {
+                var setting = settingService.save(mapper.map(settingInfo, Setting.class));
+                return ResponseEntity.ok(setting);
+            } else {
+                throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this");
+            }
         } catch (HttpClientErrorException e) {
             return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
         }

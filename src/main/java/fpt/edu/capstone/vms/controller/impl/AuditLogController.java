@@ -2,8 +2,10 @@ package fpt.edu.capstone.vms.controller.impl;
 
 import fpt.edu.capstone.vms.controller.IAuditLogController;
 import fpt.edu.capstone.vms.persistence.entity.AuditLog;
+import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.service.excel.ExportAuditLog;
 import fpt.edu.capstone.vms.persistence.service.impl.AuditLogServiceImpl;
+import fpt.edu.capstone.vms.util.SecurityUtils;
 import lombok.AllArgsConstructor;
 import net.sf.jasperreports.engine.JRException;
 import org.apache.http.HttpStatus;
@@ -12,6 +14,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.UUID;
 
@@ -20,14 +23,23 @@ import java.util.UUID;
 public class AuditLogController implements IAuditLogController {
     private final AuditLogServiceImpl auditLogService;
     private final ExportAuditLog exportAuditLog;
+    private final SiteRepository siteRepository;
 
     @Override
     public ResponseEntity<AuditLog> findById(UUID id) {
-        return ResponseEntity.ok(auditLogService.findById(id));
+        var auditLog = auditLogService.findById(id);
+        if (!SecurityUtils.checkOrganizationAuthor(siteRepository, auditLog.getOrganizationId())) {
+            throw new HttpClientErrorException(org.springframework.http.HttpStatus.FORBIDDEN, "Not permission");
+        }
+        return ResponseEntity.ok(auditLog);
     }
 
     @Override
     public ResponseEntity<AuditLog> delete(UUID id) {
+        var auditLog = auditLogService.findById(id);
+        if (!SecurityUtils.checkOrganizationAuthor(siteRepository, auditLog.getOrganizationId())) {
+            throw new HttpClientErrorException(org.springframework.http.HttpStatus.FORBIDDEN, "Not permission");
+        }
         return auditLogService.delete(id);
     }
 

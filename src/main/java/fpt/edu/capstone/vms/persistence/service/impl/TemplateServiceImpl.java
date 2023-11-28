@@ -11,7 +11,6 @@ import fpt.edu.capstone.vms.persistence.service.ITemplateService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import fpt.edu.capstone.vms.util.PageableUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -74,13 +73,15 @@ public class TemplateServiceImpl extends GenericServiceImpl<Template, UUID> impl
     public Template create(ITemplateController.TemplateDto templateDto) {
         if (ObjectUtils.isEmpty(templateDto))
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Object is empty");
-        if (StringUtils.isEmpty(templateDto.getSiteId().toString()))
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "SiteId is null");
-        var site = siteRepository.findById(templateDto.getSiteId()).orElse(null);
-
-        if (!SecurityUtils.checkSiteAuthorization(siteRepository, templateDto.getSiteId().toString())) {
-            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+        if (SecurityUtils.getOrgId() != null) {
+            if (!SecurityUtils.checkSiteAuthorization(siteRepository, templateDto.getSiteId().toString())) {
+                throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+            }
+        } else {
+            templateDto.setSiteId(UUID.fromString(SecurityUtils.getSiteId()));
         }
+
+        var site = siteRepository.findById(templateDto.getSiteId()).orElse(null);
         var template = mapper.map(templateDto, Template.class);
         template.setEnable(true);
         var templateNew = templateRepository.save(template);

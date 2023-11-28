@@ -4,7 +4,9 @@ import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ITemplateController;
 import fpt.edu.capstone.vms.exception.HttpClientResponse;
 import fpt.edu.capstone.vms.persistence.entity.Template;
+import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.service.ITemplateService;
+import fpt.edu.capstone.vms.util.SecurityUtils;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
@@ -22,20 +24,24 @@ import java.util.UUID;
 public class TemplateController implements ITemplateController {
     private final ITemplateService templateService;
     private final ModelMapper mapper;
+    private final SiteRepository siteRepository;
 
     @Override
     public ResponseEntity<Template> findById(UUID id) {
-        return ResponseEntity.ok(templateService.findById(id));
+        var template = templateService.findById(id);
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, template.getSiteId().toString())) {
+            throw new HttpClientErrorException(org.springframework.http.HttpStatus.FORBIDDEN, "Not permission");
+        }
+        return ResponseEntity.ok(template);
     }
 
     @Override
     public ResponseEntity<Template> delete(UUID id) {
+        var template = templateService.findById(id);
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, template.getSiteId().toString())) {
+            throw new HttpClientErrorException(org.springframework.http.HttpStatus.FORBIDDEN, "Not permission");
+        }
         return templateService.delete(id);
-    }
-
-    @Override
-    public ResponseEntity<List<?>> findAll() {
-        return ResponseEntity.ok(templateService.findAll());
     }
 
     @Override

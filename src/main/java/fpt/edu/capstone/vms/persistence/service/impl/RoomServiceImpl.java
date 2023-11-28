@@ -12,7 +12,6 @@ import fpt.edu.capstone.vms.persistence.service.IRoomService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import fpt.edu.capstone.vms.util.PageableUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -90,8 +89,15 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
     public Room create(IRoomController.RoomDto roomDto) {
         if (ObjectUtils.isEmpty(roomDto))
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Object is empty");
-        if (StringUtils.isEmpty(roomDto.getSiteId().toString()))
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "SiteId is null");
+
+        if (SecurityUtils.getOrgId() != null) {
+            if (!SecurityUtils.checkSiteAuthorization(siteRepository, roomDto.getSiteId().toString())) {
+                throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+            }
+        } else {
+            roomDto.setSiteId(UUID.fromString(SecurityUtils.getSiteId()));
+        }
+
         var site = siteRepository.findById(roomDto.getSiteId()).orElse(null);
         if (ObjectUtils.isEmpty(site)) {
             throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Site is null");
