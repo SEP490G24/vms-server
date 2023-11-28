@@ -3,17 +3,18 @@ package fpt.edu.capstone.vms.controller;
 import fpt.edu.capstone.vms.constants.Constants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.QueryParam;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,40 +28,9 @@ import java.util.UUID;
 @PreAuthorize("isAuthenticated()")
 public interface IReasonController {
 
-    @GetMapping("/{id}")
-    @Operation(summary = "Find by id")
-    @PreAuthorize("hasRole('r:reason:detail')")
-    ResponseEntity<?> findById(@PathVariable UUID id);
-
-    @DeleteMapping("/{id}")
-    @Operation(summary = "Delete")
-    @PreAuthorize("hasRole('r:reason:delete')")
-    ResponseEntity<?> delete(@PathVariable UUID id);
-
     @GetMapping
-    @Operation(summary = "Get all")
-    @PreAuthorize("hasRole('r:reason:filter')")
-    ResponseEntity<List<?>> findAll();
-
-    @PostMapping()
-    @Operation(summary = "Create new reason")
-    @PreAuthorize("hasRole('r:reason:create')")
-    ResponseEntity<?> create(@RequestBody @Valid ReasonDto reasonDto);
-
-    @PutMapping("/{id}")
-    @Operation(summary = "Update reason")
-    @PreAuthorize("hasRole('r:reason:update')")
-    ResponseEntity<?> update(@RequestBody ReasonDto reasonDto, @PathVariable UUID id);
-
-    @PostMapping("/filter")
-    @Operation(summary = "Filter")
-    @PreAuthorize("hasRole('r:reason:filter')")
-    ResponseEntity<?> filter(@RequestBody @Valid ReasonFilterDTO reasonFilterDTO, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
-
-    @GetMapping("/site/{siteId}")
-    @Operation(summary = "Get all reason by siteId")
-    @PreAuthorize("hasRole('r:reason:filter')")
-    ResponseEntity<List<?>> findAllBySiteId(@PathVariable UUID siteId);
+    @Operation(summary = "Get all by type")
+    ResponseEntity<?> findAllByType(@QueryParam("type") Constants.Reason type);
 
     @Data
     @Builder

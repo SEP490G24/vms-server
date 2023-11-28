@@ -127,13 +127,8 @@ public class Constants {
     }
 
     public enum Reason {
-        URGENT_ISSUE,
-        SCHEDULE_CONFLICT,
-        KEY_PARTICIPANTS_UNAVAILABLE,
-        NOT_PREPARED,
-        BAD_WEATHER,
-        OVERCROWDED,
-        TECHNICAL_ISSUES;
+        CANCEL,
+        REJECT;
     }
 
     public enum AuditType {
