@@ -2,6 +2,7 @@ package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.IRoomController;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.persistence.entity.Room;
 import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
@@ -24,13 +25,11 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -179,7 +178,7 @@ class RoomServiceImplTest {
         IRoomController.RoomDto roomDto = null;
 
         // When and Then
-        assertThrows(HttpClientErrorException.class, () -> roomService.create(roomDto));
+        assertThrows(CustomException.class, () -> roomService.create(roomDto));
     }
 
 
@@ -239,10 +238,7 @@ class RoomServiceImplTest {
         when(roomRepository.findById(nonExistingRoomId)).thenReturn(Optional.empty());
 
         // When and Then
-        HttpClientErrorException exception = assertThrows(HttpClientErrorException.class, () -> roomService.update(roomInfo, nonExistingRoomId));
-        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
-        assertEquals(expectedErrorMessage, exception.getMessage());
-
+        assertThrows(CustomException.class, () -> roomService.update(roomInfo, nonExistingRoomId));
     }
 
     @Test

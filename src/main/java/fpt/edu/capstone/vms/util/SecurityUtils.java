@@ -1,16 +1,16 @@
 package fpt.edu.capstone.vms.util;
 
 import fpt.edu.capstone.vms.constants.Constants.Claims;
+import fpt.edu.capstone.vms.constants.ErrorApp;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.persistence.repository.DepartmentRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import lombok.Data;
 import lombok.experimental.Accessors;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -123,7 +123,7 @@ public class SecurityUtils {
     public static List<UUID> getListSiteToUUID(SiteRepository siteRepository, List<String> siteId) {
 
         if (SecurityUtils.getOrgId() == null && siteId != null && !siteId.isEmpty()) {
-            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+            throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
         }
         List<UUID> sites = new ArrayList<>();
         if (SecurityUtils.getOrgId() != null) {
@@ -134,7 +134,7 @@ public class SecurityUtils {
             } else {
                 siteId.forEach(o -> {
                     if (!SecurityUtils.checkSiteAuthorization(siteRepository, o)) {
-                        throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+                        throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
                     }
                     sites.add(UUID.fromString(o));
                 });
@@ -149,7 +149,7 @@ public class SecurityUtils {
     public static List<String> getListSiteToString(SiteRepository siteRepository, List<String> siteId) {
 
         if (SecurityUtils.getOrgId() == null && (siteId != null && !siteId.isEmpty())) {
-            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+            throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
         }
         List<String> sites = new ArrayList<>();
         if (SecurityUtils.getOrgId() != null) {
@@ -160,7 +160,7 @@ public class SecurityUtils {
             } else {
                 siteId.forEach(o -> {
                     if (!SecurityUtils.checkSiteAuthorization(siteRepository, o)) {
-                        throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+                        throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
                     }
                     sites.add(o);
                 });

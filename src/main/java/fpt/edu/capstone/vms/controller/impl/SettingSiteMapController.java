@@ -1,18 +1,19 @@
 package fpt.edu.capstone.vms.controller.impl;
 
+import fpt.edu.capstone.vms.constants.ErrorApp;
 import fpt.edu.capstone.vms.controller.ISettingSiteMapController;
-import fpt.edu.capstone.vms.exception.HttpClientResponse;
-import fpt.edu.capstone.vms.persistence.entity.SettingSiteMap;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.persistence.entity.SettingSiteMapPk;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.service.ISettingSiteMapService;
+import fpt.edu.capstone.vms.util.ResponseUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,9 +36,9 @@ public class SettingSiteMapController implements ISettingSiteMapController {
      * @return The method is returning a ResponseEntity object containing a SettingSiteMap object.
      */
     @Override
-    public ResponseEntity<SettingSiteMap> findById(String siteId, Long settingId) {
+    public ResponseEntity<?> findById(String siteId, Long settingId) {
         if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
-            throw new HttpClientErrorException(org.springframework.http.HttpStatus.FORBIDDEN, "Not permission");
+            return ResponseUtils.getResponseEntity(ErrorApp.USER_NOT_PERMISSION, HttpStatus.FORBIDDEN);
         }
         SettingSiteMapPk pk = new SettingSiteMapPk(settingId, UUID.fromString(siteId));
         return ResponseEntity.ok(settingSiteService.findById(pk));
@@ -52,9 +53,9 @@ public class SettingSiteMapController implements ISettingSiteMapController {
      * @return The method is returning a ResponseEntity object with a generic type of SettingSiteMap.
      */
     @Override
-    public ResponseEntity<SettingSiteMap> delete(String siteId, Long settingId) {
+    public ResponseEntity<?> delete(String siteId, Long settingId) {
         if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
-            throw new HttpClientErrorException(org.springframework.http.HttpStatus.FORBIDDEN, "Not permission");
+            return ResponseUtils.getResponseEntity(ErrorApp.USER_NOT_PERMISSION, HttpStatus.FORBIDDEN);
         }
         SettingSiteMapPk pk = new SettingSiteMapPk(settingId, UUID.fromString(siteId));
         return settingSiteService.delete(pk);
@@ -70,9 +71,9 @@ public class SettingSiteMapController implements ISettingSiteMapController {
     @Override
     public ResponseEntity<?> createOrUpdateSettingSiteMap(SettingSiteInfo settingSiteInfo) {
         try {
-            return ResponseEntity.ok(settingSiteService.createOrUpdateSettingSiteMap(settingSiteInfo));
-        } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
+            return ResponseUtils.getResponseEntityStatus(settingSiteService.createOrUpdateSettingSiteMap(settingSiteInfo));
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -113,7 +114,11 @@ public class SettingSiteMapController implements ISettingSiteMapController {
      */
     @Override
     public ResponseEntity<?> setDefault(String siteId) {
-        return ResponseEntity.ok(settingSiteService.setDefaultValueBySite(siteId));
+        try {
+            return ResponseUtils.getResponseEntityStatus(settingSiteService.setDefaultValueBySite(siteId));
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 }

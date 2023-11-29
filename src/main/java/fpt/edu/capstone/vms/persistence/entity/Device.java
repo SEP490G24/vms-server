@@ -89,7 +89,9 @@ public class Device extends AbstractBaseEntity<Integer> {
         if (device.getLastUpdatedBy() != null) {
             this.setLastUpdatedBy(device.getLastUpdatedBy());
         }
-
+        if (device.getDeviceType() != null) {
+            this.deviceType = device.getDeviceType();
+        }
         return this;
     }
 }

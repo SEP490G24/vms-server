@@ -1,5 +1,6 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.persistence.entity.File;
 import fpt.edu.capstone.vms.persistence.repository.FileRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,7 +10,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MultipartFile;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -43,7 +43,7 @@ class FileServiceImplTest {
     void givenInvalidImageExtension_WhenUploadImage_ThenThrowException() {
         MultipartFile invalidFile = createMultipartFileWithExtension("txt");
 
-        assertThrows(HttpClientErrorException.class, () -> fileService.uploadImage(invalidFile));
+        assertThrows(CustomException.class, () -> fileService.uploadImage(invalidFile));
     }
 
     @Test
@@ -51,7 +51,7 @@ class FileServiceImplTest {
     void givenFileSizeOver10MB_WhenUploadImage_ThenThrowException() {
         MultipartFile largeFile = createMultipartFileWithSize(11 * 1024 * 1024);
 
-        assertThrows(HttpClientErrorException.class, () -> fileService.uploadImage(largeFile));
+        assertThrows(CustomException.class, () -> fileService.uploadImage(largeFile));
     }
 
     @Test

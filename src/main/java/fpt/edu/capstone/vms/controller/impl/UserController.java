@@ -2,6 +2,7 @@ package fpt.edu.capstone.vms.controller.impl;
 
 
 import fpt.edu.capstone.vms.controller.IUserController;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.exception.HttpClientResponse;
 import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
@@ -9,6 +10,7 @@ import fpt.edu.capstone.vms.persistence.entity.User;
 import fpt.edu.capstone.vms.persistence.service.IUserService;
 import fpt.edu.capstone.vms.persistence.service.excel.ExportUser;
 import fpt.edu.capstone.vms.persistence.service.excel.ImportUser;
+import fpt.edu.capstone.vms.util.ResponseUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -64,37 +66,57 @@ public class UserController implements IUserController {
 
     @Override
     public ResponseEntity<?> create(CreateUserInfo userInfo) {
-        User userEntity = userService.createUser(mapper.map(userInfo, IUserResource.UserDto.class));
-        return ResponseEntity.ok(mapper.map(userEntity, IUserResource.UserDto.class));
+        try {
+            User userEntity = userService.createUser(mapper.map(userInfo, IUserResource.UserDto.class));
+            return ResponseUtils.getResponseEntityStatus(mapper.map(userEntity, IUserResource.UserDto.class));
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Override
     public ResponseEntity<?> update(String username, @Valid UpdateUserInfo userInfo) throws NotFoundException {
-        User userEntity = userService.updateUser(
-            mapper.map(userInfo, IUserResource.UserDto.class)
-                .setUsername(username));
-        return ResponseEntity.ok(mapper.map(userEntity, IUserResource.UserDto.class));
+        try {
+            User userEntity = userService.updateUser(
+                mapper.map(userInfo, IUserResource.UserDto.class)
+                    .setUsername(username));
+            return ResponseUtils.getResponseEntityStatus(mapper.map(userEntity, IUserResource.UserDto.class));
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Override
     public ResponseEntity<?> updateProfile(@Valid UpdateProfileUserInfo userInfo) throws NotFoundException {
-        String username = SecurityUtils.loginUsername();
-        User userEntity = userService.updateUser(mapper.map(userInfo, IUserResource.UserDto.class).setUsername(username));
-        return ResponseEntity.ok(mapper.map(userEntity, IUserResource.UserDto.class));
+        try {
+            String username = SecurityUtils.loginUsername();
+            User userEntity = userService.updateUser(mapper.map(userInfo, IUserResource.UserDto.class).setUsername(username));
+            return ResponseEntity.ok(mapper.map(userEntity, IUserResource.UserDto.class));
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Override
     public ResponseEntity<?> viewMyProfile() {
-        String username = SecurityUtils.loginUsername();
-        return ResponseEntity.ok(mapper.map(userService.findByUsername(username), ProfileUser.class));
+        try {
+            String username = SecurityUtils.loginUsername();
+            return ResponseEntity.ok(mapper.map(userService.findByUsername(username), ProfileUser.class));
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Override
     public ResponseEntity<?> export(UserFilterRequest userFilter) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        headers.setContentDispositionFormData("attachment", "users.xlsx");
-        return ResponseEntity.status(HttpStatus.SC_OK).headers(headers).body(exportUser.export(userFilter));
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            headers.setContentDispositionFormData("attachment", "users.xlsx");
+            return ResponseEntity.status(HttpStatus.SC_OK).headers(headers).body(exportUser.export(userFilter));
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Override
@@ -108,14 +130,18 @@ public class UserController implements IUserController {
             String username = SecurityUtils.loginUsername();
             userService.changePasswordUser(username, changePasswordUserDto.getOldPassword(), changePasswordUserDto.getNewPassword());
             return ResponseEntity.ok().build();
-        } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Override
     public ResponseEntity<Object> importUser(String siteId, MultipartFile file) {
-        return importUser.importUser(siteId, file);
+        try {
+            return importUser.importUser(siteId, file);
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 }

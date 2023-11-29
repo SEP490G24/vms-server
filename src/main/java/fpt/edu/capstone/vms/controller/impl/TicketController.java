@@ -1,8 +1,9 @@
 package fpt.edu.capstone.vms.controller.impl;
 
+import fpt.edu.capstone.vms.constants.ErrorApp;
 import fpt.edu.capstone.vms.controller.ICustomerController;
 import fpt.edu.capstone.vms.controller.ITicketController;
-import fpt.edu.capstone.vms.exception.HttpClientResponse;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMap;
 import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
 import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
@@ -12,6 +13,7 @@ import fpt.edu.capstone.vms.persistence.service.ITicketService;
 import fpt.edu.capstone.vms.persistence.service.sse.checkIn.SseCheckInEmitterManager;
 import fpt.edu.capstone.vms.persistence.service.sse.checkIn.SseCheckInSession;
 import fpt.edu.capstone.vms.util.JacksonUtils;
+import fpt.edu.capstone.vms.util.ResponseUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import fpt.edu.capstone.vms.util.SseUtils;
 import lombok.extern.log4j.Log4j2;
@@ -53,44 +55,54 @@ public class TicketController implements ITicketController {
 
     @Override
     public ResponseEntity<?> delete(String id) {
-        return ResponseEntity.ok(ticketService.deleteTicket(id));
-    }
-
-    @Override
-    public ResponseEntity<List<?>> findAll() {
-        return ResponseEntity.ok(ticketService.findAll());
+        try {
+            if (SecurityUtils.checkSiteAuthorization(siteRepository, ticketService.findById(UUID.fromString(id)).getSiteId())) {
+                throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
+            }
+            return ResponseUtils.getResponseEntityStatus((ticketService.deleteTicket(id)));
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Override
     public ResponseEntity<?> create(CreateTicketInfo ticketInfo) {
         try {
-            return ResponseEntity.ok((ticketService.create(ticketInfo)));
-        } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
+            return ResponseUtils.getResponseEntityStatus((ticketService.create(ticketInfo)));
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Override
     public ResponseEntity<?> updateBookmark(TicketBookmark ticketBookmark) {
-        return ResponseEntity.ok(ticketService.updateBookMark(ticketBookmark));
+        try {
+            return ResponseUtils.getResponseEntityStatus(ticketService.updateBookMark(ticketBookmark));
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Override
     public ResponseEntity<?> cancelMeeting(CancelTicket cancelTicket) {
-        return ResponseEntity.ok(ticketService.cancelTicket(cancelTicket));
+        try {
+            return ResponseUtils.getResponseEntityStatus(ticketService.cancelTicket(cancelTicket));
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Override
     public ResponseEntity<?> updateMeeting(UpdateTicketInfo updateTicketInfo) {
         try {
-            return ResponseEntity.ok((ticketService.updateTicket(updateTicketInfo)));
-        } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
+            return ResponseUtils.getResponseEntityStatus((ticketService.updateTicket(updateTicketInfo)));
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Override
-    public ResponseEntity<?> filterAllBySites(TicketFilter filter, boolean isPageable, Pageable pageable) {
+    public ResponseEntity<?> filterAllTicket(TicketFilter filter, boolean isPageable, Pageable pageable) {
         if (SecurityUtils.getUserDetails().isOrganizationAdmin() || SecurityUtils.getUserDetails().isSiteAdmin()) {
             var ticketEntity = ticketService.filterAllBySite(
                 filter.getNames(),
@@ -199,7 +211,11 @@ public class TicketController implements ITicketController {
 
     @Override
     public ResponseEntity<?> findByQRCode(String checkInCode) {
-        return ResponseEntity.ok(ticketService.findByQRCode(checkInCode));
+        try {
+            return ResponseUtils.getResponseEntityStatus(ticketService.findByQRCode(checkInCode));
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Override
@@ -228,11 +244,16 @@ public class TicketController implements ITicketController {
 
     @Override
     public ResponseEntity<?> checkIn(CheckInPayload checkInPayload) {
-        // Perform the check-in process
-        var ticketByQRCodeResponseDTO = ticketService.checkInCustomer(checkInPayload);
-        // Return the emitter immediately to the client
-        sseCheckInEmitterManager.broadcast(ticketByQRCodeResponseDTO.getSiteId(), ticketByQRCodeResponseDTO);
-        return ResponseEntity.ok(ticketByQRCodeResponseDTO);
+        try {
+            // Perform the check-in process
+            var ticketByQRCodeResponseDTO = ticketService.checkInCustomer(checkInPayload);
+            // Return the emitter immediately to the client
+            sseCheckInEmitterManager.broadcast(ticketByQRCodeResponseDTO.getSiteId(), ticketByQRCodeResponseDTO);
+            return ResponseUtils.getResponseEntityStatus(ticketByQRCodeResponseDTO);
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
     }
 
     @Override
@@ -291,18 +312,18 @@ public class TicketController implements ITicketController {
     @Override
     public ResponseEntity<?> addCardToCustomerTicket(CustomerTicketCardDTO customerTicketCardDTO) {
         try {
-            return ResponseEntity.ok(ticketService.addCardCustomerTicket(customerTicketCardDTO));
-        } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
+            return ResponseUtils.getResponseEntityStatus(ticketService.addCardCustomerTicket(customerTicketCardDTO));
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Override
     public ResponseEntity<?> getAllCardHistoryOfCustomer(String checkInCode) {
         try {
-            return ResponseEntity.ok(cardCheckInHistoryService.getAllCardHistoryOfCustomer(checkInCode));
-        } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
+            return ResponseUtils.getResponseEntityStatus(cardCheckInHistoryService.getAllCardHistoryOfCustomer(checkInCode));
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -312,14 +333,14 @@ public class TicketController implements ITicketController {
             if (SecurityUtils.getUserDetails().isOrganizationAdmin() || SecurityUtils.getUserDetails().isSiteAdmin()) {
                 TicketFilterDTO ticketFilterDTO = ticketService.findByTicketForAdmin(ticketId, siteId);
                 setCustomer(ticketFilterDTO);
-                return ResponseEntity.ok(ticketFilterDTO);
+                return ResponseUtils.getResponseEntityStatus(ticketFilterDTO);
             } else {
                 TicketFilterDTO ticketFilterDTO = ticketService.findByTicketForUser(ticketId);
                 setCustomer(ticketFilterDTO);
-                return ResponseEntity.ok(ticketFilterDTO);
+                return ResponseUtils.getResponseEntityStatus(ticketFilterDTO);
             }
-        } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

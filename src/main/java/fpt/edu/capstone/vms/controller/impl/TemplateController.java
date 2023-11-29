@@ -1,20 +1,22 @@
 package fpt.edu.capstone.vms.controller.impl;
 
 import fpt.edu.capstone.vms.constants.Constants;
+import fpt.edu.capstone.vms.constants.ErrorApp;
 import fpt.edu.capstone.vms.controller.ITemplateController;
-import fpt.edu.capstone.vms.exception.HttpClientResponse;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.persistence.entity.Template;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.service.ITemplateService;
+import fpt.edu.capstone.vms.util.ResponseUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
 import java.util.UUID;
@@ -27,19 +29,19 @@ public class TemplateController implements ITemplateController {
     private final SiteRepository siteRepository;
 
     @Override
-    public ResponseEntity<Template> findById(UUID id) {
+    public ResponseEntity<?> findById(UUID id) {
         var template = templateService.findById(id);
         if (!SecurityUtils.checkSiteAuthorization(siteRepository, template.getSiteId().toString())) {
-            throw new HttpClientErrorException(org.springframework.http.HttpStatus.FORBIDDEN, "Not permission");
+            return ResponseUtils.getResponseEntity(ErrorApp.USER_NOT_PERMISSION);
         }
         return ResponseEntity.ok(template);
     }
 
     @Override
-    public ResponseEntity<Template> delete(UUID id) {
+    public ResponseEntity<?> delete(UUID id) {
         var template = templateService.findById(id);
         if (!SecurityUtils.checkSiteAuthorization(siteRepository, template.getSiteId().toString())) {
-            throw new HttpClientErrorException(org.springframework.http.HttpStatus.FORBIDDEN, "Not permission");
+            return ResponseUtils.getResponseEntity(ErrorApp.USER_NOT_PERMISSION);
         }
         return templateService.delete(id);
     }
@@ -48,9 +50,9 @@ public class TemplateController implements ITemplateController {
     public ResponseEntity<?> create(TemplateDto templateDto) {
         try {
             var room = templateService.create(templateDto);
-            return ResponseEntity.ok(room);
-        } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
+            return ResponseUtils.getResponseEntityStatus(room);
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -58,9 +60,9 @@ public class TemplateController implements ITemplateController {
     public ResponseEntity<?> update(UpdateTemplateDto templateDto, UUID id) {
         try {
             var template = templateService.update(mapper.map(templateDto, Template.class), id);
-            return ResponseEntity.ok(template);
-        } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
+            return ResponseUtils.getResponseEntityStatus(template);
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -92,13 +94,21 @@ public class TemplateController implements ITemplateController {
     }
 
     @Override
-    public ResponseEntity<List<?>> findAllBySiteId(String siteId) {
-        return ResponseEntity.ok(templateService.finAllBySiteId(siteId));
+    public ResponseEntity<?> findAllBySiteId(String siteId) {
+        try {
+            return ResponseUtils.getResponseEntityStatus(templateService.finAllBySiteId(siteId));
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Override
-    public ResponseEntity<List<?>> findAllBySiteIdAndType(String siteId, Constants.TemplateType type) {
-        return ResponseEntity.ok(templateService.finAllBySiteIdAndType(siteId, type));
+    public ResponseEntity<?> findAllBySiteIdAndType(String siteId, Constants.TemplateType type) {
+        try {
+            return ResponseUtils.getResponseEntityStatus(templateService.finAllBySiteIdAndType(siteId, type));
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 }

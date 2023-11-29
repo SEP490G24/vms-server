@@ -2,35 +2,15 @@ package fpt.edu.capstone.vms.persistence.service.impl;
 
 import com.google.zxing.WriterException;
 import fpt.edu.capstone.vms.constants.Constants;
+import fpt.edu.capstone.vms.constants.ErrorApp;
 import fpt.edu.capstone.vms.controller.ICustomerController;
 import fpt.edu.capstone.vms.controller.ITicketController;
-import fpt.edu.capstone.vms.persistence.entity.AuditLog;
-import fpt.edu.capstone.vms.persistence.entity.Customer;
-import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMap;
-import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMapPk;
-import fpt.edu.capstone.vms.persistence.entity.Reason;
-import fpt.edu.capstone.vms.persistence.entity.Room;
-import fpt.edu.capstone.vms.persistence.entity.Site;
-import fpt.edu.capstone.vms.persistence.entity.Template;
-import fpt.edu.capstone.vms.persistence.entity.Ticket;
-import fpt.edu.capstone.vms.persistence.entity.User;
-import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
-import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
-import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
-import fpt.edu.capstone.vms.persistence.repository.ReasonRepository;
-import fpt.edu.capstone.vms.persistence.repository.RoomRepository;
-import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
-import fpt.edu.capstone.vms.persistence.repository.TemplateRepository;
-import fpt.edu.capstone.vms.persistence.repository.TicketRepository;
-import fpt.edu.capstone.vms.persistence.repository.UserRepository;
+import fpt.edu.capstone.vms.exception.CustomException;
+import fpt.edu.capstone.vms.persistence.entity.*;
+import fpt.edu.capstone.vms.persistence.repository.*;
 import fpt.edu.capstone.vms.persistence.service.ITicketService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
-import fpt.edu.capstone.vms.util.EmailUtils;
-import fpt.edu.capstone.vms.util.PageableUtils;
-import fpt.edu.capstone.vms.util.QRcodeUtils;
-import fpt.edu.capstone.vms.util.SecurityUtils;
-import fpt.edu.capstone.vms.util.SettingUtils;
-import fpt.edu.capstone.vms.util.Utils;
+import fpt.edu.capstone.vms.util.*;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
@@ -55,13 +35,7 @@ import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -123,7 +97,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         var ticketDto = mapper.map(ticketInfo, Ticket.class);
         //check purpose
         if (ticketInfo.getPurpose() == null) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Purpose is empty");
+            throw new CustomException(ErrorApp.PURPOSE_NOT_FOUND);
         }
 
         //Tạo meeting
@@ -138,9 +112,9 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
 
         if (SecurityUtils.getOrgId() != null) {
             if (StringUtils.isEmpty(ticketInfo.getSiteId().trim()))
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SiteId is null");
+                throw new CustomException(ErrorApp.SITE_NOT_FOUND);
             if (!siteRepository.existsByIdAndOrganizationId(UUID.fromString(ticketInfo.getSiteId()), UUID.fromString(SecurityUtils.getOrgId())))
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SiteId is not in organization");
+                throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
             ticketDto.setSiteId(ticketInfo.getSiteId());
         } else {
             ticketDto.setSiteId(SecurityUtils.getSiteId());
@@ -161,7 +135,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
 
             if (ticketInfo.getPurpose().equals(Constants.Purpose.OTHERS)) {
                 if (StringUtils.isEmpty(ticketInfo.getPurposeNote())) {
-                    throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Purpose other is empty");
+                    throw new CustomException(ErrorApp.PURPOSE_OTHER_NOT_NULL_OTHER);
                 }
             }
 
@@ -174,7 +148,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             setDataCustomer(ticketInfo, ticket);
             var customerTicketMaps = customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(ticket.getId());
             if (customerTicketMaps.isEmpty())
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is null");
+                throw new CustomException(ErrorApp.CUSTOMER_NOT_FOUND);
             sendQr(customerTicketMaps, ticket, room);
 
             auditLogRepository.save(new AuditLog(ticket.getSiteId()
@@ -202,14 +176,14 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         Room room = roomRepository.findById(ticketInfo.getRoomId()).orElse(null);
 
         if (ObjectUtils.isEmpty(room)) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Room is null");
+            throw new CustomException(ErrorApp.ROOM_NOT_FOUND);
         }
 
         if (!room.getSiteId().equals(UUID.fromString(ticket.getSiteId())))
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User can not create meeting in this room");
+            throw new CustomException(ErrorApp.ROOM_USER_CAN_NOT_CREATE_TICKET);
 
         if (isRoomBooked(ticketInfo.getRoomId(), ticketInfo.getStartTime(), ticketInfo.getEndTime())) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Room have meeting in this time");
+            throw new CustomException(ErrorApp.ROOM_HAVE_TICKET_IN_THIS_TIME);
         }
 
     }
@@ -217,19 +191,16 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     private void checkTimeForTicket(LocalDateTime startTime, LocalDateTime endTime) {
 
         if (startTime.isAfter(endTime)) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Time is not true");
+            throw new CustomException(ErrorApp.TICKET_START_TIME_IS_AFTER_THAN_END_TIME);
         }
 
         Duration duration = Duration.between(startTime, endTime);
         long minutes = duration.toMinutes(); // Chuyển thời gian thành phút
 
         if (minutes < 15) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Time meeting must greater than 15 minutes");
+            throw new CustomException(ErrorApp.TICKET_TIME_MEETING_MUST_GREATER_THAN_15_MINUTES);
         }
 
-//        if (isUserHaveTicketInTime(SecurityUtils.loginUsername(), startTime, endTime)) {
-//            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User have meeting in this time");
-//        }
     }
 
     /**
@@ -246,14 +217,14 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         List<String> oldCustomers = ticketInfo.getOldCustomers();
 
         if (oldCustomers == null && newCustomers.isEmpty()) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is null");
+            throw new CustomException(ErrorApp.CUSTOMER_IS_NULL);
         }
 
         String orgId;
         if (SecurityUtils.getOrgId() == null) {
             Site site = siteRepository.findById(UUID.fromString(SecurityUtils.getSiteId())).orElse(null);
             if (ObjectUtils.isEmpty(site)) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "site is null");
+                throw new CustomException(ErrorApp.SITE_NOT_FOUND);
             }
             orgId = String.valueOf(site.getOrganizationId());
         } else {
@@ -262,9 +233,9 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         if (newCustomers != null) {
             for (ICustomerController.NewCustomers customerDto : newCustomers) {
                 if (ObjectUtils.isEmpty(customerDto))
-                    throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is null");
+                    throw new CustomException(ErrorApp.CUSTOMER_NOT_FOUND);
                 if (!Utils.isCCCDValid(customerDto.getIdentificationNumber())) {
-                    throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "IdentificationNumber is incorrect");
+                    throw new CustomException(ErrorApp.CUSTOMER_IDENTITY_NOT_CORRECT);
                 }
                 Customer customerExist = customerRepository.findByIdentificationNumberAndOrganizationId(customerDto.getIdentificationNumber(), orgId);
                 if (ObjectUtils.isEmpty(customerExist)) {
@@ -279,9 +250,9 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         if (oldCustomers != null) {
             for (String oldCustomer : oldCustomers) {
                 if (StringUtils.isEmpty(oldCustomer.trim()))
-                    throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is null");
+                    throw new CustomException(ErrorApp.CUSTOMER_NOT_FOUND);
                 if (!customerRepository.existsByIdAndAndOrganizationId(UUID.fromString(oldCustomer), orgId))
-                    throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is null");
+                    throw new CustomException(ErrorApp.CUSTOMER_NOT_IN_ORGANIZATION);
                 createCustomerTicket(ticket, UUID.fromString(oldCustomer.trim()), generateCheckInCode());
             }
         }
@@ -298,11 +269,11 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     @Override
     public Boolean updateBookMark(ITicketController.TicketBookmark ticketBookmark) {
         if (ObjectUtils.isEmpty(ticketBookmark)) {
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "payload is empty");
+            throw new CustomException(ErrorApp.OBJECT_NOT_EMPTY);
         }
         var ticket = ticketRepository.findById(UUID.fromString(ticketBookmark.getTicketId())).orElse(null);
         if (ObjectUtils.isEmpty(ticket)) {
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Ticket is empty");
+            throw new CustomException(ErrorApp.TICKET_NOT_FOUND);
         }
         if (ticketRepository.existsByIdAndUsername(UUID.fromString(ticketBookmark.getTicketId()), SecurityUtils.loginUsername())) {
             Ticket oldValue = ticket;
@@ -334,7 +305,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     public Boolean deleteTicket(String ticketId) {
         var ticket = ticketRepository.findById(UUID.fromString(ticketId)).orElse(null);
         if (ObjectUtils.isEmpty(ticket)) {
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Ticket is empty");
+            throw new CustomException(ErrorApp.TICKET_NOT_FOUND);
         }
         if (ticketRepository.existsByIdAndUsername(UUID.fromString(ticketId), SecurityUtils.loginUsername())) {
             auditLogRepository.save(new AuditLog(ticket.getSiteId()
@@ -379,27 +350,27 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     public Boolean cancelTicket(ITicketController.CancelTicket cancelTicket) {
         var ticket = ticketRepository.findById(cancelTicket.getTicketId()).orElse(null);
         if (ObjectUtils.isEmpty(ticket)) {
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Ticket is empty");
+            throw new CustomException(ErrorApp.TICKET_NOT_FOUND);
         }
 
         LocalDateTime currentTime = LocalDateTime.now();
         LocalDateTime startTime = ticket.getStartTime();
 
         if (!startTime.isAfter(currentTime.plusHours(2))) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Meetings cannot be canceled at least 2 hours before they start.");
+            throw new CustomException(ErrorApp.TICKET_TIME_CANCEL_MEETING_MUST_BEFORE_2_HOURS);
         }
         if (SecurityUtils.getOrgId() != null) {
             if (StringUtils.isEmpty(ticket.getSiteId().trim()))
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SiteId is null");
+                throw new CustomException(ErrorApp.SITE_ID_NULL);
             if (!siteRepository.existsByIdAndOrganizationId(UUID.fromString(ticket.getSiteId()), UUID.fromString(SecurityUtils.getOrgId())))
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "You don't have permission to do this.");
+                throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
             settingUtils.loadSettingsSite(ticket.getSiteId());
         } else {
             settingUtils.loadSettingsSite(SecurityUtils.getSiteId());
         }
 
         Template template = templateRepository.findById(UUID.fromString(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CANCEL_EMAIL))).orElse(null);
-        Reason reason = reasonRepository.findById(cancelTicket.getTicketId()).orElse(null);
+        Reason reason = reasonRepository.findById(cancelTicket.getReasonId()).orElse(null);
         if (ticketRepository.existsByIdAndUsername(cancelTicket.getTicketId(), SecurityUtils.loginUsername())) {
             Ticket oldValue = ticket;
             ticket.setStatus(Constants.StatusTicket.CANCEL);
@@ -410,7 +381,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                     Customer customer = o.getCustomerEntity();
 
                     if (ObjectUtils.isEmpty(template)) {
-                        throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't not found template");
+                        throw new CustomException(ErrorApp.TEMPLATE_NOT_FOUND);
                     }
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
 
@@ -447,7 +418,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     @Transactional(rollbackFor = {Exception.class, Throwable.class, NullPointerException.class})
     public Ticket updateTicket(ITicketController.UpdateTicketInfo ticketInfo) {
         if (ticketInfo.getId() == null)
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "TicketId is null");
+            throw new CustomException(ErrorApp.TICKET_ID_NULL);
 
         Ticket ticketMap = mapper.map(ticketInfo, Ticket.class);
         LocalDateTime updateStartTime = ticketMap.getStartTime();
@@ -459,15 +430,15 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         LocalDateTime startTime = ticket.getStartTime();
 
         if (!startTime.isAfter(currentTime.plusHours(2))) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Meetings cannot be updated at least 2 hours before they start.");
+            throw new CustomException(ErrorApp.TICKET_TIME_UPDATE_MEETING_MUST_BEFORE_2_HOURS);
         }
 
         if (ObjectUtils.isEmpty(ticket)) {
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't found ticket by id " + ticketInfo.getId());
+            throw new CustomException(ErrorApp.TICKET_NOT_FOUND);
         }
 
         if (!ticket.getUsername().equals(SecurityUtils.loginUsername())) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Ticket is not for you!!");
+            throw new CustomException(ErrorApp.TICKET_YOU_CAN_UPDATE_THIS_TICKET);
         }
 
         if (StringUtils.isNotEmpty(ticketMap.getRoomId().toString())) {
@@ -475,14 +446,14 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                 Room room = roomRepository.findById(ticketInfo.getRoomId()).orElse(null);
 
                 if (ObjectUtils.isEmpty(room)) {
-                    throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Room is null");
+                    throw new CustomException(ErrorApp.ROOM_NOT_FOUND);
                 }
 
                 if (!room.getSiteId().equals(UUID.fromString(ticket.getSiteId())))
-                    throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User can not create meeting in this room");
+                    throw new CustomException(ErrorApp.ROOM_USER_CAN_NOT_CREATE_TICKET);
 
                 if (isRoomBooked(ticketInfo.getRoomId(), ticketInfo.getStartTime(), ticketInfo.getEndTime())) {
-                    throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Room have meeting in this time");
+                    throw new CustomException(ErrorApp.ROOM_HAVE_TICKET_IN_THIS_TIME);
                 }
             }
         }
@@ -498,9 +469,9 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         }
 
         if (ticketMap.getPurpose() == Constants.Purpose.OTHERS && ticketMap.getPurposeNote() == null) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Purpose Note must not be null when Purpose is other");
+            throw new CustomException(ErrorApp.PURPOSE_OTHER_NOT_NULL_OTHER);
         } else if (ticketMap.getPurpose() != Constants.Purpose.OTHERS && ticketMap.getPurposeNote() != null) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Purpose Note must be null when Purpose is not other");
+            throw new CustomException(ErrorApp.PURPOSE_OTHER_MUST_NULL_WHEN_TYPE_NOT_OTHER);
         }
 
         Ticket oldValue = ticket;
@@ -534,7 +505,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         if (SecurityUtils.getOrgId() == null) {
             Site site = siteRepository.findById(UUID.fromString(SecurityUtils.getSiteId())).orElse(null);
             if (ObjectUtils.isEmpty(site)) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "site is false");
+                throw new CustomException(ErrorApp.SITE_NOT_FOUND);
             }
             orgId = String.valueOf(site.getOrganizationId());
         } else {
@@ -544,9 +515,9 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         if (newCustomers != null) {
             for (ICustomerController.NewCustomers customerDto : newCustomers) {
                 if (ObjectUtils.isEmpty(customerDto))
-                    throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is null");
+                    throw new CustomException(ErrorApp.CUSTOMER_IS_NULL);
                 if (!Utils.isCCCDValid(customerDto.getIdentificationNumber())) {
-                    throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "IdentificationNumber is incorrect");
+                    throw new CustomException(ErrorApp.CUSTOMER_IDENTITY_NOT_CORRECT);
                 }
                 Customer customerExist = customerRepository.findByIdentificationNumberAndOrganizationId(customerDto.getIdentificationNumber(), orgId);
                 if (customerExist == null) {
@@ -723,7 +694,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         CustomerTicketMap customerTicketMap = customerTicketMapRepository.findByCheckInCodeIgnoreCase(checkInCode);
         String site = SecurityUtils.getSiteId();
         if (!site.equals(customerTicketMap.getTicketEntity().getSiteId())) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Ticket can not found in site");
+            throw new CustomException(ErrorApp.SITE_NOT_FOUND);
         }
         return mapper.map(customerTicketMap, ITicketController.TicketByQRCodeResponseDTO.class);
     }
@@ -734,23 +705,26 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         CustomerTicketMap customerTicketMap = customerTicketMapRepository.findByCheckInCodeIgnoreCase(checkInPayload.getCheckInCode());
         if (checkInPayload.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
             if (customerTicketMap.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is checked in");
+                throw new CustomException(ErrorApp.CUSTOMER_IS_CHECK_IN);
             }
             if (customerTicketMap.isCheckOut()) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is checked out");
+                throw new CustomException(ErrorApp.CUSTOMER_IS_CHECK_OUT);
             }
-            if (customerTicketMap.getTicketEntity().getEndTime().isBefore(LocalDateTime.now())) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Ticket is expired, You can not check in with this ticket");
+            if (customerTicketMap.getTicketEntity().getEndTime().isAfter(LocalDateTime.now())) {
+                throw new CustomException(ErrorApp.TICKET_IS_EXPIRED_CAN_NOT_CHECK_IN);
             }
-            if (customerTicketMap.getTicketEntity().getStartTime().isAfter(LocalDateTime.now())) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Ticket is not started, You can not check in with this ticket");
+            if (customerTicketMap.getTicketEntity().getStartTime().isBefore(LocalDateTime.now())) {
+                throw new CustomException(ErrorApp.TICKET_NOT_START_CAN_NOT_CHECK_IN);
             }
             customerTicketMap.setStatus(checkInPayload.getStatus());
             customerTicketMap.setCheckInTime(LocalDateTime.now());
             customerTicketMapRepository.save(customerTicketMap);
         } else if (checkInPayload.getStatus().equals(Constants.StatusTicket.CHECK_OUT)) {
             if (!customerTicketMap.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is not check in yet or checked out");
+                throw new CustomException(ErrorApp.CUSTOMER_NOT_CHECK_IN_TO_CHECK_OUT);
+            }
+            if (customerTicketMap.getTicketEntity().getStartTime().isBefore(LocalDateTime.now())) {
+                throw new CustomException(ErrorApp.TICKET_NOT_START_CAN_NOT_CHECK_OUT);
             }
             customerTicketMap.setCheckOutTime(LocalDateTime.now());
             customerTicketMap.setCheckOut(true);
@@ -760,7 +734,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                 Ticket ticket = ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId()).orElse(null);
                 if (ticket != null) {
                     if (ticket.getStartTime().isBefore(LocalDateTime.now())) {
-                        throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Ticket is not started, You can not check out with this ticket");
+                        throw new CustomException(ErrorApp.TICKET_NOT_START_CAN_NOT_CHECK_OUT);
                     }
                     ticket.setStatus(Constants.StatusTicket.COMPLETE);
                     ticketRepository.save(ticket);
@@ -770,16 +744,16 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             customerTicketMapRepository.save(customerTicketMap);
         } else if (checkInPayload.getStatus().equals(Constants.StatusTicket.REJECT)) {
             if (customerTicketMap.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is checked in");
+                throw new CustomException(ErrorApp.CUSTOMER_IS_CHECK_IN);
             }
             if (customerTicketMap.isCheckOut()) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is checked out");
+                throw new CustomException(ErrorApp.CUSTOMER_IS_CHECK_OUT);
             }
             if (customerTicketMap.getTicketEntity().getEndTime().isBefore(LocalDateTime.now())) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Ticket is expired time, You can not reject with this ticket");
+                throw new CustomException(ErrorApp.TICKET_IS_EXPIRED_CAN_NOT_REJECT);
             }
             if (customerTicketMap.getTicketEntity().getStartTime().isAfter(LocalDateTime.now())) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Ticket is not started, You can not reject with this ticket");
+                throw new CustomException(ErrorApp.TICKET_NOT_START_CAN_NOT_REJECT);
             }
             customerTicketMap.setReasonId(checkInPayload.getReasonId());
             customerTicketMap.setReasonNote(checkInPayload.getReasonNote());
@@ -806,10 +780,10 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     public ITicketController.TicketFilterDTO findByTicketForUser(UUID ticketId) {
         Ticket ticket = ticketRepository.findById(ticketId).orElse(null);
         if (ObjectUtils.isEmpty(ticket)) {
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't not found ticket");
+            throw new CustomException(ErrorApp.TICKET_NOT_FOUND);
         }
         if (!ticket.getUsername().equals(SecurityUtils.loginUsername())) {
-            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "Can't not view this ticket");
+            throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
         }
         ITicketController.TicketFilterDTO ticketFilterDTO = mapper.map(ticket, ITicketController.TicketFilterDTO.class);
         return ticketFilterDTO;
@@ -819,23 +793,23 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     public ITicketController.TicketFilterDTO findByTicketForAdmin(UUID ticketId, String siteId) {
         Ticket ticket = ticketRepository.findById(ticketId).orElse(null);
         if (ObjectUtils.isEmpty(ticket)) {
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't not found ticket");
+            throw new CustomException(ErrorApp.TICKET_NOT_FOUND);
         }
         if (SecurityUtils.getOrgId() != null) {
             if (siteId == null) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Must to choose siteId for organization admin");
+                throw new CustomException(ErrorApp.MUST_TO_CHOOSE_SITE);
             }
             Site site = siteRepository.findById(UUID.fromString(siteId)).orElse(null);
             if (ObjectUtils.isEmpty(site)) {
-                throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "site is null");
+                throw new CustomException(ErrorApp.SITE_NOT_FOUND);
             }
             if (!site.getOrganizationId().equals(SecurityUtils.getOrgId())) {
-                throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "This admin can't view this ticket of customer");
+                throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
             }
             return mapper.map(ticket, ITicketController.TicketFilterDTO.class);
         } else {
             if (!ticket.getSiteId().equals(SecurityUtils.getSiteId())) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "This admin can't view this ticket of customer");
+                throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
             }
             return mapper.map(ticket, ITicketController.TicketFilterDTO.class);
         }
@@ -873,25 +847,25 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         if (customerTicketMap != null) {
             Ticket ticket = ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId()).orElse(null);
             if (!customerTicketMap.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Customer is not check-in, please check in before add card");
+                throw new CustomException(ErrorApp.CUSTOMER_NOT_CHECK_IN_TO_ADD_CARD);
             }
             if (SecurityUtils.getOrgId() != null) {
                 if (StringUtils.isEmpty(ticket.getSiteId().trim()))
-                    throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SiteId is null");
+                    throw new CustomException(ErrorApp.SITE_NOT_FOUND);
                 if (!siteRepository.existsByIdAndOrganizationId(UUID.fromString(ticket.getSiteId()), UUID.fromString(SecurityUtils.getOrgId())))
-                    throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "You don't have permission to do this.");
+                    throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
                 settingUtils.loadSettingsSite(ticket.getSiteId());
             } else {
                 settingUtils.loadSettingsSite(SecurityUtils.getSiteId());
             }
             if (!settingUtils.getBoolean(Constants.SettingCode.CONFIGURATION_CARD)) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Site is not using card");
+                throw new CustomException(ErrorApp.SITE_NOT_USE_CARD);
             }
             if (customerTicketCardDTO.getCardId() == null) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Card is null");
+                throw new CustomException(ErrorApp.CARD_ID_NULL);
             }
             if (customerTicketMapRepository.existsByCardIdAndStatus(customerTicketCardDTO.getCardId(), Constants.StatusTicket.CHECK_IN)) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Card is exists with customer in this site");
+                throw new CustomException(ErrorApp.CARD_IS_EXIST_WITH_CUSTOMER_IN_SITE);
             }
             customerTicketMap.setCardId(customerTicketCardDTO.getCardId());
             customerTicketMapRepository.save(customerTicketMap);
@@ -945,7 +919,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         String meetingUrl = "https://web-vms.azurewebsites.net/check-in/" + checkInCode;
 
         if (ObjectUtils.isEmpty(customer))
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Customer is empty");
+            throw new CustomException(ErrorApp.CUSTOMER_NOT_FOUND);
 
         // Tạo mã QR code
         try {
@@ -963,7 +937,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
 
             User user = userRepository.findFirstByUsername(ticket.getUsername());
             if (ObjectUtils.isEmpty(template)) {
-                throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't not found template");
+                throw new CustomException(ErrorApp.TEMPLATE_NOT_FOUND);
             }
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
@@ -971,14 +945,14 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             String date = ticket.getStartTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
             String startTime = ticket.getStartTime().format(formatter);
             String endTime = ticket.getEndTime().format(formatter);
-
+            String addressSite = site.getCommune().getName() + ", " + site.getDistrict().getName() + ", " + site.getProvince().getName();
             Map<String, String> parameterMap = new HashMap<>();
             parameterMap.put("customerName", customer.getVisitorName());
             parameterMap.put("meetingName", ticket.getName());
             parameterMap.put("dateTime", date);
             parameterMap.put("startTime", startTime);
             parameterMap.put("endTime", endTime);
-            String address = site.getAddress() != null ? site.getAddress() : site.getCommune().getName() + ", " + site.getDistrict().getName() + ", " + site.getProvince().getName();
+            String address = site.getAddress() != null ? site.getAddress() + ", " + addressSite : site.getCommune().getName() + ", " + site.getDistrict().getName() + ", " + site.getProvince().getName();
             parameterMap.put("address", address);
             String roomName = room != null ? room.getName() : "Updating....";
             parameterMap.put("roomName", roomName);

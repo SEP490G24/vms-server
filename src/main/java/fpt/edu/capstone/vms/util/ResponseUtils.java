@@ -97,14 +97,7 @@ public class ResponseUtils {
      * @return
      */
     public static ResponseEntity<Object> getResponseEntityStatus(Object itemObject) {
-        BaseResponse baseResponse = new BaseResponse();
-        if (itemObject != null) {
-            baseResponse.setData(itemObject);
-        }
-        baseResponse.setCode(ErrorApp.SUCCESS.getCode());
-        baseResponse.setMessage(ErrorApp.SUCCESS.getDescription());
-        baseResponse.setStatus(STATUS_SUCCESS);
-        return new ResponseEntity<>(baseResponse, HttpStatus.OK);
+        return new ResponseEntity<>(itemObject, HttpStatus.OK);
     }
 
     /**

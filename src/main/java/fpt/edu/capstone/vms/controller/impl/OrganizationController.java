@@ -1,18 +1,20 @@
 package fpt.edu.capstone.vms.controller.impl;
 
+import fpt.edu.capstone.vms.constants.ErrorApp;
 import fpt.edu.capstone.vms.controller.IOrganizationController;
-import fpt.edu.capstone.vms.exception.HttpClientResponse;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.persistence.entity.Organization;
 import fpt.edu.capstone.vms.persistence.service.IOrganizationService;
+import fpt.edu.capstone.vms.util.ResponseUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import jakarta.ws.rs.QueryParam;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
 import java.util.UUID;
@@ -24,11 +26,11 @@ public class OrganizationController implements IOrganizationController {
     private final ModelMapper mapper;
 
     @Override
-    public ResponseEntity<Organization> findById(UUID id) {
+    public ResponseEntity<?> findById(UUID id) {
         if (SecurityUtils.getUserDetails().isRealmAdmin()) {
             return ResponseEntity.ok(organizationService.findById(id));
         } else {
-            return null;
+            return ResponseUtils.getResponseEntity(ErrorApp.USER_NOT_PERMISSION, HttpStatus.FORBIDDEN);
         }
     }
 
@@ -37,7 +39,7 @@ public class OrganizationController implements IOrganizationController {
         if (SecurityUtils.getUserDetails().isRealmAdmin() || SecurityUtils.getUserDetails().isOrganizationAdmin()) {
             return ResponseEntity.ok(organizationService.findById(UUID.fromString(SecurityUtils.getOrgId())));
         } else {
-            return null;
+            return ResponseUtils.getResponseEntity(ErrorApp.USER_NOT_PERMISSION, HttpStatus.FORBIDDEN);
         }
     }
 
@@ -60,12 +62,12 @@ public class OrganizationController implements IOrganizationController {
         try {
             if (SecurityUtils.getUserDetails().isRealmAdmin()) {
                 var organization = organizationService.save(mapper.map(organizationInfo, Organization.class));
-                return ResponseEntity.ok(organization);
+                return ResponseUtils.getResponseEntityStatus(organization);
             } else {
-                return null;
+                return ResponseUtils.getResponseEntity(ErrorApp.USER_NOT_PERMISSION, HttpStatus.FORBIDDEN);
             }
-        } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -74,12 +76,12 @@ public class OrganizationController implements IOrganizationController {
         try {
             if (SecurityUtils.getUserDetails().isRealmAdmin()) {
                 var organization = organizationService.update(mapper.map(updateOrganizationInfo, Organization.class), id);
-                return ResponseEntity.ok(organization);
+                return ResponseUtils.getResponseEntityStatus(organization);
             } else {
-                return null;
+                return ResponseUtils.getResponseEntity(ErrorApp.USER_NOT_PERMISSION, HttpStatus.FORBIDDEN);
             }
-        } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

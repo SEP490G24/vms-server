@@ -1,7 +1,9 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.constants.Constants;
+import fpt.edu.capstone.vms.constants.ErrorApp;
 import fpt.edu.capstone.vms.controller.ISettingSiteMapController;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.entity.SettingSiteMap;
 import fpt.edu.capstone.vms.persistence.entity.SettingSiteMapPk;
@@ -15,11 +17,9 @@ import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -61,29 +61,29 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
 
         var userDetails = SecurityUtils.getUserDetails();
         if (ObjectUtils.isEmpty(settingSiteInfo)) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Object is null");
+            throw new CustomException(ErrorApp.OBJECT_NOT_EMPTY);
         }
         if (settingSiteInfo.getSettingId() == null) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SettingId is not null!!");
+            throw new CustomException(ErrorApp.SETTING_ID_NULL);
         }
 
         var _siteId = userDetails.isOrganizationAdmin() ? settingSiteInfo.getSiteId() : userDetails.getSiteId();
         if (!SecurityUtils.checkSiteAuthorization(siteRepository, _siteId)) {
-            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this");
+            throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
         }
 
         if (StringUtils.isEmpty(settingSiteInfo.getValue())) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Value is empty");
+            throw new CustomException(ErrorApp.SETTING_VALUE_NULL);
         }
 
         Long settingId = Long.valueOf(settingSiteInfo.getSettingId());
 
         var site = siteRepository.findById(UUID.fromString(_siteId));
         if (site.isEmpty())
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SiteId is not correct in database!!");
+            throw new CustomException(ErrorApp.SITE_NOT_FOUND);
 
         if (!settingRepository.existsById(settingId))
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "SettingId is not correct in database!!");
+            throw new CustomException(ErrorApp.SETTING_NOT_FOUND);
 
         SettingSiteMapPk pk = new SettingSiteMapPk(settingId, UUID.fromString(_siteId));
         SettingSiteMap settingSiteMap = settingSiteMapRepository.findById(pk).orElse(null);
@@ -151,7 +151,7 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
 
         var userDetails = SecurityUtils.getUserDetails();
         if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
-            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this");
+            throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
         }
         var _siteId = userDetails.isOrganizationAdmin() ? siteId : userDetails.getSiteId();
 

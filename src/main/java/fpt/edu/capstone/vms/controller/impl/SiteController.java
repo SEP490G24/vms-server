@@ -1,18 +1,19 @@
 package fpt.edu.capstone.vms.controller.impl;
 
 import fpt.edu.capstone.vms.controller.ISiteController;
-import fpt.edu.capstone.vms.exception.HttpClientResponse;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.service.ISiteService;
+import fpt.edu.capstone.vms.util.ResponseUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
 import java.util.UUID;
@@ -34,7 +35,11 @@ public class SiteController implements ISiteController {
      */
     @Override
     public ResponseEntity<?> findById(String siteId) {
-        return ResponseEntity.ok(mapper.map(siteService.findById(UUID.fromString(siteId)), SiteFilterDTO.class));
+        try {
+            return ResponseEntity.ok(mapper.map(siteService.findById(siteId), SiteFilterDTO.class));
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
@@ -48,9 +53,9 @@ public class SiteController implements ISiteController {
     @Override
     public ResponseEntity<?> delete(UUID id) {
         try {
-            return ResponseEntity.ok(siteService.deleteSite(id));
-        } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
+            return ResponseUtils.getResponseEntityStatus(siteService.deleteSite(id));
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -76,9 +81,9 @@ public class SiteController implements ISiteController {
     public ResponseEntity<?> createSite(CreateSiteInfo siteInfo) {
         try {
             var site = siteService.save(mapper.map(siteInfo, Site.class));
-            return ResponseEntity.ok(site);
-        } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
+            return ResponseUtils.getResponseEntityStatus(site);
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -97,9 +102,9 @@ public class SiteController implements ISiteController {
     public ResponseEntity<?> updateSite(UpdateSiteInfo updateSiteInfo, UUID id) {
         try {
             var site = siteService.updateSite(updateSiteInfo, id);
-            return ResponseEntity.ok(site);
-        } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
+            return ResponseUtils.getResponseEntityStatus(site);
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

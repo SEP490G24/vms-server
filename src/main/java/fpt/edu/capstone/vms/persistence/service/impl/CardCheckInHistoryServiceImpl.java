@@ -1,8 +1,10 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.constants.Constants;
+import fpt.edu.capstone.vms.constants.ErrorApp;
 import fpt.edu.capstone.vms.controller.ICardController;
 import fpt.edu.capstone.vms.controller.ITicketController;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.persistence.entity.CardCheckInHistory;
 import fpt.edu.capstone.vms.persistence.repository.CardCheckInHistoryRepository;
 import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
@@ -12,10 +14,8 @@ import fpt.edu.capstone.vms.persistence.service.ICardCheckInHistoryService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import org.modelmapper.ModelMapper;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -65,7 +65,7 @@ public class CardCheckInHistoryServiceImpl extends GenericServiceImpl<CardCheckI
         var customerTicket = customerTicketMapRepository.findByCheckInCodeIgnoreCase(checkInCode);
         if (customerTicket != null) {
             if (!SecurityUtils.checkSiteAuthorization(siteRepository, customerTicket.getTicketEntity().getSiteId())) {
-                throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to access this site");
+                throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
             }
             return cardCheckInHistoryRepository.getAllCardHistoryOfCustomer(checkInCode);
         }

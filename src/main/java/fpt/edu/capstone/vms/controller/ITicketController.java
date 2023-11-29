@@ -47,12 +47,6 @@ public interface ITicketController {
     @Operation(summary = "Delete ticket")
     @PreAuthorize("hasRole('r:ticket:delete')")
     ResponseEntity<?> delete(@PathVariable String id);
-
-    @GetMapping
-    @Operation(summary = "Get all ticket")
-    @PreAuthorize("hasRole('r:ticket:filter')")
-    ResponseEntity<List<?>> findAll();
-
     @PostMapping()
     @Operation(summary = "Create new ticket")
     @PreAuthorize("hasRole('r:ticket:create')")
@@ -73,9 +67,9 @@ public interface ITicketController {
     ResponseEntity<?> updateMeeting(@RequestBody @Valid UpdateTicketInfo updateTicketInfo);
 
     @PostMapping("/filter")
-    @Operation(summary = "Filter all ticket in site for admin")
+    @Operation(summary = "Filter all ticket")
     @PreAuthorize("hasRole('r:ticket:filter')")
-    ResponseEntity<?> filterAllBySites(@RequestBody @Valid TicketFilter ticketFilterSite, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
+    ResponseEntity<?> filterAllTicket(@RequestBody @Valid TicketFilter ticketFilterSite, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
     @GetMapping("/check-in/{checkInCode}")
     @Operation(summary = "Find ticket by qrcode")
@@ -224,7 +218,7 @@ public interface ITicketController {
 
     @Data
     class CancelTicket {
-        private UUID reasonId;
+        private Integer reasonId;
         private String reasonNote;
         private UUID ticketId;
     }
@@ -286,7 +280,7 @@ public interface ITicketController {
         @NotNull
         private Constants.StatusTicket status;
 
-        private UUID reasonId;
+        private Integer reasonId;
         private String reasonNote;
     }
 

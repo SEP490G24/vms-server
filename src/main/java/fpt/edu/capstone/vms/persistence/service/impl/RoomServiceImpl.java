@@ -1,7 +1,9 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.constants.Constants;
+import fpt.edu.capstone.vms.constants.ErrorApp;
 import fpt.edu.capstone.vms.controller.IRoomController;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.entity.Room;
 import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
@@ -17,11 +19,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -53,24 +53,24 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
     public Room update(Room roomInfo, UUID id) {
         var room = roomRepository.findById(id).orElse(null);
         if (ObjectUtils.isEmpty(room))
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't found room");
+            throw new CustomException(ErrorApp.ROOM_NOT_FOUND);
         var site = siteRepository.findById(room.getSiteId()).orElse(null);
         if (ObjectUtils.isEmpty(site)) {
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Site is null");
+            throw new CustomException(ErrorApp.SITE_NOT_FOUND);
         }
         if (!SecurityUtils.checkSiteAuthorization(siteRepository, room.getSiteId().toString())) {
-            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+            throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
         }
         if (roomInfo.getDeviceId() != null) {
             var device = deviceRepository.findById(roomInfo.getDeviceId()).orElse(null);
             if (ObjectUtils.isEmpty(device)) {
-                throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Device is null");
+                throw new CustomException(ErrorApp.DEVICE_NOT_FOUND);
             }
             if (!SecurityUtils.checkSiteAuthorization(siteRepository, device.getSiteId().toString())) {
-                throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+                throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
             }
             if (device.getDeviceType().equals(Constants.DeviceType.SCAN_CARD)) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Device type is scan card");
+                throw new CustomException(ErrorApp.DEVICE_TYPE_SCAN_CARD);
             }
         }
         var updateRoom = roomRepository.save(room.update(roomInfo));
@@ -88,11 +88,11 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
     @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
     public Room create(IRoomController.RoomDto roomDto) {
         if (ObjectUtils.isEmpty(roomDto))
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Object is empty");
+            throw new CustomException(ErrorApp.OBJECT_NOT_EMPTY);
 
         if (SecurityUtils.getOrgId() != null) {
             if (!SecurityUtils.checkSiteAuthorization(siteRepository, roomDto.getSiteId().toString())) {
-                throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+                throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
             }
         } else {
             roomDto.setSiteId(UUID.fromString(SecurityUtils.getSiteId()));
@@ -100,21 +100,21 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
 
         var site = siteRepository.findById(roomDto.getSiteId()).orElse(null);
         if (ObjectUtils.isEmpty(site)) {
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Site is null");
+            throw new CustomException(ErrorApp.SITE_NOT_FOUND);
         }
         if (!SecurityUtils.checkSiteAuthorization(siteRepository, roomDto.getSiteId().toString())) {
-            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+            throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
         }
         if (roomDto.getDeviceId() != null) {
             var device = deviceRepository.findById(roomDto.getDeviceId()).orElse(null);
             if (ObjectUtils.isEmpty(device)) {
-                throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Device is null");
+                throw new CustomException(ErrorApp.DEVICE_NOT_FOUND);
             }
             if (!SecurityUtils.checkSiteAuthorization(siteRepository, device.getSiteId().toString())) {
-                throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+                throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
             }
             if (device.getDeviceType().equals(Constants.DeviceType.SCAN_CARD)) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Device type is scan card");
+                throw new CustomException(ErrorApp.DEVICE_TYPE_SCAN_CARD);
             }
         }
         var room = mapper.map(roomDto, Room.class);
@@ -163,7 +163,7 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
     @Override
     public List<Room> finAllBySiteId(String siteId) {
         if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
-            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "Not permission");
+            throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
         }
         return roomRepository.findAllBySiteIdAndEnableIsTrue(UUID.fromString(siteId));
     }

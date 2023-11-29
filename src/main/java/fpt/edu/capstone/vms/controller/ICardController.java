@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 public interface ICardController {
 
     @PostMapping()
-    @Operation(summary = "Create new card")
+    @Operation(summary = "Check card")
     ResponseEntity<?> checkCard(@RequestBody @Valid CardCheckDTO cardDto);
 
     @PostMapping("/scan")

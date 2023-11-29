@@ -1,7 +1,9 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.constants.Constants;
+import fpt.edu.capstone.vms.constants.ErrorApp;
 import fpt.edu.capstone.vms.controller.ISiteController;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
@@ -22,10 +24,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -76,30 +76,25 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
     @Override
     @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
     public Site save(Site entity) {
-        try {
-            if (StringUtils.isEmpty(entity.getCode())) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code is null");
-            }
-            if (siteRepository.existsByCode(entity.getCode())) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code of site is exist");
-            }
-
-            checkAddress(entity.getProvinceId(), entity.getDistrictId(), entity.getCommuneId());
-            entity.setOrganizationId(UUID.fromString(SecurityUtils.getOrgId()));
-            entity.setEnable(true);
-            var site = siteRepository.save(entity);
-            auditLogRepository.save(new AuditLog(site.getId().toString()
-                , site.getOrganizationId().toString()
-                , site.getId().toString()
-                , SITE_TABLE_NAME
-                , Constants.AuditType.CREATE
-                , null
-                , site.toString()));
-//            if (!ObjectUtils.isEmpty(site)) addSettingForSite(site.getId());
-            return site;
-        } catch (HttpClientErrorException e) {
-            throw new HttpClientErrorException(e.getStatusCode(), e.getMessage());
+        if (StringUtils.isEmpty(entity.getCode())) {
+            throw new CustomException(ErrorApp.SITE_CODE_NULL);
         }
+        if (siteRepository.existsByCode(entity.getCode())) {
+            throw new CustomException(ErrorApp.SITE_CODE_EXIST);
+        }
+
+        checkAddress(entity.getProvinceId(), entity.getDistrictId(), entity.getCommuneId());
+        entity.setOrganizationId(UUID.fromString(SecurityUtils.getOrgId()));
+        entity.setEnable(true);
+        var site = siteRepository.save(entity);
+        auditLogRepository.save(new AuditLog(site.getId().toString()
+            , site.getOrganizationId().toString()
+            , site.getId().toString()
+            , SITE_TABLE_NAME
+            , Constants.AuditType.CREATE
+            , null
+            , site.toString()));
+        return site;
     }
 
     /**
@@ -117,15 +112,15 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
         var siteEntity = siteRepository.findById(id).orElse(null);
         var update = mapper.map(updateSite, Site.class);
         if (ObjectUtils.isEmpty(siteEntity))
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't found site by id: " + id);
+            throw new CustomException(ErrorApp.SITE_NOT_FOUND);
 
         if (SecurityUtils.getOrgId() != null) {
             if (!UUID.fromString(SecurityUtils.getOrgId()).equals(siteEntity.getOrganizationId())) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in organization with organizationId = " + siteEntity.getOrganization());
+                throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
             }
         } else {
             if (!SecurityUtils.getSiteId().equals(siteEntity.getId().toString())) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in site with siteId = " + SecurityUtils.getSiteId());
+                throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
             }
         }
         var updateS = siteRepository.save(siteEntity.update(update));
@@ -205,15 +200,15 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
     public Boolean deleteSite(UUID siteId) {
         var siteEntity = siteRepository.findById(siteId).orElse(null);
         if (ObjectUtils.isEmpty(siteEntity))
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't found site by id: " + siteId);
+            throw new CustomException(ErrorApp.SITE_NOT_FOUND);
 
         if (SecurityUtils.getOrgId() != null) {
             if (!UUID.fromString(SecurityUtils.getOrgId()).equals(siteEntity.getOrganizationId())) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in organization with organizationId ");
+                throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
             }
         } else {
             if (!SecurityUtils.getSiteId().equals(siteEntity.getId().toString())) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in site with siteId = " + SecurityUtils.getSiteId());
+                throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
             }
         }
 
@@ -246,56 +241,56 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
     }
 
     @Override
-    public Site findById(UUID id) {
-        Site site = siteRepository.findById(id).orElse(null);
+    public Site findById(String id) {
+        String siteId = "";
         if (SecurityUtils.getOrgId() != null) {
-            if (!UUID.fromString(SecurityUtils.getOrgId()).equals(site.getOrganizationId())) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in organization with organizationId = " + site.getOrganization());
+            if (!SecurityUtils.checkSiteAuthorization(siteRepository, id)) {
+                throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
             }
+            siteId = id;
         } else {
-            if (!SecurityUtils.getSiteId().equals(site.getId().toString())) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The current user is not in site with siteId = " + SecurityUtils.getSiteId());
-            }
+            siteId = SecurityUtils.getSiteId();
         }
+        Site site = siteRepository.findById(UUID.fromString(siteId)).orElse(null);
         return site;
     }
 
     public void checkAddress(Integer provinceId, Integer districtId, Integer communeId) {
 
         if (ObjectUtils.isEmpty(provinceId)) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Province is null");
+            throw new CustomException(ErrorApp.PROVINCE_NULL);
         }
         if (ObjectUtils.isEmpty(districtId)) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "District is null");
+            throw new CustomException(ErrorApp.DISTRICT_NULL);
         }
         if (ObjectUtils.isEmpty(communeId)) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Commune is null");
+            throw new CustomException(ErrorApp.COMMUNE_NULL);
         }
 
         var province = provinceRepository.findById(provinceId).orElse(null);
 
         if (ObjectUtils.isEmpty(province)) {
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can not found province");
+            throw new CustomException(ErrorApp.PROVINCE_NOT_FOUND);
         }
 
         var district = districtRepository.findById(districtId).orElse(null);
 
         if (ObjectUtils.isEmpty(district)) {
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can not found district");
+            throw new CustomException(ErrorApp.DISTRICT_NOT_FOUND);
         }
 
         if (!Objects.equals(district.getProvinceId(), province.getId())) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "the district not in province please check it again");
+            throw new CustomException(ErrorApp.DISTRICT_NOT_FOUND_BY_PROVINCE);
         }
 
         var commune = communeRepository.findById(communeId).orElse(null);
 
         if (ObjectUtils.isEmpty(commune)) {
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can not found commune");
+            throw new CustomException(ErrorApp.COMMUNE_NOT_FOUND);
         }
 
         if (!Objects.equals(commune.getDistrictId(), district.getId())) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "the commune not in district please check it again");
+            throw new CustomException(ErrorApp.COMMUNE_NOT_FOUND_BY_DISTRICT);
         }
     }
 

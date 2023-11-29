@@ -1,10 +1,12 @@
 package fpt.edu.capstone.vms.controller.impl;
 
+import fpt.edu.capstone.vms.constants.ErrorApp;
 import fpt.edu.capstone.vms.controller.IRoomController;
-import fpt.edu.capstone.vms.exception.HttpClientResponse;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.persistence.entity.Room;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.service.IRoomService;
+import fpt.edu.capstone.vms.util.ResponseUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -14,7 +16,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
 import java.util.UUID;
@@ -27,30 +28,38 @@ public class RoomController implements IRoomController {
     private final ModelMapper mapper;
 
     @Override
-    public ResponseEntity<Room> findById(UUID id) {
-        var room = roomService.findById(id);
-        if (!SecurityUtils.checkSiteAuthorization(siteRepository, room.getSiteId().toString())) {
-            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "Not permission");
+    public ResponseEntity<?> findById(UUID id) {
+        try {
+            var room = roomService.findById(id);
+            if (!SecurityUtils.checkSiteAuthorization(siteRepository, room.getSiteId().toString())) {
+                throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
+            }
+            return ResponseUtils.getResponseEntityStatus(room);
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return ResponseEntity.ok(room);
     }
 
     @Override
-    public ResponseEntity<Room> delete(UUID id) {
-        var room = roomService.findById(id);
-        if (!SecurityUtils.checkSiteAuthorization(siteRepository, room.getSiteId().toString())) {
-            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "Not permission");
+    public ResponseEntity<?> delete(UUID id) {
+        try {
+            var room = roomService.findById(id);
+            if (!SecurityUtils.checkSiteAuthorization(siteRepository, room.getSiteId().toString())) {
+                throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
+            }
+            return ResponseUtils.getResponseEntityStatus(roomService.delete(id));
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return roomService.delete(id);
     }
 
     @Override
     public ResponseEntity<?> create(RoomDto roomDto) {
         try {
             var room = roomService.create(roomDto);
-            return ResponseEntity.ok(room);
-        } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
+            return ResponseUtils.getResponseEntityStatus(room);
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -58,9 +67,9 @@ public class RoomController implements IRoomController {
     public ResponseEntity<?> update(UpdateRoomDto roomDto, UUID id) {
         try {
             var room = roomService.update(mapper.map(roomDto, Room.class), id);
-            return ResponseEntity.ok(room);
-        } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
+            return ResponseUtils.getResponseEntityStatus(room);
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -94,11 +103,13 @@ public class RoomController implements IRoomController {
     }
 
     @Override
-    public ResponseEntity<List<?>> findAllBySiteId(String siteId) {
-        if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
-            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "Not permission");
+    public ResponseEntity<?> findAllBySiteId(String siteId) {
+        try {
+            var room = roomService.finAllBySiteId(siteId);
+            return ResponseUtils.getResponseEntityStatus(room);
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return ResponseEntity.ok(roomService.finAllBySiteId(siteId));
     }
 
 }

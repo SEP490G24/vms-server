@@ -1,6 +1,7 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.constants.Constants;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.persistence.entity.Setting;
 import fpt.edu.capstone.vms.persistence.repository.SettingRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.Collections;
 import java.util.List;
@@ -42,7 +42,7 @@ class SettingServiceImplTest {
 
         when(settingRepository.findById(id)).thenReturn(java.util.Optional.empty());
 
-        assertThrows(HttpClientErrorException.class, () -> settingService.update(entity, id));
+        assertThrows(CustomException.class, () -> settingService.update(entity, id));
     }
 
     @Test
@@ -57,7 +57,7 @@ class SettingServiceImplTest {
         when(settingRepository.findById(id)).thenReturn(java.util.Optional.of(existingSetting));
         when(settingRepository.existsByCode(entity.getCode())).thenReturn(true);
 
-        assertThrows(HttpClientErrorException.class, () -> settingService.update(entity, id));
+        assertThrows(CustomException.class, () -> settingService.update(entity, id));
     }
 
     @Test
@@ -83,7 +83,7 @@ class SettingServiceImplTest {
     void givenExistingCode_WhenUpdateWithNullEntity_ThenThrowException() {
         Long id = 1L;
         Setting entity = null;
-        assertThrows(HttpClientErrorException.class, () -> settingService.update(entity, id));
+        assertThrows(CustomException.class, () -> settingService.update(entity, id));
     }
 
     @Test
