@@ -87,7 +87,7 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
     @Override
     @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
     public Room create(IRoomController.RoomDto roomDto) {
-        if (ObjectUtils.isEmpty(roomDto))
+        if (ObjectUtils.isEmpty(roomDto) || roomDto == null)
             throw new CustomException(ErrorApp.OBJECT_NOT_EMPTY);
 
         if (SecurityUtils.getOrgId() != null) {

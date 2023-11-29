@@ -26,7 +26,7 @@ public class Constants {
         public static final String MAIL_USERNAME = "mail.username";
         public static final String MAIL_PASSWORD = "mail.password";
         public static final String MAIL_SMTP_STARTTLS_ENABLE = "mail.smtp.starttls.enable";
-
+        public static final String MAIL_SMTP_DISPLAY_NAME = "mail.smtp.display.name";
         /* Setting for Ticket */
         public static final String TICKET_TEMPLATE_CONFIRM_EMAIL = "ticket.template.confirm.email";
         public static final String TICKET_TEMPLATE_CANCEL_EMAIL = "ticket.template.cancel.email";

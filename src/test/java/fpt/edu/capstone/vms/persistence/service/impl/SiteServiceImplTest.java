@@ -3,8 +3,20 @@ package fpt.edu.capstone.vms.persistence.service.impl;
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ISiteController;
 import fpt.edu.capstone.vms.exception.CustomException;
-import fpt.edu.capstone.vms.persistence.entity.*;
-import fpt.edu.capstone.vms.persistence.repository.*;
+import fpt.edu.capstone.vms.persistence.entity.AuditLog;
+import fpt.edu.capstone.vms.persistence.entity.Commune;
+import fpt.edu.capstone.vms.persistence.entity.District;
+import fpt.edu.capstone.vms.persistence.entity.Province;
+import fpt.edu.capstone.vms.persistence.entity.SettingSiteMap;
+import fpt.edu.capstone.vms.persistence.entity.SettingSiteMapPk;
+import fpt.edu.capstone.vms.persistence.entity.Site;
+import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
+import fpt.edu.capstone.vms.persistence.repository.CommuneRepository;
+import fpt.edu.capstone.vms.persistence.repository.DistrictRepository;
+import fpt.edu.capstone.vms.persistence.repository.ProvinceRepository;
+import fpt.edu.capstone.vms.persistence.repository.SettingRepository;
+import fpt.edu.capstone.vms.persistence.repository.SettingSiteMapRepository;
+import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -14,7 +26,11 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.stubbing.Answer;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -23,12 +39,30 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
-import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_REALM_ROLE;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_RESOURCE_ROLE;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.REALM_ADMIN;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.SCOPE_ORGANIZATION;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.SCOPE_SITE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class SiteServiceImplTest {
 
@@ -150,7 +184,7 @@ class SiteServiceImplTest {
         site.setDistrictId(1);
         site.setCommuneId(1);
         site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
-        when(siteRepository.existsByCodeAndOrganizationId(anyString(), UUID.fromString(anyString()))).thenReturn(false);
+        when(siteRepository.existsByCodeAndOrganizationId("Test", site.getOrganizationId())).thenReturn(false);
 
         when(provinceRepository.findById(1)).thenReturn(Optional.of(new Province())); // Adjust this as needed
         when(districtRepository.findById(1)).thenReturn(Optional.of(new District())); // Adjust this as needed
@@ -192,8 +226,8 @@ class SiteServiceImplTest {
     void givenSite_WhenSaveWithDuplicateCode_ThenThrowException() {
         Site site = new Site();
         site.setCode("duplicateCode");
-        when(siteRepository.existsByCodeAndOrganizationId(anyString(), UUID.fromString(anyString()))).thenReturn(true);
-
+        site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+        when(siteRepository.existsByCodeAndOrganizationId("test", site.getOrganizationId())).thenReturn(true);
 
         assertThrows(CustomException.class, () -> siteService.save(site));
     }
@@ -223,7 +257,7 @@ class SiteServiceImplTest {
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
 
-        when(siteRepository.existsByCodeAndOrganizationId(anyString(), UUID.fromString(anyString()))).thenReturn(false);
+        when(siteRepository.existsByCodeAndOrganizationId("true", orgId)).thenReturn(false);
 
         when(siteRepository.findById(id)).thenReturn(Optional.of(existingSite));
         when(siteRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
