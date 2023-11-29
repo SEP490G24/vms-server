@@ -64,7 +64,7 @@ public interface IDeviceController {
     @PostMapping("/not-use")
     @Operation(summary = "Find all device with not use in site")
     @PreAuthorize("hasRole('r:device:find')")
-    ResponseEntity<?> findAllWithNotUseInSite(@RequestParam("siteId") String siteId);
+    ResponseEntity<?> findAllWithNotUseInSite(@RequestParam(value = "siteId", required = false) String siteId);
 
 
     @Data
