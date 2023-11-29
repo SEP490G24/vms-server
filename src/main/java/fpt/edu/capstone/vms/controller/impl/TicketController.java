@@ -102,7 +102,7 @@ public class TicketController implements ITicketController {
     }
 
     @Override
-    public ResponseEntity<?> filterAllBySites(TicketFilter filter, boolean isPageable, Pageable pageable) {
+    public ResponseEntity<?> filterAllTicket(TicketFilter filter, boolean isPageable, Pageable pageable) {
         if (SecurityUtils.getUserDetails().isOrganizationAdmin() || SecurityUtils.getUserDetails().isSiteAdmin()) {
             var ticketEntity = ticketService.filterAllBySite(
                 filter.getNames(),
