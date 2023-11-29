@@ -17,11 +17,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -30,20 +26,12 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
 
 class DepartmentServiceImplTest {
@@ -117,7 +105,7 @@ class DepartmentServiceImplTest {
             .thenReturn(Optional.of(new Site())); // Adjust based on your actual Site entity
 
         // Mock departmentRepository behavior
-        when(departmentRepository.existsByCode(departmentInfo.getCode())).thenReturn(true);
+        when(departmentRepository.existsByCodeAndSiteId(departmentInfo.getCode(), UUID.fromString(anyString()))).thenReturn(true);
 
         // Act and Assert
         assertThrows(CustomException.class, () -> departmentService.createDepartment(departmentInfo));
@@ -182,7 +170,7 @@ class DepartmentServiceImplTest {
 
         Department department = new Department();
         department.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
-        when(departmentRepository.existsByCode(departmentInfo.getCode())).thenReturn(false);
+        when(departmentRepository.existsByCodeAndSiteId(departmentInfo.getCode(), UUID.fromString(anyString()))).thenReturn(false);
         when(SecurityUtils.checkSiteAuthorization(siteRepository, departmentInfo.getSiteId())).thenReturn(true);
 
         Site site = new Site();
@@ -212,8 +200,7 @@ class DepartmentServiceImplTest {
         Department updateDepartmentInfo = new Department();
         updateDepartmentInfo.setCode("existingCode");
 
-        when(departmentRepository.existsByCode(updateDepartmentInfo.getCode())).thenReturn(true);
-
+        when(departmentRepository.existsByCodeAndSiteId(updateDepartmentInfo.getCode(), UUID.fromString(anyString()))).thenReturn(true);
         assertThrows(CustomException.class, () -> departmentService.update(updateDepartmentInfo, id));
     }
 
@@ -238,7 +225,7 @@ class DepartmentServiceImplTest {
 
         Department existingDepartment = new Department();
         when(departmentRepository.findById(id)).thenReturn(Optional.of(existingDepartment));
-        when(departmentRepository.existsByCode(updateDepartmentInfo.getCode())).thenReturn(false);
+        when(departmentRepository.existsByCodeAndSiteId(updateDepartmentInfo.getCode(), UUID.fromString(anyString()))).thenReturn(false);
 
         Jwt jwt = mock(Jwt.class);
         when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");

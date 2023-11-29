@@ -117,6 +117,17 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
                 throw new CustomException(ErrorApp.DEVICE_TYPE_SCAN_CARD);
             }
         }
+
+        if (SecurityUtils.getUserDetails().isOrganizationAdmin()) {
+            if (roomRepository.existsByCodeAndSiteId(roomDto.getCode(), roomDto.getSiteId())) {
+                throw new CustomException(ErrorApp.ROOM_DUPLICATE);
+            }
+        } else if (SecurityUtils.getUserDetails().isSiteAdmin()) {
+            if (roomRepository.existsByCodeAndSiteId(roomDto.getCode(), UUID.fromString(SecurityUtils.getSiteId()))) {
+                throw new CustomException(ErrorApp.ROOM_DUPLICATE);
+            }
+        }
+
         var room = mapper.map(roomDto, Room.class);
         room.setEnable(true);
         var roomSave = roomRepository.save(room);

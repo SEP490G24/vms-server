@@ -88,6 +88,17 @@ public class DeviceServiceImpl extends GenericServiceImpl<Device, Integer> imple
         if (ObjectUtils.isEmpty(site)) {
             throw new CustomException(ErrorApp.SITE_NOT_NULL);
         }
+
+        if (SecurityUtils.getUserDetails().isOrganizationAdmin()) {
+            if (deviceRepository.existsByCodeAndSiteId(deviceDto.getCode(), deviceDto.getSiteId())) {
+                throw new CustomException(ErrorApp.DEVICE_DUPLICATE);
+            }
+        } else if (SecurityUtils.getUserDetails().isSiteAdmin()) {
+            if (deviceRepository.existsByCodeAndSiteId(deviceDto.getCode(), UUID.fromString(SecurityUtils.getSiteId()))) {
+                throw new CustomException(ErrorApp.DEVICE_DUPLICATE);
+            }
+        }
+
         var device = mapper.map(deviceDto, Device.class);
         device.setEnable(true);
         var deviceSave = deviceRepository.save(device);

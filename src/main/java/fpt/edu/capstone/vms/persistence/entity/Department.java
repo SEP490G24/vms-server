@@ -1,13 +1,7 @@
 package fpt.edu.capstone.vms.persistence.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -33,7 +27,7 @@ public class Department extends AbstractBaseEntity<UUID>{
     @Column(name = "name")
     private String name;
 
-    @Column(name = "code", unique = true, updatable = false, nullable = false)
+    @Column(name = "code", updatable = false, nullable = false)
     private String code;
 
     @Column(name = "description")

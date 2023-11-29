@@ -26,6 +26,7 @@ public enum ErrorApp {
 
     //template
     TEMPLATE_NOT_FOUND(107, I18n.getMessage("msg.template.not.found")),
+    TEMPLATE_DUPLICATE(108, I18n.getMessage("msg.template.duplicate.code")),
 
     //department
     DEPARTMENT_DUPLICATE(108, I18n.getMessage("msg.department.duplicate.code")),
@@ -50,6 +51,7 @@ public enum ErrorApp {
     //device
     DEVICE_NOT_FOUND(151, I18n.getMessage("msg.device.not.found")),
     DEVICE_TYPE_SCAN_CARD(153, I18n.getMessage("msg.device.type.scan.card")),
+    DEVICE_DUPLICATE(108, I18n.getMessage("msg.device.duplicate.code")),
 
     //organization
     ORGANIZATION_NOT_FOUND(113, I18n.getMessage("msg.organization.not.found")),
@@ -64,6 +66,7 @@ public enum ErrorApp {
     ROOM_CODE_NULL(120, I18n.getMessage("msg.room.code.null")),
     ROOM_USER_CAN_NOT_CREATE_TICKET(141, I18n.getMessage("msg.room.user.can.not.create.ticket")),
     ROOM_HAVE_TICKET_IN_THIS_TIME(142, I18n.getMessage("msg.room.have.ticket.in.this.time")),
+    ROOM_DUPLICATE(108, I18n.getMessage("msg.room.duplicate.code")),
 
     //setting group
     SETTING_GROUP_NOT_FOUND(121, I18n.getMessage("msg.setting.group.not.found")),

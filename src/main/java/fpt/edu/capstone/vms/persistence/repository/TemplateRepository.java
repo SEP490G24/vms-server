@@ -58,4 +58,6 @@ public interface TemplateRepository extends GenericRepository<Template, UUID> {
     List<Template> findAllBySiteIdAndEnableIsTrue(UUID siteId);
 
     List<Template> findAllBySiteIdAndEnableIsTrueAndType(UUID siteId, Constants.TemplateType type);
+
+    boolean existsByCodeAndSiteId(String code, UUID siteId);
 }

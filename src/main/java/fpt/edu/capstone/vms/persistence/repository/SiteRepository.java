@@ -79,5 +79,6 @@ public interface SiteRepository extends GenericRepository<Site, UUID> {
 
     List<Site> findAllByOrganizationId(UUID organizationId);
     boolean existsByIdAndOrganizationId(UUID siteId, UUID organizationId);
-    boolean existsByCode(String code);
+
+    boolean existsByCodeAndOrganizationId(String code, UUID organizationId);
 }
