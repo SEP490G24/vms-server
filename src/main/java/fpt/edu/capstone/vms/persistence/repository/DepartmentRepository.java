@@ -64,7 +64,7 @@ public interface DepartmentRepository extends GenericRepository<Department, UUID
 
     List<Department> findAllByEnableIsTrue();
 
-    boolean existsByCode(String code);
+    boolean existsByCodeAndSiteId(String code, UUID siteId);
 
     List<Department> findAllBySiteId(UUID siteId);
 

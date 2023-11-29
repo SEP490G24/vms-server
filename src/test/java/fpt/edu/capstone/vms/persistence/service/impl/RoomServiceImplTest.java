@@ -145,16 +145,16 @@ class RoomServiceImplTest {
         Site site = new Site();
         site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
 
-//        Jwt jwt = mock(Jwt.class);
-//
-//        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("63139e5c-3d0b-46d3-8167-fe59cf46d3d5");
-//        when(jwt.getClaim(Constants.Claims.Name)).thenReturn("username");
-//        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("preferred_username");
-//        when(jwt.getClaim(Constants.Claims.GivenName)).thenReturn("given_name");
-//        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("63139e5c-3d0b-46d3-8167-fe59cf46d3d5");
-//        when(jwt.getClaim(Constants.Claims.FamilyName)).thenReturn("family_name");
-//        when(jwt.getClaim(Constants.Claims.Email)).thenReturn("email");
-//        when(authentication.getPrincipal()).thenReturn(jwt);
+        Jwt jwt = mock(Jwt.class);
+
+        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("63139e5c-3d0b-46d3-8167-fe59cf46d3d5");
+        when(jwt.getClaim(Constants.Claims.Name)).thenReturn("username");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("preferred_username");
+        when(jwt.getClaim(Constants.Claims.GivenName)).thenReturn("given_name");
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("63139e5c-3d0b-46d3-8167-fe59cf46d3d5");
+        when(jwt.getClaim(Constants.Claims.FamilyName)).thenReturn("family_name");
+        when(jwt.getClaim(Constants.Claims.Email)).thenReturn("email");
+        when(authentication.getPrincipal()).thenReturn(jwt);
 
         // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
         when(securityContext.getAuthentication()).thenReturn(authentication);
@@ -162,6 +162,8 @@ class RoomServiceImplTest {
         //when
         when(SecurityUtils.checkSiteAuthorization(siteRepository, room.getSiteId().toString())).thenReturn(true);
         when(siteRepository.findById(room.getSiteId())).thenReturn(Optional.of(site));
+        when(roomRepository.existsByCodeAndSiteId(roomDto.getCode(), room.getSiteId())).thenReturn(false);
+
         // When
         when(roomRepository.save(any(Room.class))).thenReturn(room);
         Room roomActual = roomService.create(roomDto);
@@ -176,7 +178,6 @@ class RoomServiceImplTest {
     void givenRoomDtoIsNull_whenCreateRoom_ThenThrowHttpClientErrorException() {
         // Given
         IRoomController.RoomDto roomDto = null;
-
         // When and Then
         assertThrows(CustomException.class, () -> roomService.create(roomDto));
     }

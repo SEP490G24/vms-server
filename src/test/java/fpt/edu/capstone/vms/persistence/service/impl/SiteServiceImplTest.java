@@ -56,7 +56,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -185,7 +184,7 @@ class SiteServiceImplTest {
         site.setDistrictId(1);
         site.setCommuneId(1);
         site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
-        when(siteRepository.existsByCode(anyString())).thenReturn(false);
+        when(siteRepository.existsByCodeAndOrganizationId("Test", site.getOrganizationId())).thenReturn(false);
 
         when(provinceRepository.findById(1)).thenReturn(Optional.of(new Province())); // Adjust this as needed
         when(districtRepository.findById(1)).thenReturn(Optional.of(new District())); // Adjust this as needed
@@ -227,7 +226,8 @@ class SiteServiceImplTest {
     void givenSite_WhenSaveWithDuplicateCode_ThenThrowException() {
         Site site = new Site();
         site.setCode("duplicateCode");
-        when(siteRepository.existsByCode(anyString())).thenReturn(true);
+        site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+        when(siteRepository.existsByCodeAndOrganizationId("test", site.getOrganizationId())).thenReturn(true);
 
         assertThrows(CustomException.class, () -> siteService.save(site));
     }
@@ -257,7 +257,8 @@ class SiteServiceImplTest {
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
 
-        when(siteRepository.existsByCode(existingSite.getCode())).thenReturn(false);
+        when(siteRepository.existsByCodeAndOrganizationId("true", orgId)).thenReturn(false);
+
         when(siteRepository.findById(id)).thenReturn(Optional.of(existingSite));
         when(siteRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(auditLogRepository.save(any())).thenReturn(new AuditLog());

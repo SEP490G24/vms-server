@@ -18,6 +18,7 @@ import static fpt.edu.capstone.vms.constants.Constants.SettingCode.MAIL_HOST;
 import static fpt.edu.capstone.vms.constants.Constants.SettingCode.MAIL_PASSWORD;
 import static fpt.edu.capstone.vms.constants.Constants.SettingCode.MAIL_PORT;
 import static fpt.edu.capstone.vms.constants.Constants.SettingCode.MAIL_SMTP_AUTH;
+import static fpt.edu.capstone.vms.constants.Constants.SettingCode.MAIL_SMTP_DISPLAY_NAME;
 import static fpt.edu.capstone.vms.constants.Constants.SettingCode.MAIL_SMTP_STARTTLS_ENABLE;
 import static fpt.edu.capstone.vms.constants.Constants.SettingCode.MAIL_USERNAME;
 
@@ -32,7 +33,6 @@ public class EmailUtils {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
 
         settingUtils.loadSettingsSite(siteId);
-
         mailSender.setHost(settingUtils.getOrDefault(MAIL_HOST));
         mailSender.setPort(settingUtils.getInteger(MAIL_PORT, null));
         mailSender.setUsername(settingUtils.getOrDefault(MAIL_USERNAME));
@@ -52,7 +52,7 @@ public class EmailUtils {
 
             MimeMessagePreparator messagePreparatory = mimeMessage -> {
                 MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-                messageHelper.setFrom(configEmail(siteId).getUsername());
+                messageHelper.setFrom(settingUtils.getOrDefault(MAIL_USERNAME), settingUtils.getOrDefault(MAIL_SMTP_DISPLAY_NAME));
                 messageHelper.setTo(to);
                 messageHelper.setSubject(subject);
                 messageHelper.setText(body, true);

@@ -6,13 +6,7 @@ import fpt.edu.capstone.vms.controller.ISiteController;
 import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.entity.Site;
-import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
-import fpt.edu.capstone.vms.persistence.repository.CommuneRepository;
-import fpt.edu.capstone.vms.persistence.repository.DistrictRepository;
-import fpt.edu.capstone.vms.persistence.repository.ProvinceRepository;
-import fpt.edu.capstone.vms.persistence.repository.SettingRepository;
-import fpt.edu.capstone.vms.persistence.repository.SettingSiteMapRepository;
-import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
+import fpt.edu.capstone.vms.persistence.repository.*;
 import fpt.edu.capstone.vms.persistence.service.ISiteService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import fpt.edu.capstone.vms.util.PageableUtils;
@@ -79,7 +73,7 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
         if (StringUtils.isEmpty(entity.getCode())) {
             throw new CustomException(ErrorApp.SITE_CODE_NULL);
         }
-        if (siteRepository.existsByCode(entity.getCode())) {
+        if (siteRepository.existsByCodeAndOrganizationId(entity.getCode(), UUID.fromString(SecurityUtils.getOrgId()))) {
             throw new CustomException(ErrorApp.SITE_CODE_EXIST);
         }
 

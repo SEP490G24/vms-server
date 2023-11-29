@@ -137,7 +137,7 @@ class TemplateServiceImplTest {
         template.setId(UUID.fromString("63139e5c-3d0b-46d3-8167-fe59cf46d3d5"));
         //when
         when(templateRepository.save(any(Template.class))).thenReturn(template);
-
+        when(templateRepository.existsByCodeAndSiteId(template.getCode(), UUID.randomUUID())).thenReturn(true);
         Jwt jwt = mock(Jwt.class);
 
         when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("63139e5c-3d0b-46d3-8167-fe59cf46d3d5");

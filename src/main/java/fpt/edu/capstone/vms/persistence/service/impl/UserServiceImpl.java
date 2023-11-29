@@ -13,11 +13,7 @@ import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.entity.Department;
 import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.entity.User;
-import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
-import fpt.edu.capstone.vms.persistence.repository.DepartmentRepository;
-import fpt.edu.capstone.vms.persistence.repository.FileRepository;
-import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
-import fpt.edu.capstone.vms.persistence.repository.UserRepository;
+import fpt.edu.capstone.vms.persistence.repository.*;
 import fpt.edu.capstone.vms.persistence.service.IUserService;
 import fpt.edu.capstone.vms.util.PageableUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
@@ -251,7 +247,11 @@ public class UserServiceImpl implements IUserService {
                     userEntity.setAvatar(value.getAvatar());
                 }
             }
-            Site site = siteRepository.findById(userEntity.getDepartment().getSiteId()).orElse(null);
+            Site site = null;
+            if (!SecurityUtils.getUserDetails().isOrganizationAdmin()) {
+                site = siteRepository.findById(userEntity.getDepartment().getSiteId()).orElse(null);
+            }
+
 
             User oldValue = userEntity;
             userEntity = userEntity.update(value);
@@ -260,8 +260,9 @@ public class UserServiceImpl implements IUserService {
                 userEntity.setRole(role);
             }
             userRepository.save(userEntity);
-            auditLogRepository.save(new AuditLog(userEntity.getDepartment().getSiteId().toString()
-                , site.getOrganizationId().toString()
+
+            auditLogRepository.save(new AuditLog(site != null ? site.getId().toString() : null
+                , site != null ? site.getOrganizationId().toString() : SecurityUtils.getOrgId()
                 , userEntity.getId()
                 , USER_TABLE_NAME
                 , Constants.AuditType.UPDATE

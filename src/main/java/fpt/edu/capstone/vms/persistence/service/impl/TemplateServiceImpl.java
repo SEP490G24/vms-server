@@ -81,6 +81,16 @@ public class TemplateServiceImpl extends GenericServiceImpl<Template, UUID> impl
             templateDto.setSiteId(UUID.fromString(SecurityUtils.getSiteId()));
         }
 
+        if (SecurityUtils.getUserDetails().isOrganizationAdmin()) {
+            if (templateRepository.existsByCodeAndSiteId(templateDto.getCode(), templateDto.getSiteId())) {
+                throw new CustomException(ErrorApp.TEMPLATE_DUPLICATE);
+            }
+        } else if (SecurityUtils.getUserDetails().isSiteAdmin()) {
+            if (templateRepository.existsByCodeAndSiteId(templateDto.getCode(), UUID.fromString(SecurityUtils.getSiteId()))) {
+                throw new CustomException(ErrorApp.TEMPLATE_DUPLICATE);
+            }
+        }
+
         var site = siteRepository.findById(templateDto.getSiteId()).orElse(null);
         var template = mapper.map(templateDto, Template.class);
         template.setEnable(true);

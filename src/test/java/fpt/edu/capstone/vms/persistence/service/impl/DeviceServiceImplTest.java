@@ -111,6 +111,7 @@ class DeviceServiceImplTest {
         //when
         when(SecurityUtils.checkSiteAuthorization(siteRepository, device.getSiteId().toString())).thenReturn(true);
         when(siteRepository.findById(device.getSiteId())).thenReturn(Optional.of(site));
+        when(deviceRepository.existsByCodeAndSiteId(deviceDto.getCode(), UUID.randomUUID())).thenReturn(true);
         // When
         when(deviceRepository.save(any(Device.class))).thenReturn(device);
         Device device1 = deviceService.create(deviceDto);

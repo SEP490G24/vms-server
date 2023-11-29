@@ -29,10 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static fpt.edu.capstone.vms.constants.ErrorApp.DEPARTMENT_NOT_FOUND;
-import static fpt.edu.capstone.vms.constants.ErrorApp.OBJECT_NOT_EMPTY;
-import static fpt.edu.capstone.vms.constants.ErrorApp.SITE_NOT_NULL;
-import static fpt.edu.capstone.vms.constants.ErrorApp.USER_NOT_PERMISSION;
+import static fpt.edu.capstone.vms.constants.ErrorApp.*;
 
 @Service
 public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> implements IDepartmentService {
@@ -129,8 +126,14 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
             throw new CustomException(SITE_NOT_NULL);
         }
 
-        if (departmentRepository.existsByCode(departmentInfo.getCode())) {
-            throw new CustomException(ErrorApp.DEPARTMENT_DUPLICATE);
+        if (SecurityUtils.getUserDetails().isOrganizationAdmin()) {
+            if (departmentRepository.existsByCodeAndSiteId(departmentInfo.getCode(), UUID.fromString(departmentInfo.getSiteId()))) {
+                throw new CustomException(ErrorApp.DEPARTMENT_DUPLICATE);
+            }
+        } else if (SecurityUtils.getUserDetails().isSiteAdmin()) {
+            if (departmentRepository.existsByCodeAndSiteId(departmentInfo.getCode(), UUID.fromString(SecurityUtils.getSiteId()))) {
+                throw new CustomException(ErrorApp.DEPARTMENT_DUPLICATE);
+            }
         }
 
 
