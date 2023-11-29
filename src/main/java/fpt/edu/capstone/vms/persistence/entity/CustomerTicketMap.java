@@ -41,7 +41,7 @@ public class CustomerTicketMap extends AbstractBaseEntity<CustomerTicketMapPk> {
     private Ticket ticketEntity;
 
     @Column(name = "reason_id")
-    private UUID reasonId;
+    private Integer reasonId;
 
     @OneToOne
     @JoinColumn(name = "reason_id", referencedColumnName = "id", insertable = false, updatable = false)

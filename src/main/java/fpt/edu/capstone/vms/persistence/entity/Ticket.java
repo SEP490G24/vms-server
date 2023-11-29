@@ -87,7 +87,7 @@ public class Ticket extends AbstractBaseEntity<UUID> {
     private String siteId;
 
     @Column(name = "reason_id")
-    private UUID reasonId;
+    private Integer reasonId;
 
     @OneToOne
     @JoinColumn(name = "reason_id", referencedColumnName = "id", insertable = false, updatable = false)
