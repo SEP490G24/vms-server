@@ -62,7 +62,7 @@ public interface IRoomController {
     @GetMapping("/site/{siteId}")
     @Operation(summary = "Get all room by siteId")
     @PreAuthorize("hasRole('r:room:filter')")
-    ResponseEntity<List<?>> findAllBySiteId(@PathVariable String siteId);
+    ResponseEntity<?> findAllBySiteId(@PathVariable String siteId);
 
     @Data
     @Builder

@@ -67,9 +67,9 @@ public interface ITicketController {
     ResponseEntity<?> updateMeeting(@RequestBody @Valid UpdateTicketInfo updateTicketInfo);
 
     @PostMapping("/filter")
-    @Operation(summary = "Filter all ticket in site for admin")
+    @Operation(summary = "Filter all ticket")
     @PreAuthorize("hasRole('r:ticket:filter')")
-    ResponseEntity<?> filterAllBySites(@RequestBody @Valid TicketFilter ticketFilterSite, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
+    ResponseEntity<?> filterAllTicket(@RequestBody @Valid TicketFilter ticketFilterSite, @QueryParam("isPageable") boolean isPageable, Pageable pageable);
 
     @GetMapping("/check-in/{checkInCode}")
     @Operation(summary = "Find ticket by qrcode")

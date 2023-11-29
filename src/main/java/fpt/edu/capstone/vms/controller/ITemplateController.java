@@ -61,12 +61,12 @@ public interface ITemplateController {
     @GetMapping("/site/{siteId}")
     @Operation(summary = "Get all template by siteId")
     @PreAuthorize("hasRole('r:template:filter')")
-    ResponseEntity<List<?>> findAllBySiteId(@PathVariable String siteId);
+    ResponseEntity<?> findAllBySiteId(@PathVariable String siteId);
 
     @GetMapping("/site/{siteId}/{type}")
     @Operation(summary = "Get all template by siteId and type")
     @PreAuthorize("hasRole('r:template:filter')")
-    ResponseEntity<List<?>> findAllBySiteIdAndType(@PathVariable String siteId, @PathVariable Constants.TemplateType type);
+    ResponseEntity<?> findAllBySiteIdAndType(@PathVariable String siteId, @PathVariable Constants.TemplateType type);
 
     @Data
     @Builder
@@ -86,7 +86,7 @@ public interface ITemplateController {
         private String description;
         @NotNull
         private Boolean enable;
-        @NotNull
+
         private UUID siteId;
 
     }

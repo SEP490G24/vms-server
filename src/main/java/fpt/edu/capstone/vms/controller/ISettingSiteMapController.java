@@ -8,7 +8,15 @@ import lombok.Builder;
 import lombok.Data;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Date;
 import java.util.List;
@@ -48,10 +56,10 @@ public interface ISettingSiteMapController {
     @PreAuthorize("hasRole('r:setting-site:filter')")
     ResponseEntity<?> findAllByGroupId(@PathVariable Integer settingGroupId, @RequestParam(value = "siteId", required = false) String siteId);
 
-    @GetMapping("/set-default/{siteId}")
+    @GetMapping("/set-default")
     @Operation(summary = "Set default setting for site")
     @PreAuthorize("hasRole('r:setting-site:set-default')")
-    ResponseEntity<?> setDefault(@PathVariable String siteId);
+    ResponseEntity<?> setDefault(@RequestParam(value = "siteId", required = false) String siteId);
 
     @Data
     @Builder

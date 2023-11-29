@@ -76,12 +76,20 @@ public class TicketController implements ITicketController {
 
     @Override
     public ResponseEntity<?> updateBookmark(TicketBookmark ticketBookmark) {
-        return ResponseEntity.ok(ticketService.updateBookMark(ticketBookmark));
+        try {
+            return ResponseUtils.getResponseEntityStatus(ticketService.updateBookMark(ticketBookmark));
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Override
     public ResponseEntity<?> cancelMeeting(CancelTicket cancelTicket) {
-        return ResponseEntity.ok(ticketService.cancelTicket(cancelTicket));
+        try {
+            return ResponseUtils.getResponseEntityStatus(ticketService.cancelTicket(cancelTicket));
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Override
@@ -94,7 +102,7 @@ public class TicketController implements ITicketController {
     }
 
     @Override
-    public ResponseEntity<?> filterAllBySites(TicketFilter filter, boolean isPageable, Pageable pageable) {
+    public ResponseEntity<?> filterAllTicket(TicketFilter filter, boolean isPageable, Pageable pageable) {
         if (SecurityUtils.getUserDetails().isOrganizationAdmin() || SecurityUtils.getUserDetails().isSiteAdmin()) {
             var ticketEntity = ticketService.filterAllBySite(
                 filter.getNames(),
@@ -203,7 +211,11 @@ public class TicketController implements ITicketController {
 
     @Override
     public ResponseEntity<?> findByQRCode(String checkInCode) {
-        return ResponseEntity.ok(ticketService.findByQRCode(checkInCode));
+        try {
+            return ResponseUtils.getResponseEntityStatus(ticketService.findByQRCode(checkInCode));
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Override

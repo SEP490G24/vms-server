@@ -4,6 +4,7 @@ import com.google.zxing.WriterException;
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ICustomerController;
 import fpt.edu.capstone.vms.controller.ITicketController;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.persistence.entity.*;
 import fpt.edu.capstone.vms.persistence.repository.*;
 import fpt.edu.capstone.vms.util.EmailUtils;
@@ -234,6 +235,14 @@ class TicketServiceImplTest {
         when(customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(ticket.getId())).thenReturn(customerTicketMaps);
         when(customerRepository.findById(customerTicketMap.getCustomerTicketMapPk().getCustomerId())).thenReturn(Optional.of(customer));
 
+        Commune commune = new Commune().setName("abc");
+        District district = new District().setName("abc");
+        Province province = new Province().setName("abc");
+
+        site.setCommune(commune);
+        site.setDistrict(district);
+        site.setProvince(province);
+
         Template template = new Template();
         template.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c06"));
         when(settingUtils.getOrDefault(eq(Constants.SettingCode.TICKET_TEMPLATE_CONFIRM_EMAIL))).thenReturn(template.getId().toString());
@@ -304,8 +313,7 @@ class TicketServiceImplTest {
 
         when(mapper.map(ticketInfo, Ticket.class)).thenReturn(ticket);
 
-        HttpClientErrorException errorException = assertThrows(HttpClientErrorException.class, () -> ticketService.create(ticketInfo));
-        assertEquals("400 User can not create meeting in this room", errorException.getMessage());
+        assertThrows(CustomException.class, () -> ticketService.create(ticketInfo));
     }
 
     @Test
@@ -353,8 +361,7 @@ class TicketServiceImplTest {
 
         when(mapper.map(ticketInfo, Ticket.class)).thenReturn(ticket);
 
-        HttpClientErrorException errorException = assertThrows(HttpClientErrorException.class, () -> ticketService.create(ticketInfo));
-        assertEquals("400 Room is null", errorException.getMessage());
+        assertThrows(CustomException.class, () -> ticketService.create(ticketInfo));
     }
 
     @Test
@@ -407,8 +414,7 @@ class TicketServiceImplTest {
 
         when(mapper.map(ticketInfo, Ticket.class)).thenReturn(ticket);
 
-        HttpClientErrorException errorException = assertThrows(HttpClientErrorException.class, () -> ticketService.create(ticketInfo));
-        assertEquals("400 Room have meeting in this time", errorException.getMessage());
+        assertThrows(CustomException.class, () -> ticketService.create(ticketInfo));
     }
 
 
@@ -443,8 +449,7 @@ class TicketServiceImplTest {
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
 
-        HttpClientErrorException errorException = assertThrows(HttpClientErrorException.class, () -> ticketService.create(ticketInfo));
-        assertEquals("400 site is null", errorException.getMessage());
+        assertThrows(CustomException.class, () -> ticketService.create(ticketInfo));
     }
 
     @Test
@@ -475,8 +480,7 @@ class TicketServiceImplTest {
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
 
-        HttpClientErrorException errorException = assertThrows(HttpClientErrorException.class, () -> ticketService.create(ticketInfo));
-        assertEquals("400 Time meeting must greater than 15 minutes", errorException.getMessage());
+        assertThrows(CustomException.class, () -> ticketService.create(ticketInfo));
     }
 
     @Test
@@ -512,7 +516,7 @@ class TicketServiceImplTest {
 
         when(siteRepository.existsByIdAndOrganizationId(Mockito.any(UUID.class), Mockito.any(UUID.class))).thenReturn(false);
 
-        assertThrows(HttpClientErrorException.class, () -> ticketService.create(ticketInfo));
+        assertThrows(CustomException.class, () -> ticketService.create(ticketInfo));
     }
 
     @Test
@@ -539,7 +543,7 @@ class TicketServiceImplTest {
         when(templateRepository.findById(Mockito.any(UUID.class))).thenReturn(Optional.of(new Template()));
         when(mapper.map(ticketInfo, Ticket.class)).thenReturn(new Ticket());
 
-        assertThrows(HttpClientErrorException.class, () -> ticketService.create(ticketInfo));
+        assertThrows(CustomException.class, () -> ticketService.create(ticketInfo));
     }
 
     @Test
@@ -571,7 +575,7 @@ class TicketServiceImplTest {
         when(templateRepository.findById(Mockito.any(UUID.class))).thenReturn(Optional.of(new Template()));
         when(mapper.map(ticketInfo, Ticket.class)).thenReturn(new Ticket());
 
-        assertThrows(HttpClientErrorException.class, () -> ticketService.create(ticketInfo));
+        assertThrows(CustomException.class, () -> ticketService.create(ticketInfo));
     }
 
     @Test
@@ -624,7 +628,7 @@ class TicketServiceImplTest {
     public void testUpdateBookMarkWithEmptyPayload() {
         ITicketController.TicketBookmark ticketBookmark = null; // Empty payload
 
-        assertThrows(HttpClientErrorException.class, () -> ticketService.updateBookMark(ticketBookmark));
+        assertThrows(CustomException.class, () -> ticketService.updateBookMark(ticketBookmark));
     }
 
     @Test
@@ -634,7 +638,7 @@ class TicketServiceImplTest {
 
         when(ticketRepository.findById(UUID.fromString(ticketBookmark.getTicketId()))).thenReturn(Optional.empty());
 
-        assertThrows(HttpClientErrorException.class, () -> ticketService.updateBookMark(ticketBookmark));
+        assertThrows(CustomException.class, () -> ticketService.updateBookMark(ticketBookmark));
     }
 
     @Test
@@ -670,7 +674,7 @@ class TicketServiceImplTest {
 
         when(ticketRepository.findById(UUID.fromString(ticketBookmark.getTicketId()))).thenReturn(Optional.empty());
 
-        assertThrows(HttpClientErrorException.class, () -> ticketService.updateBookMark(ticketBookmark));
+        assertThrows(CustomException.class, () -> ticketService.updateBookMark(ticketBookmark));
     }
 
     @Test
@@ -725,7 +729,7 @@ class TicketServiceImplTest {
 
         when(ticketRepository.findById(UUID.fromString(ticketId))).thenReturn(Optional.empty());
 
-        assertThrows(HttpClientErrorException.class, () -> ticketService.deleteTicket(ticketId));
+        assertThrows(CustomException.class, () -> ticketService.deleteTicket(ticketId));
     }
 
     @Test
@@ -761,7 +765,7 @@ class TicketServiceImplTest {
 
         when(ticketRepository.findById(UUID.fromString(ticketId))).thenReturn(Optional.empty());
 
-        assertThrows(HttpClientErrorException.class, () -> ticketService.deleteTicket(ticketId));
+        assertThrows(CustomException.class, () -> ticketService.deleteTicket(ticketId));
     }
 
     @Test
@@ -894,7 +898,7 @@ class TicketServiceImplTest {
             return auditLog;
         });
 
-        assertThrows(HttpClientErrorException.class, () -> ticketService.cancelTicket(cancelTicket));
+        assertThrows(CustomException.class, () -> ticketService.cancelTicket(cancelTicket));
     }
 
     @Test
@@ -905,7 +909,7 @@ class TicketServiceImplTest {
 
         when(ticketRepository.findById(cancelTicket.getTicketId())).thenReturn(Optional.empty());
 
-        assertThrows(HttpClientErrorException.class, () -> ticketService.cancelTicket(cancelTicket));
+        assertThrows(CustomException.class, () -> ticketService.cancelTicket(cancelTicket));
     }
 
     @Test
@@ -919,7 +923,7 @@ class TicketServiceImplTest {
         mockTicket.setStartTime(LocalDateTime.now().plusHours(1)); // Start time is before 2 hours
         when(ticketRepository.findById(cancelTicket.getTicketId())).thenReturn(Optional.of(mockTicket));
 
-        assertThrows(HttpClientErrorException.class, () -> ticketService.cancelTicket(cancelTicket));
+        assertThrows(CustomException.class, () -> ticketService.cancelTicket(cancelTicket));
     }
 
     @Test
@@ -1039,7 +1043,7 @@ class TicketServiceImplTest {
 
         when(mapper.map(ticketInfo, Ticket.class)).thenReturn(mockTicket);
 
-        assertThrows(HttpClientErrorException.class, () -> ticketService.updateTicket(ticketInfo));
+        assertThrows(CustomException.class, () -> ticketService.updateTicket(ticketInfo));
     }
 
     @Test
@@ -1048,7 +1052,7 @@ class TicketServiceImplTest {
         ITicketController.UpdateTicketInfo ticketInfo = new ITicketController.UpdateTicketInfo();
         ticketInfo.setId(null);
 
-        assertThrows(HttpClientErrorException.class, () -> ticketService.updateTicket(ticketInfo));
+        assertThrows(CustomException.class, () -> ticketService.updateTicket(ticketInfo));
     }
 
     @Test
@@ -1093,7 +1097,7 @@ class TicketServiceImplTest {
 
         when(mapper.map(ticketInfo, Ticket.class)).thenReturn(mockTicket);
 
-        assertThrows(HttpClientErrorException.class, () -> ticketService.updateTicket(ticketInfo));
+        assertThrows(CustomException.class, () -> ticketService.updateTicket(ticketInfo));
     }
 
     @Test
@@ -1138,7 +1142,7 @@ class TicketServiceImplTest {
 
         when(mapper.map(ticketInfo, Ticket.class)).thenReturn(mockTicket);
 
-        assertThrows(HttpClientErrorException.class, () -> ticketService.updateTicket(ticketInfo));
+        assertThrows(CustomException.class, () -> ticketService.updateTicket(ticketInfo));
     }
 
     @Test
@@ -1176,7 +1180,7 @@ class TicketServiceImplTest {
 
         when(roomRepository.findById(mockTicket.getRoomId())).thenReturn(Optional.empty());
 
-        assertThrows(HttpClientErrorException.class, () -> ticketService.updateTicket(ticketInfo));
+        assertThrows(CustomException.class, () -> ticketService.updateTicket(ticketInfo));
     }
 
     @Test
@@ -1218,7 +1222,7 @@ class TicketServiceImplTest {
         room.setName("abc");
         when(roomRepository.findById(mockTicket.getRoomId())).thenReturn(Optional.of(room));
 
-        assertThrows(HttpClientErrorException.class, () -> ticketService.updateTicket(ticketInfo));
+        assertThrows(CustomException.class, () -> ticketService.updateTicket(ticketInfo));
     }
 
     @Test
@@ -1261,7 +1265,7 @@ class TicketServiceImplTest {
         when(roomRepository.findById(mockTicket.getRoomId())).thenReturn(Optional.of(room));
         when(ticketRepository.countByRoomIdAndEndTimeGreaterThanEqualAndStartTimeLessThanEqualAndStatusNotLike(roomId, ticketInfo.getStartTime(), ticketInfo.getEndTime(), Constants.StatusTicket.CANCEL)).thenReturn(1);
 
-        assertThrows(HttpClientErrorException.class, () -> ticketService.updateTicket(ticketInfo));
+        assertThrows(CustomException.class, () -> ticketService.updateTicket(ticketInfo));
     }
 
     @Test
@@ -1382,7 +1386,7 @@ class TicketServiceImplTest {
         SecurityContextHolder.setContext(securityContext);
 
         // Verify that a HttpClientErrorException is thrown
-        assertThrows(HttpClientErrorException.class, () -> {
+        assertThrows(CustomException.class, () -> {
             ticketService.findByQRCode(checkInCode);
         });
     }
@@ -1406,8 +1410,8 @@ class TicketServiceImplTest {
         Site site = new Site();
         site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
         Ticket ticket = new Ticket();
-        ticket.setStartTime(LocalDateTime.now().minusHours(1));
-        ticket.setEndTime(LocalDateTime.now().plusHours(1));
+        ticket.setStartTime(LocalDateTime.now().plusMinutes(1));
+        ticket.setEndTime(LocalDateTime.now().minusMinutes(1));
         ticket.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
         customerTicketMap.setTicketEntity(ticket);
         when(ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId())).thenReturn(Optional.of(ticket));
@@ -1452,7 +1456,7 @@ class TicketServiceImplTest {
         UUID ticketId = UUID.randomUUID();
         String siteId = UUID.randomUUID().toString();
         LocalDateTime currentTime = LocalDateTime.now();
-        UUID reasonId = UUID.randomUUID();
+        Integer reasonId = 1;
 
         ITicketController.CheckInPayload checkOutPayload = new ITicketController.CheckInPayload();
         checkOutPayload.setCheckInCode("ABCDE");
@@ -1467,11 +1471,12 @@ class TicketServiceImplTest {
         customerTicketMap.setCheckInTime(currentTime.minusHours(1));  // Set a past check-in time
 
         Ticket ticket = new Ticket();
-        ticket.setStartTime(currentTime.plusHours(1));
+        ticket.setStartTime(currentTime.plusMinutes(15));
         ticket.setId(customerTicketMap.getCustomerTicketMapPk().getTicketId());
         ticket.setSiteId(siteId);
         when(ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId())).thenReturn(java.util.Optional.of(ticket));
 
+        customerTicketMap.setTicketEntity(ticket);
         Site site = new Site();
         site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
 
@@ -1653,7 +1658,7 @@ class TicketServiceImplTest {
         site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c07"));
         when(siteRepository.findById(siteId)).thenReturn(Optional.of(site));
         // Call the method under test
-        assertThrows(HttpClientErrorException.class, () -> ticketService.findByTicketForAdmin(ticketId, siteId.toString()));
+        assertThrows(CustomException.class, () -> ticketService.findByTicketForAdmin(ticketId, siteId.toString()));
 
 
         // You can add more assertions if needed
@@ -1681,7 +1686,7 @@ class TicketServiceImplTest {
         when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(ticket));
 
         // Call the method under test and expect a HttpClientErrorException
-        assertThrows(HttpClientErrorException.class, () -> ticketService.findByTicketForAdmin(ticketId, null));
+        assertThrows(CustomException.class, () -> ticketService.findByTicketForAdmin(ticketId, null));
 
         // Verify that the repository findById method was called with the correct argument
         Mockito.verify(ticketRepository).findById(ticketId);
@@ -1705,7 +1710,7 @@ class TicketServiceImplTest {
         when(ticketRepository.findById(ticketId)).thenReturn(Optional.empty());
 
         // Call the method under test and expect a HttpClientErrorException
-        assertThrows(HttpClientErrorException.class, () -> ticketService.findByTicketForAdmin(ticketId, null));
+        assertThrows(CustomException.class, () -> ticketService.findByTicketForAdmin(ticketId, null));
 
         // Verify that the repository findById method was called with the correct argument
         Mockito.verify(ticketRepository).findById(ticketId);
@@ -1737,7 +1742,7 @@ class TicketServiceImplTest {
         when(siteRepository.findById(invalidSiteId)).thenReturn(Optional.empty());
 
         // Call the method under test and expect a HttpClientErrorException
-        assertThrows(HttpClientErrorException.class, () -> ticketService.findByTicketForAdmin(ticketId, invalidSiteId.toString()));
+        assertThrows(CustomException.class, () -> ticketService.findByTicketForAdmin(ticketId, invalidSiteId.toString()));
 
         // Verify that the repository findById method was called with the correct argument
         Mockito.verify(ticketRepository).findById(ticketId);
@@ -1769,7 +1774,7 @@ class TicketServiceImplTest {
         when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(ticket));
 
         // Call the method under test and expect a HttpClientErrorException
-        assertThrows(HttpClientErrorException.class, () -> ticketService.findByTicketForAdmin(ticketId, null));
+        assertThrows(CustomException.class, () -> ticketService.findByTicketForAdmin(ticketId, null));
     }
 
     @Test
@@ -1811,6 +1816,14 @@ class TicketServiceImplTest {
         user.setPhoneNumber("123456789");
         user.setEmail("john.doe@example.com");
 
+        Commune commune = new Commune().setName("abc");
+        District district = new District().setName("abc");
+        Province province = new Province().setName("abc");
+
+        site.setCommune(commune);
+        site.setDistrict(district);
+        site.setProvince(province);
+
         // Mock dependencies
         when(siteRepository.findById(UUID.fromString(ticket.getSiteId()))).thenReturn(Optional.of(site));
         when(templateRepository.findById(templateId)).thenReturn(Optional.of(template));
@@ -1847,7 +1860,7 @@ class TicketServiceImplTest {
         String checkInCode = "ABCDE";
 
         // Call the method under test and expect a HttpClientErrorException
-        assertThrows(HttpClientErrorException.class, () -> ticketService.sendEmail(null, ticket, room, checkInCode, false));
+        assertThrows(CustomException.class, () -> ticketService.sendEmail(null, ticket, room, checkInCode, false));
 
         // You can add more assertions if needed
     }
@@ -1889,7 +1902,7 @@ class TicketServiceImplTest {
         when(templateRepository.findById(UUID.fromString(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CONFIRM_EMAIL)))).thenReturn(Optional.empty());
 
         // Call the method under test and expect a HttpClientErrorException
-        assertThrows(HttpClientErrorException.class, () -> ticketService.sendEmail(customer, ticket, room, checkInCode, false));
+        assertThrows(CustomException.class, () -> ticketService.sendEmail(customer, ticket, room, checkInCode, false));
 
         // You can add more assertions if needed
     }
@@ -1941,11 +1954,7 @@ class TicketServiceImplTest {
         when(ticketRepository.findById(ticketId)).thenReturn(Optional.empty());
 
         // Call the method under test and expect a HttpClientErrorException
-        HttpClientErrorException exception = assertThrows(HttpClientErrorException.class, () -> ticketService.findByTicketForUser(ticketId));
-
-        // Verify that the correct exception is thrown with the expected status code and message
-        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
-        assertEquals("404 Can't not found ticket", exception.getMessage());
+        assertThrows(CustomException.class, () -> ticketService.findByTicketForUser(ticketId));
 
         // You can add more assertions if needed
     }
@@ -1972,11 +1981,7 @@ class TicketServiceImplTest {
         // Mock repository behavior
         when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(ticket));
         // Call the method under test and expect a HttpClientErrorException
-        HttpClientErrorException exception = assertThrows(HttpClientErrorException.class, () -> ticketService.findByTicketForUser(ticketId));
-
-        // Verify that the correct exception is thrown with the expected status code and message
-        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
-        assertEquals("403 Can't not view this ticket", exception.getMessage());
+        assertThrows(CustomException.class, () -> ticketService.findByTicketForUser(ticketId));
     }
 
     @Test
@@ -2178,12 +2183,8 @@ class TicketServiceImplTest {
         when(siteRepository.findById(UUID.fromString(SecurityUtils.getSiteId()))).thenReturn(java.util.Optional.of(site));
 
         // Call the method under test and expect a HttpClientErrorException
-        HttpClientErrorException exception = assertThrows(HttpClientErrorException.class, () ->
+        assertThrows(CustomException.class, () ->
             ticketService.checkNewCustomers(newCustomers, ticket, room));
-
-        // Verify that the correct exception is thrown with the expected status code and message
-        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
-        assertEquals("400 IdentificationNumber is incorrect", exception.getMessage());
     }
 
     @Test

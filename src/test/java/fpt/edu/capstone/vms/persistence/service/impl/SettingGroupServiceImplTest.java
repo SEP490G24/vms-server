@@ -1,5 +1,6 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.persistence.entity.SettingGroup;
 import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
 import fpt.edu.capstone.vms.persistence.repository.SettingGroupRepository;
@@ -13,7 +14,6 @@ import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
-import org.springframework.web.client.HttpClientErrorException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -75,7 +75,7 @@ class SettingGroupServiceImplTest {
     public void testUpdateWithEmptyEntity() {
         // Call the method with an empty entity, expecting an exception
 
-        assertThrows(HttpClientErrorException.class, () -> settingGroupService.update(null, 1L));
+        assertThrows(CustomException.class, () -> settingGroupService.update(null, 1L));
 
     }
 
@@ -87,7 +87,7 @@ class SettingGroupServiceImplTest {
         when(settingGroupRepository.findById(id)).thenReturn(java.util.Optional.empty());
 
         // Call the method with a non-existing ID, expecting an exception
-        assertThrows(HttpClientErrorException.class, () -> settingGroupService.update(new SettingGroup(), id));
+        assertThrows(CustomException.class, () -> settingGroupService.update(new SettingGroup(), id));
 
     }
 }

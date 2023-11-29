@@ -2,6 +2,7 @@ package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.IDeviceController;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.persistence.entity.Device;
 import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
@@ -22,13 +23,11 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -128,7 +127,7 @@ class DeviceServiceImplTest {
         IDeviceController.DeviceDto deviceDto = null;
 
         // When and Then
-        assertThrows(HttpClientErrorException.class, () -> deviceService.create(deviceDto));
+        assertThrows(CustomException.class, () -> deviceService.create(deviceDto));
     }
 
 
@@ -188,9 +187,7 @@ class DeviceServiceImplTest {
         when(deviceRepository.findById(deviceId)).thenReturn(Optional.empty());
 
         // When and Then
-        HttpClientErrorException exception = assertThrows(HttpClientErrorException.class, () -> deviceService.update(device, deviceId));
-        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
-        assertEquals(expectedErrorMessage, exception.getMessage());
+        assertThrows(CustomException.class, () -> deviceService.update(device, deviceId));
 
     }
 

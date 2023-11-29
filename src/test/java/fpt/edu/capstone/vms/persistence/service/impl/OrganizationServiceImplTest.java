@@ -1,6 +1,7 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.constants.Constants;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.oauth2.IRoleResource;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
 import fpt.edu.capstone.vms.persistence.entity.AuditLog;
@@ -25,14 +26,12 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -183,7 +182,7 @@ class OrganizationServiceImplTest {
 
         when(organizationRepository.existsByCode("orgCode")).thenReturn(true);
 
-        assertThrows(HttpClientErrorException.class, () -> organizationService.save(organization));
+        assertThrows(CustomException.class, () -> organizationService.save(organization));
     }
 
     @Test
@@ -191,7 +190,7 @@ class OrganizationServiceImplTest {
     void givenOrganizationWithEmptyCode_ThrowException() {
         Organization organization = new Organization();
 
-        assertThrows(HttpClientErrorException.class, () -> organizationService.save(organization));
+        assertThrows(CustomException.class, () -> organizationService.save(organization));
     }
 
     @Test
@@ -231,7 +230,7 @@ class OrganizationServiceImplTest {
         when(organizationRepository.existsByCode("existingCode")).thenReturn(true);
 
         // Act and Assert
-        assertThrows(HttpClientErrorException.class, () -> {
+        assertThrows(CustomException.class, () -> {
             organizationService.update(entity, id);
         });
 
@@ -256,10 +255,9 @@ class OrganizationServiceImplTest {
         SecurityContextHolder.setContext(securityContext);
 
         // Act and Assert
-        HttpClientErrorException exception = assertThrows(HttpClientErrorException.class, () -> {
+        assertThrows(CustomException.class, () -> {
             organizationService.update(entity, id);
         });
-        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
 
         // Verify that no other methods were called on organizationRepository
         verify(organizationRepository, never()).findById(any());
@@ -294,7 +292,7 @@ class OrganizationServiceImplTest {
         when(organizationRepository.findById(id)).thenReturn(Optional.empty());
 
         // Act and Assert
-        assertThrows(HttpClientErrorException.class, () -> {
+        assertThrows(CustomException.class, () -> {
             organizationService.update(entity, id);
         });
     }

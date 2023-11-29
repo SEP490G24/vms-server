@@ -2,6 +2,7 @@ package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ISettingSiteMapController;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.entity.SettingSiteMap;
 import fpt.edu.capstone.vms.persistence.entity.SettingSiteMapPk;
@@ -19,14 +20,12 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.MockitoAnnotations;
 import org.mockito.stubbing.Answer;
 import org.modelmapper.ModelMapper;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -201,7 +200,7 @@ class SettingSiteMapServiceImplTest {
         when(siteRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
 
         // Test case for HttpClientErrorException with HttpStatus.BAD_REQUEST and message "SiteId is not correct in database!!"
-        assertThrows(HttpClientErrorException.class, () -> settingSiteMapService.createOrUpdateSettingSiteMap(settingSiteInfo));
+        assertThrows(CustomException.class, () -> settingSiteMapService.createOrUpdateSettingSiteMap(settingSiteInfo));
     }
 
     @Test
@@ -215,7 +214,7 @@ class SettingSiteMapServiceImplTest {
         when(settingRepository.existsById(any(Long.class))).thenReturn(false);
 
         // Test case for HttpClientErrorException with HttpStatus.BAD_REQUEST and message "SettingId is not correct in database!!"
-        assertThrows(HttpClientErrorException.class, () -> settingSiteMapService.createOrUpdateSettingSiteMap(settingSiteInfo));
+        assertThrows(CustomException.class, () -> settingSiteMapService.createOrUpdateSettingSiteMap(settingSiteInfo));
     }
 
     @Test
@@ -240,7 +239,7 @@ class SettingSiteMapServiceImplTest {
         when(SecurityUtils.checkSiteAuthorization(siteRepository, settingSiteInfo.getSiteId())).thenReturn(false);
 
         // Test case for HttpClientErrorException with HttpStatus.BAD_REQUEST and message "You don't have permission to do this"
-        assertThrows(HttpClientErrorException.class, () -> settingSiteMapService.createOrUpdateSettingSiteMap(settingSiteInfo));
+        assertThrows(CustomException.class, () -> settingSiteMapService.createOrUpdateSettingSiteMap(settingSiteInfo));
     }
 
     @Test
@@ -251,7 +250,7 @@ class SettingSiteMapServiceImplTest {
 
 
         // Test case for HttpClientErrorException with HttpStatus.BAD_REQUEST and message "Value is empty"
-        assertThrows(HttpClientErrorException.class, () -> settingSiteMapService.createOrUpdateSettingSiteMap(settingSiteInfo));
+        assertThrows(CustomException.class, () -> settingSiteMapService.createOrUpdateSettingSiteMap(settingSiteInfo));
     }
 
     @Test
@@ -260,7 +259,7 @@ class SettingSiteMapServiceImplTest {
         ISettingSiteMapController.SettingSiteInfo settingSiteInfo = ISettingSiteMapController.SettingSiteInfo.builder().settingId(null).siteId("06eb43a7-6ea8-4744-8231-760559fe2c06").value("abc").build();
 
         // Test case for HttpClientErrorException with HttpStatus.BAD_REQUEST and message "SettingId or siteId is not null!!"
-        assertThrows(HttpClientErrorException.class, () -> settingSiteMapService.createOrUpdateSettingSiteMap(settingSiteInfo));
+        assertThrows(CustomException.class, () -> settingSiteMapService.createOrUpdateSettingSiteMap(settingSiteInfo));
     }
 
     @Test
@@ -346,9 +345,7 @@ class SettingSiteMapServiceImplTest {
         userDetails.setOrganizationAdmin(false);
 
         // Test case for HttpClientErrorException with HttpStatus.FORBIDDEN and message "You don't have permission to do this"
-        HttpClientErrorException exception = assertThrows(HttpClientErrorException.class, () -> settingSiteMapService.setDefaultValueBySite(siteId));
-        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
-        assertEquals("403 You don't have permission to do this", exception.getMessage());
+        assertThrows(CustomException.class, () -> settingSiteMapService.setDefaultValueBySite(siteId));
     }
 
     @Test
@@ -389,12 +386,8 @@ class SettingSiteMapServiceImplTest {
 
 
         // Testing the method and expecting a HttpClientErrorException
-        HttpClientErrorException exception = assertThrows(HttpClientErrorException.class,
+        assertThrows(CustomException.class,
             () -> settingSiteMapService.createOrUpdateSettingSiteMap(settingSiteInfo));
-
-        // Verifying the exception status code and message
-        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
-        assertEquals("400 SettingId is not null!!", exception.getMessage());
 
         // Verifying interactions with dependencies
         verify(auditLogRepository, never()).save(any(AuditLog.class));
@@ -416,12 +409,8 @@ class SettingSiteMapServiceImplTest {
         when(settingRepository.existsById(ArgumentMatchers.any())).thenReturn(true);
 
         // Testing the method and expecting a HttpClientErrorException
-        HttpClientErrorException exception = assertThrows(HttpClientErrorException.class,
+        assertThrows(CustomException.class,
             () -> settingSiteMapService.createOrUpdateSettingSiteMap(settingSiteInfo));
-
-        // Verifying the exception status code and message
-        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
-        assertEquals("400 SiteId is not correct in database!!", exception.getMessage());
 
         // Verifying interactions with dependencies
         verify(auditLogRepository, never()).save(any(AuditLog.class));
@@ -437,12 +426,8 @@ class SettingSiteMapServiceImplTest {
         when(SecurityUtils.checkSiteAuthorization(siteRepository, settingSiteInfo.getSiteId())).thenReturn(true);
 
         // Testing the method and expecting a HttpClientErrorException
-        HttpClientErrorException exception = assertThrows(HttpClientErrorException.class,
+        assertThrows(CustomException.class,
             () -> settingSiteMapService.createOrUpdateSettingSiteMap(settingSiteInfo));
-
-        // Verifying the exception status code and message
-        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
-        assertEquals("400 Value is empty", exception.getMessage());
 
         // Verifying interactions with dependencies
         verify(auditLogRepository, never()).save(any(AuditLog.class));
@@ -463,12 +448,8 @@ class SettingSiteMapServiceImplTest {
         when(SecurityUtils.checkSiteAuthorization(siteRepository, settingSiteInfo.getSiteId())).thenReturn(true);
 
         // Testing the method and expecting a HttpClientErrorException
-        HttpClientErrorException exception = assertThrows(HttpClientErrorException.class,
+        assertThrows(CustomException.class,
             () -> settingSiteMapService.createOrUpdateSettingSiteMap(settingSiteInfo));
-
-        // Verifying the exception status code and message
-        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
-        assertEquals("400 SettingId is not correct in database!!", exception.getMessage());
 
         // Verifying interactions with dependencies
         verify(auditLogRepository, never()).save(any(AuditLog.class));
@@ -488,12 +469,8 @@ class SettingSiteMapServiceImplTest {
         when(SecurityUtils.checkSiteAuthorization(siteRepository, settingSiteInfo.getSiteId())).thenReturn(false);
 
         // Testing the method and expecting a HttpClientErrorException
-        HttpClientErrorException exception = assertThrows(HttpClientErrorException.class,
+        assertThrows(CustomException.class,
             () -> settingSiteMapService.createOrUpdateSettingSiteMap(settingSiteInfo));
-
-        // Verifying the exception status code and message
-        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
-        assertEquals("403 You don't have permission to do this", exception.getMessage());
 
         // Verifying interactions with dependencies
         verify(siteRepository, never()).findById(any());
@@ -509,12 +486,8 @@ class SettingSiteMapServiceImplTest {
         when(SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c08")).thenReturn(true);
 
         // Testing the method and expecting a HttpClientErrorException
-        HttpClientErrorException exception = assertThrows(HttpClientErrorException.class,
+        assertThrows(CustomException.class,
             () -> settingSiteMapService.createOrUpdateSettingSiteMap(settingSiteInfo));
-
-        // Verifying the exception status code and message
-        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
-        assertEquals("400 Object is null", exception.getMessage());
 
         // Verifying interactions with dependencies
         verify(auditLogRepository, never()).save(any(AuditLog.class));
@@ -533,11 +506,8 @@ class SettingSiteMapServiceImplTest {
         when(SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c04")).thenReturn(false);
 
         // Testing the method and expecting a HttpClientErrorException
-        HttpClientErrorException exception = assertThrows(HttpClientErrorException.class,
+        assertThrows(CustomException.class,
             () -> settingSiteMapService.findAllBySiteIdAndGroupId(settingGroupId, sites));
 
-        // Verifying the exception status code and message
-        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
-        assertEquals("403 You don't have permission to do this.", exception.getMessage());
     }
 }

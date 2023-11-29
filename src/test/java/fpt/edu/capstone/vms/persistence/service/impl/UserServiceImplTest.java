@@ -2,6 +2,7 @@ package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.IUserController;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.oauth2.IRoleResource;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
@@ -31,7 +32,6 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -355,7 +355,7 @@ class UserServiceImplTest {
         when(userResource.verifyPassword(any(String.class), any(String.class))).thenReturn(false);
 
         // Call the method and expect an exception
-        assertThrows(HttpClientErrorException.class, () -> userService.changePasswordUser(username, oldPassword, newPassword));
+        assertThrows(CustomException.class, () -> userService.changePasswordUser(username, oldPassword, newPassword));
 
         // Verify the interactions
         verify(userRepository, times(1)).findByUsername(any(String.class));
