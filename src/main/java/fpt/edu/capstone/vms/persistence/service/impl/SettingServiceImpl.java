@@ -62,13 +62,17 @@ public class SettingServiceImpl extends GenericServiceImpl<Setting, Long> implem
             if (setting.getType().equals(Constants.SettingType.API)) {
                 switch (setting.getCode()) {
                     case Constants.SettingCode.TICKET_TEMPLATE_CONFIRM_EMAIL ->
-                            setting.setValueList(JacksonUtils.getJson(
-                                    templateService.finAllBySiteIdAndType(siteId, Constants.TemplateType.CONFIRM_MEETING_EMAIL)
-                                            .stream().map(template -> Option.builder().label(template.getName()).value(template.getId()).build())));
+                        setting.setValueList(JacksonUtils.getJson(
+                            templateService.finAllBySiteIdAndType(siteId, Constants.TemplateType.CONFIRM_MEETING_EMAIL)
+                                .stream().map(template -> Option.builder().label(template.getName()).value(template.getId()).build())));
                     case Constants.SettingCode.TICKET_TEMPLATE_CANCEL_EMAIL ->
-                            setting.setValueList(JacksonUtils.getJson(
-                                    templateService.finAllBySiteIdAndType(siteId, Constants.TemplateType.CANCEL_MEETING_EMAIL)
-                                            .stream().map(template -> Option.builder().label(template.getName()).value(template.getId()).build())));
+                        setting.setValueList(JacksonUtils.getJson(
+                            templateService.finAllBySiteIdAndType(siteId, Constants.TemplateType.CANCEL_MEETING_EMAIL)
+                                .stream().map(template -> Option.builder().label(template.getName()).value(template.getId()).build())));
+                    case Constants.SettingCode.TICKET_TEMPLATE_UPCOMING_EMAIL ->
+                        setting.setValueList(JacksonUtils.getJson(
+                            templateService.finAllBySiteIdAndType(siteId, Constants.TemplateType.UPCOMING_MEETING_EMAIL)
+                                .stream().map(template -> Option.builder().label(template.getName()).value(template.getId()).build())));
                 }
             }
         });

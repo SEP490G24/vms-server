@@ -15,6 +15,7 @@ import fpt.edu.capstone.vms.persistence.repository.TemplateRepository;
 import fpt.edu.capstone.vms.persistence.repository.TicketRepository;
 import fpt.edu.capstone.vms.persistence.repository.UserRepository;
 import fpt.edu.capstone.vms.util.EmailUtils;
+import fpt.edu.capstone.vms.util.SettingUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -47,6 +48,8 @@ public class TicketSendEmailNotificationService {
     private CustomerRepository customerRepository;
     @Autowired
     private EmailUtils emailUtils;
+    @Autowired
+    private SettingUtils settingUtils;
 
 
     @Scheduled(cron = "0 0/1 * * * *") // Chạy hàng ngày
@@ -65,7 +68,7 @@ public class TicketSendEmailNotificationService {
                     Customer customer = o.getCustomerEntity();
                     log.info("Send notification to ticket: " + o.getId().getTicketId());
                     log.info("Send notification to customer: " + customer.getEmail());
-                    var template = templateRepository.findById(UUID.fromString("ada93bc0-a6f5-4376-b5f9-2d311c892585")).orElse(null);
+                    var template = templateRepository.findById(UUID.fromString(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_UPCOMING_EMAIL))).orElse(null);
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
                     Site site = siteRepository.findById(UUID.fromString(ticket.getSiteId())).orElse(null);
                     Room room = roomRepository.findById(ticket.getRoomId()).orElse(null);

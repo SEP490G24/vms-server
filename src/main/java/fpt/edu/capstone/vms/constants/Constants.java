@@ -30,6 +30,7 @@ public class Constants {
         /* Setting for Ticket */
         public static final String TICKET_TEMPLATE_CONFIRM_EMAIL = "ticket.template.confirm.email";
         public static final String TICKET_TEMPLATE_CANCEL_EMAIL = "ticket.template.cancel.email";
+        public static final String TICKET_TEMPLATE_UPCOMING_EMAIL = "ticket.template.upcoming.email";
 
         /* Setting for Configuration */
 
@@ -108,7 +109,8 @@ public class Constants {
 
     public enum TemplateType {
         CANCEL_MEETING_EMAIL,
-        CONFIRM_MEETING_EMAIL
+        CONFIRM_MEETING_EMAIL,
+        UPCOMING_MEETING_EMAIL
     }
 
     public enum SettingType {
