@@ -106,6 +106,7 @@ public interface IDeviceController {
     @AllArgsConstructor
     @NoArgsConstructor
     class DeviceFilterDTO {
+        Integer id;
         List<String> names;
         Constants.DeviceType deviceType;
         LocalDateTime createdOnStart;
