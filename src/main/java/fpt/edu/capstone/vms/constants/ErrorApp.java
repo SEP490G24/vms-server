@@ -34,19 +34,52 @@ public enum ErrorApp {
     //site
     SITE_NOT_NULL(110, I18n.getMessage("msg.entity.site.null")),
     SITE_NOT_FOUND(111, I18n.getMessage("msg.site.not.found")),
+    SITE_CODE_EXIST(112, I18n.getMessage("msg.site.code.exist")),
+    SITE_CODE_NULL(113, I18n.getMessage("msg.site.code.null")),
 
     //user
     USER_NOT_PERMISSION(403, I18n.getMessage("msg.user.not.permission")),
 
     //device
     DEVICE_NOT_FOUND(112, I18n.getMessage("msg.device.not.found")),
+    DEVICE_TYPE_SCAN_CARD(113, I18n.getMessage("msg.device.type.scan.card")),
 
     //organization
     ORGANIZATION_NOT_FOUND(113, I18n.getMessage("msg.organization.not.found")),
     ORGANIZATION_CODE_EXIST(114, I18n.getMessage("msg.organization.code.exist")),
     ORGANIZATION_CODE_NULL(115, I18n.getMessage("msg.organization.code.null")),
     ORGANIZATION_ID_NULL(116, I18n.getMessage("msg.organization.id.null")),
-    ORGANIZATION_NOT_PERMISSION(117, I18n.getMessage("msg.organization.not.permission"));
+    ORGANIZATION_NOT_PERMISSION(117, I18n.getMessage("msg.organization.not.permission")),
+
+    //room
+    ROOM_NOT_FOUND(118, I18n.getMessage("msg.room.not.found")),
+    ROOM_CODE_EXIST(119, I18n.getMessage("msg.room.code.exist")),
+    ROOM_CODE_NULL(120, I18n.getMessage("msg.room.code.null")),
+
+    //setting group
+    SETTING_GROUP_NOT_FOUND(121, I18n.getMessage("msg.setting.group.not.found")),
+    SETTING_GROUP_CODE_EXIST(122, I18n.getMessage("msg.setting.group.code.exist")),
+    SETTING_GROUP_CODE_NULL(123, I18n.getMessage("msg.setting.group.code.null")),
+
+    //setting
+    SETTING_NOT_FOUND(124, I18n.getMessage("msg.setting.not.found")),
+    SETTING_CODE_EXIST(125, I18n.getMessage("msg.setting.code.exist")),
+    SETTING_CODE_NULL(126, I18n.getMessage("msg.setting.code.null")),
+    SETTING_ID_NULL(127, I18n.getMessage("msg.setting.id.null")),
+    SETTING_VALUE_NULL(128, I18n.getMessage("msg.setting.value.null")),
+
+
+    //province
+    PROVINCE_NOT_FOUND(129, I18n.getMessage("msg.province.not.found")),
+    PROVINCE_NULL(130, I18n.getMessage("msg.province.null")),
+    //district
+    DISTRICT_NOT_FOUND(131, I18n.getMessage("msg.district.not.found")),
+    DISTRICT_NULL(132, I18n.getMessage("msg.district.null")),
+    DISTRICT_NOT_FOUND_BY_PROVINCE(133, I18n.getMessage("msg.district.not.found.by.province")),
+    //commune
+    COMMUNE_NOT_FOUND(133, I18n.getMessage("msg.commune.not.found")),
+    COMMUNE_NULL(134, I18n.getMessage("msg.commune.null")),
+    COMMUNE_NOT_FOUND_BY_DISTRICT(135, I18n.getMessage("msg.commune.not.found.by.district"));
     private final int code;
     private final String description;
 
