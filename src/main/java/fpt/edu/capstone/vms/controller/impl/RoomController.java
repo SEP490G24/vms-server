@@ -16,7 +16,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
 import java.util.UUID;
@@ -104,11 +103,13 @@ public class RoomController implements IRoomController {
     }
 
     @Override
-    public ResponseEntity<List<?>> findAllBySiteId(String siteId) {
-        if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
-            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "Not permission");
+    public ResponseEntity<?> findAllBySiteId(String siteId) {
+        try {
+            var room = roomService.finAllBySiteId(siteId);
+            return ResponseUtils.getResponseEntityStatus(room);
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return ResponseEntity.ok(roomService.finAllBySiteId(siteId));
     }
 
 }

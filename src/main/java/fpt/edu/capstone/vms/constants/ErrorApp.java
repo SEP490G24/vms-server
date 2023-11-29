@@ -36,13 +36,20 @@ public enum ErrorApp {
     SITE_NOT_FOUND(111, I18n.getMessage("msg.site.not.found")),
     SITE_CODE_EXIST(112, I18n.getMessage("msg.site.code.exist")),
     SITE_CODE_NULL(113, I18n.getMessage("msg.site.code.null")),
+    SITE_ID_NULL(152, I18n.getMessage("msg.site.id.null")),
+    SITE_NOT_USE_CARD(168, I18n.getMessage("msg.site.not.use.card")),
 
     //user
     USER_NOT_PERMISSION(403, I18n.getMessage("msg.user.not.permission")),
-
+    USER_CAN_NOT_CREATE(170, I18n.getMessage("msg.user.can.not.create")),
+    USER_NOT_FOUND(171, I18n.getMessage("msg.user.not.found")),
+    USER_NEW_PASSWORD_SAME_OLD_PASSWORD(172, I18n.getMessage("msg.user.new.password.same.old.password")),
+    USER_OLD_PASSWORD_NOT_CORRECT(173, I18n.getMessage("msg.user.old.password.not.correct")),
+    USER_NEW_PASSWORD_NOT_NULL(174, I18n.getMessage("msg.user.new.password.not.null")),
+    USER_CAN_NOT_FOUND_FILE_IMAGE(175, I18n.getMessage("msg.user.can.not.found.file.image")),
     //device
-    DEVICE_NOT_FOUND(112, I18n.getMessage("msg.device.not.found")),
-    DEVICE_TYPE_SCAN_CARD(113, I18n.getMessage("msg.device.type.scan.card")),
+    DEVICE_NOT_FOUND(151, I18n.getMessage("msg.device.not.found")),
+    DEVICE_TYPE_SCAN_CARD(153, I18n.getMessage("msg.device.type.scan.card")),
 
     //organization
     ORGANIZATION_NOT_FOUND(113, I18n.getMessage("msg.organization.not.found")),
@@ -55,6 +62,8 @@ public enum ErrorApp {
     ROOM_NOT_FOUND(118, I18n.getMessage("msg.room.not.found")),
     ROOM_CODE_EXIST(119, I18n.getMessage("msg.room.code.exist")),
     ROOM_CODE_NULL(120, I18n.getMessage("msg.room.code.null")),
+    ROOM_USER_CAN_NOT_CREATE_TICKET(141, I18n.getMessage("msg.room.user.can.not.create.ticket")),
+    ROOM_HAVE_TICKET_IN_THIS_TIME(142, I18n.getMessage("msg.room.have.ticket.in.this.time")),
 
     //setting group
     SETTING_GROUP_NOT_FOUND(121, I18n.getMessage("msg.setting.group.not.found")),
@@ -72,14 +81,54 @@ public enum ErrorApp {
     //province
     PROVINCE_NOT_FOUND(129, I18n.getMessage("msg.province.not.found")),
     PROVINCE_NULL(130, I18n.getMessage("msg.province.null")),
+
     //district
     DISTRICT_NOT_FOUND(131, I18n.getMessage("msg.district.not.found")),
     DISTRICT_NULL(132, I18n.getMessage("msg.district.null")),
     DISTRICT_NOT_FOUND_BY_PROVINCE(133, I18n.getMessage("msg.district.not.found.by.province")),
+
     //commune
-    COMMUNE_NOT_FOUND(133, I18n.getMessage("msg.commune.not.found")),
-    COMMUNE_NULL(134, I18n.getMessage("msg.commune.null")),
-    COMMUNE_NOT_FOUND_BY_DISTRICT(135, I18n.getMessage("msg.commune.not.found.by.district"));
+    COMMUNE_NOT_FOUND(134, I18n.getMessage("msg.commune.not.found")),
+    COMMUNE_NULL(135, I18n.getMessage("msg.commune.null")),
+    COMMUNE_NOT_FOUND_BY_DISTRICT(136, I18n.getMessage("msg.commune.not.found.by.district")),
+
+    //purpose
+    PURPOSE_NOT_FOUND(137, I18n.getMessage("msg.purpose.not.found")),
+    PURPOSE_OTHER_NOT_NULL_OTHER(138, I18n.getMessage("msg.purpose.other.not.null.other")),
+    PURPOSE_OTHER_MUST_NULL_WHEN_TYPE_NOT_OTHER(157, I18n.getMessage("msg.purpose.other.must.null.when.type.not.other")),
+
+    //customer
+    CUSTOMER_NOT_FOUND(139, I18n.getMessage("msg.customer.not.found")),
+    CUSTOMER_IS_NULL(140, I18n.getMessage("msg.customer.is.null")),
+    CUSTOMER_IDENTITY_NOT_CORRECT(145, I18n.getMessage("msg.customer.identity.not.correct")),
+    CUSTOMER_NOT_IN_ORGANIZATION(157, I18n.getMessage("msg.customer.not.in.organization")),
+    CUSTOMER_IS_CHECK_IN(158, I18n.getMessage("msg.customer.is.check.in")),
+    CUSTOMER_IS_CHECK_OUT(159, I18n.getMessage("msg.customer.is.check.out")),
+    CUSTOMER_NOT_CHECK_IN_TO_CHECK_OUT(162, I18n.getMessage("msg.customer.not.check.in.to.check.out")),
+    CUSTOMER_NOT_CHECK_IN_TO_ADD_CARD(169, I18n.getMessage("msg.customer.not.check.in.to.add.card")),
+
+    //ticket
+    TICKET_NOT_FOUND(147, I18n.getMessage("msg.ticket.not.found")),
+    TICKET_START_TIME_IS_AFTER_THAN_END_TIME(148, I18n.getMessage("msg.ticket.start.time.is.after.than.end.time")),
+    TICKET_TIME_MEETING_MUST_GREATER_THAN_15_MINUTES(149, I18n.getMessage("msg.ticket.time.meeting.must.greater.than.15.minutes")),
+    TICKET_TIME_CANCEL_MEETING_MUST_BEFORE_2_HOURS(150, I18n.getMessage("msg.ticket.time.cancel.meeting.must.before.2.hours")),
+    TICKET_ID_NULL(154, I18n.getMessage("msg.ticket.id.null")),
+    TICKET_TIME_UPDATE_MEETING_MUST_BEFORE_2_HOURS(155, I18n.getMessage("msg.ticket.time.update.meeting.must.before.2.hours")),
+    TICKET_YOU_CAN_UPDATE_THIS_TICKET(156, I18n.getMessage("msg.ticket.you.can.update.this.ticket")),
+    TICKET_IS_EXPIRED_CAN_NOT_CHECK_IN(160, I18n.getMessage("msg.ticket.is.expired.can.not.check.in")),
+    TICKET_IS_EXPIRED_CAN_NOT_CHECK_OUT(164, I18n.getMessage("msg.ticket.is.expired.can.not.check.out")),
+    TICKET_NOT_START_CAN_NOT_CHECK_OUT(161, I18n.getMessage("msg.ticket.not.start.can.not.check.out")),
+    TICKET_NOT_START_CAN_NOT_CHECK_IN(163, I18n.getMessage("msg.ticket.not.start.can.not.check.in")),
+    TICKET_NOT_START_CAN_NOT_REJECT(165, I18n.getMessage("msg.ticket.not.start.can.not.reject")),
+    TICKET_IS_EXPIRED_CAN_NOT_REJECT(166, I18n.getMessage("msg.ticket.is.expired.can.not.reject")),
+    TICKET_CAN_NOT_VIEW(167, I18n.getMessage("msg.ticket.can.not.view")),
+
+    MUST_TO_CHOOSE_SITE(168, I18n.getMessage("msg.must.to.choose.site")),
+
+    //card
+    CARD_NOT_FOUND(170, I18n.getMessage("msg.card.not.found")),
+    CARD_ID_NULL(171, I18n.getMessage("msg.card.id.null")),
+    CARD_IS_EXIST_WITH_CUSTOMER_IN_SITE(172, I18n.getMessage("msg.card.is.exist.with.customer.in.site"));
     private final int code;
     private final String description;
 

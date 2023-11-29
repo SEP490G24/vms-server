@@ -3,6 +3,7 @@ package fpt.edu.capstone.vms.persistence.service.impl;
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ICardController;
 import fpt.edu.capstone.vms.controller.ITicketController;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.persistence.entity.CardCheckInHistory;
 import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMap;
 import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMapPk;
@@ -19,11 +20,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.MessageSource;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.Collections;
 import java.util.List;
@@ -63,6 +64,9 @@ class CardCheckInHistoryServiceImplTest {
 
     @Mock
     TicketRepository ticketRepository;
+
+    @Mock
+    MessageSource messageSource;
 
     @BeforeEach
     void setUp() {
@@ -289,7 +293,7 @@ class CardCheckInHistoryServiceImplTest {
         when(SecurityUtils.checkSiteAuthorization(siteRepository, customerTicketMapMock.getTicketEntity().getSiteId())).thenReturn(false);
 
         // Act and Assert
-        assertThrows(HttpClientErrorException.class, () -> {
+        assertThrows(CustomException.class, () -> {
             cardCheckInHistoryService.getAllCardHistoryOfCustomer(checkInCode);
         });
 

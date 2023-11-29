@@ -3,7 +3,9 @@ package fpt.edu.capstone.vms.persistence.service.impl;
 
 import com.azure.storage.blob.BlobClient;
 import fpt.edu.capstone.vms.constants.Constants;
+import fpt.edu.capstone.vms.constants.ErrorApp;
 import fpt.edu.capstone.vms.controller.IUserController;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.oauth2.IRoleResource;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
@@ -28,10 +30,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -110,7 +110,7 @@ public class UserServiceImpl implements IUserService {
     List<UUID> getListDepartments(List<String> siteIds, List<String> departmentIds) {
 
         if (SecurityUtils.getOrgId() == null && siteIds != null && !siteIds.isEmpty()) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "You don't have permission to do this.");
+            throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
         }
         List<UUID> departments = new ArrayList<>();
         if (SecurityUtils.getOrgId() != null) {
@@ -121,7 +121,7 @@ public class UserServiceImpl implements IUserService {
             } else {
                 siteIds.forEach(o -> {
                     if (!SecurityUtils.checkSiteAuthorization(siteRepository, o)) {
-                        throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "You don't have permission to do this.");
+                        throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
                     }
                     addDepartmentToListFilter(departmentIds, departments, o);
                 });
@@ -147,16 +147,16 @@ public class UserServiceImpl implements IUserService {
      */
     private void addDepartmentToListFilter(List<String> departmentIds, List<UUID> departments, String siteId) {
         if (departmentIds == null) {
-            var departmentss = departmentRepository.findAllBySiteId(UUID.fromString(siteId));
-            if (!departmentss.isEmpty()) {
-                departmentss.forEach(a -> {
+            var _departments = departmentRepository.findAllBySiteId(UUID.fromString(siteId));
+            if (!_departments.isEmpty()) {
+                _departments.forEach(a -> {
                     departments.add(a.getId());
                 });
             }
         } else {
             departmentIds.forEach(e -> {
                 if (!SecurityUtils.checkDepartmentInSite(departmentRepository, e, siteId)) {
-                    throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "You don't have permission to do this.");
+                    throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
                 }
                 departments.add(UUID.fromString(e));
             });
@@ -201,13 +201,13 @@ public class UserServiceImpl implements IUserService {
         Department department = departmentRepository.findById(userDto.getDepartmentId()).orElse(null);
 
         if (ObjectUtils.isEmpty(department)) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "department is null");
+            throw new CustomException(ErrorApp.DEVICE_NOT_FOUND);
         }
 
         String siteId = department.getSiteId().toString();
 
         if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
-            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "Can't create user in this site");
+            throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
         }
         ;
 
@@ -276,16 +276,16 @@ public class UserServiceImpl implements IUserService {
     public void changePasswordUser(String username, String oldPassword, String newPassword) {
 
         var userEntity = userRepository.findByUsername(username).orElse(null);
-        if (userEntity == null) throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can not found user");
+        if (userEntity == null) throw new CustomException(ErrorApp.USER_NOT_FOUND);
         if (oldPassword == newPassword)
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The new password is the same as the old password");
+            throw new CustomException(ErrorApp.USER_NEW_PASSWORD_SAME_OLD_PASSWORD);
         if (oldPassword.isEmpty())
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Can not null for new password");
+            throw new CustomException(ErrorApp.USER_NEW_PASSWORD_NOT_NULL);
 
         if (userResource.verifyPassword(username, oldPassword)) {
             userResource.changePassword(userEntity.getOpenid(), newPassword);
         } else {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The old password is valid");
+            throw new CustomException(ErrorApp.USER_OLD_PASSWORD_NOT_CORRECT);
         }
     }
 
@@ -300,9 +300,9 @@ public class UserServiceImpl implements IUserService {
         var oldFile = fileRepository.findByName(oldImage);
         var newFile = fileRepository.findByName(newImage);
         if (ObjectUtils.isEmpty(newFile))
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can not found image in file");
+            throw new CustomException(ErrorApp.USER_CAN_NOT_FOUND_FILE_IMAGE);
         if (!SecurityUtils.loginUsername().equals(username)) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "User is not true");
+            throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
         }
 
         BlobClient blobClient = fileService.getBlobClient(oldImage);

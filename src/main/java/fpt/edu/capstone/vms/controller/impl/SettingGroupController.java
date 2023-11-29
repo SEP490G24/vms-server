@@ -1,14 +1,17 @@
 package fpt.edu.capstone.vms.controller.impl;
 
+import fpt.edu.capstone.vms.constants.ErrorApp;
 import fpt.edu.capstone.vms.controller.ISettingGroupController;
-import fpt.edu.capstone.vms.exception.HttpClientResponse;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.persistence.entity.SettingGroup;
 import fpt.edu.capstone.vms.persistence.service.ISettingGroupService;
+import fpt.edu.capstone.vms.util.ResponseUtils;
+import fpt.edu.capstone.vms.util.SecurityUtils;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
 
@@ -23,12 +26,17 @@ public class SettingGroupController implements ISettingGroupController {
      * The function returns a ResponseEntity containing a SettingGroup object found by its id.
      *
      * @param id The parameter "id" is of type Long and represents the unique identifier of the setting group that needs to
-     * be found.
+     *           be found.
      * @return The method is returning a ResponseEntity object containing a SettingGroup object.
      */
     @Override
-    public ResponseEntity<SettingGroup> findById(Long id) {
-        return ResponseEntity.ok(settingGroupService.findById(id));
+    public ResponseEntity<?> findById(Long id) {
+        if (SecurityUtils.getUserDetails().isRealmAdmin()) {
+            var settingGroup = settingGroupService.findById(id);
+            return ResponseEntity.ok(settingGroup);
+        } else {
+            return ResponseUtils.getResponseEntity(ErrorApp.USER_NOT_PERMISSION, HttpStatus.FORBIDDEN);
+        }
     }
 
     /**
@@ -36,12 +44,16 @@ public class SettingGroupController implements ISettingGroupController {
      * setting group.
      *
      * @param id The id parameter is of type Long and represents the unique identifier of the setting group that needs to
-     * be deleted.
+     *           be deleted.
      * @return The method is returning a ResponseEntity object with a generic type of SettingGroup.
      */
     @Override
-    public ResponseEntity<SettingGroup> delete(Long id) {
-        return settingGroupService.delete(id);
+    public ResponseEntity<?> delete(Long id) {
+        if (SecurityUtils.getUserDetails().isRealmAdmin()) {
+            return settingGroupService.delete(id);
+        } else {
+            return ResponseUtils.getResponseEntity(ErrorApp.USER_NOT_PERMISSION, HttpStatus.FORBIDDEN);
+        }
     }
 
 
@@ -49,20 +61,24 @@ public class SettingGroupController implements ISettingGroupController {
      * The function updates a setting group and returns a ResponseEntity with the updated setting group or an
      * HttpClientResponse if an error occurs.
      *
-     * @param id The id parameter is of type Long and represents the identifier of the setting group that needs to be
-     * updated.
+     * @param id               The id parameter is of type Long and represents the identifier of the setting group that needs to be
+     *                         updated.
      * @param settingGroupInfo The settingGroupInfo parameter is an object of type UpdateSettingGroupInfo. It contains the
-     * updated information for a setting group.
+     *                         updated information for a setting group.
      * @return The method is returning a ResponseEntity object.
      */
 
     @Override
     public ResponseEntity<?> updateSettingGroup(Long id, UpdateSettingGroupInfo settingGroupInfo) {
         try {
-            var settingGroup = settingGroupService.update(mapper.map(settingGroupInfo, SettingGroup.class), id);
-            return ResponseEntity.ok(settingGroup);
-        } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
+            if (SecurityUtils.getUserDetails().isRealmAdmin()) {
+                var settingGroup = settingGroupService.update(mapper.map(settingGroupInfo, SettingGroup.class), id);
+                return ResponseUtils.getResponseEntityStatus(settingGroup);
+            } else {
+                return ResponseUtils.getResponseEntity(ErrorApp.USER_NOT_PERMISSION, HttpStatus.FORBIDDEN);
+            }
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -78,20 +94,23 @@ public class SettingGroupController implements ISettingGroupController {
     }
 
 
-
     /**
      * The function creates a setting group using the provided information and returns a ResponseEntity with the created
      * setting group.
      *
      * @param settingGroupInfo An object of type CreateSettingGroupInfo that contains the information needed to create a
-     * setting group.
+     *                         setting group.
      * @return The method is returning a ResponseEntity object.
      */
 
     @Override
     public ResponseEntity<?> createSettingGroup(CreateSettingGroupInfo settingGroupInfo) {
-        var settingGroup = settingGroupService.save(mapper.map(settingGroupInfo, SettingGroup.class));
-        return ResponseEntity.ok(settingGroup);
+        if (SecurityUtils.getUserDetails().isRealmAdmin()) {
+            var settingGroup = settingGroupService.save(mapper.map(settingGroupInfo, SettingGroup.class));
+            return ResponseEntity.ok(settingGroup);
+        } else {
+            return ResponseUtils.getResponseEntity(ErrorApp.USER_NOT_PERMISSION, HttpStatus.FORBIDDEN);
+        }
     }
 
 

@@ -1,17 +1,18 @@
 package fpt.edu.capstone.vms.controller.impl;
 
+import fpt.edu.capstone.vms.constants.ErrorApp;
 import fpt.edu.capstone.vms.controller.ISettingController;
-import fpt.edu.capstone.vms.exception.HttpClientResponse;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.persistence.entity.Setting;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.service.ISettingService;
+import fpt.edu.capstone.vms.util.ResponseUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
 
@@ -40,12 +41,12 @@ public class SettingController implements ISettingController {
         try {
             if (SecurityUtils.getUserDetails().isRealmAdmin()) {
                 var setting = settingService.update(mapper.map(settingInfo, Setting.class), id);
-                return ResponseEntity.ok(setting);
+                return ResponseUtils.getResponseEntityStatus(setting);
             } else {
-                throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this");
+                return ResponseUtils.getResponseEntity(ErrorApp.USER_NOT_PERMISSION, HttpStatus.FORBIDDEN);
             }
-        } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -71,7 +72,7 @@ public class SettingController implements ISettingController {
         var _siteId = userDetails.isOrganizationAdmin() ? siteId : userDetails.getSiteId();
 
         if (!SecurityUtils.checkSiteAuthorization(siteRepository, _siteId)) {
-            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this");
+            ResponseUtils.getResponseEntity(ErrorApp.USER_NOT_PERMISSION, HttpStatus.FORBIDDEN);
         }
 
         return groupId == null ?
@@ -92,12 +93,12 @@ public class SettingController implements ISettingController {
         try {
             if (SecurityUtils.getUserDetails().isRealmAdmin()) {
                 var setting = settingService.save(mapper.map(settingInfo, Setting.class));
-                return ResponseEntity.ok(setting);
+                return ResponseUtils.getResponseEntityStatus(setting);
             } else {
-                throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this");
+                return ResponseUtils.getResponseEntity(ErrorApp.USER_NOT_PERMISSION, HttpStatus.FORBIDDEN);
             }
-        } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

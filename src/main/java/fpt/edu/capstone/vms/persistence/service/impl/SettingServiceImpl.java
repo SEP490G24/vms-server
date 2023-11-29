@@ -1,6 +1,8 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.constants.Constants;
+import fpt.edu.capstone.vms.constants.ErrorApp;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.persistence.dto.common.Option;
 import fpt.edu.capstone.vms.persistence.entity.Setting;
 import fpt.edu.capstone.vms.persistence.repository.SettingRepository;
@@ -8,11 +10,9 @@ import fpt.edu.capstone.vms.persistence.service.ISettingService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import fpt.edu.capstone.vms.util.JacksonUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
 
@@ -40,17 +40,17 @@ public class SettingServiceImpl extends GenericServiceImpl<Setting, Long> implem
     @Override
     @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
     public Setting update(Setting entity, Long id) {
-        if (ObjectUtils.isEmpty(entity)) throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Object is empty");
+        if (ObjectUtils.isEmpty(entity)) throw new CustomException(ErrorApp.OBJECT_NOT_EMPTY);
         if (!StringUtils.isEmpty(entity.getCode())) {
             if (settingRepository.existsByCode(entity.getCode())) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code is exist");
+                throw new CustomException(ErrorApp.SETTING_CODE_EXIST);
             }
         }
 
         var settingEntity = settingRepository.findById(id).orElse(null);
 
         if (ObjectUtils.isEmpty(settingEntity))
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't found setting by id: " + id);
+            throw new CustomException(ErrorApp.SETTING_NOT_FOUND);
 
         return settingRepository.save(settingEntity.update(entity));
     }

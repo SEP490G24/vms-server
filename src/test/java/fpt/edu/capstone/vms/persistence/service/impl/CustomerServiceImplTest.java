@@ -2,6 +2,7 @@ package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ICustomerController;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.persistence.entity.Customer;
 import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
@@ -20,7 +21,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -359,6 +359,6 @@ class CustomerServiceImplTest {
         when(siteRepository.findById(any(UUID.class))).thenReturn(java.util.Optional.empty());
 
         // Call the method to test, expecting an exception
-        assertThrows(HttpClientErrorException.class, () -> customerService.findAllByOrganizationId(ICustomerController.CustomerAvailablePayload.builder().build()));
+        assertThrows(CustomException.class, () -> customerService.findAllByOrganizationId(ICustomerController.CustomerAvailablePayload.builder().build()));
     }
 }

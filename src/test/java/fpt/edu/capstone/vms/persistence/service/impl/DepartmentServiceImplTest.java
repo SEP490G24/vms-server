@@ -2,6 +2,7 @@ package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.IDepartmentController;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.entity.Department;
 import fpt.edu.capstone.vms.persistence.entity.Site;
@@ -97,7 +98,7 @@ class DepartmentServiceImplTest {
         departmentInfo.setCode("");
         departmentInfo.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
 
-        assertThrows(HttpClientErrorException.class, () -> departmentService.createDepartment(departmentInfo));
+        assertThrows(CustomException.class, () -> departmentService.createDepartment(departmentInfo));
     }
 
     @Test
@@ -119,7 +120,7 @@ class DepartmentServiceImplTest {
         when(departmentRepository.existsByCode(departmentInfo.getCode())).thenReturn(true);
 
         // Act and Assert
-        assertThrows(HttpClientErrorException.class, () -> departmentService.createDepartment(departmentInfo));
+        assertThrows(CustomException.class, () -> departmentService.createDepartment(departmentInfo));
 
     }
 
@@ -128,7 +129,7 @@ class DepartmentServiceImplTest {
     void givenDepartment_WhenSaveWithNullObject_ThenThrowException() {
         IDepartmentController.CreateDepartmentInfo departmentInfo = null;
 
-        assertThrows(HttpClientErrorException.class, () -> departmentService.createDepartment(departmentInfo));
+        assertThrows(CustomException.class, () -> departmentService.createDepartment(departmentInfo));
     }
 
     @Test
@@ -143,7 +144,7 @@ class DepartmentServiceImplTest {
         when(siteRepository.findById(UUID.fromString(departmentInfo.getSiteId().toString()))).thenReturn(Optional.empty());
 
         // Act and Assert
-        assertThrows(HttpClientErrorException.class, () -> departmentService.createDepartment(departmentInfo));
+        assertThrows(CustomException.class, () -> departmentService.createDepartment(departmentInfo));
     }
 
     @Test
@@ -158,7 +159,7 @@ class DepartmentServiceImplTest {
         when(siteRepository.findById(UUID.fromString(departmentInfo.getSiteId().toString()))).thenReturn(Optional.empty());
 
         // Act and Assert
-        assertThrows(HttpClientErrorException.class, () -> departmentService.createDepartment(departmentInfo));
+        assertThrows(CustomException.class, () -> departmentService.createDepartment(departmentInfo));
     }
 
 
@@ -213,7 +214,7 @@ class DepartmentServiceImplTest {
 
         when(departmentRepository.existsByCode(updateDepartmentInfo.getCode())).thenReturn(true);
 
-        assertThrows(HttpClientErrorException.class, () -> departmentService.update(updateDepartmentInfo, id));
+        assertThrows(CustomException.class, () -> departmentService.update(updateDepartmentInfo, id));
     }
 
     @Test
@@ -225,7 +226,7 @@ class DepartmentServiceImplTest {
 
         when(departmentRepository.findById(id)).thenReturn(Optional.empty());
 
-        assertThrows(HttpClientErrorException.class, () -> departmentService.update(updateDepartmentInfo, id));
+        assertThrows(CustomException.class, () -> departmentService.update(updateDepartmentInfo, id));
     }
 
 
@@ -362,7 +363,7 @@ class DepartmentServiceImplTest {
         when(SecurityUtils.checkSiteAuthorization(siteRepository, siteId)).thenReturn(false);
 
         // Act and Assert
-        assertThrows(HttpClientErrorException.class, () -> departmentService.FindAllBySiteId(siteId));
+        assertThrows(CustomException.class, () -> departmentService.FindAllBySiteId(siteId));
     }
 
 }
