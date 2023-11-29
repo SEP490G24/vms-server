@@ -10,11 +10,19 @@ import fpt.edu.capstone.vms.persistence.repository.DeviceRepository;
 import fpt.edu.capstone.vms.persistence.repository.RoomRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.util.SecurityUtils;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,11 +35,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @TestInstance(PER_CLASS)
 @ActiveProfiles("test")
@@ -99,7 +111,7 @@ class DeviceServiceImplTest {
         //when
         when(SecurityUtils.checkSiteAuthorization(siteRepository, device.getSiteId().toString())).thenReturn(true);
         when(siteRepository.findById(device.getSiteId())).thenReturn(Optional.of(site));
-        when(deviceRepository.existsByCodeAndSiteId(deviceDto.getCode(), UUID.fromString(anyString()))).thenReturn(true);
+        when(deviceRepository.existsByCodeAndSiteId(deviceDto.getCode(), UUID.randomUUID())).thenReturn(true);
         // When
         when(deviceRepository.save(any(Device.class))).thenReturn(device);
         Device device1 = deviceService.create(deviceDto);
