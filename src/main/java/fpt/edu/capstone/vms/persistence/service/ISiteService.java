@@ -40,5 +40,7 @@ public interface ISiteService extends IGenericService<Site, UUID> {
 
     List<Site> findAllByOrganizationId(String organizationId);
 
+    Site findById(String id);
+
     Boolean deleteSite(UUID siteId);
 }
