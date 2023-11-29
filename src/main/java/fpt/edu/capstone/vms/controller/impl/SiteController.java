@@ -36,7 +36,7 @@ public class SiteController implements ISiteController {
     @Override
     public ResponseEntity<?> findById(String siteId) {
         try {
-            return ResponseEntity.ok(mapper.map(siteService.findById(UUID.fromString(siteId)), SiteFilterDTO.class));
+            return ResponseEntity.ok(mapper.map(siteService.findById(siteId), SiteFilterDTO.class));
         } catch (CustomException e) {
             return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
         }

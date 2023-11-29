@@ -241,13 +241,13 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
     }
 
     @Override
-    public Site findById(UUID id) {
+    public Site findById(String id) {
         String siteId = "";
         if (SecurityUtils.getOrgId() != null) {
-            if (!SecurityUtils.checkSiteAuthorization(siteRepository, id.toString())) {
+            if (!SecurityUtils.checkSiteAuthorization(siteRepository, id)) {
                 throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
             }
-            siteId = id.toString();
+            siteId = id;
         } else {
             siteId = SecurityUtils.getSiteId();
         }
