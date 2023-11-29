@@ -1,7 +1,9 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.constants.Constants;
+import fpt.edu.capstone.vms.constants.ErrorApp;
 import fpt.edu.capstone.vms.controller.IDeviceController;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.entity.Device;
 import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
@@ -17,11 +19,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -53,13 +53,13 @@ public class DeviceServiceImpl extends GenericServiceImpl<Device, Integer> imple
     public Device update(Device deviceUpdate, Integer id) {
         var device = deviceRepository.findById(id).orElse(null);
         if (ObjectUtils.isEmpty(device))
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't found device");
+            throw new CustomException(ErrorApp.DEVICE_NOT_FOUND);
         var site = siteRepository.findById(device.getSiteId()).orElse(null);
         if (ObjectUtils.isEmpty(site)) {
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Site is null");
+            throw new CustomException(ErrorApp.SITE_NOT_NULL);
         }
         if (!SecurityUtils.checkSiteAuthorization(siteRepository, device.getSiteId().toString())) {
-            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+            throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
         }
         var updateDevice = deviceRepository.save(device.update(deviceUpdate));
         auditLogRepository.save(new AuditLog(device.getSiteId().toString()
@@ -76,17 +76,17 @@ public class DeviceServiceImpl extends GenericServiceImpl<Device, Integer> imple
     @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
     public Device create(IDeviceController.DeviceDto deviceDto) {
         if (ObjectUtils.isEmpty(deviceDto))
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Object is empty");
+            throw new CustomException(ErrorApp.OBJECT_NOT_EMPTY);
         if (SecurityUtils.getOrgId() != null) {
             if (!SecurityUtils.checkSiteAuthorization(siteRepository, deviceDto.getSiteId().toString())) {
-                throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+                throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
             }
         } else {
             deviceDto.setSiteId(UUID.fromString(SecurityUtils.getSiteId()));
         }
         var site = siteRepository.findById(deviceDto.getSiteId()).orElse(null);
         if (ObjectUtils.isEmpty(site)) {
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Site is null");
+            throw new CustomException(ErrorApp.SITE_NOT_NULL);
         }
         var device = mapper.map(deviceDto, Device.class);
         device.setEnable(true);

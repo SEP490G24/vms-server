@@ -1,7 +1,9 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.constants.Constants;
+import fpt.edu.capstone.vms.constants.ErrorApp;
 import fpt.edu.capstone.vms.controller.ICustomerController;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.persistence.entity.Customer;
 import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
@@ -16,9 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -80,7 +80,7 @@ public class CustomerServiceImpl extends GenericServiceImpl<Customer, UUID> impl
         if (SecurityUtils.getOrgId() == null) {
             Site site = siteRepository.findById(UUID.fromString(SecurityUtils.getSiteId())).orElse(null);
             if (ObjectUtils.isEmpty(site)) {
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "site is flase");
+                throw new CustomException(ErrorApp.SITE_NOT_FOUND);
             }
             orgId = String.valueOf(site.getOrganizationId());
         } else {

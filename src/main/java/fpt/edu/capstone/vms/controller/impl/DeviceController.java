@@ -1,19 +1,21 @@
 package fpt.edu.capstone.vms.controller.impl;
 
+import fpt.edu.capstone.vms.constants.ErrorApp;
 import fpt.edu.capstone.vms.controller.IDeviceController;
-import fpt.edu.capstone.vms.exception.HttpClientResponse;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.persistence.entity.Device;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.service.IDeviceService;
+import fpt.edu.capstone.vms.util.ResponseUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,29 +29,37 @@ public class DeviceController implements IDeviceController {
 
     @Override
     public ResponseEntity<?> findById(Integer id) {
-        var device = deviceService.findById(id);
-        if (!SecurityUtils.checkSiteAuthorization(siteRepository, device.getSiteId().toString())) {
-            throw new HttpClientErrorException(org.springframework.http.HttpStatus.FORBIDDEN, "Not permission");
+        try {
+            var device = deviceService.findById(id);
+            if (!SecurityUtils.checkSiteAuthorization(siteRepository, device.getSiteId().toString())) {
+                throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
+            }
+            return ResponseEntity.ok(device);
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return ResponseEntity.ok(device);
     }
 
     @Override
     public ResponseEntity<?> delete(Integer id) {
-        var device = deviceService.findById(id);
-        if (!SecurityUtils.checkSiteAuthorization(siteRepository, device.getSiteId().toString())) {
-            throw new HttpClientErrorException(org.springframework.http.HttpStatus.FORBIDDEN, "Not permission");
+        try {
+            var device = deviceService.findById(id);
+            if (!SecurityUtils.checkSiteAuthorization(siteRepository, device.getSiteId().toString())) {
+                throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
+            }
+            return ResponseUtils.getResponseEntityStatus(deviceService.delete(id));
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return deviceService.delete(id);
     }
 
     @Override
     public ResponseEntity<?> create(DeviceDto roomDto) {
         try {
             var device = deviceService.create(roomDto);
-            return ResponseEntity.ok(device);
-        } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
+            return ResponseUtils.getResponseEntityStatus(device);
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -57,9 +67,9 @@ public class DeviceController implements IDeviceController {
     public ResponseEntity<?> update(UpdateDeviceDto deviceDto, Integer id) {
         try {
             var device = deviceService.update(mapper.map(deviceDto, Device.class), id);
-            return ResponseEntity.ok(device);
-        } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
+            return ResponseUtils.getResponseEntityStatus(device);
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

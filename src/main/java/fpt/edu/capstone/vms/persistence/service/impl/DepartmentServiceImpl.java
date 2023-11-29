@@ -1,7 +1,9 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.constants.Constants;
+import fpt.edu.capstone.vms.constants.ErrorApp;
 import fpt.edu.capstone.vms.controller.IDepartmentController;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.entity.Department;
 import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
@@ -18,16 +20,19 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import static fpt.edu.capstone.vms.constants.ErrorApp.DEPARTMENT_NOT_FOUND;
+import static fpt.edu.capstone.vms.constants.ErrorApp.OBJECT_NOT_EMPTY;
+import static fpt.edu.capstone.vms.constants.ErrorApp.SITE_NOT_NULL;
+import static fpt.edu.capstone.vms.constants.ErrorApp.USER_NOT_PERMISSION;
 
 @Service
 public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> implements IDepartmentService {
@@ -63,7 +68,7 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
         var department = departmentRepository.findById(id).orElse(null);
         var departmentOld = department;
         if (ObjectUtils.isEmpty(department))
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Can't found department");
+            throw new CustomException(DEPARTMENT_NOT_FOUND);
         var site = siteRepository.findById(department.getSiteId()).orElse(null);
 
         var departmentUpdate = departmentRepository.save(department.update(updateDepartmentInfo));
@@ -81,7 +86,7 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
     public List<IDepartmentController.DepartmentFilterDTO> FindAllBySiteId(String siteId) {
 
         if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
-            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "Not permission");
+            throw new CustomException(USER_NOT_PERMISSION);
         }
         var departments = departmentRepository.findAllBySiteId(UUID.fromString(siteId));
         return mapper.map(departments, new TypeToken<List<IDepartmentController.DepartmentFilterDTO>>() {
@@ -102,18 +107,18 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
     public Department createDepartment(IDepartmentController.CreateDepartmentInfo departmentInfo) {
 
         if (ObjectUtils.isEmpty(departmentInfo))
-            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Object is empty");
+            throw new CustomException(OBJECT_NOT_EMPTY);
 
         if (SecurityUtils.getOrgId() != null) {
             if (!SecurityUtils.checkSiteAuthorization(siteRepository, departmentInfo.getSiteId().toString())) {
-                throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to do this.");
+                throw new CustomException(USER_NOT_PERMISSION);
             }
         } else {
             departmentInfo.setSiteId(SecurityUtils.getSiteId());
         }
 
         if (StringUtils.isEmpty(departmentInfo.getCode())) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code is null");
+            throw new CustomException(ErrorApp.OBJECT_CODE_NULL);
         }
 
         UUID siteId = UUID.fromString(departmentInfo.getSiteId());
@@ -121,11 +126,11 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
         var site = siteRepository.findById(siteId).orElse(null);
 
         if (ObjectUtils.isEmpty(site)) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Site is null");
+            throw new CustomException(SITE_NOT_NULL);
         }
 
         if (departmentRepository.existsByCode(departmentInfo.getCode())) {
-            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "The Code of department is exist");
+            throw new CustomException(ErrorApp.DEPARTMENT_DUPLICATE);
         }
 
 

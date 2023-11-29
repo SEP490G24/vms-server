@@ -2,8 +2,10 @@ package fpt.edu.capstone.vms.controller.impl;
 
 
 import fpt.edu.capstone.vms.controller.ICustomerController;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.persistence.entity.Customer;
 import fpt.edu.capstone.vms.persistence.service.ICustomerService;
+import fpt.edu.capstone.vms.util.ResponseUtils;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -11,6 +13,7 @@ import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -67,7 +70,11 @@ public class CustomerController implements ICustomerController {
 
     @Override
     public ResponseEntity<?> findByOrganizationId(CustomerAvailablePayload customerAvailablePayload) {
-        return ResponseEntity.ok(customerService.findAllByOrganizationId(customerAvailablePayload));
+        try {
+            return ResponseUtils.getResponseEntityStatus(customerService.findAllByOrganizationId(customerAvailablePayload));
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 }

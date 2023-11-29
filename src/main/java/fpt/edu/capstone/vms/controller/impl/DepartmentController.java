@@ -1,17 +1,18 @@
 package fpt.edu.capstone.vms.controller.impl;
 
 import fpt.edu.capstone.vms.controller.IDepartmentController;
-import fpt.edu.capstone.vms.exception.HttpClientResponse;
+import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.persistence.entity.Department;
 import fpt.edu.capstone.vms.persistence.service.IDepartmentService;
+import fpt.edu.capstone.vms.util.ResponseUtils;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
 import java.util.UUID;
@@ -72,9 +73,9 @@ public class DepartmentController implements IDepartmentController {
     public ResponseEntity<?> createDepartment(CreateDepartmentInfo departmentInfo) {
         try {
             var department = departmentService.createDepartment(departmentInfo);
-            return ResponseEntity.ok(department);
-        } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
+            return ResponseUtils.getResponseEntityStatus(department);
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -92,9 +93,9 @@ public class DepartmentController implements IDepartmentController {
     public ResponseEntity<?> updateDepartment(UpdateDepartmentInfo updateInfo, UUID id) {
         try {
             var department = departmentService.update(mapper.map(updateInfo, Department.class), id);
-            return ResponseEntity.ok(department);
-        } catch (HttpClientErrorException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(new HttpClientResponse(e.getMessage()));
+            return ResponseUtils.getResponseEntityStatus(department);
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -144,6 +145,10 @@ public class DepartmentController implements IDepartmentController {
 
     @Override
     public ResponseEntity<?> findAllBySite(String siteId) {
-        return ResponseEntity.ok(departmentService.FindAllBySiteId(siteId));
+        try {
+            return ResponseUtils.getResponseEntityStatus(departmentService.FindAllBySiteId(siteId));
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }
