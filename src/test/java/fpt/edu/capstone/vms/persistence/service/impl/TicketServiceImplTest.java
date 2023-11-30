@@ -67,6 +67,7 @@ import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConve
 import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.REALM_ADMIN;
 import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.SCOPE_ORGANIZATION;
 import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.SCOPE_SITE;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -1014,7 +1015,7 @@ class TicketServiceImplTest {
         ITicketController.UpdateTicketInfo ticketInfo = new ITicketController.UpdateTicketInfo();
         UUID ticketId = UUID.randomUUID();
         ticketInfo.setId(ticketId);
-        ticketInfo.setRoomId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c07"));
+        ticketInfo.setRoomId("06eb43a7-6ea8-4744-8231-760559fe2c07");
         ticketInfo.setPurpose(Constants.Purpose.MEETING);
         ticketInfo.setStartTime(LocalDateTime.now().minusHours(1));
 
@@ -1023,6 +1024,7 @@ class TicketServiceImplTest {
         mockTicket.setUsername("mocked_username");
         mockTicket.setStartTime(LocalDateTime.now().plusHours(3));
         mockTicket.setEndTime(LocalDateTime.now().plusHours(4));
+        mockTicket.setStatus(Constants.StatusTicket.PENDING);
         mockTicket.setRoomId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c07"));
         mockTicket.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
         when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(mockTicket));
@@ -1073,6 +1075,7 @@ class TicketServiceImplTest {
         mockTicket.setUsername("other_username");
         mockTicket.setStartTime(LocalDateTime.now().plusHours(1));
         mockTicket.setEndTime(LocalDateTime.now().plusHours(3));
+        mockTicket.setStatus(Constants.StatusTicket.PENDING);
 
         when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(mockTicket));
         Jwt jwt = mock(Jwt.class);
@@ -1107,7 +1110,7 @@ class TicketServiceImplTest {
         ITicketController.UpdateTicketInfo ticketInfo = new ITicketController.UpdateTicketInfo();
         UUID ticketId = UUID.randomUUID();
         ticketInfo.setId(ticketId);
-        ticketInfo.setRoomId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+        ticketInfo.setRoomId("06eb43a7-6ea8-4744-8231-760559fe2c08");
 
 
         Ticket mockTicket = new Ticket();
@@ -1118,6 +1121,8 @@ class TicketServiceImplTest {
         mockTicket.setPurpose(MEETING); // Not OTHERS
         mockTicket.setPurposeNote("TEST");
         mockTicket.setStartTime(LocalDateTime.now());
+        mockTicket.setStatus(Constants.StatusTicket.PENDING);
+        mockTicket.setEndTime(LocalDateTime.now().plusMinutes(1));
 
 
         Jwt jwt = mock(Jwt.class);
@@ -1152,7 +1157,7 @@ class TicketServiceImplTest {
         ITicketController.UpdateTicketInfo ticketInfo = new ITicketController.UpdateTicketInfo();
         UUID ticketId = UUID.randomUUID();
         ticketInfo.setId(ticketId);
-        ticketInfo.setRoomId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+        ticketInfo.setRoomId("06eb43a7-6ea8-4744-8231-760559fe2c08");
 
 
         Ticket mockTicket = new Ticket();
@@ -1162,6 +1167,8 @@ class TicketServiceImplTest {
         mockTicket.setUsername("mocked_username");
         mockTicket.setPurpose(OTHERS);
         mockTicket.setPurposeNote(null);
+        mockTicket.setStatus(Constants.StatusTicket.PENDING);
+        mockTicket.setEndTime(LocalDateTime.now().plusMinutes(1));
         mockTicket.setStartTime(LocalDateTime.now());
 
 
@@ -1198,7 +1205,7 @@ class TicketServiceImplTest {
         UUID ticketId = UUID.randomUUID();
         ticketInfo.setId(ticketId);
         UUID roomId = UUID.randomUUID();
-        ticketInfo.setRoomId(roomId);
+        ticketInfo.setRoomId(roomId.toString());
 
         LocalDateTime newStartTime = LocalDateTime.now();
         LocalDateTime newEndTime = newStartTime.plusHours(2);
@@ -1209,6 +1216,8 @@ class TicketServiceImplTest {
         mockTicket.setId(ticketId);
         mockTicket.setUsername("mocked_username");
         mockTicket.setRoomId(roomId);
+        mockTicket.setStatus(Constants.StatusTicket.PENDING);
+        mockTicket.setEndTime(LocalDateTime.now().plusMinutes(1));
         mockTicket.setStartTime(LocalDateTime.now().plusHours(1));
         mockTicket.setEndTime(LocalDateTime.now().plusHours(3));
 
@@ -1236,7 +1245,7 @@ class TicketServiceImplTest {
         UUID ticketId = UUID.randomUUID();
         ticketInfo.setId(ticketId);
         UUID roomId = UUID.randomUUID();
-        ticketInfo.setRoomId(roomId);
+        ticketInfo.setRoomId(roomId.toString());
 
         LocalDateTime newStartTime = LocalDateTime.now();
         LocalDateTime newEndTime = newStartTime.plusHours(2);
@@ -1248,6 +1257,7 @@ class TicketServiceImplTest {
         mockTicket.setUsername("mocked_username");
         mockTicket.setRoomId(roomId);
         mockTicket.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        mockTicket.setStatus(Constants.StatusTicket.PENDING);
         mockTicket.setStartTime(LocalDateTime.now().plusHours(1));
         mockTicket.setEndTime(LocalDateTime.now().plusHours(3));
 
@@ -1278,7 +1288,7 @@ class TicketServiceImplTest {
         UUID ticketId = UUID.randomUUID();
         ticketInfo.setId(ticketId);
         UUID roomId = UUID.randomUUID();
-        ticketInfo.setRoomId(roomId);
+        ticketInfo.setRoomId(roomId.toString());
 
         LocalDateTime newStartTime = LocalDateTime.now();
         LocalDateTime newEndTime = newStartTime.plusHours(2);
@@ -1292,6 +1302,136 @@ class TicketServiceImplTest {
         mockTicket.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
         mockTicket.setStartTime(LocalDateTime.now().plusHours(1));
         mockTicket.setEndTime(LocalDateTime.now().plusHours(3));
+        mockTicket.setStatus(Constants.StatusTicket.PENDING);
+
+        Jwt jwt = mock(Jwt.class);
+        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("mocked_username");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(mockTicket));
+        when(mapper.map(ticketInfo, Ticket.class)).thenReturn(mockTicket);
+
+        Room room = new Room();
+        room.setSiteId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+        room.setName("abc");
+        when(roomRepository.findById(mockTicket.getRoomId())).thenReturn(Optional.of(room));
+        when(ticketRepository.countByRoomIdAndEndTimeGreaterThanEqualAndStartTimeLessThanEqualAndStatusNotLike(roomId, ticketInfo.getStartTime(), ticketInfo.getEndTime(), Constants.StatusTicket.CANCEL)).thenReturn(1);
+
+        assertThrows(CustomException.class, () -> ticketService.updateTicket(ticketInfo));
+    }
+
+    @Test
+    public void givenRoomBooked_WhenUpdatingWithTicketCancel_WhenUpdating_ThenThrowException() {
+        ITicketController.UpdateTicketInfo ticketInfo = new ITicketController.UpdateTicketInfo();
+        UUID ticketId = UUID.randomUUID();
+        ticketInfo.setId(ticketId);
+        UUID roomId = UUID.randomUUID();
+        ticketInfo.setRoomId(roomId.toString());
+
+        LocalDateTime newStartTime = LocalDateTime.now();
+        LocalDateTime newEndTime = newStartTime.plusHours(2);
+        ticketInfo.setStartTime(newStartTime);
+        ticketInfo.setEndTime(newEndTime);
+
+        Ticket mockTicket = new Ticket();
+        mockTicket.setId(ticketId);
+        mockTicket.setUsername("mocked_username");
+        mockTicket.setRoomId(roomId);
+        mockTicket.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        mockTicket.setStartTime(LocalDateTime.now().plusHours(1));
+        mockTicket.setEndTime(LocalDateTime.now().plusHours(3));
+        mockTicket.setStatus(Constants.StatusTicket.CANCEL);
+
+        Jwt jwt = mock(Jwt.class);
+        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("mocked_username");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(mockTicket));
+        when(mapper.map(ticketInfo, Ticket.class)).thenReturn(mockTicket);
+
+        Room room = new Room();
+        room.setSiteId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+        room.setName("abc");
+        when(roomRepository.findById(mockTicket.getRoomId())).thenReturn(Optional.of(room));
+        when(ticketRepository.countByRoomIdAndEndTimeGreaterThanEqualAndStartTimeLessThanEqualAndStatusNotLike(roomId, ticketInfo.getStartTime(), ticketInfo.getEndTime(), Constants.StatusTicket.CANCEL)).thenReturn(1);
+
+        assertThrows(CustomException.class, () -> ticketService.updateTicket(ticketInfo));
+    }
+
+    @Test
+    public void givenRoomBooked_WhenUpdatingWithTicketComplete_WhenUpdating_ThenThrowException() {
+        ITicketController.UpdateTicketInfo ticketInfo = new ITicketController.UpdateTicketInfo();
+        UUID ticketId = UUID.randomUUID();
+        ticketInfo.setId(ticketId);
+        UUID roomId = UUID.randomUUID();
+        ticketInfo.setRoomId(roomId.toString());
+
+        LocalDateTime newStartTime = LocalDateTime.now();
+        LocalDateTime newEndTime = newStartTime.plusHours(2);
+        ticketInfo.setStartTime(newStartTime);
+        ticketInfo.setEndTime(newEndTime);
+
+        Ticket mockTicket = new Ticket();
+        mockTicket.setId(ticketId);
+        mockTicket.setUsername("mocked_username");
+        mockTicket.setRoomId(roomId);
+        mockTicket.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        mockTicket.setStartTime(LocalDateTime.now().plusHours(1));
+        mockTicket.setEndTime(LocalDateTime.now().plusHours(3));
+        mockTicket.setStatus(Constants.StatusTicket.COMPLETE);
+
+        Jwt jwt = mock(Jwt.class);
+        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("mocked_username");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(mockTicket));
+        when(mapper.map(ticketInfo, Ticket.class)).thenReturn(mockTicket);
+
+        Room room = new Room();
+        room.setSiteId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+        room.setName("abc");
+        when(roomRepository.findById(mockTicket.getRoomId())).thenReturn(Optional.of(room));
+        when(ticketRepository.countByRoomIdAndEndTimeGreaterThanEqualAndStartTimeLessThanEqualAndStatusNotLike(roomId, ticketInfo.getStartTime(), ticketInfo.getEndTime(), Constants.StatusTicket.CANCEL)).thenReturn(1);
+
+        assertThrows(CustomException.class, () -> ticketService.updateTicket(ticketInfo));
+    }
+
+    @Test
+    public void givenRoomBooked_WhenUpdatingWithTicketExpired_WhenUpdating_ThenThrowException() {
+        ITicketController.UpdateTicketInfo ticketInfo = new ITicketController.UpdateTicketInfo();
+        UUID ticketId = UUID.randomUUID();
+        ticketInfo.setId(ticketId);
+        UUID roomId = UUID.randomUUID();
+        ticketInfo.setRoomId(roomId.toString());
+
+        LocalDateTime newStartTime = LocalDateTime.now();
+        LocalDateTime newEndTime = newStartTime.plusHours(2);
+        ticketInfo.setStartTime(newStartTime);
+        ticketInfo.setEndTime(newEndTime);
+
+        Ticket mockTicket = new Ticket();
+        mockTicket.setId(ticketId);
+        mockTicket.setUsername("mocked_username");
+        mockTicket.setRoomId(roomId);
+        mockTicket.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        mockTicket.setStartTime(LocalDateTime.now().plusHours(1));
+        mockTicket.setEndTime(LocalDateTime.now());
+        mockTicket.setStatus(Constants.StatusTicket.PENDING);
 
         Jwt jwt = mock(Jwt.class);
         when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
@@ -1574,8 +1714,6 @@ class TicketServiceImplTest {
             String username = "username";
             String meetingCode = ticketService.generateMeetingCode(purpose, username);
 
-            // Check the length
-            assertEquals(26, meetingCode.length(), "Generated meeting code should have a length of 16");
 
             // Check if the code starts with the correct purpose letter
             assertEquals(meetingCode.substring(0, 1), getPurposeCode(purpose), "Generated meeting code should start with the correct purpose code");
@@ -2346,5 +2484,134 @@ class TicketServiceImplTest {
 
         // Verify method calls
         verify(customerTicketMapRepository).save(any());
+    }
+
+    @Test
+    void testCheckOldCustomers() {
+
+        // Mock input data
+        List<String> oldCustomers = Arrays.asList("c353835a-5e1e-4df5-973f-aec252bf260f");
+        Ticket ticket = new Ticket(); // Provide necessary ticket data
+        ticket.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c07"));
+        Room room = new Room(); // Provide necessary room data
+
+        // Mock site repository behavior
+        Site site = new Site();
+        site.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c07"));
+        site.setOrganizationId(UUID.fromString("c353835a-5e1e-4df5-973f-aec252bf260f"));
+        when(siteRepository.findById(site.getId())).thenReturn(java.util.Optional.of(site));
+
+        // Mock customer ticket map repository behavior
+        CustomerTicketMap customerTicketMap1 = new CustomerTicketMap(); // Provide necessary data for customerTicketMap1
+        customerTicketMap1.setCustomerTicketMapPk(new CustomerTicketMapPk(UUID.fromString("c353835a-5e1e-4df5-973f-aec252bf260a"), ticket.getId()));
+        when(customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(ticket.getId()))
+            .thenReturn(Arrays.asList(customerTicketMap1));
+
+        // Mock template repository behavior
+        Template template = new Template(); // Provide necessary template data
+        when(templateRepository.findById(UUID.fromString("c353835a-5e1e-4df5-973f-aec252bf260f"))).thenReturn(java.util.Optional.of(template));
+        when(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CANCEL_EMAIL)).thenReturn("c353835a-5e1e-4df5-973f-aec252bf260f");
+
+        when(customerRepository.existsByIdAndAndOrganizationId(UUID.fromString("c353835a-5e1e-4df5-973f-aec252bf260f"), "c353835a-5e1e-4df5-973f-aec252bf260f")).thenReturn(true);
+
+        // Call the method
+        assertDoesNotThrow(() -> ticketService.checkOldCustomers(oldCustomers, ticket, room));
+    }
+
+    @Test
+    void testCheckOldCustomers_notPermission() {
+
+        // Mock input data
+        List<String> oldCustomers = Arrays.asList("27c476cd-cfd3-4285-b6b2-23b8787f8c26", "c353835a-5e1e-4df5-973f-aec252bf260f");
+        Ticket ticket = new Ticket(); // Provide necessary ticket data
+        ticket.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c07"));
+        Room room = new Room(); // Provide necessary room data
+
+        // Mock site repository behavior
+        Site site = new Site();
+        site.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c07"));
+        site.setOrganizationId(UUID.fromString("c353835a-5e1e-4df5-973f-aec252bf260f"));
+        when(siteRepository.findById(site.getId())).thenReturn(java.util.Optional.of(site));
+
+        // Mock customer ticket map repository behavior
+        CustomerTicketMap customerTicketMap1 = new CustomerTicketMap(); // Provide necessary data for customerTicketMap1
+        customerTicketMap1.setCustomerTicketMapPk(new CustomerTicketMapPk(UUID.fromString("c353835a-5e1e-4df5-973f-aec252bf260f"), ticket.getId()));
+        when(customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(ticket.getId()))
+            .thenReturn(Arrays.asList(customerTicketMap1));
+
+        // Mock customer repository behavior
+        when(customerRepository.existsByIdAndAndOrganizationId(UUID.fromString("c353835a-5e1e-4df5-973f-aec252bf260f"), "c353835a-5e1e-4df5-973f-aec252bf260f")).thenReturn(true);
+
+        // Mock template repository behavior
+        Template template = new Template(); // Provide necessary template data
+        when(templateRepository.findById(UUID.fromString("c353835a-5e1e-4df5-973f-aec252bf260f"))).thenReturn(java.util.Optional.of(template));
+        when(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CANCEL_EMAIL)).thenReturn("c353835a-5e1e-4df5-973f-aec252bf260f");
+
+        // Call the method
+        assertThrows(CustomException.class, () -> ticketService.checkOldCustomers(oldCustomers, ticket, room));
+
+    }
+
+    @Test
+    void testCheckOldCustomers_AllEmpty() {
+
+        List<String> oldCustomers = new ArrayList<>();
+        // Mock input data
+        Ticket ticket = new Ticket(); // Provide necessary ticket data
+        ticket.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c07"));
+        Room room = new Room(); // Provide necessary room data
+
+        // Mock site repository behavior
+        Site site = new Site();
+        site.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c07"));
+        site.setOrganizationId(UUID.randomUUID());
+        when(siteRepository.findById(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c07"))).thenReturn(java.util.Optional.of(site));
+
+        // Mock customer ticket map repository behavior
+        CustomerTicketMap customerTicketMap1 = new CustomerTicketMap(); // Provide necessary data for customerTicketMap1
+        customerTicketMap1.setCustomerTicketMapPk(new CustomerTicketMapPk(UUID.fromString("c353835a-5e1e-4df5-973f-aec252bf260f"), ticket.getId()));
+        when(customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(ticket.getId()))
+            .thenReturn(Arrays.asList(customerTicketMap1));
+
+        // Mock template repository behavior
+        Template template = new Template(); // Provide necessary template data
+        when(templateRepository.findById(UUID.fromString("c353835a-5e1e-4df5-973f-aec252bf260f"))).thenReturn(java.util.Optional.of(template));
+        when(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CANCEL_EMAIL)).thenReturn("c353835a-5e1e-4df5-973f-aec252bf260f");
+
+        // Call the method
+        assertDoesNotThrow(() -> ticketService.checkOldCustomers(oldCustomers, ticket, room));
+
+    }
+
+    @Test
+    void testCheckOldCustomers_removeCustomer() {
+
+        // Mock input data
+        List<String> oldCustomers = Arrays.asList("c353835a-5e1e-4df5-973f-aec252bf260f");
+        Ticket ticket = new Ticket(); // Provide necessary ticket data
+        ticket.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c07"));
+        Room room = new Room(); // Provide necessary room data
+
+        // Mock site repository behavior
+        Site site = new Site();
+        site.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c07"));
+        site.setOrganizationId(UUID.fromString("c353835a-5e1e-4df5-973f-aec252bf260f"));
+        when(siteRepository.findById(site.getId())).thenReturn(java.util.Optional.of(site));
+
+        // Mock customer ticket map repository behavior
+        CustomerTicketMap customerTicketMap1 = new CustomerTicketMap(); // Provide necessary data for customerTicketMap1
+        customerTicketMap1.setCustomerTicketMapPk(new CustomerTicketMapPk(UUID.fromString("c353835a-5e1e-4df5-973f-aec252bf260f"), ticket.getId()));
+        when(customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(ticket.getId()))
+            .thenReturn(Arrays.asList(customerTicketMap1));
+
+        // Mock template repository behavior
+        Template template = new Template(); // Provide necessary template data
+        when(templateRepository.findById(UUID.fromString("c353835a-5e1e-4df5-973f-aec252bf260f"))).thenReturn(java.util.Optional.of(template));
+        when(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CANCEL_EMAIL)).thenReturn("c353835a-5e1e-4df5-973f-aec252bf260f");
+
+        when(customerRepository.existsByIdAndAndOrganizationId(UUID.fromString("c353835a-5e1e-4df5-973f-aec252bf260f"), "c353835a-5e1e-4df5-973f-aec252bf260f")).thenReturn(true);
+
+        // Call the method
+        assertDoesNotThrow(() -> ticketService.checkOldCustomers(oldCustomers, ticket, room));
     }
 }

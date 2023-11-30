@@ -5,7 +5,6 @@ import fpt.edu.capstone.vms.persistence.entity.Reason;
 import fpt.edu.capstone.vms.persistence.repository.ReasonRepository;
 import fpt.edu.capstone.vms.persistence.service.IReasonService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,12 +13,10 @@ import java.util.List;
 public class ReasonServiceImpl extends GenericServiceImpl<Reason, Integer> implements IReasonService {
 
     private final ReasonRepository reasonRepository;
-    private final ModelMapper mapper;
 
 
-    public ReasonServiceImpl(ReasonRepository reasonRepository, ModelMapper mapper) {
+    public ReasonServiceImpl(ReasonRepository reasonRepository) {
         this.reasonRepository = reasonRepository;
-        this.mapper = mapper;
         this.init(reasonRepository);
     }
 
