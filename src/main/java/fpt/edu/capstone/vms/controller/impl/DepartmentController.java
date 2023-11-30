@@ -27,13 +27,13 @@ public class DepartmentController implements IDepartmentController {
      * The function returns a ResponseEntity containing the Department object with the specified UUID.
      *
      * @param id The parameter "id" is of type UUID, which stands for Universally Unique Identifier. It is a 128-bit value
-     * used to uniquely identify information in computer systems. In this case, it is used to find a specific department by
-     * its unique identifier.
+     *           used to uniquely identify information in computer systems. In this case, it is used to find a specific department by
+     *           its unique identifier.
      * @return The method is returning a ResponseEntity object containing a Department object.
      */
     @Override
-    public ResponseEntity<Department> findById(UUID id) {
-        return ResponseEntity.ok(departmentService.findById(id));
+    public ResponseEntity<?> findById(UUID id, String siteId) {
+        return ResponseEntity.ok(departmentService.findById(id, siteId));
     }
 
     /**
@@ -41,13 +41,18 @@ public class DepartmentController implements IDepartmentController {
      * department.
      *
      * @param id The id parameter is of type UUID, which stands for Universally Unique Identifier. It is a 128-bit value
-     * used to uniquely identify an object or entity in a distributed computing environment. In this case, it is used to
-     * identify the department that needs to be deleted.
+     *           used to uniquely identify an object or entity in a distributed computing environment. In this case, it is used to
+     *           identify the department that needs to be deleted.
      * @return The method is returning a ResponseEntity object with a generic type of Department.
      */
     @Override
-    public ResponseEntity<Department> delete(UUID id) {
-        return departmentService.delete(id);
+    public ResponseEntity<?> delete(UUID id, String siteId) {
+        try {
+            departmentService.deleteDepartment(id, siteId);
+            return ResponseEntity.ok().build();
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**

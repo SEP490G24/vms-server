@@ -47,6 +47,7 @@ public interface ITicketController {
     @Operation(summary = "Delete ticket")
     @PreAuthorize("hasRole('r:ticket:delete')")
     ResponseEntity<?> delete(@PathVariable String id);
+
     @PostMapping()
     @Operation(summary = "Create new ticket")
     @PreAuthorize("hasRole('r:ticket:create')")
@@ -55,6 +56,10 @@ public interface ITicketController {
     @PostMapping("/bookmark")
     @Operation(summary = "Set bookmark ticket")
     ResponseEntity<?> updateBookmark(@RequestBody @Valid TicketBookmark ticketBookmark);
+
+    @GetMapping("/bookmark")
+    @Operation(summary = "Get all ticket bookmark for user")
+    ResponseEntity<?> filterAllTicketBookmarkForUser();
 
     @PostMapping("/cancel")
     @Operation(summary = "Cancel meeting ticket")

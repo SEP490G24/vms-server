@@ -29,7 +29,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static fpt.edu.capstone.vms.constants.ErrorApp.*;
+import static fpt.edu.capstone.vms.constants.ErrorApp.DEPARTMENT_NOT_FOUND;
+import static fpt.edu.capstone.vms.constants.ErrorApp.OBJECT_NOT_EMPTY;
+import static fpt.edu.capstone.vms.constants.ErrorApp.SITE_NOT_NULL;
+import static fpt.edu.capstone.vms.constants.ErrorApp.USER_NOT_PERMISSION;
 
 @Service
 public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> implements IDepartmentService {
@@ -88,6 +91,32 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
         var departments = departmentRepository.findAllBySiteId(UUID.fromString(siteId));
         return mapper.map(departments, new TypeToken<List<IDepartmentController.DepartmentFilterDTO>>() {
         }.getType());
+    }
+
+    @Override
+    public void deleteDepartment(UUID id, String siteId) {
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
+            throw new CustomException(USER_NOT_PERMISSION);
+        }
+        var site = siteRepository.findById(UUID.fromString(siteId)).orElse(null);
+        var department = departmentRepository.findById(id).orElse(null);
+        auditLogRepository.save(new AuditLog(site.getId().toString()
+            , site.getOrganizationId().toString()
+            , department.getId().toString()
+            , DEPARTMENT_TABLE_NAME
+            , Constants.AuditType.UPDATE
+            , department.toString()
+            , null));
+        departmentRepository.delete(department);
+    }
+
+    @Override
+    public IDepartmentController.DepartmentFilterDTO findById(UUID id, String siteId) {
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
+            throw new CustomException(USER_NOT_PERMISSION);
+        }
+        var department = departmentRepository.findById(id).orElse(null);
+        return mapper.map(department, IDepartmentController.DepartmentFilterDTO.class);
     }
 
     /**

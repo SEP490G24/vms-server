@@ -84,6 +84,32 @@ public class TicketController implements ITicketController {
     }
 
     @Override
+    public ResponseEntity<?> filterAllTicketBookmarkForUser() {
+        var ticketEntity = ticketService.filter(
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            true,
+            null);
+        List<TicketFilterDTO> ticketFilterDTOS = mapper.map(ticketEntity, new TypeToken<List<TicketFilterDTO>>() {
+        }.getType());
+        ticketFilterDTOS.forEach(o -> {
+            setCustomer(o);
+
+        });
+        return ResponseEntity.ok(ticketFilterDTOS);
+    }
+
+    @Override
     public ResponseEntity<?> cancelMeeting(CancelTicket cancelTicket) {
         try {
             return ResponseUtils.getResponseEntityStatus(ticketService.cancelTicket(cancelTicket));

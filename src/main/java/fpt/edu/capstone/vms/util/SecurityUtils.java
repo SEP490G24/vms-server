@@ -80,6 +80,7 @@ public class SecurityUtils {
 
     public static Boolean checkSiteAuthorization(SiteRepository siteRepository, String siteId) {
         if (SecurityUtils.getOrgId() != null) {
+            if (siteId == null) return false;
             var checkSite = siteRepository.existsByIdAndOrganizationId(UUID.fromString(siteId), UUID.fromString(SecurityUtils.getOrgId()));
 
             if (!checkSite) {

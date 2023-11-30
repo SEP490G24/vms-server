@@ -9,7 +9,16 @@ import lombok.Data;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,12 +35,12 @@ public interface IDepartmentController {
     @GetMapping("/{id}")
     @Operation(summary = "Find by id department")
     @PreAuthorize("hasRole('r:department:detail')")
-    ResponseEntity<?> findById(@PathVariable UUID id);
+    ResponseEntity<?> findById(@PathVariable UUID id, @RequestParam(value = "siteId", required = false) String siteId);
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete a department")
     @PreAuthorize("hasRole('r:department:delete')")
-    ResponseEntity<?> delete(@PathVariable UUID id);
+    ResponseEntity<?> delete(@PathVariable UUID id, @RequestParam(value = "siteId", required = false) String siteId);
 
     @GetMapping
     @Operation(summary = "Get all department")
