@@ -7,7 +7,6 @@ import fpt.edu.capstone.vms.persistence.entity.Room;
 import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.entity.Ticket;
 import fpt.edu.capstone.vms.persistence.entity.User;
-import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
 import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
 import fpt.edu.capstone.vms.persistence.repository.RoomRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
@@ -44,8 +43,6 @@ public class TicketSendEmailNotificationService {
     private UserRepository userRepository;
     @Autowired
     private CustomerTicketMapRepository customerTicketMapRepository;
-    @Autowired
-    private CustomerRepository customerRepository;
     @Autowired
     private EmailUtils emailUtils;
     @Autowired

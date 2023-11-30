@@ -150,10 +150,11 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
     public Boolean setDefaultValueBySite(String siteId) {
 
         var userDetails = SecurityUtils.getUserDetails();
-        if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
+        var _siteId = userDetails.isOrganizationAdmin() ? siteId : userDetails.getSiteId();
+
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, _siteId)) {
             throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
         }
-        var _siteId = userDetails.isOrganizationAdmin() ? siteId : userDetails.getSiteId();
 
         var site = siteRepository.findById(UUID.fromString(_siteId)).orElse(null);
         var settingSites = settingSiteMapRepository.findAllBySettingSiteMapPk_SiteId(UUID.fromString(_siteId));

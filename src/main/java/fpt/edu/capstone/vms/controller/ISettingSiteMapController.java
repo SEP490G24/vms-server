@@ -56,7 +56,7 @@ public interface ISettingSiteMapController {
     @PreAuthorize("hasRole('r:setting-site:filter')")
     ResponseEntity<?> findAllByGroupId(@PathVariable Integer settingGroupId, @RequestParam(value = "siteId", required = false) String siteId);
 
-    @GetMapping("/set-default")
+    @PostMapping("/set-default")
     @Operation(summary = "Set default setting for site")
     @PreAuthorize("hasRole('r:setting-site:set-default')")
     ResponseEntity<?> setDefault(@RequestParam(value = "siteId", required = false) String siteId);

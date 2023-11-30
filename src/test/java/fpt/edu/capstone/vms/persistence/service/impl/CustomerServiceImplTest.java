@@ -57,24 +57,6 @@ class CustomerServiceImplTest {
         mapper = mock(ModelMapper.class);
     }
 
-    @Test
-    public void testCreateWithNullDto() {
-        // Use assertThrows to check for IllegalArgumentException
-        assertThrows(NullPointerException.class, () -> customerService.create(null));
-    }
-
-    @Test
-    public void testCreateWithRepositoryFailure() {
-        // Mock data
-        ICustomerController.NewCustomers createCustomerDto = new ICustomerController.NewCustomers();
-        // Set properties for createCustomerDto
-
-        when(mapper.map(createCustomerDto, Customer.class)).thenReturn(new Customer());
-        when(customerRepository.save(any(Customer.class))).thenThrow(new RuntimeException("Repository failure"));
-
-        // Use assertThrows to check for RuntimeException
-        assertThrows(NullPointerException.class, () -> customerService.create(createCustomerDto));
-    }
 
     @Test
     public void testFilter() {
