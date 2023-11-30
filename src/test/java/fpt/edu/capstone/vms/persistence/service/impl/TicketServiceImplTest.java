@@ -1456,9 +1456,10 @@ class TicketServiceImplTest {
         Site site = new Site();
         site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
         Ticket ticket = new Ticket();
-        ticket.setStartTime(LocalDateTime.now().plusMinutes(1));
-        ticket.setEndTime(LocalDateTime.now().minusMinutes(1));
+        ticket.setStartTime(LocalDateTime.now().minusMinutes(1));
+        ticket.setEndTime(LocalDateTime.now().plusMinutes(1));
         ticket.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        ticket.setStatus(Constants.StatusTicket.PENDING);
         customerTicketMap.setTicketEntity(ticket);
         when(ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId())).thenReturn(Optional.of(ticket));
         when(siteRepository.findById(UUID.fromString(ticket.getSiteId()))).thenReturn(Optional.of(site));
@@ -1517,9 +1518,11 @@ class TicketServiceImplTest {
         customerTicketMap.setCheckInTime(currentTime.minusHours(1));  // Set a past check-in time
 
         Ticket ticket = new Ticket();
-        ticket.setStartTime(currentTime.plusMinutes(15));
+        ticket.setStartTime(LocalDateTime.now().minusMinutes(1));
+        ticket.setEndTime(LocalDateTime.now().plusMinutes(1));
         ticket.setId(customerTicketMap.getCustomerTicketMapPk().getTicketId());
         ticket.setSiteId(siteId);
+        ticket.setStatus(Constants.StatusTicket.PENDING);
         when(ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId())).thenReturn(java.util.Optional.of(ticket));
 
         customerTicketMap.setTicketEntity(ticket);
