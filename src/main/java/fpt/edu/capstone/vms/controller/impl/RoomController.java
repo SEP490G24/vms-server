@@ -31,6 +31,9 @@ public class RoomController implements IRoomController {
     public ResponseEntity<?> findById(UUID id) {
         try {
             var room = roomService.findById(id);
+            if (room == null) {
+                throw new CustomException(ErrorApp.ROOM_NOT_FOUND);
+            }
             if (!SecurityUtils.checkSiteAuthorization(siteRepository, room.getSiteId().toString())) {
                 throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
             }
@@ -43,11 +46,8 @@ public class RoomController implements IRoomController {
     @Override
     public ResponseEntity<?> delete(UUID id) {
         try {
-            var room = roomService.findById(id);
-            if (!SecurityUtils.checkSiteAuthorization(siteRepository, room.getSiteId().toString())) {
-                throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
-            }
-            return ResponseUtils.getResponseEntityStatus(roomService.delete(id));
+            roomService.deleteRoom(id);
+            return ResponseUtils.getResponseEntityStatus(true);
         } catch (CustomException e) {
             return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
         }

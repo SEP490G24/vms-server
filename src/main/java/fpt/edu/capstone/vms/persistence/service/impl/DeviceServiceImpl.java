@@ -149,4 +149,25 @@ public class DeviceServiceImpl extends GenericServiceImpl<Device, Integer> imple
         return deviceRepository.findAllWithNotUseInSite(sites);
     }
 
+    @Override
+    @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
+    public void deleteDevice(Integer id) {
+        var device = deviceRepository.findById(id).orElse(null);
+        if (device == null) {
+            throw new CustomException(ErrorApp.DEVICE_ERROR_IN_PROCESS_DELETE);
+        }
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, device.getSiteId().toString())) {
+            throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
+        }
+        var site = siteRepository.findById(device.getSiteId()).orElse(null);
+        auditLogRepository.save(new AuditLog(site.getId().toString()
+            , site.getOrganizationId().toString()
+            , device.getId().toString()
+            , DEVICE_TABLE_NAME
+            , Constants.AuditType.DELETE
+            , device.toString()
+            , null));
+        deviceRepository.deleteById(id);
+    }
+
 }

@@ -1,11 +1,14 @@
 package fpt.edu.capstone.vms.controller.impl;
 
 
+import fpt.edu.capstone.vms.constants.ErrorApp;
 import fpt.edu.capstone.vms.controller.ICustomerController;
 import fpt.edu.capstone.vms.exception.CustomException;
-import fpt.edu.capstone.vms.persistence.entity.Customer;
+import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
+import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.service.ICustomerService;
 import fpt.edu.capstone.vms.util.ResponseUtils;
+import fpt.edu.capstone.vms.util.SecurityUtils;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -27,15 +30,26 @@ public class CustomerController implements ICustomerController {
 
     final ICustomerService customerService;
     final ModelMapper mapper;
+    final SiteRepository siteRepository;
+    final CustomerRepository customerRepository;
 
     @Override
-    public ResponseEntity<Customer> findById(UUID id) {
+    public ResponseEntity<?> findById(UUID id) {
+        var customer = customerService.findById(id);
+        if (!SecurityUtils.checkOrganizationAuthor(siteRepository, customer.getOrganizationId())) {
+            return ResponseUtils.getResponseEntity(ErrorApp.USER_NOT_PERMISSION, HttpStatus.FORBIDDEN);
+        }
         return ResponseEntity.ok(customerService.findById(id));
     }
 
     @Override
-    public ResponseEntity<?> create(NewCustomers createCustomerDto) {
-        return ResponseEntity.ok(customerService.create(createCustomerDto));
+    public ResponseEntity<?> delete(UUID id) {
+        try {
+            customerService.deleteCustomer(id);
+            return ResponseEntity.ok().build();
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Override

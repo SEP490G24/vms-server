@@ -68,7 +68,6 @@ public class Constants {
         PENDING,
         CHECK_IN,
         CHECK_OUT,
-        DONE,
         CANCEL,
         REJECT,
         COMPLETE

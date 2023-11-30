@@ -21,6 +21,7 @@ public interface TemplateRepository extends GenericRepository<Template, UUID> {
         "where ((coalesce(:names) is null) or (u.name in :names)) " +
         "and (((cast(:createdOnStart as date) is null ) or (cast(:createdOnEnd as date) is null )) or (u.createdOn between :createdOnStart and :createdOnEnd)) " +
         "and ((:enable is null) or (u.enable = :enable)) " +
+        "and ((:type is null) or (u.type = :type)) " +
         "and ((coalesce(:siteId) is null) or (u.siteId in :siteId)) " +
         "and ((:keyword is null) " +
         "or ( UPPER(u.name) LIKE %:keyword% " +
@@ -34,12 +35,14 @@ public interface TemplateRepository extends GenericRepository<Template, UUID> {
                           @Param("createdOnStart") @Nullable LocalDateTime createdOnStart,
                           @Param("createdOnEnd") @Nullable LocalDateTime createdOnEnd,
                           @Param("enable") @Nullable Boolean isEnable,
+                          @Param("type") @Nullable Constants.TemplateType type,
                           @Param("keyword") @Nullable String keyword);
 
     @Query(value = "select u from Template u " +
         "where ((coalesce(:names) is null) or (u.name in :names)) " +
         "and (((cast(:createdOnStart as date) is null ) or (cast(:createdOnEnd as date) is null )) or (u.createdOn between :createdOnStart and :createdOnEnd)) " +
         "and ((:enable is null) or (u.enable = :enable)) " +
+        "and ((:type is null) or (u.type = :type)) " +
         "and ((coalesce(:siteId) is null) or (u.siteId in :siteId)) " +
         "and ((:keyword is null) " +
         "or ( UPPER(u.name) LIKE %:keyword% " +
@@ -53,6 +56,7 @@ public interface TemplateRepository extends GenericRepository<Template, UUID> {
         @Param("createdOnStart") @Nullable LocalDateTime createdOnStart,
         @Param("createdOnEnd") @Nullable LocalDateTime createdOnEnd,
         @Param("enable") @Nullable Boolean isEnable,
+        @Param("type") @Nullable Constants.TemplateType type,
         @Param("keyword") @Nullable String keyword);
 
     List<Template> findAllBySiteIdAndEnableIsTrue(UUID siteId);

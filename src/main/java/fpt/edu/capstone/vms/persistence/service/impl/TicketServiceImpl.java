@@ -731,6 +731,15 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     @Transactional
     public ITicketController.TicketByQRCodeResponseDTO checkInCustomer(ITicketController.CheckInPayload checkInPayload) {
         CustomerTicketMap customerTicketMap = customerTicketMapRepository.findByCheckInCodeIgnoreCase(checkInPayload.getCheckInCode());
+        if (customerTicketMap.getTicketEntity().getStatus().equals(Constants.StatusTicket.CANCEL)) {
+            throw new CustomException(ErrorApp.TICKET_IS_CANCEL_CAN_NOT_DO_CHECK);
+        }
+        if (customerTicketMap.getTicketEntity().getStatus().equals(Constants.StatusTicket.COMPLETE)) {
+            throw new CustomException(ErrorApp.TICKET_IS_COMPLETE_CAN_NOT_DO_CHECK);
+        }
+        if (customerTicketMap.getTicketEntity().getStatus().equals(Constants.StatusTicket.DRAFT)) {
+            throw new CustomException(ErrorApp.TICKET_IS_DRAFT_CAN_NOT_DO_CHECK);
+        }
         if (checkInPayload.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
             if (customerTicketMap.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
                 throw new CustomException(ErrorApp.CUSTOMER_IS_CHECK_IN);
@@ -738,10 +747,10 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             if (customerTicketMap.isCheckOut()) {
                 throw new CustomException(ErrorApp.CUSTOMER_IS_CHECK_OUT);
             }
-            if (customerTicketMap.getTicketEntity().getEndTime().isAfter(LocalDateTime.now())) {
+            if (customerTicketMap.getTicketEntity().getEndTime().isBefore(LocalDateTime.now())) {
                 throw new CustomException(ErrorApp.TICKET_IS_EXPIRED_CAN_NOT_CHECK_IN);
             }
-            if (customerTicketMap.getTicketEntity().getStartTime().isBefore(LocalDateTime.now())) {
+            if (customerTicketMap.getTicketEntity().getStartTime().isAfter(LocalDateTime.now())) {
                 throw new CustomException(ErrorApp.TICKET_NOT_START_CAN_NOT_CHECK_IN);
             }
             customerTicketMap.setStatus(checkInPayload.getStatus());
@@ -751,25 +760,25 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             if (!customerTicketMap.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
                 throw new CustomException(ErrorApp.CUSTOMER_NOT_CHECK_IN_TO_CHECK_OUT);
             }
-            if (customerTicketMap.getTicketEntity().getStartTime().isBefore(LocalDateTime.now())) {
+            if (customerTicketMap.getTicketEntity().getStartTime().isAfter(LocalDateTime.now())) {
                 throw new CustomException(ErrorApp.TICKET_NOT_START_CAN_NOT_CHECK_OUT);
             }
             customerTicketMap.setCheckOutTime(LocalDateTime.now());
             customerTicketMap.setCheckOut(true);
             customerTicketMap.setCardId(null);
+            customerTicketMap.setStatus(checkInPayload.getStatus());
+            customerTicketMapRepository.save(customerTicketMap);
             Integer count = customerTicketMapRepository.countAllByStatusAndAndCustomerTicketMapPk_TicketId(Constants.StatusTicket.CHECK_IN, customerTicketMap.getCustomerTicketMapPk().getTicketId());
             if (count == 0) {
                 Ticket ticket = ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId()).orElse(null);
                 if (ticket != null) {
-                    if (ticket.getStartTime().isBefore(LocalDateTime.now())) {
+                    if (ticket.getStartTime().isAfter(LocalDateTime.now())) {
                         throw new CustomException(ErrorApp.TICKET_NOT_START_CAN_NOT_CHECK_OUT);
                     }
                     ticket.setStatus(Constants.StatusTicket.COMPLETE);
                     ticketRepository.save(ticket);
                 }
             }
-            customerTicketMap.setStatus(checkInPayload.getStatus());
-            customerTicketMapRepository.save(customerTicketMap);
         } else if (checkInPayload.getStatus().equals(Constants.StatusTicket.REJECT)) {
             if (customerTicketMap.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
                 throw new CustomException(ErrorApp.CUSTOMER_IS_CHECK_IN);
@@ -777,10 +786,10 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             if (customerTicketMap.isCheckOut()) {
                 throw new CustomException(ErrorApp.CUSTOMER_IS_CHECK_OUT);
             }
-            if (customerTicketMap.getTicketEntity().getEndTime().isBefore(LocalDateTime.now())) {
+            if (customerTicketMap.getTicketEntity().getEndTime().isAfter(LocalDateTime.now())) {
                 throw new CustomException(ErrorApp.TICKET_IS_EXPIRED_CAN_NOT_REJECT);
             }
-            if (customerTicketMap.getTicketEntity().getStartTime().isAfter(LocalDateTime.now())) {
+            if (customerTicketMap.getTicketEntity().getStartTime().isBefore(LocalDateTime.now())) {
                 throw new CustomException(ErrorApp.TICKET_NOT_START_CAN_NOT_REJECT);
             }
             customerTicketMap.setReasonId(checkInPayload.getReasonId());

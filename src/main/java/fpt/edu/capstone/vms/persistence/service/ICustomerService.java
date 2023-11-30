@@ -13,8 +13,6 @@ import java.util.UUID;
 
 public interface ICustomerService extends IGenericService<Customer, UUID> {
 
-    Customer create(ICustomerController.NewCustomers createCustomerDto);
-
     Page<Customer> filter(Pageable pageable,
                           List<String> names,
                           LocalDateTime createdOnStart,
@@ -34,4 +32,6 @@ public interface ICustomerService extends IGenericService<Customer, UUID> {
         String keyword);
 
     List<Customer> findAllByOrganizationId(ICustomerController.CustomerAvailablePayload customerAvailablePayload);
+
+    void deleteCustomer(UUID id);
 }

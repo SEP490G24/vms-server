@@ -16,9 +16,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -33,10 +32,12 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -52,7 +53,6 @@ import static org.mockito.Mockito.when;
 @ActiveProfiles("test")
 @Tag("UnitTest")
 @DisplayName("Room Service Unit Tests")
-@ExtendWith(MockitoExtension.class)
 class RoomServiceImplTest {
 
     RoomRepository roomRepository;
@@ -67,6 +67,7 @@ class RoomServiceImplTest {
 
     @BeforeAll
     public void init() {
+        MockitoAnnotations.openMocks(this);
         pageable = mock(Pageable.class);
         roomRepository = mock(RoomRepository.class);
         siteRepository = mock(SiteRepository.class);
@@ -323,4 +324,186 @@ class RoomServiceImplTest {
         // Add assertions to check the content of the filteredRoomPage, depending on the expected behavior
         verify(roomRepository, times(1)).filter(pageable, names, siteIds, createdOnStart, createdOnEnd, enable, keyword.toUpperCase(), null);
     }
+
+    @Test
+    void testFinAllBySiteId() {
+
+        Jwt jwt = mock(Jwt.class);
+
+        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("63139e5c-3d0b-46d3-8167-fe59cf46d3d5");
+        when(jwt.getClaim(Constants.Claims.Name)).thenReturn("username");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("preferred_username");
+        when(jwt.getClaim(Constants.Claims.GivenName)).thenReturn("given_name");
+        when(jwt.getClaim(Constants.Claims.FamilyName)).thenReturn("family_name");
+        when(jwt.getClaim(Constants.Claims.Email)).thenReturn("email");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+        // Mock input data
+        String siteId = "63139e5c-3d0b-46d3-8167-fe59cf46d3d5";
+
+        // Mock room repository behavior
+        Room room = new Room();
+        when(roomRepository.findAllBySiteIdAndEnableIsTrue(any(UUID.class))).thenReturn(Collections.singletonList(room));
+
+        // Call the method
+        List<Room> result = roomService.finAllBySiteId(siteId);
+
+        // Verify the interactions
+        verify(roomRepository, times(1)).findAllBySiteIdAndEnableIsTrue(UUID.fromString(siteId));
+        assertEquals(1, result.size());
+        assertEquals(room, result.get(0));
+    }
+
+    @Test
+    void testFinAllBySiteIdWithNoPermission() {
+        Jwt jwt = mock(Jwt.class);
+
+        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("63139e5c-3d0b-46d3-8167-fe59cf46d3d5");
+        when(jwt.getClaim(Constants.Claims.Name)).thenReturn("username");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("preferred_username");
+        when(jwt.getClaim(Constants.Claims.GivenName)).thenReturn("given_name");
+        when(jwt.getClaim(Constants.Claims.FamilyName)).thenReturn("family_name");
+        when(jwt.getClaim(Constants.Claims.Email)).thenReturn("email");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+        // Mock input data
+        String siteId = "63139e5c-3d0b-46d3-8167-fe59cf46d3d4";
+
+        // Call the method and expect an exception
+        assertThrows(CustomException.class, () -> roomService.finAllBySiteId(siteId));
+    }
+
+    @Test
+    void testDeleteRoom() {
+        // Mock input data
+        UUID roomId = UUID.randomUUID();
+
+        Jwt jwt = mock(Jwt.class);
+
+        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("63139e5c-3d0b-46d3-8167-fe59cf46d3d5");
+        when(jwt.getClaim(Constants.Claims.Name)).thenReturn("username");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("preferred_username");
+        when(jwt.getClaim(Constants.Claims.GivenName)).thenReturn("given_name");
+        when(jwt.getClaim(Constants.Claims.FamilyName)).thenReturn("family_name");
+        when(jwt.getClaim(Constants.Claims.Email)).thenReturn("email");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+        // Mock input data
+        String siteId = "63139e5c-3d0b-46d3-8167-fe59cf46d3d5";
+
+        // Mock room repository behavior
+        Room room = new Room();
+        room.setId(roomId);
+        room.setSiteId(UUID.fromString(siteId)); // Set a valid siteId for authorization check
+        when(roomRepository.findById(roomId)).thenReturn(java.util.Optional.of(room));
+
+        Site site = new Site();
+        site.setId(UUID.fromString(siteId));
+        site.setOrganizationId(UUID.fromString(siteId));
+        // Mock site repository behavior
+        when(siteRepository.findById(any(UUID.class))).thenReturn(Optional.of(site));
+
+        // Call the method
+        assertDoesNotThrow(() -> roomService.deleteRoom(roomId));
+    }
+
+    @Test
+    void testDeleteRoomWithNoPermission() {
+        // Mock input data
+        UUID roomId = UUID.randomUUID();
+
+        Jwt jwt = mock(Jwt.class);
+
+        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("63139e5c-3d0b-46d3-8167-fe59cf46d3d5");
+        when(jwt.getClaim(Constants.Claims.Name)).thenReturn("username");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("preferred_username");
+        when(jwt.getClaim(Constants.Claims.GivenName)).thenReturn("given_name");
+        when(jwt.getClaim(Constants.Claims.FamilyName)).thenReturn("family_name");
+        when(jwt.getClaim(Constants.Claims.Email)).thenReturn("email");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+        // Mock input data
+        String siteId = "63139e5c-3d0b-46d3-8167-fe59cf46d3d4";
+
+        // Call the method and expect an exception
+        assertThrows(CustomException.class, () -> roomService.deleteRoom(roomId));
+    }
+
+    @Test
+    void testCreateRoomWithDuplicateCode() {
+        // Similar to the previous test, but set up roomRepository.existsByCodeAndSiteId to return true
+        Jwt jwt = mock(Jwt.class);
+
+        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("63139e5c-3d0b-46d3-8167-fe59cf46d3d5");
+        when(jwt.getClaim(Constants.Claims.Name)).thenReturn("username");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("preferred_username");
+        when(jwt.getClaim(Constants.Claims.GivenName)).thenReturn("given_name");
+        when(jwt.getClaim(Constants.Claims.FamilyName)).thenReturn("family_name");
+        when(jwt.getClaim(Constants.Claims.Email)).thenReturn("email");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        // Mock input data
+        IRoomController.RoomDto roomDto = new IRoomController.RoomDto();
+        roomDto.setCode("Room123");
+        roomDto.setSiteId(UUID.randomUUID());
+
+        // Mock site repository behavior
+        when(siteRepository.findById(roomDto.getSiteId())).thenReturn(java.util.Optional.of(new Site()));
+
+        // Mock room repository behavior
+        when(roomRepository.existsByCodeAndSiteId(roomDto.getCode(), roomDto.getSiteId())).thenReturn(true);
+
+        // Call the method and expect an exception
+        assertThrows(CustomException.class, () -> roomService.create(roomDto));
+    }
+
+    @Test
+    void testCreateRoomWithInvalidDevice() {
+        // Set up a scenario where the specified device is not found
+        Jwt jwt = mock(Jwt.class);
+
+        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("63139e5c-3d0b-46d3-8167-fe59cf46d3d5");
+        when(jwt.getClaim(Constants.Claims.Name)).thenReturn("username");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("preferred_username");
+        when(jwt.getClaim(Constants.Claims.GivenName)).thenReturn("given_name");
+        when(jwt.getClaim(Constants.Claims.FamilyName)).thenReturn("family_name");
+        when(jwt.getClaim(Constants.Claims.Email)).thenReturn("email");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        // Mock input data
+        IRoomController.RoomDto roomDto = new IRoomController.RoomDto();
+        roomDto.setCode("Room123");
+        roomDto.setSiteId(UUID.randomUUID());
+        roomDto.setDeviceId(1); // Assuming the device ID is provided
+
+        // Mock site repository behavior
+        when(siteRepository.findById(roomDto.getSiteId())).thenReturn(java.util.Optional.of(new Site()));
+
+        // Mock device repository behavior
+        when(deviceRepository.findById(roomDto.getDeviceId())).thenReturn(java.util.Optional.empty());
+
+        // Call the method and expect an exception
+        assertThrows(CustomException.class, () -> roomService.create(roomDto));
+    }
+
 }

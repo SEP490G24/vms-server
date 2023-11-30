@@ -36,4 +36,8 @@ public interface IDepartmentService extends IGenericService<Department, UUID> {
         String keyword);
 
     List<IDepartmentController.DepartmentFilterDTO> FindAllBySiteId(String siteId);
+
+    void deleteDepartment(UUID id);
+
+    IDepartmentController.DepartmentFilterDTO findByDepartmentId(UUID id);
 }

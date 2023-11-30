@@ -31,6 +31,9 @@ public class TemplateController implements ITemplateController {
     @Override
     public ResponseEntity<?> findById(UUID id) {
         var template = templateService.findById(id);
+        if (template == null) {
+            return ResponseUtils.getResponseEntity(ErrorApp.TEMPLATE_NOT_FOUND);
+        }
         if (!SecurityUtils.checkSiteAuthorization(siteRepository, template.getSiteId().toString())) {
             return ResponseUtils.getResponseEntity(ErrorApp.USER_NOT_PERMISSION);
         }
@@ -39,11 +42,12 @@ public class TemplateController implements ITemplateController {
 
     @Override
     public ResponseEntity<?> delete(UUID id) {
-        var template = templateService.findById(id);
-        if (!SecurityUtils.checkSiteAuthorization(siteRepository, template.getSiteId().toString())) {
-            return ResponseUtils.getResponseEntity(ErrorApp.USER_NOT_PERMISSION);
+        try {
+            templateService.deleteTemplate(id);
+            return ResponseUtils.getResponseEntityStatus(true);
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return templateService.delete(id);
     }
 
     @Override
@@ -74,6 +78,7 @@ public class TemplateController implements ITemplateController {
             filter.getCreatedOnStart(),
             filter.getCreatedOnEnd(),
             filter.getEnable(),
+            filter.getType(),
             filter.getKeyword());
 
         var templateEntityPageable = templateService.filter(
@@ -83,6 +88,7 @@ public class TemplateController implements ITemplateController {
             filter.getCreatedOnStart(),
             filter.getCreatedOnEnd(),
             filter.getEnable(),
+            filter.getType(),
             filter.getKeyword());
 
         List<TemplateFilter> templateDtos = mapper.map(templateEntityPageable.getContent(), new TypeToken<List<TemplateFilter>>() {

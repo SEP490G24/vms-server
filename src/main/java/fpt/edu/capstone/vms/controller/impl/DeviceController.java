@@ -43,11 +43,8 @@ public class DeviceController implements IDeviceController {
     @Override
     public ResponseEntity<?> delete(Integer id) {
         try {
-            var device = deviceService.findById(id);
-            if (!SecurityUtils.checkSiteAuthorization(siteRepository, device.getSiteId().toString())) {
-                throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
-            }
-            return ResponseUtils.getResponseEntityStatus(deviceService.delete(id));
+            deviceService.deleteDevice(id);
+            return ResponseUtils.getResponseEntityStatus(true);
         } catch (CustomException e) {
             return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
         }

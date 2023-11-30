@@ -111,15 +111,8 @@ public interface ITemplateController {
         LocalDateTime createdOnEnd;
         Boolean enable;
         String keyword;
-
-        private String name;
-        private String code;
-        private String subject;
-        private String body;
-        private String description;
         Constants.TemplateType type;
-        private List<String> siteId;
-        private String siteName;
+        List<String> siteId;
     }
 
     @Data

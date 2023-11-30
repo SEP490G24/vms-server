@@ -3,7 +3,9 @@ package fpt.edu.capstone.vms.persistence.service.impl;
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.ICustomerController;
 import fpt.edu.capstone.vms.exception.CustomException;
+import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.entity.Customer;
+import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
 import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,11 +29,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -44,7 +48,8 @@ class CustomerServiceImplTest {
     private CustomerServiceImpl customerService;
     @Mock
     private SiteRepository siteRepository;
-
+    @Mock
+    private AuditLogRepository auditLogRepository;
     private ModelMapper mapper;
     SecurityContext securityContext;
     Authentication authentication;
@@ -57,24 +62,6 @@ class CustomerServiceImplTest {
         mapper = mock(ModelMapper.class);
     }
 
-    @Test
-    public void testCreateWithNullDto() {
-        // Use assertThrows to check for IllegalArgumentException
-        assertThrows(NullPointerException.class, () -> customerService.create(null));
-    }
-
-    @Test
-    public void testCreateWithRepositoryFailure() {
-        // Mock data
-        ICustomerController.NewCustomers createCustomerDto = new ICustomerController.NewCustomers();
-        // Set properties for createCustomerDto
-
-        when(mapper.map(createCustomerDto, Customer.class)).thenReturn(new Customer());
-        when(customerRepository.save(any(Customer.class))).thenThrow(new RuntimeException("Repository failure"));
-
-        // Use assertThrows to check for RuntimeException
-        assertThrows(NullPointerException.class, () -> customerService.create(createCustomerDto));
-    }
 
     @Test
     public void testFilter() {
@@ -360,5 +347,73 @@ class CustomerServiceImplTest {
 
         // Call the method to test, expecting an exception
         assertThrows(CustomException.class, () -> customerService.findAllByOrganizationId(ICustomerController.CustomerAvailablePayload.builder().build()));
+    }
+
+    @Test
+    void testDeleteCustomer() {
+        Jwt jwt = mock(Jwt.class);
+
+        when(jwt.getClaim(Constants.Claims.Name)).thenReturn("username");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("preferred_username");
+        when(jwt.getClaim(Constants.Claims.GivenName)).thenReturn("given_name");
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("3d65906a-c6e3-4e9d-bbc6-ba20938f9cad");
+        when(jwt.getClaim(Constants.Claims.FamilyName)).thenReturn("family_name");
+        when(jwt.getClaim(Constants.Claims.Email)).thenReturn("email");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+        // Mock input data
+        UUID customerId = UUID.randomUUID();
+
+        // Mock customer repository behavior
+        Customer customer = new Customer();
+        customer.setId(customerId);
+        customer.setOrganizationId("3d65906a-c6e3-4e9d-bbc6-ba20938f9cad"); // Set a valid organizationId for authorization check
+        when(customerRepository.findById(customerId)).thenReturn(java.util.Optional.of(customer));
+
+
+        // Call the method
+        assertDoesNotThrow(() -> customerService.deleteCustomer(customerId));
+
+        // Verify the interactions
+        verify(customerRepository, times(1)).findById(customerId);
+        verify(auditLogRepository, times(1)).save(any(AuditLog.class));
+        verify(customerRepository, times(1)).deleteById(customerId);
+    }
+
+    @Test
+    void testDeleteCustomerWithNoPermission() {
+        Jwt jwt = mock(Jwt.class);
+
+        when(jwt.getClaim(Constants.Claims.Name)).thenReturn("username");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("preferred_username");
+        when(jwt.getClaim(Constants.Claims.GivenName)).thenReturn("given_name");
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("3d65906a-c6e3-4e9d-bbc6-ba20938f9cad");
+        when(jwt.getClaim(Constants.Claims.FamilyName)).thenReturn("family_name");
+        when(jwt.getClaim(Constants.Claims.Email)).thenReturn("email");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        // Mock input data
+        UUID customerId = UUID.randomUUID();
+
+        // Mock customer repository behavior
+        Customer customer = new Customer();
+        customer.setId(customerId);
+        customer.setOrganizationId("3d65906a-c6e3-4e9d-bbc6-ba20938f9ca8"); // Set an invalid organizationId for authorization check
+        when(customerRepository.findById(customerId)).thenReturn(java.util.Optional.of(customer));
+
+        // Call the method and expect an exception
+        assertThrows(CustomException.class, () -> customerService.deleteCustomer(customerId));
+
+        // Verify the interactions
+        verify(customerRepository, times(1)).findById(customerId);
+        verify(auditLogRepository, never()).save(any(AuditLog.class));
+        verify(customerRepository, never()).deleteById(any(UUID.class));
     }
 }

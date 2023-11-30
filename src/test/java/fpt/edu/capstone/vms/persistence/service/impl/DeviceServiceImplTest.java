@@ -15,8 +15,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -35,6 +34,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -49,7 +49,6 @@ import static org.mockito.Mockito.when;
 @ActiveProfiles("test")
 @Tag("UnitTest")
 @DisplayName("Device Service Unit Tests")
-@ExtendWith(MockitoExtension.class)
 class DeviceServiceImplTest {
 
     RoomRepository roomRepository;
@@ -64,6 +63,7 @@ class DeviceServiceImplTest {
 
     @BeforeAll
     public void init() {
+        MockitoAnnotations.openMocks(this);
         pageable = mock(Pageable.class);
         roomRepository = mock(RoomRepository.class);
         siteRepository = mock(SiteRepository.class);
@@ -273,4 +273,59 @@ class DeviceServiceImplTest {
         // Add assertions to check the content of the filteredRoomPage, depending on the expected behavior
         verify(deviceRepository, times(1)).filter(pageable, names, siteIds, null, createdOnStart, createdOnEnd, enable, keyword.toUpperCase(), null);
     }
+
+    @Test
+    void testDeleteDevice() {
+        // Mock input data
+        Integer deviceId = 1;
+
+        Jwt jwt = mock(Jwt.class);
+
+        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("63139e5c-3d0b-46d3-8167-fe59cf46d3d5");
+        when(jwt.getClaim(Constants.Claims.Name)).thenReturn("username");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("preferred_username");
+        when(jwt.getClaim(Constants.Claims.GivenName)).thenReturn("given_name");
+        when(jwt.getClaim(Constants.Claims.FamilyName)).thenReturn("family_name");
+        when(jwt.getClaim(Constants.Claims.Email)).thenReturn("email");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        // Mock device repository behavior
+        Device device = new Device();
+        device.setId(deviceId);
+        device.setSiteId(UUID.fromString("63139e5c-3d0b-46d3-8167-fe59cf46d3d5")); // Set a valid siteId for authorization check
+        when(deviceRepository.findById(deviceId)).thenReturn(java.util.Optional.of(device));
+
+        Site site = new Site();
+        site.setId(UUID.fromString("63139e5c-3d0b-46d3-8167-fe59cf46d3d5"));
+        site.setOrganizationId(UUID.fromString("63139e5c-3d0b-46d3-8167-fe59cf46d3d5"));
+        when(siteRepository.findById(UUID.fromString("63139e5c-3d0b-46d3-8167-fe59cf46d3d5"))).thenReturn(Optional.of(site));
+        device.setSite(site);
+
+
+        // Call the method
+        assertDoesNotThrow(() -> deviceService.deleteDevice(deviceId));
+    }
+
+    @Test
+    void testDeleteDeviceWithNoPermission() {
+
+        // Mock input data
+        Integer deviceId = 1;
+
+        // Mock device repository behavior
+        Device device = new Device();
+        device.setId(deviceId);
+        device.setSiteId(UUID.randomUUID()); // Set an invalid siteId for authorization check
+        when(deviceRepository.findById(deviceId)).thenReturn(java.util.Optional.of(device));
+
+        // Call the method and expect an exception
+        assertThrows(CustomException.class, () -> deviceService.deleteDevice(deviceId));
+
+
+    }
+
 }
