@@ -238,8 +238,10 @@ public interface ITicketController {
         private LocalDateTime startTime;
         private LocalDateTime endTime;
         private String description;
-        private UUID roomId;
+        private String roomId;
         List<ICustomerController.NewCustomers> newCustomers;
+        List<String> oldCustomers;
+
     }
 
     @Data

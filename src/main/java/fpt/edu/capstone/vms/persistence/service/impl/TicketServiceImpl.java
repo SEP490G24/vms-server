@@ -62,6 +62,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -405,28 +406,10 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             if (!customerTicketMaps.isEmpty()) {
                 customerTicketMaps.forEach(o -> {
                     Customer customer = o.getCustomerEntity();
-
                     if (ObjectUtils.isEmpty(template)) {
                         throw new CustomException(ErrorApp.TEMPLATE_NOT_FOUND);
                     }
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
-
-                    String date = ticket.getStartTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                    String startTime1 = ticket.getStartTime().format(formatter);
-                    String endTime = ticket.getEndTime().format(formatter);
-                    User user = userRepository.findFirstByUsername(ticket.getUsername());
-
-                    Map<String, String> parameterMap = new HashMap<>();
-                    parameterMap.put("customerName", customer.getVisitorName());
-                    parameterMap.put("staffName", user.getFirstName() + " " + user.getLastName());
-                    parameterMap.put("meetingName", ticket.getName());
-                    parameterMap.put("dateTime", date);
-                    parameterMap.put("startTime", startTime1);
-                    parameterMap.put("endTime", endTime);
-                    parameterMap.put("reason", reason.getName());
-                    String replacedTemplate = emailUtils.replaceEmailParameters(template.getBody(), parameterMap);
-
-                    emailUtils.sendMailWithQRCode(customer.getEmail(), template.getSubject(), replacedTemplate, null, ticket.getSiteId());
+                    sendEmailCancel(ticket, customer, template, reason);
                 });
 
             }
@@ -442,6 +425,27 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         return false;
     }
 
+    public void sendEmailCancel(Ticket ticket, Customer customer, Template template, Reason reason) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+
+        String date = ticket.getStartTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        String startTime1 = ticket.getStartTime().format(formatter);
+        String endTime = ticket.getEndTime().format(formatter);
+        User user = userRepository.findFirstByUsername(ticket.getUsername());
+
+        Map<String, String> parameterMap = new HashMap<>();
+        parameterMap.put("customerName", customer.getVisitorName());
+        parameterMap.put("staffName", user.getFirstName() + " " + user.getLastName());
+        parameterMap.put("meetingName", ticket.getName());
+        parameterMap.put("dateTime", date);
+        parameterMap.put("startTime", startTime1);
+        parameterMap.put("endTime", endTime);
+        parameterMap.put("reason", reason != null ? reason.getName() : "Updating...");
+        String replacedTemplate = emailUtils.replaceEmailParameters(template.getBody(), parameterMap);
+
+        emailUtils.sendMailWithQRCode(customer.getEmail(), template.getSubject(), replacedTemplate, null, ticket.getSiteId());
+    }
+
     @Override
     @Transactional(rollbackFor = {Exception.class, Throwable.class, NullPointerException.class})
     public Ticket updateTicket(ITicketController.UpdateTicketInfo ticketInfo) {
@@ -453,6 +457,16 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         LocalDateTime updateEndTime = ticketMap.getEndTime();
 
         Ticket ticket = ticketRepository.findById(ticketInfo.getId()).orElse(null);
+
+        if (ticket.getStatus().equals(Constants.StatusTicket.CANCEL)) {
+            throw new CustomException(ErrorApp.TICKET_IS_CANCEL_CAN_NOT_DO_UPDATE);
+        }
+        if (ticket.getStatus().equals(Constants.StatusTicket.COMPLETE)) {
+            throw new CustomException(ErrorApp.TICKET_IS_COMPLETE_CAN_NOT_DO_UPDATE);
+        }
+        if (ticket.getEndTime().isBefore(LocalDateTime.now())) {
+            throw new CustomException(ErrorApp.TICKET_IS_EXPIRED_CAN_NOT_UPDATE);
+        }
 
         LocalDateTime currentTime = LocalDateTime.now();
         LocalDateTime startTime = ticket.getStartTime();
@@ -469,9 +483,9 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             throw new CustomException(ErrorApp.TICKET_YOU_CAN_UPDATE_THIS_TICKET);
         }
 
-        if (StringUtils.isNotEmpty(ticketMap.getRoomId().toString())) {
+        if (StringUtils.isNotEmpty(ticketInfo.getRoomId())) {
             if (!ticketInfo.getRoomId().equals(ticket.getRoomId())) {
-                Room room = roomRepository.findById(ticketInfo.getRoomId()).orElse(null);
+                Room room = roomRepository.findById(UUID.fromString(ticketInfo.getRoomId())).orElse(null);
 
                 if (ObjectUtils.isEmpty(room)) {
                     throw new CustomException(ErrorApp.ROOM_NOT_FOUND);
@@ -480,9 +494,10 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                 if (!room.getSiteId().equals(UUID.fromString(ticket.getSiteId())))
                     throw new CustomException(ErrorApp.ROOM_USER_CAN_NOT_CREATE_TICKET);
 
-                if (isRoomBooked(ticketInfo.getRoomId(), ticketInfo.getStartTime(), ticketInfo.getEndTime())) {
+                if (isRoomBooked(UUID.fromString(ticketInfo.getRoomId()), ticketInfo.getStartTime(), ticketInfo.getEndTime())) {
                     throw new CustomException(ErrorApp.ROOM_HAVE_TICKET_IN_THIS_TIME);
                 }
+                ticketMap.setRoomId(UUID.fromString(ticketInfo.getRoomId()));
             }
         }
 
@@ -505,12 +520,8 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         Ticket oldValue = ticket;
         ticketRepository.save(ticket.update(ticketMap));
         Room room = roomRepository.findById(ticket.getRoomId()).orElse(null);
-        List<CustomerTicketMap> customerTicketMaps = customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(ticket.getId());
-        if (customerTicketMaps != null) {
-            customerTicketMaps.forEach(o -> {
-                Customer customer = o.getCustomerEntity();
-                sendEmail(customer, ticket, room, o.getCheckInCode(), true);
-            });
+        if (ticketInfo.getOldCustomers() != null) {
+            checkOldCustomers(ticketInfo.getOldCustomers(), ticket, room);
         }
 
         if (ticketInfo.getNewCustomers() != null) {
@@ -526,6 +537,75 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             , ticket.toString()));
 
         return ticket;
+    }
+
+    public void checkOldCustomers(List<String> oldCustomers, Ticket ticket, Room room) {
+        String orgId;
+        if (SecurityUtils.getOrgId() == null) {
+            Site site = siteRepository.findById(UUID.fromString(SecurityUtils.getSiteId())).orElse(null);
+            if (ObjectUtils.isEmpty(site)) {
+                throw new CustomException(ErrorApp.SITE_NOT_FOUND);
+            }
+            orgId = String.valueOf(site.getOrganizationId());
+        } else {
+            orgId = SecurityUtils.getOrgId();
+        }
+
+        List<CustomerTicketMap> customerTicketMaps = customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(ticket.getId());
+
+        // List of customer id old
+        List<String> CustomerOfTicket = customerTicketMaps.stream()
+            .map(customerTicketMap -> customerTicketMap.getCustomerTicketMapPk().getCustomerId().toString())
+            .collect(Collectors.toList());
+
+        // Customer to add
+        List<String> customersToAdd = oldCustomers.stream()
+            .filter(customerToRemove -> !CustomerOfTicket.contains(customerToRemove))
+            .collect(Collectors.toList());
+
+        // Customer to remove
+        List<String> customersToRemove = CustomerOfTicket.stream()
+            .filter(customerToAdd -> !oldCustomers.contains(customerToAdd))
+            .collect(Collectors.toList());
+
+        Template template = templateRepository.findById(UUID.fromString(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CANCEL_EMAIL))).orElse(null);
+
+        if (!customersToRemove.isEmpty()) {
+            for (String customer : customersToRemove) {
+                if (StringUtils.isEmpty(customer.trim()))
+                    throw new CustomException(ErrorApp.CUSTOMER_NOT_FOUND);
+                CustomerTicketMapPk customerTicketMapPk = new CustomerTicketMapPk();
+                customerTicketMapPk.setTicketId(ticket.getId());
+                customerTicketMapPk.setCustomerId(UUID.fromString(customer.trim()));
+                CustomerTicketMap customerTicketMap = customerTicketMapRepository.findById(customerTicketMapPk).orElse(null);
+                if (customerTicketMap != null) {
+                    customerTicketMapRepository.delete(customerTicketMap);
+                    sendEmailCancel(ticket, customerTicketMap.getCustomerEntity(), template, null);
+                }
+            }
+        }
+
+        if (!customersToAdd.isEmpty()) {
+            for (String customer : customersToAdd) {
+                if (StringUtils.isEmpty(customer.trim()))
+                    throw new CustomException(ErrorApp.CUSTOMER_NOT_FOUND);
+                if (!customerRepository.existsByIdAndAndOrganizationId(UUID.fromString(customer), orgId))
+                    throw new CustomException(ErrorApp.CUSTOMER_NOT_IN_ORGANIZATION);
+                createCustomerTicket(ticket, UUID.fromString(customer.trim()), generateCheckInCode());
+                customerRepository.findById(UUID.fromString(customer.trim())).ifPresent(customerEntity -> sendEmail(customerEntity, ticket, room, generateCheckInCode(), false));
+            }
+        }
+
+        if (customersToRemove.isEmpty() && customersToAdd.isEmpty()) {
+            CustomerOfTicket.forEach(customer -> {
+                CustomerTicketMapPk customerTicketMapPk = new CustomerTicketMapPk();
+                customerTicketMapPk.setTicketId(ticket.getId());
+                customerTicketMapPk.setCustomerId(UUID.fromString(customer.trim()));
+                CustomerTicketMap customerTicketMap = customerTicketMapRepository.findById(customerTicketMapPk).orElse(null);
+                sendEmail(customerTicketMap.getCustomerEntity(), ticket, room, customerTicketMap.getCheckInCode(), true);
+            });
+        }
+
     }
 
     public void checkNewCustomers(List<ICustomerController.NewCustomers> newCustomers, Ticket ticket, Room room) {
@@ -984,18 +1064,18 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             String endTime = ticket.getEndTime().format(formatter);
             String addressSite = site.getCommune().getName() + ", " + site.getDistrict().getName() + ", " + site.getProvince().getName();
             Map<String, String> parameterMap = new HashMap<>();
-            parameterMap.put("customerName", customer.getVisitorName());
-            parameterMap.put("meetingName", ticket.getName());
+            parameterMap.put("customerName", customer.getVisitorName() != null ? customer.getVisitorName() : "Updating...");
+            parameterMap.put("meetingName", ticket.getName() != null ? ticket.getName() : "Updating...");
             parameterMap.put("dateTime", date);
             parameterMap.put("startTime", startTime);
             parameterMap.put("endTime", endTime);
             String address = site.getAddress() != null ? site.getAddress() + ", " + addressSite : site.getCommune().getName() + ", " + site.getDistrict().getName() + ", " + site.getProvince().getName();
-            parameterMap.put("address", address);
+            parameterMap.put("address", address != null ? address : "Updating...");
             String roomName = room != null ? room.getName() : "Updating....";
-            parameterMap.put("roomName", roomName);
+            parameterMap.put("roomName", roomName != null ? roomName : "Updating...");
             parameterMap.put("staffName", user.getFirstName() + " " + user.getLastName());
-            parameterMap.put("staffPhone", user.getPhoneNumber());
-            parameterMap.put("staffEmail", user.getEmail());
+            parameterMap.put("staffPhone", user.getPhoneNumber() != null ? user.getPhoneNumber() : "Updating...");
+            parameterMap.put("staffEmail", user.getEmail() != null ? user.getEmail() : "Updating...");
             parameterMap.put("checkInCode", checkInCode);
             String replacedTemplate = emailUtils.replaceEmailParameters(template.getBody(), parameterMap);
 

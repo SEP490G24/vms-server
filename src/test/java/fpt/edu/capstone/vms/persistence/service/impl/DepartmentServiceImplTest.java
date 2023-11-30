@@ -42,7 +42,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -233,9 +232,15 @@ class DepartmentServiceImplTest {
         Department updateDepartmentInfo = new Department();
         updateDepartmentInfo.setCode("newCode");
 
+        Site site = new Site();
+        site.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+        site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
         Department existingDepartment = new Department();
+        existingDepartment.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+        existingDepartment.setSiteId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
         when(departmentRepository.findById(id)).thenReturn(Optional.of(existingDepartment));
         when(departmentRepository.existsByCodeAndSiteId(updateDepartmentInfo.getCode(), id)).thenReturn(false);
+        existingDepartment.setSite(site);
 
         Jwt jwt = mock(Jwt.class);
         when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
@@ -245,14 +250,17 @@ class DepartmentServiceImplTest {
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
 
+        when(departmentRepository.save(existingDepartment.update(updateDepartmentInfo))).thenReturn(existingDepartment);
         Department updatedDepartment = new Department();
         updatedDepartment.setCode("newCode");
+
+        when(siteRepository.findById(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"))).thenReturn(Optional.of(site));
+
         when(departmentRepository.save(existingDepartment.update(updateDepartmentInfo))).thenReturn(updatedDepartment);
 
-        assertNotNull(updatedDepartment);
+        Department result = departmentService.update(updateDepartmentInfo, id);
+        assertNotNull(result);
         assertEquals(updateDepartmentInfo.getCode(), updatedDepartment.getCode());
-
-        verify(auditLogRepository, never()).save(any(AuditLog.class));
 
     }
 
