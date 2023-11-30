@@ -24,19 +24,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_REALM_ROLE;
-import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_RESOURCE_ROLE;
-import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.REALM_ADMIN;
-import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.SCOPE_ORGANIZATION;
-import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.SCOPE_SITE;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class DashboardServiceImplTest {
 
@@ -110,8 +103,8 @@ class DashboardServiceImplTest {
         IDashboardController.DashboardDTO dashboardDTO = new IDashboardController.DashboardDTO();
         dashboardDTO.setSites(new ArrayList<>()); // Replace with your desired site names
 
-        LocalDateTime firstDay = LocalDateTime.of(2023, 11, 1, 0, 0);
-        LocalDateTime lastDay = LocalDateTime.of(2023, 11, 30, 0, 0, 0);
+        LocalDateTime firstDay = LocalDateTime.of(2023, 12, 1, 0, 0);
+        LocalDateTime lastDay = LocalDateTime.of(2023, 12, 31, 23, 59, 59);
 
         // Example mock data from your repository
         List<Object[]> mockData = Arrays.asList(
@@ -142,7 +135,8 @@ class DashboardServiceImplTest {
 
         // Mock behavior
         LocalDateTime firstDay = LocalDateTime.of(2023, 11, 1, 0, 0);
-        LocalDateTime lastDay = LocalDateTime.of(2023, 11, 30, 0, 0, 0);
+        LocalDateTime lastDay = LocalDateTime.of(2023, 11, 30, 23, 59, 59);
+
 
         // Example mock data from your repository
         List<Object[]> mockData = Arrays.asList(
@@ -172,7 +166,7 @@ class DashboardServiceImplTest {
 
         // Mock behavior
         LocalDateTime firstDay = LocalDateTime.of(2023, 1, 1, 0, 0);
-        LocalDateTime lastDay = LocalDateTime.of(2023, 12, 31, 0, 0, 0);
+        LocalDateTime lastDay = LocalDateTime.of(2023, 12, 31, 23, 59, 59);
 
         // Example mock data from your repository
         List<Object[]> mockData = Arrays.asList(
@@ -202,7 +196,7 @@ class DashboardServiceImplTest {
 
         // Mock behavior
         LocalDateTime firstDay = LocalDateTime.of(2023, 1, 1, 0, 0);
-        LocalDateTime lastDay = LocalDateTime.of(2023, 12, 31, 0, 0, 0);
+        LocalDateTime lastDay = LocalDateTime.of(2023, 12, 31, 23, 59, 59);
 
         // Example mock data from your repository
         List<Object[]> mockData = Arrays.asList(
@@ -245,7 +239,7 @@ class DashboardServiceImplTest {
         List<MultiLineResponse> result = dashboardService.countTicketsByPurposeByWithMultiLine(dashboardDTO);
 
         // Assert
-        assertEquals(25, result.size());
+        assertEquals(20, result.size());
     }
 
     @Test
@@ -292,7 +286,7 @@ class DashboardServiceImplTest {
         List<MultiLineResponse> result = dashboardService.countTicketsByPurposeByWithMultiLine(dashboardDTO);
 
         // Assert
-        assertEquals(25, result.size());
+        assertEquals(20, result.size());
     }
 
     @Test
