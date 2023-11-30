@@ -106,7 +106,7 @@ public class TemplateServiceImpl extends GenericServiceImpl<Template, UUID> impl
     }
 
     @Override
-    public Page<Template> filter(Pageable pageable, List<String> names, List<String> siteId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, Boolean enable, String keyword) {
+    public Page<Template> filter(Pageable pageable, List<String> names, List<String> siteId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, Boolean enable, Constants.TemplateType type, String keyword) {
         List<UUID> sites = SecurityUtils.getListSiteToUUID(siteRepository, siteId);
         List<Sort.Order> sortColum = new ArrayList<>(PageableUtils.converterSort2List(pageable.getSort()));
         sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.createdOn));
@@ -119,11 +119,12 @@ public class TemplateServiceImpl extends GenericServiceImpl<Template, UUID> impl
             createdOnStart,
             createdOnEnd,
             enable,
+            type,
             keyword != null ? keyword.toUpperCase() : null);
     }
 
     @Override
-    public List<Template> filter(List<String> names, List<String> siteId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, Boolean enable, String keyword) {
+    public List<Template> filter(List<String> names, List<String> siteId, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, Boolean enable, Constants.TemplateType type, String keyword) {
         List<UUID> sites = SecurityUtils.getListSiteToUUID(siteRepository, siteId);
         return templateRepository.filter(
             names,
@@ -131,6 +132,7 @@ public class TemplateServiceImpl extends GenericServiceImpl<Template, UUID> impl
             createdOnStart,
             createdOnEnd,
             enable,
+            type,
             keyword != null ? keyword.toUpperCase() : null);
     }
 

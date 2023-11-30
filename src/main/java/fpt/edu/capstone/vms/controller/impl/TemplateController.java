@@ -78,6 +78,7 @@ public class TemplateController implements ITemplateController {
             filter.getCreatedOnStart(),
             filter.getCreatedOnEnd(),
             filter.getEnable(),
+            filter.getType(),
             filter.getKeyword());
 
         var templateEntityPageable = templateService.filter(
@@ -87,6 +88,7 @@ public class TemplateController implements ITemplateController {
             filter.getCreatedOnStart(),
             filter.getCreatedOnEnd(),
             filter.getEnable(),
+            filter.getType(),
             filter.getKeyword());
 
         List<TemplateFilter> templateDtos = mapper.map(templateEntityPageable.getContent(), new TypeToken<List<TemplateFilter>>() {

@@ -22,6 +22,7 @@ public interface ITemplateService extends IGenericService<Template, UUID> {
                           LocalDateTime createdOnStart,
                           LocalDateTime createdOnEnd,
                           Boolean enable,
+                          Constants.TemplateType type,
                           String keyword);
 
     List<Template> filter(
@@ -30,6 +31,7 @@ public interface ITemplateService extends IGenericService<Template, UUID> {
         LocalDateTime createdOnStart,
         LocalDateTime createdOnEnd,
         Boolean enable,
+        Constants.TemplateType type,
         String keyword);
 
     List<Template> finAllBySiteId(String siteId);

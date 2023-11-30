@@ -259,7 +259,7 @@ class TemplateServiceImplTest {
         String keyword = "example";
 
         List<Template> expectedTemplates = List.of();
-        when(templateRepository.filter(names, siteIds, createdOnStart, createdOnEnd, enable, keyword.toUpperCase())).thenReturn(expectedTemplates);
+        when(templateRepository.filter(names, siteIds, createdOnStart, createdOnEnd, enable, null, keyword.toUpperCase())).thenReturn(expectedTemplates);
         Jwt jwt = mock(Jwt.class);
 
         when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("63139e5c-3d0b-46d3-8167-fe59cf46d3d5");
@@ -278,12 +278,12 @@ class TemplateServiceImplTest {
         when(!SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c08")).thenReturn(true);
         when(!SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c07")).thenReturn(true);
         // When
-        List<Template> filteredTemplates = templateService.filter(names, siteId, createdOnStart, createdOnEnd, enable, keyword);
+        List<Template> filteredTemplates = templateService.filter(names, siteId, createdOnStart, createdOnEnd, enable, null, keyword);
 
         // Then
         assertNotNull(filteredTemplates);
         // Add assertions to check the content of the filteredTemplates, depending on the expected behavior
-        verify(templateRepository, times(1)).filter(names, siteIds, createdOnStart, createdOnEnd, enable, keyword.toUpperCase());
+        verify(templateRepository, times(1)).filter(names, siteIds, createdOnStart, createdOnEnd, enable, null, keyword.toUpperCase());
     }
 
     @Test
@@ -315,15 +315,15 @@ class TemplateServiceImplTest {
         when(!SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c08")).thenReturn(true);
         when(!SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c07")).thenReturn(true);
         Page<Template> expectedTemplatePage = new PageImpl<>(List.of());
-        when(templateRepository.filter(pageable, names, siteIds, createdOnStart, createdOnEnd, enable, keyword.toUpperCase())).thenReturn(expectedTemplatePage);
+        when(templateRepository.filter(pageable, names, siteIds, createdOnStart, createdOnEnd, enable, null, keyword.toUpperCase())).thenReturn(expectedTemplatePage);
 
         // When
-        Page<Template> filteredTemplatePage = templateService.filter(pageableSort, names, siteId, createdOnStart, createdOnEnd, enable, keyword);
+        Page<Template> filteredTemplatePage = templateService.filter(pageableSort, names, siteId, createdOnStart, createdOnEnd, enable, null, keyword);
 
         // Then
         assertNotNull(filteredTemplatePage);
         // Add assertions to check the content of the filteredTemplatePage, depending on the expected behavior
-        verify(templateRepository, times(1)).filter(pageable, names, siteIds, createdOnStart, createdOnEnd, enable, keyword.toUpperCase());
+        verify(templateRepository, times(1)).filter(pageable, names, siteIds, createdOnStart, createdOnEnd, enable, null, keyword.toUpperCase());
     }
 
     @Test
