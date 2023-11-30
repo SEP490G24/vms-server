@@ -3,15 +3,14 @@ package fpt.edu.capstone.vms.persistence.dto.dashboard;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.time.temporal.TemporalAdjusters;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Data
 @AllArgsConstructor
@@ -23,29 +22,8 @@ public class MultiLineResponse {
 
     public static List<MultiLineResponse> formatDataWithMonthInYear(List<MultiLineResponse> dailyCounts, List<String> allPurposes) {
         List<MultiLineResponse> monthlyCounts = new ArrayList<>();
-
-        // Tạo danh sách tất cả các tháng trong năm và mục đích
-        List<String> allMonths = getAllMonthsInYear(); // Hàm này cần được triển khai để trả về danh sách tất cả các tháng trong năm
-
-        for (String month : allMonths) {
-            for (String purpose : allPurposes) {
-                int count = dailyCounts.stream()
-                    .filter(dailyCount -> month.equals(dailyCount.getTime().substring(5, 7)) && purpose.equals(dailyCount.getType()))
-                    .mapToInt(MultiLineResponse::getValue)
-                    .sum();
-
-                monthlyCounts.add(new MultiLineResponse(month, purpose, count));
-            }
-        }
-
-        return monthlyCounts;
-    }
-
-    public static List<MultiLineResponse> formatDataWithMonthInYear1(List<MultiLineResponse> dailyCounts, List<String> allPurposes) {
-        List<MultiLineResponse> monthlyCounts = new ArrayList<>();
         dailyCounts = mergeCheckInAndCheckOut(dailyCounts);
-        // Tạo danh sách tất cả các tháng trong năm và mục đích
-        List<String> allMonths = getAllMonthsInYear(); // Hàm này cần được triển khai để trả về danh sách tất cả các tháng trong năm
+        List<String> allMonths = getAllMonthsInYear();
 
         for (String month : allMonths) {
             for (String purpose : allPurposes) {
@@ -65,7 +43,6 @@ public class MultiLineResponse {
     private static List<MultiLineResponse> mergeCheckInAndCheckOut(List<MultiLineResponse> dailyCounts) {
         Map<String, Integer> mergedCounts = new HashMap<>();
 
-        // Tạo danh sách kết quả
         List<MultiLineResponse> result = new ArrayList<>();
 
         for (MultiLineResponse record : dailyCounts) {
@@ -106,10 +83,8 @@ public class MultiLineResponse {
     public static List<MultiLineResponse> formatDataWithWeekInMonth(List<MultiLineResponse> dailyCounts, int year, int month, List<String> allPurposes) {
         List<MultiLineResponse> weeklyCounts = new ArrayList<>();
 
-        // Tạo danh sách tất cả các tuần trong tháng và mục đích
-        List<String> allWeeks = getAllWeeksInMonth(year, month);
+        List<String> allWeeks = getAllIntervalsInMonth(year, month);
 
-        // Khởi tạo weeklyCounts với giá trị mặc định
         for (String week : allWeeks) {
             for (String purpose : allPurposes) {
                 weeklyCounts.add(new MultiLineResponse(week, purpose, 0));
@@ -121,7 +96,7 @@ public class MultiLineResponse {
             for (String week : allWeeks) {
                 for (String purpose : allPurposes) {
                     int count = dailyCounts.stream()
-                        .filter(dailyCount -> week.equals(getWeekOfYear(dailyCount.getTime())) && purpose.equals(dailyCount.getType()))
+                        .filter(dailyCount -> isDateInWeek(dailyCount.getTime(), week) && purpose.equals(dailyCount.getType()))
                         .mapToInt(MultiLineResponse::getValue)
                         .sum();
 
@@ -137,32 +112,74 @@ public class MultiLineResponse {
         return weeklyCounts;
     }
 
-    private static List<String> getAllWeeksInMonth(int year, int month) {
-        List<String> allWeeks = new ArrayList<>();
+    private static List<String> getAllIntervalsInMonth(int year, int month) {
+        List<String> allIntervals = new ArrayList<>();
 
         YearMonth yearMonth = YearMonth.of(year, month);
-
         LocalDate firstDayOfMonth = yearMonth.atDay(1);
         LocalDate lastDayOfMonth = yearMonth.atEndOfMonth();
 
-        LocalDate startDate = firstDayOfMonth.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        int daysInMonth = yearMonth.lengthOfMonth();
 
-        while (startDate.isBefore(lastDayOfMonth) || startDate.isEqual(lastDayOfMonth)) {
-            LocalDate endDate = startDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+        // Khoảng thời gian giữa các khoảng (3 khoảng đầu cách nhau 7 ngày)
+        int intervalGap = 7;
+
+        // Tính số ngày của khoảng thứ 4 (ngày 25 đến hết tháng)
+        int daysInFourthInterval = daysInMonth - (3 * intervalGap);
+
+        // Bắt đầu từ ngày đầu tháng
+        LocalDate startDate = firstDayOfMonth;
+
+        // Tạo 3 khoảng đầu tiên
+        for (int i = 0; i < 3; i++) {
+            LocalDate endDate = startDate.plusDays(intervalGap);
             endDate = endDate.isAfter(lastDayOfMonth) ? lastDayOfMonth : endDate;
-            allWeeks.add(String.format("(%s to %s)", startDate, endDate));
+            allIntervals.add(formatInterval(startDate, endDate));
             startDate = endDate.plusDays(1);
         }
 
-        return allWeeks;
+        // Tạo khoảng thứ 4 từ ngày 25 đến hết tháng
+        LocalDate day25 = firstDayOfMonth.withDayOfMonth(25);
+        if (!day25.isAfter(lastDayOfMonth)) {
+            allIntervals.add(formatInterval(day25, lastDayOfMonth));
+        }
+
+        return allIntervals;
     }
 
-    private static String getWeekOfYear(String date) {
-        LocalDate startOfWeek = LocalDate.parse(date).with(DayOfWeek.MONDAY);
-        LocalDate endOfWeek = startOfWeek.plusDays(6);
-
-        return String.format("(%s to %s)",
-            startOfWeek,
-            endOfWeek);
+    private static String formatInterval(LocalDate startDate, LocalDate endDate) {
+        return String.format("%s -> %s",
+            startDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+            endDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
     }
+
+    private static boolean isDateInWeek(String date, String week) {
+        // Tìm vị trí của dấu "->"
+        int arrowIndex = week.indexOf("->");
+
+        // Nếu không tìm thấy dấu "->" hoặc vị trí không hợp lệ, trả về false
+        if (arrowIndex == -1 || arrowIndex + 3 >= week.length()) {
+            return false;
+        }
+
+        // Lấy phần của ngày và tháng từ chuỗi
+        String startDateString = week.substring(0, arrowIndex).trim();
+        String endDateString = week.substring(arrowIndex + 3).trim();
+
+        LocalDate startDate, endDate, currentDate;
+
+        try {
+            // Chuyển đổi các chuỗi thành đối tượng LocalDate
+            startDate = LocalDate.parse(startDateString, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+            endDate = LocalDate.parse(endDateString, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+            currentDate = LocalDate.parse(date, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
+            // Kiểm tra xem ngày có nằm trong khoảng thời gian của tuần không
+            return !currentDate.isBefore(startDate) && !currentDate.isAfter(endDate);
+        } catch (DateTimeParseException e) {
+            e.printStackTrace(); // Xử lý lỗi nếu cần thiết
+            return false;
+        }
+    }
+
 }
