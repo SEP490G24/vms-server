@@ -110,8 +110,8 @@ class DashboardServiceImplTest {
         IDashboardController.DashboardDTO dashboardDTO = new IDashboardController.DashboardDTO();
         dashboardDTO.setSites(new ArrayList<>()); // Replace with your desired site names
 
-        LocalDateTime firstDay = LocalDateTime.of(2023, 12, 1, 0, 0);
-        LocalDateTime lastDay = LocalDateTime.of(2023, 12, 31, 0, 0, 0);
+        LocalDateTime firstDay = LocalDateTime.of(2023, 11, 1, 0, 0);
+        LocalDateTime lastDay = LocalDateTime.of(2023, 11, 30, 0, 0, 0);
 
         // Example mock data from your repository
         List<Object[]> mockData = Arrays.asList(
