@@ -36,11 +36,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -80,7 +82,6 @@ class DepartmentServiceImplTest {
         when(jwt.getClaim(Constants.Claims.Name)).thenReturn("username");
         when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("preferred_username");
         when(jwt.getClaim(Constants.Claims.GivenName)).thenReturn("given_name");
-        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("3d65906a-c6e3-4e9d-bbc6-ba20938f9cad");
         when(jwt.getClaim(Constants.Claims.FamilyName)).thenReturn("family_name");
         when(jwt.getClaim(Constants.Claims.Email)).thenReturn("email");
         when(authentication.getPrincipal()).thenReturn(jwt);
@@ -139,8 +140,6 @@ class DepartmentServiceImplTest {
         // Arrange
         IDepartmentController.CreateDepartmentInfo departmentInfo = new IDepartmentController.CreateDepartmentInfo();
         departmentInfo.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
-        // Mock SecurityUtils.checkSiteAuthorization to allow access
-        when(SecurityUtils.checkSiteAuthorization(siteRepository, departmentInfo.getSiteId().toString())).thenReturn(true);
 
         // Mock siteRepository behavior
         when(siteRepository.findById(UUID.fromString(departmentInfo.getSiteId().toString()))).thenReturn(Optional.empty());
@@ -153,10 +152,7 @@ class DepartmentServiceImplTest {
     void testCreateDepartment_NotPermission() {
         // Arrange
         IDepartmentController.CreateDepartmentInfo departmentInfo = new IDepartmentController.CreateDepartmentInfo();
-        departmentInfo.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
-        // Mock SecurityUtils.checkSiteAuthorization to allow access
-        when(SecurityUtils.checkSiteAuthorization(siteRepository, departmentInfo.getSiteId())).thenReturn(false);
-
+        departmentInfo.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c07");
         // Mock siteRepository behavior
         when(siteRepository.findById(UUID.fromString(departmentInfo.getSiteId().toString()))).thenReturn(Optional.empty());
 
@@ -165,14 +161,14 @@ class DepartmentServiceImplTest {
     }
 
 
-//    @Test
-//    @DisplayName("given incomplete data, when department with null siteId, then exception is thrown")
-//    void givenDepartment_WhenSaveWithNullSiteId_ThenThrowException() {
-//        IDepartmentController.CreateDepartmentInfo departmentInfo = new IDepartmentController.CreateDepartmentInfo();
-//        departmentInfo.setCode("validCode");
-//
-//        assertThrows(HttpClientErrorException.class, () -> departmentService.createDepartment(departmentInfo));
-//    }
+    @Test
+    @DisplayName("given incomplete data, when department with null siteId, then exception is thrown")
+    void givenDepartment_WhenSaveWithNullSiteId_ThenThrowException() {
+        IDepartmentController.CreateDepartmentInfo departmentInfo = new IDepartmentController.CreateDepartmentInfo();
+        departmentInfo.setCode("validCode");
+
+        assertThrows(CustomException.class, () -> departmentService.createDepartment(departmentInfo));
+    }
 
     @Test
     @DisplayName("given incomplete data, when create new department, then department is save")
@@ -185,7 +181,6 @@ class DepartmentServiceImplTest {
         Department department = new Department();
         department.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
         when(departmentRepository.existsByCodeAndSiteId(departmentInfo.getCode(), UUID.fromString(departmentInfo.getSiteId()))).thenReturn(false);
-        when(SecurityUtils.checkSiteAuthorization(siteRepository, departmentInfo.getSiteId())).thenReturn(true);
 
         Site site = new Site();
         site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
@@ -256,6 +251,9 @@ class DepartmentServiceImplTest {
 
         assertNotNull(updatedDepartment);
         assertEquals(updateDepartmentInfo.getCode(), updatedDepartment.getCode());
+
+        verify(auditLogRepository, never()).save(any(AuditLog.class));
+
     }
 
     @Test
@@ -359,13 +357,78 @@ class DepartmentServiceImplTest {
     @Test
     void testFindAllBySiteId_Forbidden() {
         // Arrange
-        String siteId = "06eb43a7-6ea8-4744-8231-760559fe2c08";
-
-        // Mock SecurityUtils.checkSiteAuthorization to deny access
-        when(SecurityUtils.checkSiteAuthorization(siteRepository, siteId)).thenReturn(false);
-
+        String siteId = "06eb43a7-6ea8-4744-8231-760559fe2c07";
         // Act and Assert
         assertThrows(CustomException.class, () -> departmentService.FindAllBySiteId(siteId));
+    }
+
+    @Test
+    void testDeleteDepartment() {
+        // Mock input data
+        UUID departmentId = UUID.randomUUID();
+
+        // Mock department repository behavior
+        Department department = new Department();
+        department.setId(departmentId);
+        department.setSiteId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08")); // Set a valid siteId for authorization check
+        when(departmentRepository.findById(departmentId)).thenReturn(java.util.Optional.of(department));
+
+        Site site = new Site();
+        site.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+        site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+        when(siteRepository.findById(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"))).thenReturn(Optional.of(site));
+        department.setSite(site);
+        // Call the method
+        assertDoesNotThrow(() -> departmentService.deleteDepartment(departmentId));
+    }
+
+    @Test
+    void testDeleteDepartmentWithNoPermission() {
+        // Mock input data
+        UUID departmentId = UUID.randomUUID();
+
+        // Mock department repository behavior
+        Department department = new Department();
+        department.setId(departmentId);
+        department.setSiteId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c07")); // Set an invalid siteId for authorization check
+        when(departmentRepository.findById(departmentId)).thenReturn(java.util.Optional.of(department));
+
+        // Call the method and expect an exception
+        assertThrows(CustomException.class, () -> departmentService.deleteDepartment(departmentId));
+    }
+
+    @Test
+    void testFindByDepartmentId() {
+        // Mock input data
+        UUID departmentId = UUID.randomUUID();
+
+        // Mock department repository behavior
+        Department department = new Department();
+        department.setId(departmentId);
+        department.setSiteId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08")); // Set a valid siteId for authorization check
+        when(departmentRepository.findById(departmentId)).thenReturn(java.util.Optional.of(department));
+
+        // Call the method
+        IDepartmentController.DepartmentFilterDTO result = departmentService.findByDepartmentId(departmentId);
+
+    }
+
+    @Test
+    void testFindByDepartmentIdWithNoPermission() {
+        // Mock input data
+        UUID departmentId = UUID.randomUUID();
+
+        // Mock department repository behavior
+        Department department = new Department();
+        department.setId(departmentId);
+        department.setSiteId(UUID.randomUUID()); // Set an invalid siteId for authorization check
+        when(departmentRepository.findById(departmentId)).thenReturn(java.util.Optional.of(department));
+
+        // Call the method and expect an exception
+        assertThrows(CustomException.class, () -> departmentService.findByDepartmentId(departmentId));
+
+        // Verify the interactions
+        verify(departmentRepository, times(1)).findById(departmentId);
     }
 
 }

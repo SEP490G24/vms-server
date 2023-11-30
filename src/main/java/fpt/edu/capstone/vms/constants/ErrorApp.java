@@ -129,7 +129,9 @@ public enum ErrorApp {
     TICKET_NOT_START_CAN_NOT_REJECT(165, I18n.getMessage("msg.ticket.not.start.can.not.reject")),
     TICKET_IS_EXPIRED_CAN_NOT_REJECT(166, I18n.getMessage("msg.ticket.is.expired.can.not.reject")),
     TICKET_CAN_NOT_VIEW(167, I18n.getMessage("msg.ticket.can.not.view")),
-
+    TICKET_IS_CANCEL_CAN_NOT_DO_CHECK(168, I18n.getMessage("msg.ticket.is.cancel.can.not.do.check")),
+    TICKET_IS_COMPLETE_CAN_NOT_DO_CHECK(169, I18n.getMessage("msg.ticket.is.complete.can.not.do.check")),
+    TICKET_IS_DRAFT_CAN_NOT_DO_CHECK(170, I18n.getMessage("msg.ticket.is.draft.can.not.do.check")),
     MUST_TO_CHOOSE_SITE(168, I18n.getMessage("msg.must.to.choose.site")),
 
     //card
