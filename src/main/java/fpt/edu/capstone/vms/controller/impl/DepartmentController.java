@@ -32,8 +32,8 @@ public class DepartmentController implements IDepartmentController {
      * @return The method is returning a ResponseEntity object containing a Department object.
      */
     @Override
-    public ResponseEntity<?> findById(UUID id, String siteId) {
-        return ResponseEntity.ok(departmentService.findById(id, siteId));
+    public ResponseEntity<?> findById(UUID id) {
+        return ResponseEntity.ok(departmentService.findById(id));
     }
 
     /**
@@ -46,9 +46,9 @@ public class DepartmentController implements IDepartmentController {
      * @return The method is returning a ResponseEntity object with a generic type of Department.
      */
     @Override
-    public ResponseEntity<?> delete(UUID id, String siteId) {
+    public ResponseEntity<?> delete(UUID id) {
         try {
-            departmentService.deleteDepartment(id, siteId);
+            departmentService.deleteDepartment(id);
             return ResponseEntity.ok().build();
         } catch (CustomException e) {
             return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);

@@ -36,4 +36,6 @@ public interface IDeviceService extends IGenericService<Device, Integer> {
         String createBy);
 
     List<Device> findAllWithNotUseInSite(List<String> siteIds);
+
+    void deleteDevice(Integer id);
 }

@@ -178,4 +178,25 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
         }
         return roomRepository.findAllBySiteIdAndEnableIsTrue(UUID.fromString(siteId));
     }
+
+    @Override
+    @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
+    public void delete(UUID id, String siteId) {
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
+            throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
+        }
+        var site = siteRepository.findById(UUID.fromString(siteId)).orElse(null);
+        var room = roomRepository.findById(id).orElse(null);
+        if (room == null || site == null) {
+            throw new CustomException(ErrorApp.ROOM_ERROR_IN_PROCESS_DELETE);
+        }
+        auditLogRepository.save(new AuditLog(site.getId().toString()
+            , site.getOrganizationId().toString()
+            , room.getId().toString()
+            , ROOM_TABLE_NAME
+            , Constants.AuditType.DELETE
+            , room.toString()
+            , null));
+        roomRepository.delete(room);
+    }
 }

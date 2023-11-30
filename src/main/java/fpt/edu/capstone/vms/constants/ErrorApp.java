@@ -27,11 +27,12 @@ public enum ErrorApp {
     //template
     TEMPLATE_NOT_FOUND(107, I18n.getMessage("msg.template.not.found")),
     TEMPLATE_DUPLICATE(108, I18n.getMessage("msg.template.duplicate.code")),
+    TEMPLATE_ERROR_IN_PROCESS_DELETE(179, I18n.getMessage("msg.template.error.in.process.delete")),
 
     //department
     DEPARTMENT_DUPLICATE(108, I18n.getMessage("msg.department.duplicate.code")),
     DEPARTMENT_NOT_FOUND(109, I18n.getMessage("msg.department.not.found")),
-
+    DEPARTMENT_CAN_NOT_DELETE(180, I18n.getMessage("msg.department.can.not.delete")),
     //site
     SITE_NOT_NULL(110, I18n.getMessage("msg.entity.site.null")),
     SITE_NOT_FOUND(111, I18n.getMessage("msg.site.not.found")),
@@ -52,6 +53,7 @@ public enum ErrorApp {
     DEVICE_NOT_FOUND(151, I18n.getMessage("msg.device.not.found")),
     DEVICE_TYPE_SCAN_CARD(153, I18n.getMessage("msg.device.type.scan.card")),
     DEVICE_DUPLICATE(108, I18n.getMessage("msg.device.duplicate.code")),
+    DEVICE_ERROR_IN_PROCESS_DELETE(177, I18n.getMessage("msg.device.error.in.process.delete")),
 
     //organization
     ORGANIZATION_NOT_FOUND(113, I18n.getMessage("msg.organization.not.found")),
@@ -67,6 +69,7 @@ public enum ErrorApp {
     ROOM_USER_CAN_NOT_CREATE_TICKET(141, I18n.getMessage("msg.room.user.can.not.create.ticket")),
     ROOM_HAVE_TICKET_IN_THIS_TIME(142, I18n.getMessage("msg.room.have.ticket.in.this.time")),
     ROOM_DUPLICATE(108, I18n.getMessage("msg.room.duplicate.code")),
+    ROOM_ERROR_IN_PROCESS_DELETE(178, I18n.getMessage("msg.room.error.in.process.delete")),
 
     //setting group
     SETTING_GROUP_NOT_FOUND(121, I18n.getMessage("msg.setting.group.not.found")),
@@ -109,6 +112,7 @@ public enum ErrorApp {
     CUSTOMER_IS_CHECK_OUT(159, I18n.getMessage("msg.customer.is.check.out")),
     CUSTOMER_NOT_CHECK_IN_TO_CHECK_OUT(162, I18n.getMessage("msg.customer.not.check.in.to.check.out")),
     CUSTOMER_NOT_CHECK_IN_TO_ADD_CARD(169, I18n.getMessage("msg.customer.not.check.in.to.add.card")),
+    CUSTOMER_ERROR_IN_PROCESS_DELETE(176, I18n.getMessage("msg.customer.error.in.process.delete")),
 
     //ticket
     TICKET_NOT_FOUND(147, I18n.getMessage("msg.ticket.not.found")),

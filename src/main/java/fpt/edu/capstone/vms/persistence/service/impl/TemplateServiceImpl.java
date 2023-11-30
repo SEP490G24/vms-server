@@ -150,4 +150,25 @@ public class TemplateServiceImpl extends GenericServiceImpl<Template, UUID> impl
         }
         return templateRepository.findAllBySiteIdAndEnableIsTrueAndType(UUID.fromString(siteId), type);
     }
+
+    @Override
+    @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
+    public void deleteTemplate(UUID id) {
+        var template = templateRepository.findById(id).orElse(null);
+        if (template == null) {
+            throw new CustomException(ErrorApp.TEMPLATE_ERROR_IN_PROCESS_DELETE);
+        }
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, template.getSiteId().toString())) {
+            throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
+        }
+        var site = siteRepository.findById(template.getSiteId()).orElse(null);
+        auditLogRepository.save(new AuditLog(site.getId().toString()
+            , site.getOrganizationId().toString()
+            , template.getId().toString()
+            , TEMPLATE_TABLE_NAME
+            , Constants.AuditType.DELETE
+            , template.toString()
+            , null));
+        templateRepository.delete(template);
+    }
 }

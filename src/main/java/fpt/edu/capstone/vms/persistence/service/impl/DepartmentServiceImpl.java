@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static fpt.edu.capstone.vms.constants.ErrorApp.DEPARTMENT_CAN_NOT_DELETE;
 import static fpt.edu.capstone.vms.constants.ErrorApp.DEPARTMENT_NOT_FOUND;
 import static fpt.edu.capstone.vms.constants.ErrorApp.OBJECT_NOT_EMPTY;
 import static fpt.edu.capstone.vms.constants.ErrorApp.SITE_NOT_NULL;
@@ -94,12 +95,16 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
     }
 
     @Override
-    public void deleteDepartment(UUID id, String siteId) {
-        if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
+    @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
+    public void deleteDepartment(UUID id) {
+        var department = departmentRepository.findById(id).orElse(null);
+        if (department == null) {
+            throw new CustomException(DEPARTMENT_CAN_NOT_DELETE);
+        }
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, department.getSiteId().toString())) {
             throw new CustomException(USER_NOT_PERMISSION);
         }
-        var site = siteRepository.findById(UUID.fromString(siteId)).orElse(null);
-        var department = departmentRepository.findById(id).orElse(null);
+        var site = siteRepository.findById(department.getSiteId()).orElse(null);
         auditLogRepository.save(new AuditLog(site.getId().toString()
             , site.getOrganizationId().toString()
             , department.getId().toString()
@@ -111,11 +116,14 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
     }
 
     @Override
-    public IDepartmentController.DepartmentFilterDTO findById(UUID id, String siteId) {
-        if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
+    public IDepartmentController.DepartmentFilterDTO findByDepartmentId(UUID id) {
+        var department = departmentRepository.findById(id).orElse(null);
+        if (department == null) {
+            throw new CustomException(DEPARTMENT_NOT_FOUND);
+        }
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, department.getSiteId().toString())) {
             throw new CustomException(USER_NOT_PERMISSION);
         }
-        var department = departmentRepository.findById(id).orElse(null);
         return mapper.map(department, IDepartmentController.DepartmentFilterDTO.class);
     }
 

@@ -4,8 +4,10 @@ import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.constants.ErrorApp;
 import fpt.edu.capstone.vms.controller.ICustomerController;
 import fpt.edu.capstone.vms.exception.CustomException;
+import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.entity.Customer;
 import fpt.edu.capstone.vms.persistence.entity.Site;
+import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
 import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.service.ICustomerService;
@@ -19,6 +21,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -32,17 +35,16 @@ public class CustomerServiceImpl extends GenericServiceImpl<Customer, UUID> impl
     private final CustomerRepository customerRepository;
     private final SiteRepository siteRepository;
     private final ModelMapper mapper;
+    private final AuditLogRepository auditLogRepository;
+    private static final String CUSTOMER_TABLE_NAME = "Customer";
 
-    public CustomerServiceImpl(CustomerRepository customerRepository, SiteRepository siteRepository, ModelMapper mapper) {
+
+    public CustomerServiceImpl(CustomerRepository customerRepository, SiteRepository siteRepository, ModelMapper mapper, AuditLogRepository auditLogRepository) {
         this.customerRepository = customerRepository;
         this.siteRepository = siteRepository;
         this.mapper = mapper;
+        this.auditLogRepository = auditLogRepository;
         this.init(customerRepository);
-    }
-
-    @Override
-    public Customer create(ICustomerController.NewCustomers createCustomerDto) {
-        return customerRepository.save(mapper.map(createCustomerDto, Customer.class));
     }
 
     @Override
@@ -87,5 +89,26 @@ public class CustomerServiceImpl extends GenericServiceImpl<Customer, UUID> impl
             orgId = SecurityUtils.getOrgId();
         }
         return customerRepository.findAllByOrganizationId(orgId, customerAvailablePayload.getStartTime(), customerAvailablePayload.getEndTime());
+    }
+
+    @Override
+    @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
+    public void deleteCustomer(UUID id) {
+        var customer = customerRepository.findById(id).orElse(null);
+        if (customer == null) {
+            throw new CustomException(ErrorApp.CUSTOMER_ERROR_IN_PROCESS_DELETE);
+        }
+        if (!SecurityUtils.checkOrganizationAuthor(siteRepository, customer.getOrganizationId())) {
+            throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
+        }
+        auditLogRepository.save(new AuditLog(null
+            , customer.getOrganizationId()
+            , customer.getId().toString()
+            , CUSTOMER_TABLE_NAME
+            , Constants.AuditType.DELETE
+            , customer.toString()
+            , null));
+        customerRepository.deleteById(id);
+
     }
 }

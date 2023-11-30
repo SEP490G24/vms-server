@@ -35,4 +35,6 @@ public interface ITemplateService extends IGenericService<Template, UUID> {
     List<Template> finAllBySiteId(String siteId);
 
     List<Template> finAllBySiteIdAndType(String siteId, Constants.TemplateType type);
+
+    void deleteTemplate(UUID id);
 }

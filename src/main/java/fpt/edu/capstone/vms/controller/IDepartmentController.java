@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
@@ -35,12 +34,12 @@ public interface IDepartmentController {
     @GetMapping("/{id}")
     @Operation(summary = "Find by id department")
     @PreAuthorize("hasRole('r:department:detail')")
-    ResponseEntity<?> findById(@PathVariable UUID id, @RequestParam(value = "siteId", required = false) String siteId);
+    ResponseEntity<?> findById(@PathVariable UUID id);
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete a department")
     @PreAuthorize("hasRole('r:department:delete')")
-    ResponseEntity<?> delete(@PathVariable UUID id, @RequestParam(value = "siteId", required = false) String siteId);
+    ResponseEntity<?> delete(@PathVariable UUID id);
 
     @GetMapping
     @Operation(summary = "Get all department")
