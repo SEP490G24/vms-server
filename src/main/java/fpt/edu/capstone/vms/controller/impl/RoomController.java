@@ -44,9 +44,9 @@ public class RoomController implements IRoomController {
     }
 
     @Override
-    public ResponseEntity<?> delete(UUID id, String siteId) {
+    public ResponseEntity<?> delete(UUID id) {
         try {
-            roomService.delete(id, siteId);
+            roomService.deleteRoom(id);
             return ResponseUtils.getResponseEntityStatus(true);
         } catch (CustomException e) {
             return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);

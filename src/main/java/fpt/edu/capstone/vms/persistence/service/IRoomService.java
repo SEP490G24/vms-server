@@ -35,5 +35,5 @@ public interface IRoomService extends IGenericService<Room, UUID> {
 
     List<Room> finAllBySiteId(String siteId);
 
-    void delete(UUID id, String siteId);
+    void deleteRoom(UUID id);
 }

@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
@@ -43,7 +42,7 @@ public interface IRoomController {
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete")
     @PreAuthorize("hasRole('r:room:delete')")
-    ResponseEntity<?> delete(@PathVariable UUID id, @RequestParam(value = "siteId", required = false) String siteId);
+    ResponseEntity<?> delete(@PathVariable UUID id);
 
     @PostMapping()
     @Operation(summary = "Create new agent")

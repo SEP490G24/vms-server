@@ -181,7 +181,7 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
 
     @Override
     @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
-    public void delete(UUID id, String siteId) {
+    public void deleteRoom(UUID id) {
         if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
             throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
         }
