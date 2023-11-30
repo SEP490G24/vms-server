@@ -182,14 +182,14 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
     @Override
     @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
     public void deleteRoom(UUID id) {
-        if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
-            throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
-        }
-        var site = siteRepository.findById(UUID.fromString(siteId)).orElse(null);
         var room = roomRepository.findById(id).orElse(null);
-        if (room == null || site == null) {
+        if (room == null) {
             throw new CustomException(ErrorApp.ROOM_ERROR_IN_PROCESS_DELETE);
         }
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, room.getSiteId().toString())) {
+            throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
+        }
+        var site = siteRepository.findById(room.getSiteId()).orElse(null);
         auditLogRepository.save(new AuditLog(site.getId().toString()
             , site.getOrganizationId().toString()
             , room.getId().toString()
