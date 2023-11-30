@@ -74,12 +74,8 @@ public class OrganizationController implements IOrganizationController {
     @Override
     public ResponseEntity<?> updateOrganization(UpdateOrganizationInfo updateOrganizationInfo, UUID id) {
         try {
-            if (SecurityUtils.getUserDetails().isRealmAdmin()) {
-                var organization = organizationService.update(mapper.map(updateOrganizationInfo, Organization.class), id);
-                return ResponseUtils.getResponseEntityStatus(organization);
-            } else {
-                return ResponseUtils.getResponseEntity(ErrorApp.USER_NOT_PERMISSION, HttpStatus.FORBIDDEN);
-            }
+            var organization = organizationService.update(mapper.map(updateOrganizationInfo, Organization.class), id);
+            return ResponseUtils.getResponseEntityStatus(organization);
         } catch (CustomException e) {
             return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
