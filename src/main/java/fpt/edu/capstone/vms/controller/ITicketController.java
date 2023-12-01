@@ -86,10 +86,10 @@ public interface ITicketController {
     @GetMapping(value = "/subscribe/check-in", consumes = MediaType.ALL_VALUE)
     SseEmitter subscribeCheckIn(@RequestParam(value = "siteId", required = false) String siteId);
 
-    @PutMapping("/check-in")
-    @Operation(summary = "Check in customer for ticket")
-    @PreAuthorize("hasRole('r:ticket:checkIn')")
-    ResponseEntity<?> checkIn(@RequestBody @Valid CheckInPayload checkInPayload);
+    @PutMapping("/update-status")
+    @Operation(summary = "Update status customer for ticket")
+    @PreAuthorize("hasRole('r:ticket:updateStatusCustomer')")
+    ResponseEntity<?> updateStatusCustomerOfTicket(@RequestBody @Valid CheckInPayload checkInPayload);
 
     @GetMapping("/view-detail/{ticketId}")
     @Operation(summary = "View Detail ticket by id")

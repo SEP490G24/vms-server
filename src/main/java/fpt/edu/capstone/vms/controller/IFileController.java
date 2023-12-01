@@ -20,7 +20,6 @@ public interface IFileController {
 
     @PostMapping("/uploadImage")
     @Operation(summary = "Upload Image")
-    @PreAuthorize("hasRole('r:file:upload')")
     ResponseEntity<?> uploadImage(@RequestBody MultipartFile file);
 
 }

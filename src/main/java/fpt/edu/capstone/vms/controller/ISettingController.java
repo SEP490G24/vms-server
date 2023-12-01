@@ -34,7 +34,7 @@ public interface ISettingController {
 
     @GetMapping
     @Operation(summary = "Get all")
-    @PreAuthorize("hasRole('r:setting:filter')")
+    @PreAuthorize("hasRole('r:setting-site:filter')")
     ResponseEntity<List<?>> findAll(@RequestParam(value = "groupId", required = false) Integer groupId, @RequestParam(value = "siteId", required = false) String siteId);
 
     @PostMapping()

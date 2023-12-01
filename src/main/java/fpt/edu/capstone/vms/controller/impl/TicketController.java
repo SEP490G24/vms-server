@@ -270,10 +270,10 @@ public class TicketController implements ITicketController {
     }
 
     @Override
-    public ResponseEntity<?> checkIn(CheckInPayload checkInPayload) {
+    public ResponseEntity<?> updateStatusCustomerOfTicket(CheckInPayload checkInPayload) {
         try {
             // Perform the check-in process
-            var ticketByQRCodeResponseDTO = ticketService.checkInCustomer(checkInPayload);
+            var ticketByQRCodeResponseDTO = ticketService.updateStatusCustomerOfTicket(checkInPayload);
             // Return the emitter immediately to the client
             sseCheckInEmitterManager.broadcast(ticketByQRCodeResponseDTO.getSiteId(), ticketByQRCodeResponseDTO);
             return ResponseUtils.getResponseEntityStatus(ticketByQRCodeResponseDTO);
