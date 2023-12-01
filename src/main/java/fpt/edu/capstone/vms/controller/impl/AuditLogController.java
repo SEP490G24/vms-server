@@ -35,15 +35,6 @@ public class AuditLogController implements IAuditLogController {
     }
 
     @Override
-    public ResponseEntity<AuditLog> delete(UUID id) {
-        var auditLog = auditLogService.findById(id);
-        if (!SecurityUtils.checkOrganizationAuthor(siteRepository, auditLog.getOrganizationId())) {
-            throw new HttpClientErrorException(org.springframework.http.HttpStatus.FORBIDDEN, "Not permission");
-        }
-        return auditLogService.delete(id);
-    }
-
-    @Override
     public ResponseEntity<?> filter(AuditLogFilter filter, boolean isPageable, Pageable pageable) {
         return isPageable ? ResponseEntity.ok(
             auditLogService.filter(

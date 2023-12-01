@@ -41,7 +41,7 @@ public interface ISettingGroupController {
 
     @GetMapping
     @Operation(summary = "Get all")
-    @PreAuthorize("hasRole('r:setting-group:filter')")
+    @PreAuthorize("hasRole('r:setting-site:filter')")
     ResponseEntity<List<?>> findAll();
 
     @PostMapping()

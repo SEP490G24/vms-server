@@ -1624,7 +1624,7 @@ class TicketServiceImplTest {
         when(mapper.map(customerTicketMap, ITicketController.TicketByQRCodeResponseDTO.class)).thenReturn(ticketByQRCodeResponseDTO);
 
         // Call the method under test
-        ticketService.checkInCustomer(checkInPayload);
+        ticketService.updateStatusCustomerOfTicket(checkInPayload);
 
         // Verify that the customerTicketMap has been updated with the new status, reasonId, and reasonNote
         assertEquals(checkInPayload.getStatus(), customerTicketMap.getStatus());
@@ -1679,7 +1679,7 @@ class TicketServiceImplTest {
         when(mapper.map(customerTicketMap, ITicketController.TicketByQRCodeResponseDTO.class)).thenReturn(ticketByQRCodeResponseDTO);
 
         // Call the method under test
-        ticketService.checkInCustomer(checkOutPayload);
+        ticketService.updateStatusCustomerOfTicket(checkOutPayload);
 
         // Verify that the status is updated to CHECK_OUT
         Mockito.verify(customerTicketMapRepository).save(customerTicketMap);

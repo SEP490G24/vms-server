@@ -5,6 +5,10 @@ import fpt.edu.capstone.vms.persistence.repository.CardCheckInHistoryRepositoryC
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -19,9 +23,18 @@ public class CardCheckInHistoryRepositoryCustomImpl implements CardCheckInHistor
     final EntityManager entityManager;
 
     @Override
-    public List<ITicketController.CardCheckInHistoryDTO> getAllCardHistoryOfCustomer(String checkInCode) {
+    public Page<ITicketController.CardCheckInHistoryDTO> getAllCardHistoryOfCustomer(Pageable pageable, String checkInCode) {
         Map<String, Object> queryParams = new HashMap<>();
+        Sort sort = pageable.getSort();
         String orderByClause = "";
+        if (sort.isSorted()) {
+            orderByClause = "ORDER BY ";
+            for (Sort.Order order : sort) {
+                orderByClause += order.getProperty() + " " + order.getDirection() + ", ";
+            }
+            orderByClause = orderByClause.substring(0, orderByClause.length() - 2);
+        }
+        String sqlCountAll = "SELECT COUNT(1) ";
         String sqlGetData = "SELECT u.id, u.check_in_code, u.mac_ip, u.status," +
             " u.created_on, c.name ";
         StringBuilder sqlConditional = new StringBuilder();
@@ -47,6 +60,9 @@ public class CardCheckInHistoryRepositoryCustomImpl implements CardCheckInHistor
             cardCheckInHistoryDTO.setRoomName((String) object[5]);
             listData.add(cardCheckInHistoryDTO);
         }
-        return listData;
+        Query queryCountAll = entityManager.createNativeQuery(sqlCountAll + sqlConditional);
+        queryParams.forEach(queryCountAll::setParameter);
+        int countAll = ((Number) queryCountAll.getSingleResult()).intValue();
+        return new PageImpl<>(listData, pageable, countAll);
     }
 }
