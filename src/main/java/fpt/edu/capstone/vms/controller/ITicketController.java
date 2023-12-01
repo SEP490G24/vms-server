@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -331,6 +332,6 @@ public interface ITicketController {
         private String macIp;
         private String roomName;
         private String status;
-        private String createdOn;
+        private Date createdOn;
     }
 }
