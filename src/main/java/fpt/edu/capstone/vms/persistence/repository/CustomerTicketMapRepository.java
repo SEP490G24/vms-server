@@ -21,7 +21,7 @@ public interface CustomerTicketMapRepository extends GenericRepository<CustomerT
 
     List<CustomerTicketMap> findAllByCustomerTicketMapPk_TicketId(UUID ticketId);
 
-    CustomerTicketMap findByCustomerTicketMapPk_TicketIdAndCustomerTicketMapPk_CustomerId(UUID ticketId, UUID customerId);
+    CustomerTicketMap findByCheckInCode(String checkInCode);
 
     CustomerTicketMap findByCheckInCodeIgnoreCase(String checkInCode);
 
@@ -56,7 +56,7 @@ public interface CustomerTicketMapRepository extends GenericRepository<CustomerT
         "and ((coalesce(:sites) is null) or (t.siteId in :sites))" +
         "and (((cast(:formCheckInTime as date) is null ) or (cast(:toCheckInTime as date) is null )) or (ctm.checkInTime between :formCheckInTime and :toCheckInTime)) " +
         "and (((cast(:formCheckOutTime as date) is null ) or (cast(:toCheckOutTime as date) is null )) or (ctm.checkOutTime between :formCheckOutTime and :toCheckOutTime)) " +
-        "and ((cast(:status as string) is null) or (ctm.status = :status)) " +
+        "and ctm.status in :status " +
         "and ((cast(:username as string) is null) or (t.username = :username)) " +
         "and ((:keyword is null) " +
         "or (c.phoneNumber LIKE %:keyword% " +
@@ -71,7 +71,7 @@ public interface CustomerTicketMapRepository extends GenericRepository<CustomerT
                                           @Param("toCheckInTime") @Nullable LocalDateTime toCheckInTime,
                                           @Param("formCheckOutTime") @Nullable LocalDateTime formCheckOutTime,
                                           @Param("toCheckOutTime") @Nullable LocalDateTime toCheckOutTime,
-                                          @Param("status") @Nullable Constants.StatusTicket status,
+                                          @Param("status") @Nullable Collection<Constants.StatusTicket> status,
                                           @Param("keyword") @Nullable String keyword,
                                           @Param("username") @Nullable String username);
 

@@ -46,7 +46,7 @@ spring:
   jpa:
     database: POSTGRESQL
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     generate-ddl: true
     properties:
       javax:

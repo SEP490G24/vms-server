@@ -31,16 +31,16 @@
     </style>
     <style name="Table_CH" mode="Opaque" backcolor="#92D050">
         <box>
-			<pen lineWidth="0.5" lineColor="#000000"/>
-			<topPen lineWidth="0.5" lineColor="#000000"/>
-			<leftPen lineWidth="0.5" lineColor="#000000"/>
-			<bottomPen lineWidth="0.5" lineColor="#000000"/>
-			<rightPen lineWidth="0.5" lineColor="#000000"/>
-		</box>
-	</style>
-	<style name="Table_TD" mode="Opaque" backcolor="#FFFFFF">
-		<box>
-			<pen lineWidth="0.5" lineColor="#000000"/>
+            <pen lineWidth="0.5" lineColor="#000000"/>
+            <topPen lineWidth="0.5" lineColor="#000000"/>
+            <leftPen lineWidth="0.5" lineColor="#000000"/>
+            <bottomPen lineWidth="0.5" lineColor="#000000"/>
+            <rightPen lineWidth="0.5" lineColor="#000000"/>
+        </box>
+    </style>
+    <style name="Table_TD" mode="Opaque" backcolor="#FFFFFF">
+        <box>
+            <pen lineWidth="0.5" lineColor="#000000"/>
 			<topPen lineWidth="0.5" lineColor="#000000"/>
 			<leftPen lineWidth="0.5" lineColor="#000000"/>
 			<bottomPen lineWidth="0.5" lineColor="#000000"/>
@@ -68,44 +68,38 @@
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
-	<detail>
-		<band height="30">
-			<staticText>
-				<reportElement x="660" y="0" width="320" height="30" uuid="95513898-adc2-4daa-a29e-dc34559d7a42"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font fontName="Times New Roman" size="18" isBold="true"/>
-				</textElement>
+    <detail>
+        <band height="30">
+            <staticText>
+                <reportElement x="630" y="0" width="440" height="30" uuid="95513898-adc2-4daa-a29e-dc34559d7a42"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font fontName="Times New Roman" size="18" isBold="true"/>
+                </textElement>
                 <text><![CDATA[User list]]></text>
-			</staticText>
-		</band>
+            </staticText>
+        </band>
         <band height="25">
             <textField>
-                <reportElement x="630" y="0" width="190" height="20" uuid="c953c572-8d74-4c44-9580-ce2d92d0ba80"/>
+                <reportElement x="630" y="0" width="440" height="20" uuid="c953c572-8d74-4c44-9580-ce2d92d0ba80"/>
                 <textElement textAlignment="Center" verticalAlignment="Middle">
                     <font fontName="Times New Roman" size="12"/>
                 </textElement>
                 <textFieldExpression>
-                    <![CDATA["Ngày xuất file: " + new SimpleDateFormat("dd/MM/yyyy").format(new java.util.Date())]]></textFieldExpression>
-            </textField>
-            <textField>
-                <reportElement x="833" y="0" width="179" height="20" uuid="4df5755b-c92d-4112-a827-412ef58dd2ea"/>
-                <textElement textAlignment="Center" verticalAlignment="Middle">
-                    <font fontName="Times New Roman" size="12"/>
-                </textElement>
-                <textFieldExpression><![CDATA["Người tạo: " + $P{exporter}]]></textFieldExpression>
+                    <![CDATA["Export Date: " + new SimpleDateFormat("dd/MM/yyyy").format(new java.util.Date())  + "       Exporter: " + $P{exporter}]]></textFieldExpression>
             </textField>
         </band>
-		<band height="60">
-			<componentElement>
+        <band height="60">
+            <componentElement>
                 <reportElement x="0" y="0" width="1520" height="60" uuid="8aa6c720-d41c-4504-ab57-3af0d570476b">
                     <property name="com.jaspersoft.studio.table.style.table_header" value="Table_TH"/>
                     <property name="com.jaspersoft.studio.table.style.column_header" value="Table_CH"/>
                     <property name="com.jaspersoft.studio.table.style.detail" value="Table_TD"/>
                 </reportElement>
-				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-					<datasetRun subDataset="tableDataset" uuid="9e93fb37-e097-4287-88b4-4a02947561da">
-						<dataSourceExpression><![CDATA[$P{tableDataset}]]></dataSourceExpression>
-					</datasetRun>
+                <jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components"
+                          xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+                    <datasetRun subDataset="tableDataset" uuid="9e93fb37-e097-4287-88b4-4a02947561da">
+                        <dataSourceExpression><![CDATA[$P{tableDataset}]]></dataSourceExpression>
+                    </datasetRun>
                     <jr:column width="70" uuid="6bf8e3df-bbd2-45a5-96d3-f0d2cf740920">
                         <property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
                         <jr:columnHeader style="Table_CH" height="35" rowSpan="1">
@@ -118,23 +112,24 @@
                                 </reportElement>
                                 <box leftPadding="2"/>
                                 <textElement textAlignment="Center" verticalAlignment="Middle">
-									<font fontName="Times New Roman" size="14" isBold="true"/>
-								</textElement>
+                                    <font fontName="Times New Roman" size="14" isBold="true"/>
+                                </textElement>
                                 <text><![CDATA[Number]]></text>
-							</staticText>
-						</jr:columnHeader>
-						<jr:detailCell style="Table_TD" height="30">
-							<textField>
+                            </staticText>
+                        </jr:columnHeader>
+                        <jr:detailCell style="Table_TD" height="30">
+                            <textField>
                                 <reportElement x="0" y="0" width="70" height="30"
                                                uuid="a98164ee-68f9-4a8c-8a97-fa697bc28b37"/>
-								<box leftPadding="2"/>
-								<textElement textAlignment="Center" verticalAlignment="Middle">
-									<font fontName="Times New Roman" size="11"/>
-								</textElement>
-								<textFieldExpression><![CDATA[$F{username} == null ? "" : $V{REPORT_COUNT}]]></textFieldExpression>
-							</textField>
-						</jr:detailCell>
-					</jr:column>
+                                <box leftPadding="2"/>
+                                <textElement textAlignment="Center" verticalAlignment="Middle">
+                                    <font fontName="Times New Roman" size="11"/>
+                                </textElement>
+                                <textFieldExpression>
+                                    <![CDATA[$F{username} == null ? "" : $V{REPORT_COUNT}]]></textFieldExpression>
+                            </textField>
+                        </jr:detailCell>
+                    </jr:column>
                     <jr:column width="140" uuid="7b835249-3280-4f14-9c12-320a0f9b0cc3">
                         <property name="com.jaspersoft.studio.components.table.model.column.name" value="Column2"/>
                         <jr:columnHeader style="Table_CH" height="35" rowSpan="1">
@@ -147,20 +142,21 @@
                                     <font fontName="Times New Roman" size="14" isBold="true"/>
                                 </textElement>
                                 <text><![CDATA[Username]]></text>
-							</staticText>
-						</jr:columnHeader>
-						<jr:detailCell style="Table_TD" height="30">
-							<textField>
+                            </staticText>
+                        </jr:columnHeader>
+                        <jr:detailCell style="Table_TD" height="30">
+                            <textField>
                                 <reportElement x="0" y="0" width="140" height="30"
                                                uuid="db3d676e-ee2d-4c4a-807d-9c730c56dd45"/>
-								<box leftPadding="2"/>
-								<textElement textAlignment="Center" verticalAlignment="Middle">
-									<font fontName="Times New Roman" size="11"/>
-								</textElement>
-								<textFieldExpression><![CDATA[$F{username} == null ?  "" : $F{username}]]></textFieldExpression>
-							</textField>
-						</jr:detailCell>
-					</jr:column>
+                                <box leftPadding="2"/>
+                                <textElement textAlignment="Center" verticalAlignment="Middle">
+                                    <font fontName="Times New Roman" size="11"/>
+                                </textElement>
+                                <textFieldExpression>
+                                    <![CDATA[$F{username} == null ?  "" : $F{username}]]></textFieldExpression>
+                            </textField>
+                        </jr:detailCell>
+                    </jr:column>
                     <jr:column width="120" uuid="fffece8e-b36f-40ba-a9f8-3b6bc1a4a542">
                         <property name="com.jaspersoft.studio.components.table.model.column.name" value="Column3"/>
                         <jr:columnHeader style="Table_CH" height="35" rowSpan="1">
@@ -173,20 +169,21 @@
                                     <font fontName="Times New Roman" size="14" isBold="true"/>
                                 </textElement>
                                 <text><![CDATA[FirstName]]></text>
-							</staticText>
-						</jr:columnHeader>
-						<jr:detailCell style="Table_TD" height="30">
-							<textField>
+                            </staticText>
+                        </jr:columnHeader>
+                        <jr:detailCell style="Table_TD" height="30">
+                            <textField>
                                 <reportElement x="0" y="0" width="120" height="30"
                                                uuid="a0872495-af2a-417b-92f3-4166033b301f"/>
-								<box leftPadding="2"/>
-								<textElement textAlignment="Center" verticalAlignment="Middle">
-									<font fontName="Times New Roman" size="11"/>
-								</textElement>
-								<textFieldExpression><![CDATA[$F{firstName} == null ? "" : $F{firstName}]]></textFieldExpression>
-							</textField>
-						</jr:detailCell>
-					</jr:column>
+                                <box leftPadding="2"/>
+                                <textElement textAlignment="Center" verticalAlignment="Middle">
+                                    <font fontName="Times New Roman" size="11"/>
+                                </textElement>
+                                <textFieldExpression>
+                                    <![CDATA[$F{firstName} == null ? "" : $F{firstName}]]></textFieldExpression>
+                            </textField>
+                        </jr:detailCell>
+                    </jr:column>
                     <jr:column width="100" uuid="d4e7d311-d0f6-42b6-89c7-8afe3168888b">
                         <property name="com.jaspersoft.studio.components.table.model.column.name" value="Column4"/>
                         <jr:columnHeader style="Table_CH" height="35" rowSpan="1">
@@ -199,17 +196,18 @@
                                     <font fontName="Times New Roman" size="14" isBold="true"/>
                                 </textElement>
                                 <text><![CDATA[LastName]]></text>
-							</staticText>
-						</jr:columnHeader>
-						<jr:detailCell style="Table_TD" height="30">
-							<textField>
+                            </staticText>
+                        </jr:columnHeader>
+                        <jr:detailCell style="Table_TD" height="30">
+                            <textField>
                                 <reportElement x="0" y="0" width="100" height="30"
                                                uuid="cc524245-681d-4b0b-a38b-2fea7504bd6f"/>
-								<box leftPadding="2"/>
-								<textElement textAlignment="Center" verticalAlignment="Middle">
-									<font fontName="Times New Roman" size="11"/>
-								</textElement>
-								<textFieldExpression><![CDATA[$F{lastName} == null  ? "" : $F{lastName}]]></textFieldExpression>
+                                <box leftPadding="2"/>
+                                <textElement textAlignment="Center" verticalAlignment="Middle">
+                                    <font fontName="Times New Roman" size="11"/>
+                                </textElement>
+                                <textFieldExpression>
+                                    <![CDATA[$F{lastName} == null  ? "" : $F{lastName}]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>
@@ -251,16 +249,18 @@
 							</staticText>
 						</jr:columnHeader>
 						<jr:detailCell style="Table_TD" height="30">
-							<textField>
-								<reportElement x="0" y="0" width="140" height="30" uuid="7430c55b-8ce1-480c-963c-748bb78957f0"/>
-								<box leftPadding="2"/>
-								<textElement textAlignment="Center" verticalAlignment="Middle">
-									<font fontName="Times New Roman" size="11"/>
-								</textElement>
-								<textFieldExpression><![CDATA[$F{gender}  == null ? "" : $F{gender}]]></textFieldExpression>
-							</textField>
-						</jr:detailCell>
-					</jr:column>
+                            <textField>
+                                <reportElement x="0" y="0" width="140" height="30"
+                                               uuid="7430c55b-8ce1-480c-963c-748bb78957f0"/>
+                                <box leftPadding="2"/>
+                                <textElement textAlignment="Center" verticalAlignment="Middle">
+                                    <font fontName="Times New Roman" size="11"/>
+                                </textElement>
+                                <textFieldExpression>
+                                    <![CDATA[$F{gender}  == null ? "" : $F{gender}]]></textFieldExpression>
+                            </textField>
+                        </jr:detailCell>
+                    </jr:column>
                     <jr:column width="150" uuid="9c433bd0-5164-4648-8197-c64a6a4628d7">
                         <property name="com.jaspersoft.studio.components.table.model.column.name" value="Column7"/>
                         <jr:columnHeader style="Table_CH" height="35" rowSpan="1">
@@ -273,19 +273,20 @@
                                 </textElement>
                                 <text><![CDATA[PhoneNumber]]></text>
                             </staticText>
-						</jr:columnHeader>
-						<jr:detailCell style="Table_TD" height="30">
-							<textField>
+                        </jr:columnHeader>
+                        <jr:detailCell style="Table_TD" height="30">
+                            <textField>
                                 <reportElement x="0" y="0" width="150" height="30"
                                                uuid="951790c9-7bfb-4005-a97c-b8ede17a53f2"/>
-								<box leftPadding="2"/>
-								<textElement textAlignment="Center" verticalAlignment="Middle">
-									<font fontName="Times New Roman" size="11"/>
-								</textElement>
-								<textFieldExpression><![CDATA[$F{phoneNumber}  == null ? "" : $F{phoneNumber}]]></textFieldExpression>
-							</textField>
-						</jr:detailCell>
-					</jr:column>
+                                <box leftPadding="2"/>
+                                <textElement textAlignment="Center" verticalAlignment="Middle">
+                                    <font fontName="Times New Roman" size="11"/>
+                                </textElement>
+                                <textFieldExpression>
+                                    <![CDATA[$F{phoneNumber}  == null ? "" : $F{phoneNumber}]]></textFieldExpression>
+                            </textField>
+                        </jr:detailCell>
+                    </jr:column>
                     <jr:column width="150" uuid="c96224d7-4060-4016-8347-96bfecad06d2">
                         <property name="com.jaspersoft.studio.components.table.model.column.name" value="Column8"/>
                         <jr:columnHeader style="Table_CH" height="35" rowSpan="1">
@@ -298,21 +299,21 @@
                                     <font fontName="Times New Roman" size="14" isBold="true"/>
                                 </textElement>
                                 <text><![CDATA[DateOfBirth]]></text>
-							</staticText>
-						</jr:columnHeader>
-						<jr:detailCell style="Table_TD" height="30">
-							<textField>
+                            </staticText>
+                        </jr:columnHeader>
+                        <jr:detailCell style="Table_TD" height="30">
+                            <textField>
                                 <reportElement x="0" y="0" width="150" height="30"
                                                uuid="f8524d32-ba63-4ce3-8c42-2e5b4b5ae3b0"/>
-								<box leftPadding="2"/>
-								<textElement textAlignment="Center" verticalAlignment="Middle">
-									<font fontName="Times New Roman" size="11"/>
-								</textElement>
+                                <box leftPadding="2"/>
+                                <textElement textAlignment="Center" verticalAlignment="Middle">
+                                    <font fontName="Times New Roman" size="11"/>
+                                </textElement>
                                 <textFieldExpression>
                                     <![CDATA[$F{dateOfBirth} == null  ? "" : new SimpleDateFormat("dd/MM/yyyy").format($F{dateOfBirth})]]></textFieldExpression>
-							</textField>
-						</jr:detailCell>
-					</jr:column>
+                            </textField>
+                        </jr:detailCell>
+                    </jr:column>
                     <jr:column width="170" uuid="b12b2db2-081a-45b5-b01c-f505b92f8b8c">
                         <property name="com.jaspersoft.studio.components.table.model.column.name" value="Column9"/>
                         <jr:columnHeader style="Table_CH" height="35" rowSpan="1">
@@ -325,17 +326,18 @@
                                     <font fontName="Times New Roman" size="14" isBold="true"/>
                                 </textElement>
                                 <text><![CDATA[RoleName]]></text>
-							</staticText>
-						</jr:columnHeader>
-						<jr:detailCell style="Table_TD" height="30">
-							<textField>
+                            </staticText>
+                        </jr:columnHeader>
+                        <jr:detailCell style="Table_TD" height="30">
+                            <textField>
                                 <reportElement x="0" y="0" width="170" height="30"
                                                uuid="53de619a-db37-488b-afcf-bea984f7a8d5"/>
-								<box leftPadding="2"/>
-								<textElement textAlignment="Center" verticalAlignment="Middle">
-									<font fontName="Times New Roman" size="11"/>
-								</textElement>
-								<textFieldExpression><![CDATA[$F{roleName} == null  ? "" :$F{roleName}]]></textFieldExpression>
+                                <box leftPadding="2"/>
+                                <textElement textAlignment="Center" verticalAlignment="Middle">
+                                    <font fontName="Times New Roman" size="11"/>
+                                </textElement>
+                                <textFieldExpression>
+                                    <![CDATA[$F{roleName} == null  ? "" :$F{roleName}]]></textFieldExpression>
 							</textField>
 						</jr:detailCell>
 					</jr:column>

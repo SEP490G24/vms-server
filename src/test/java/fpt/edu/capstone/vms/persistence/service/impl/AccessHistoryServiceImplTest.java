@@ -11,11 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.stubbing.Answer;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -24,21 +20,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
-import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_REALM_ROLE;
-import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_RESOURCE_ROLE;
-import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.REALM_ADMIN;
-import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.SCOPE_ORGANIZATION;
-import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.SCOPE_SITE;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
 public class AccessHistoryServiceImplTest {
 
@@ -117,7 +104,7 @@ public class AccessHistoryServiceImplTest {
         Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("createdOn"), Sort.Order.desc("lastUpdatedOn")));
         Pageable pageableSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
         String keyword = "search";
-        Constants.StatusTicket status = Constants.StatusTicket.PENDING;
+        List<Constants.StatusTicket> status = List.of(Constants.StatusTicket.CHECK_IN, Constants.StatusTicket.CHECK_OUT);
         LocalDateTime formCheckInTime = LocalDateTime.now().minusDays(7);
         LocalDateTime toCheckInTime = LocalDateTime.now();
         LocalDateTime formCheckOutTime = LocalDateTime.now().minusDays(14);
@@ -164,9 +151,10 @@ public class AccessHistoryServiceImplTest {
         UUID ticketId = UUID.randomUUID();
         UUID customerId = UUID.randomUUID();
 
+
         // Mocking behavior
         CustomerTicketMap customerTicketMap = new CustomerTicketMap(); // Create a sample CustomerTicketMap
-        when(customerTicketMapRepository.findByCustomerTicketMapPk_TicketIdAndCustomerTicketMapPk_CustomerId(ticketId, customerId))
+        when(customerTicketMapRepository.findByCheckInCode(anyString()))
             .thenReturn(customerTicketMap);
 
         IAccessHistoryController.AccessHistoryResponseDTO expectedResponseDTO = new IAccessHistoryController.AccessHistoryResponseDTO();
@@ -174,13 +162,13 @@ public class AccessHistoryServiceImplTest {
             .thenReturn(expectedResponseDTO);
 
         // Act
-        IAccessHistoryController.AccessHistoryResponseDTO result = accessHistoryService.viewAccessHistoryDetail(ticketId, customerId);
+        IAccessHistoryController.AccessHistoryResponseDTO result = accessHistoryService.viewAccessHistoryDetail(anyString());
 
         // Assert
         assertEquals(expectedResponseDTO, result);
 
         // Verify that customerTicketMapRepository.findByCustomerTicketMapPk_TicketIdAndCustomerTicketMapPk_CustomerId was called with the correct parameters
-        verify(customerTicketMapRepository).findByCustomerTicketMapPk_TicketIdAndCustomerTicketMapPk_CustomerId(ticketId, customerId);
+        verify(customerTicketMapRepository).findByCheckInCode(anyString());
 
         // Verify that mapper.map was called with the correct parameters
         verify(mapper).map(customerTicketMap, IAccessHistoryController.AccessHistoryResponseDTO.class);

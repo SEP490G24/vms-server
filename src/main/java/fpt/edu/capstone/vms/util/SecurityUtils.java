@@ -17,11 +17,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_REALM_ROLE;
-import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_RESOURCE_ROLE;
-import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.REALM_ADMIN;
-import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.SCOPE_ORGANIZATION;
-import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.SCOPE_SITE;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.*;
 
 
 public class SecurityUtils {
@@ -52,6 +48,10 @@ public class SecurityUtils {
 
     public static String loginUsername() {
         return getUserDetails().preferredUsername;
+    }
+
+    public static String fullName() {
+        return getUserDetails().getGivenName() + "" + getUserDetails().getFamilyName();
     }
 
     public static String getOrgId() {

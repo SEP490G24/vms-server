@@ -7,6 +7,7 @@ import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +43,7 @@ public class CardCheckInHistoryRepositoryCustomImpl implements CardCheckInHistor
             cardCheckInHistoryDTO.setCheckInCode((String) object[1]);
             cardCheckInHistoryDTO.setMacIp((String) object[2]);
             cardCheckInHistoryDTO.setStatus((String) object[3]);
-            cardCheckInHistoryDTO.setCreatedOn((String) object[4]);
+            cardCheckInHistoryDTO.setCreatedOn((Date) object[4]);
             cardCheckInHistoryDTO.setRoomName((String) object[5]);
             listData.add(cardCheckInHistoryDTO);
         }

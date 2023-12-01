@@ -47,7 +47,7 @@ public class AccessHistoryServiceImpl extends GenericServiceImpl<Ticket, UUID> i
 
 
     @Override
-    public Page<CustomerTicketMap> accessHistory(Pageable pageable, String keyword, Constants.StatusTicket status,
+    public Page<CustomerTicketMap> accessHistory(Pageable pageable, String keyword, List<Constants.StatusTicket> status,
                                                  LocalDateTime formCheckInTime, LocalDateTime toCheckInTime,
                                                  LocalDateTime formCheckOutTime, LocalDateTime toCheckOutTime, List<String> sites) {
         List<Sort.Order> sortColum = new ArrayList<>(PageableUtils.converterSort2List(pageable.getSort()));
@@ -59,8 +59,8 @@ public class AccessHistoryServiceImpl extends GenericServiceImpl<Ticket, UUID> i
     }
 
     @Override
-    public IAccessHistoryController.AccessHistoryResponseDTO viewAccessHistoryDetail(UUID ticketId, UUID customerId) {
-        var customerTicketMap = customerTicketMapRepository.findByCustomerTicketMapPk_TicketIdAndCustomerTicketMapPk_CustomerId(ticketId, customerId);
+    public IAccessHistoryController.AccessHistoryResponseDTO viewAccessHistoryDetail(String checkInCode) {
+        var customerTicketMap = customerTicketMapRepository.findByCheckInCode(checkInCode);
         return mapper.map(customerTicketMap, IAccessHistoryController.AccessHistoryResponseDTO.class);
     }
 

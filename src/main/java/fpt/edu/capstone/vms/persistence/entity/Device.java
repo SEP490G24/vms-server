@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import fpt.edu.capstone.vms.constants.Constants;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -51,6 +53,7 @@ public class Device extends AbstractBaseEntity<Integer> {
     @Column(name = "mac_ip", unique = true)
     private String macIp;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "device_type")
     private Constants.DeviceType deviceType;
 

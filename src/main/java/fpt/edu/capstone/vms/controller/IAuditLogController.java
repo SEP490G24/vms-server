@@ -42,7 +42,7 @@ public interface IAuditLogController {
     @PostMapping("/export")
     @Operation(summary = "Export audit log")
     @PreAuthorize("hasRole('r:audit-log:export')")
-    ResponseEntity<?> export(AuditLogFilter auditLogFilter) throws JRException;
+    ResponseEntity<?> export(@RequestBody AuditLogFilter auditLogFilter) throws JRException;
 
     @Data
     class AuditLogFilterDTO {
