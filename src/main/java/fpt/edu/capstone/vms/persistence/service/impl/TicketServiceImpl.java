@@ -486,7 +486,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         }
 
         if (StringUtils.isNotEmpty(ticketInfo.getRoomId())) {
-            if (!ticketInfo.getRoomId().equals(ticket.getRoomId())) {
+            if (!ticketInfo.getRoomId().equals(ticket.getRoomId().toString())) {
                 Room room = roomRepository.findById(UUID.fromString(ticketInfo.getRoomId())).orElse(null);
 
                 if (ObjectUtils.isEmpty(room)) {
