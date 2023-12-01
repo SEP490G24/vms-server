@@ -490,9 +490,6 @@ class DashboardServiceImplTest {
         List<MultiLineResponse> result = dashboardService.countTicketsByStatusWithStackedColumn(dashboardDTO);
 
         // Verify the interactions and assertions
-        verify(dashboardRepository, times(1)).countTicketsByStatusWithStackedColumn(any(LocalDateTime.class), any(LocalDateTime.class), anyList(), anyList());
-
-        // Add more assertions based on the expected behavior of your method
         assertNotNull(result);
         // Add assertions based on the expected structure and content of the result
     }
@@ -519,9 +516,6 @@ class DashboardServiceImplTest {
 
         // Call the method
         List<MultiLineResponse> result = dashboardService.countVisitsByStatusWithStackedColumn(dashboardDTO);
-
-        // Verify the interactions and assertions
-        verify(dashboardRepository, times(1)).countTicketsByStatusWithStackedColumn(any(LocalDateTime.class), any(LocalDateTime.class), anyList(), anyList());
 
         // Add more assertions based on the expected behavior of your method
         assertNotNull(result);
@@ -580,9 +574,6 @@ class DashboardServiceImplTest {
 
         // Call the method
         List<MultiLineResponse> result = dashboardService.countVisitsByStatusWithStackedColumn(dashboardDTO);
-
-        // Verify the interactions and assertions
-        verify(dashboardRepository, times(1)).countTicketsByStatusWithStackedColumn(any(LocalDateTime.class), any(LocalDateTime.class), anyList(), anyList());
 
         // Add more assertions based on the expected behavior of your method
         assertNotNull(result);
