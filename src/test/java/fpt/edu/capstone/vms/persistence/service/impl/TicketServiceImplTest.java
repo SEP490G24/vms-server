@@ -1797,7 +1797,7 @@ class TicketServiceImplTest {
         Pageable pageable = PageRequest.of(0, 10);
         Pageable pageableSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
         UUID roomId = UUID.randomUUID();
-        Constants.StatusTicket status = Constants.StatusTicket.PENDING;
+        Constants.StatusTicket status = Constants.StatusTicket.CHECK_IN;
         Constants.Purpose purpose = Constants.Purpose.CONFERENCES;
         String keyword = "search";
 
