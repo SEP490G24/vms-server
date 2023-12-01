@@ -469,7 +469,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         if (ticket.getStatus().equals(Constants.StatusTicket.COMPLETE)) {
             throw new CustomException(ErrorApp.TICKET_IS_COMPLETE_CAN_NOT_DO_UPDATE);
         }
-        if (ticket.getEndTime().isBefore(LocalDateTime.now())) {
+        if (ticket.getEndTime().isBefore(LocalDateTime.now()) && !ticket.getStatus().equals(Constants.StatusTicket.DRAFT)) {
             throw new CustomException(ErrorApp.TICKET_IS_EXPIRED_CAN_NOT_UPDATE);
         }
 
