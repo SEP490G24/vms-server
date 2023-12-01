@@ -101,7 +101,6 @@ public interface ITicketService extends IGenericService<Ticket, UUID> {
         List<String> sites,
         List<String> names,
         UUID roomId,
-        Constants.StatusTicket status,
         Constants.Purpose purpose,
         LocalDateTime createdOnStart,
         LocalDateTime createdOnEnd,

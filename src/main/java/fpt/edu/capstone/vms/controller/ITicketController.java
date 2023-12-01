@@ -242,6 +242,7 @@ public interface ITicketController {
         private String roomId;
         List<ICustomerController.NewCustomers> newCustomers;
         List<String> oldCustomers;
+        private boolean draft;
 
     }
 
@@ -287,7 +288,7 @@ public interface ITicketController {
         private String checkInCode;
 
         @NotNull
-        private Constants.StatusTicket status;
+        private Constants.StatusCustomerTicket status;
 
         private Integer reasonId;
         private String reasonNote;

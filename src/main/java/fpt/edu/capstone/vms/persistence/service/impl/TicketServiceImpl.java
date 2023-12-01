@@ -518,15 +518,27 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             throw new CustomException(ErrorApp.PURPOSE_OTHER_MUST_NULL_WHEN_TYPE_NOT_OTHER);
         }
 
+        if (ticketInfo.isDraft() == true && ticket.getStatus().equals(Constants.StatusTicket.PENDING)) {
+            throw new CustomException(ErrorApp.TICKET_IS_PENDING_CAN_NOT_SAVE_IS_DRAFT);
+        }
+
+        if (ticketInfo.isDraft() == true) {
+            ticket.setStatus(Constants.StatusTicket.DRAFT);
+        } else {
+            ticket.setStatus(Constants.StatusTicket.PENDING);
+        }
+
         Ticket oldValue = ticket;
         ticketRepository.save(ticket.update(ticketMap));
+
+
         Room room = roomRepository.findById(ticket.getRoomId()).orElse(null);
         if (ticketInfo.getOldCustomers() != null) {
-            checkOldCustomers(ticketInfo.getOldCustomers(), ticket, room);
+            checkOldCustomers(ticketInfo.getOldCustomers(), ticket, room, ticketInfo.isDraft());
         }
 
         if (ticketInfo.getNewCustomers() != null) {
-            checkNewCustomers(ticketInfo.getNewCustomers(), ticket, room);
+            checkNewCustomers(ticketInfo.getNewCustomers(), ticket, room, ticketInfo.isDraft());
         }
 
         auditLogRepository.save(new AuditLog(ticket.getSiteId()
@@ -540,7 +552,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         return ticket;
     }
 
-    public void checkOldCustomers(List<String> oldCustomers, Ticket ticket, Room room) {
+    public void checkOldCustomers(List<String> oldCustomers, Ticket ticket, Room room, boolean isDraft) {
         String orgId;
         if (SecurityUtils.getOrgId() == null) {
             Site site = siteRepository.findById(UUID.fromString(SecurityUtils.getSiteId())).orElse(null);
@@ -581,7 +593,9 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                 CustomerTicketMap customerTicketMap = customerTicketMapRepository.findById(customerTicketMapPk).orElse(null);
                 if (customerTicketMap != null) {
                     customerTicketMapRepository.delete(customerTicketMap);
-                    sendEmailCancel(ticket, customerTicketMap.getCustomerEntity(), template, null);
+                    if (!isDraft) {
+                        sendEmailCancel(ticket, customerTicketMap.getCustomerEntity(), template, null);
+                    }
                 }
             }
         }
@@ -593,11 +607,13 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                 if (!customerRepository.existsByIdAndAndOrganizationId(UUID.fromString(customer), orgId))
                     throw new CustomException(ErrorApp.CUSTOMER_NOT_IN_ORGANIZATION);
                 createCustomerTicket(ticket, UUID.fromString(customer.trim()), generateCheckInCode());
-                customerRepository.findById(UUID.fromString(customer.trim())).ifPresent(customerEntity -> sendEmail(customerEntity, ticket, room, generateCheckInCode(), false));
+                if (!isDraft) {
+                    customerRepository.findById(UUID.fromString(customer.trim())).ifPresent(customerEntity -> sendEmail(customerEntity, ticket, room, generateCheckInCode(), false));
+                }
             }
         }
 
-        if (customersToRemove.isEmpty() && customersToAdd.isEmpty()) {
+        if (customersToRemove.isEmpty() && customersToAdd.isEmpty() && !isDraft) {
             CustomerOfTicket.forEach(customer -> {
                 CustomerTicketMapPk customerTicketMapPk = new CustomerTicketMapPk();
                 customerTicketMapPk.setTicketId(ticket.getId());
@@ -609,7 +625,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
 
     }
 
-    public void checkNewCustomers(List<ICustomerController.NewCustomers> newCustomers, Ticket ticket, Room room) {
+    public void checkNewCustomers(List<ICustomerController.NewCustomers> newCustomers, Ticket ticket, Room room, boolean isDraft) {
         String orgId;
         if (SecurityUtils.getOrgId() == null) {
             Site site = siteRepository.findById(UUID.fromString(SecurityUtils.getSiteId())).orElse(null);
@@ -635,11 +651,13 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                     Customer customer = customerRepository.save(_customer);
                     String checkInCode = generateCheckInCode();
                     createCustomerTicket(ticket, customer.getId(), checkInCode);
-                    sendEmail(customer, ticket, room, checkInCode, false);
+                    if (!isDraft)
+                        sendEmail(customer, ticket, room, checkInCode, false);
                 } else {
                     String checkInCode = generateCheckInCode();
                     createCustomerTicket(ticket, customerExist.getId(), checkInCode);
-                    sendEmail(customerExist, ticket, room, checkInCode, false);
+                    if (!isDraft)
+                        sendEmail(customerExist, ticket, room, checkInCode, false);
                 }
             }
         }
@@ -801,6 +819,9 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     @Override
     public ITicketController.TicketByQRCodeResponseDTO findByQRCode(String checkInCode) {
         CustomerTicketMap customerTicketMap = customerTicketMapRepository.findByCheckInCodeIgnoreCase(checkInCode);
+        if (customerTicketMap.getTicketEntity().getEndTime().isBefore(LocalDateTime.now())) {
+            throw new CustomException(ErrorApp.TICKET_IS_EXPIRED);
+        }
         String site = SecurityUtils.getSiteId();
         if (!site.equals(customerTicketMap.getTicketEntity().getSiteId())) {
             throw new CustomException(ErrorApp.SITE_NOT_FOUND);
@@ -821,8 +842,8 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         if (customerTicketMap.getTicketEntity().getStatus().equals(Constants.StatusTicket.DRAFT)) {
             throw new CustomException(ErrorApp.TICKET_IS_DRAFT_CAN_NOT_DO_CHECK);
         }
-        if (checkInPayload.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
-            if (customerTicketMap.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
+        if (checkInPayload.getStatus().equals(Constants.StatusCustomerTicket.CHECK_IN)) {
+            if (customerTicketMap.getStatus().equals(Constants.StatusCustomerTicket.CHECK_IN)) {
                 throw new CustomException(ErrorApp.CUSTOMER_IS_CHECK_IN);
             }
             if (customerTicketMap.isCheckOut()) {
@@ -831,14 +852,14 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             if (customerTicketMap.getTicketEntity().getEndTime().isBefore(LocalDateTime.now())) {
                 throw new CustomException(ErrorApp.TICKET_IS_EXPIRED_CAN_NOT_CHECK_IN);
             }
-            if (customerTicketMap.getTicketEntity().getStartTime().isAfter(LocalDateTime.now())) {
+            if (customerTicketMap.getTicketEntity().getStartTime().isAfter(LocalDateTime.now().minusHours(1))) {
                 throw new CustomException(ErrorApp.TICKET_NOT_START_CAN_NOT_CHECK_IN);
             }
             customerTicketMap.setStatus(checkInPayload.getStatus());
             customerTicketMap.setCheckInTime(LocalDateTime.now());
             customerTicketMapRepository.save(customerTicketMap);
-        } else if (checkInPayload.getStatus().equals(Constants.StatusTicket.CHECK_OUT)) {
-            if (!customerTicketMap.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
+        } else if (checkInPayload.getStatus().equals(Constants.StatusCustomerTicket.CHECK_OUT)) {
+            if (!customerTicketMap.getStatus().equals(Constants.StatusCustomerTicket.CHECK_IN)) {
                 throw new CustomException(ErrorApp.CUSTOMER_NOT_CHECK_IN_TO_CHECK_OUT);
             }
             if (customerTicketMap.getTicketEntity().getStartTime().isAfter(LocalDateTime.now())) {
@@ -849,7 +870,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             customerTicketMap.setCardId(null);
             customerTicketMap.setStatus(checkInPayload.getStatus());
             customerTicketMapRepository.save(customerTicketMap);
-            Integer count = customerTicketMapRepository.countAllByStatusAndAndCustomerTicketMapPk_TicketId(Constants.StatusTicket.CHECK_IN, customerTicketMap.getCustomerTicketMapPk().getTicketId());
+            Integer count = customerTicketMapRepository.countAllByStatusAndAndCustomerTicketMapPk_TicketId(Constants.StatusCustomerTicket.CHECK_IN, customerTicketMap.getCustomerTicketMapPk().getTicketId());
             if (count == 0) {
                 Ticket ticket = ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId()).orElse(null);
                 if (ticket != null) {
@@ -860,8 +881,8 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                     ticketRepository.save(ticket);
                 }
             }
-        } else if (checkInPayload.getStatus().equals(Constants.StatusTicket.REJECT)) {
-            if (customerTicketMap.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
+        } else if (checkInPayload.getStatus().equals(Constants.StatusCustomerTicket.REJECT)) {
+            if (customerTicketMap.getStatus().equals(Constants.StatusCustomerTicket.CHECK_IN)) {
                 throw new CustomException(ErrorApp.CUSTOMER_IS_CHECK_IN);
             }
             if (customerTicketMap.isCheckOut()) {
@@ -870,7 +891,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             if (customerTicketMap.getTicketEntity().getEndTime().isAfter(LocalDateTime.now())) {
                 throw new CustomException(ErrorApp.TICKET_IS_EXPIRED_CAN_NOT_REJECT);
             }
-            if (customerTicketMap.getTicketEntity().getStartTime().isBefore(LocalDateTime.now())) {
+            if (customerTicketMap.getTicketEntity().getStartTime().isBefore(LocalDateTime.now().minusHours(1))) {
                 throw new CustomException(ErrorApp.TICKET_NOT_START_CAN_NOT_REJECT);
             }
             customerTicketMap.setReasonId(checkInPayload.getReasonId());
@@ -938,7 +959,6 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         , List<String> sites
         , List<String> names
         , UUID roomId
-        , Constants.StatusTicket status
         , Constants.Purpose purpose
         , LocalDateTime createdOnStart
         , LocalDateTime createdOnEnd
@@ -952,7 +972,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         , String keyword) {
         Page<CustomerTicketMap> customerTicketMaps = customerTicketMapRepository.filter(pageable, sites, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd
             , roomId
-            , Constants.StatusTicket.CHECK_IN
+            , Constants.StatusCustomerTicket.CHECK_IN
             , purpose
             , keyword);
 
@@ -964,7 +984,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         CustomerTicketMap customerTicketMap = customerTicketMapRepository.findByCheckInCodeIgnoreCase(customerTicketCardDTO.getCheckInCode());
         if (customerTicketMap != null) {
             Ticket ticket = ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId()).orElse(null);
-            if (!customerTicketMap.getStatus().equals(Constants.StatusTicket.CHECK_IN)) {
+            if (!customerTicketMap.getStatus().equals(Constants.StatusCustomerTicket.CHECK_IN)) {
                 throw new CustomException(ErrorApp.CUSTOMER_NOT_CHECK_IN_TO_ADD_CARD);
             }
             if (SecurityUtils.getOrgId() != null) {
@@ -982,7 +1002,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             if (customerTicketCardDTO.getCardId() == null) {
                 throw new CustomException(ErrorApp.CARD_ID_NULL);
             }
-            if (customerTicketMapRepository.existsByCardIdAndStatus(customerTicketCardDTO.getCardId(), Constants.StatusTicket.CHECK_IN)) {
+            if (customerTicketMapRepository.existsByCardIdAndStatus(customerTicketCardDTO.getCardId(), Constants.StatusCustomerTicket.CHECK_IN)) {
                 throw new CustomException(ErrorApp.CARD_IS_EXIST_WITH_CUSTOMER_IN_SITE);
             }
             customerTicketMap.setCardId(customerTicketCardDTO.getCardId());
@@ -1110,7 +1130,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         pk.setTicketId(ticket.getId());
         pk.setCustomerId(customerId);
         customerTicketMap.setCustomerTicketMapPk(pk);
-        customerTicketMap.setStatus(Constants.StatusTicket.PENDING);
+        customerTicketMap.setStatus(Constants.StatusCustomerTicket.PENDING);
         customerTicketMap.setCheckInCode(checkInCode);
         customerTicketMapRepository.save(customerTicketMap);
     }

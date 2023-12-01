@@ -24,12 +24,19 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.*;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_REALM_ROLE;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_RESOURCE_ROLE;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.REALM_ADMIN;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.SCOPE_ORGANIZATION;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.SCOPE_SITE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class DashboardServiceImplTest {
 
@@ -535,10 +542,10 @@ class DashboardServiceImplTest {
             // Add more rows as needed
         );
 
-        List<Constants.StatusTicket> purpose = new ArrayList<>();
-        purpose.add(Constants.StatusTicket.REJECT);
-        purpose.add(Constants.StatusTicket.CHECK_IN);
-        purpose.add(Constants.StatusTicket.CHECK_OUT);
+        List<Constants.StatusCustomerTicket> purpose = new ArrayList<>();
+        purpose.add(Constants.StatusCustomerTicket.REJECT);
+        purpose.add(Constants.StatusCustomerTicket.CHECK_IN);
+        purpose.add(Constants.StatusCustomerTicket.CHECK_OUT);
         List<String> sites = new ArrayList<>();
 
         // Mock external service calls

@@ -290,7 +290,6 @@ public class TicketController implements ITicketController {
             filter.getSites(),
             filter.getNames(),
             filter.getRoomId(),
-            filter.getStatus(),
             filter.getPurpose(),
             filter.getCreatedOnStart(),
             filter.getCreatedOnEnd(),

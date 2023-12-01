@@ -47,7 +47,7 @@ public class AccessHistoryServiceImpl extends GenericServiceImpl<Ticket, UUID> i
 
 
     @Override
-    public Page<CustomerTicketMap> accessHistory(Pageable pageable, String keyword, List<Constants.StatusTicket> status,
+    public Page<CustomerTicketMap> accessHistory(Pageable pageable, String keyword, List<Constants.StatusCustomerTicket> status,
                                                  LocalDateTime formCheckInTime, LocalDateTime toCheckInTime,
                                                  LocalDateTime formCheckOutTime, LocalDateTime toCheckOutTime, List<String> sites) {
         List<Sort.Order> sortColum = new ArrayList<>(PageableUtils.converterSort2List(pageable.getSort()));

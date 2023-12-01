@@ -41,7 +41,7 @@ public class AccessHistoryController implements IAccessHistoryController {
     @Override
     public ResponseEntity<?> filterAccessHistory(AccessHistoryFilter accessHistoryFilter, Pageable pageable) {
         if (CollectionUtils.isEmpty(accessHistoryFilter.getStatus())) {
-            accessHistoryFilter.setStatus(List.of(Constants.StatusTicket.CHECK_IN, Constants.StatusTicket.CHECK_OUT));
+            accessHistoryFilter.setStatus(List.of(Constants.StatusCustomerTicket.CHECK_IN, Constants.StatusCustomerTicket.CHECK_OUT));
             Page<CustomerTicketMap> customerTicketMapPage = accessHistoryService.accessHistory(pageable, accessHistoryFilter.getKeyword(), accessHistoryFilter.getStatus(),
                 accessHistoryFilter.getFormCheckInTime(), accessHistoryFilter.getToCheckInTime(), accessHistoryFilter.getFormCheckOutTime(),
                 accessHistoryFilter.getToCheckOutTime(), accessHistoryFilter.getSites());
@@ -50,7 +50,7 @@ public class AccessHistoryController implements IAccessHistoryController {
             Page<IAccessHistoryController.AccessHistoryResponseDTO> listData = new PageImpl<>(accessHistoryResponseDTOS, pageable, customerTicketMapPage.getTotalElements());
             return ResponseEntity.ok(listData);
         } else {
-            if (accessHistoryFilter.getStatus().contains(Constants.StatusTicket.CHECK_IN) || accessHistoryFilter.getStatus().contains(Constants.StatusTicket.CHECK_OUT)
+            if (accessHistoryFilter.getStatus().contains(Constants.StatusCustomerTicket.CHECK_IN) || accessHistoryFilter.getStatus().contains(Constants.StatusCustomerTicket.CHECK_OUT)
             ) {
                 Page<CustomerTicketMap> customerTicketMapPage = accessHistoryService.accessHistory(pageable, accessHistoryFilter.getKeyword(), accessHistoryFilter.getStatus(),
                     accessHistoryFilter.getFormCheckInTime(), accessHistoryFilter.getToCheckInTime(), accessHistoryFilter.getFormCheckOutTime(),

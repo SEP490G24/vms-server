@@ -17,7 +17,6 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Data
 @Entity
@@ -51,7 +50,7 @@ public class CustomerTicketMap extends AbstractBaseEntity<CustomerTicketMapPk> {
     private String reasonNote;
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private Constants.StatusTicket status;
+    private Constants.StatusCustomerTicket status;
 
     @Column(name = "check_in_code", unique = true, updatable = false)
     private String checkInCode;

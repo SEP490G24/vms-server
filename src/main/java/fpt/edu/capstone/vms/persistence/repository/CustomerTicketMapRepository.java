@@ -46,7 +46,7 @@ public interface CustomerTicketMapRepository extends GenericRepository<CustomerT
                                    @Param("endTimeStart") @Nullable LocalDateTime endTimeStart,
                                    @Param("endTimeEnd") @Nullable LocalDateTime endTimeEnd,
                                    @Param("roomId") @Nullable UUID roomId,
-                                   @Param("status") @Nullable Constants.StatusTicket status,
+                                   @Param("status") @Nullable Constants.StatusCustomerTicket status,
                                    @Param("purpose") @Nullable Constants.Purpose purpose,
                                    @Param("keyword") @Nullable String keyword);
 
@@ -71,7 +71,7 @@ public interface CustomerTicketMapRepository extends GenericRepository<CustomerT
                                           @Param("toCheckInTime") @Nullable LocalDateTime toCheckInTime,
                                           @Param("formCheckOutTime") @Nullable LocalDateTime formCheckOutTime,
                                           @Param("toCheckOutTime") @Nullable LocalDateTime toCheckOutTime,
-                                          @Param("status") @Nullable Collection<Constants.StatusTicket> status,
+                                          @Param("status") @Nullable Collection<Constants.StatusCustomerTicket> status,
                                           @Param("keyword") @Nullable String keyword,
                                           @Param("username") @Nullable String username);
 
@@ -80,7 +80,7 @@ public interface CustomerTicketMapRepository extends GenericRepository<CustomerT
 
     CustomerTicketMap findByCardId(String cardId);
 
-    boolean existsByCardIdAndStatus(String cardId, Constants.StatusTicket statusTicket);
+    boolean existsByCardIdAndStatus(String cardId, Constants.StatusCustomerTicket statusTicket);
 
-    Integer countAllByStatusAndAndCustomerTicketMapPk_TicketId(Constants.StatusTicket statusTicket, UUID ticketId);
+    Integer countAllByStatusAndAndCustomerTicketMapPk_TicketId(Constants.StatusCustomerTicket statusTicket, UUID ticketId);
 }

@@ -66,11 +66,15 @@ public class Constants {
     public enum StatusTicket {
         DRAFT,
         PENDING,
+        CANCEL,
+        COMPLETE
+    }
+
+    public enum StatusCustomerTicket {
+        PENDING,
         CHECK_IN,
         CHECK_OUT,
-        CANCEL,
-        REJECT,
-        COMPLETE
+        REJECT
     }
 
     public enum StatusCheckInCard {

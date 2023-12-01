@@ -54,7 +54,7 @@ public interface IAccessHistoryController {
         private LocalDateTime toCheckInTime;
         private LocalDateTime formCheckOutTime;
         private LocalDateTime toCheckOutTime;
-        private List<Constants.StatusTicket> status;
+        private List<Constants.StatusCustomerTicket> status;
         List<String> sites;
     }
 
@@ -96,6 +96,6 @@ public interface IAccessHistoryController {
 
         private Date checkInTime;
         private Date checkOutTime;
-        private Constants.StatusTicket ticketCustomerStatus;
+        private Constants.StatusCustomerTicket ticketCustomerStatus;
     }
 }

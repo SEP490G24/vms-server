@@ -1555,6 +1555,7 @@ class TicketServiceImplTest {
         CustomerTicketMap customerTicketMap = new CustomerTicketMap();
         Ticket ticketEntity = new Ticket();
         ticketEntity.setSiteId("site2"); // A different site ID
+        ticketEntity.setEndTime(LocalDateTime.now().plusHours(1));
 
         customerTicketMap.setTicketEntity(ticketEntity);
         // Mock repository behavior
@@ -1582,11 +1583,11 @@ class TicketServiceImplTest {
     public void givenUpdateStatusTicketOfCustomerRequest_WhenUpdatingStatus_ThenUpdateCustomerTicketMap() {
         // Mock input parameters
         ITicketController.CheckInPayload checkInPayload = new ITicketController.CheckInPayload();
-        checkInPayload.setStatus(Constants.StatusTicket.CHECK_IN);
+        checkInPayload.setStatus(Constants.StatusCustomerTicket.CHECK_IN);
         checkInPayload.setCheckInCode("checkInCode");
 
         CustomerTicketMap customerTicketMap = new CustomerTicketMap();
-        customerTicketMap.setStatus(Constants.StatusTicket.PENDING);
+        customerTicketMap.setStatus(Constants.StatusCustomerTicket.PENDING);
         customerTicketMap.setCustomerTicketMapPk(new CustomerTicketMapPk(UUID.randomUUID(), UUID.randomUUID()));
 
         // Mock repository behavior
@@ -1647,13 +1648,13 @@ class TicketServiceImplTest {
 
         ITicketController.CheckInPayload checkOutPayload = new ITicketController.CheckInPayload();
         checkOutPayload.setCheckInCode("ABCDE");
-        checkOutPayload.setStatus(Constants.StatusTicket.CHECK_OUT);
+        checkOutPayload.setStatus(Constants.StatusCustomerTicket.CHECK_OUT);
         checkOutPayload.setReasonId(reasonId);
         checkOutPayload.setReasonNote("Customer requested checkout");
 
         CustomerTicketMap customerTicketMap = new CustomerTicketMap();
         customerTicketMap.setCustomerTicketMapPk(new CustomerTicketMapPk(UUID.randomUUID(), UUID.randomUUID()));
-        customerTicketMap.setStatus(Constants.StatusTicket.CHECK_IN);
+        customerTicketMap.setStatus(Constants.StatusCustomerTicket.CHECK_IN);
         customerTicketMap.setCustomerTicketMapPk(new CustomerTicketMapPk(customerTicketMapId, ticketId));
         customerTicketMap.setCheckInTime(currentTime.minusHours(1));  // Set a past check-in time
 
@@ -1797,7 +1798,7 @@ class TicketServiceImplTest {
         Pageable pageable = PageRequest.of(0, 10);
         Pageable pageableSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
         UUID roomId = UUID.randomUUID();
-        Constants.StatusTicket status = Constants.StatusTicket.CHECK_IN;
+        Constants.StatusCustomerTicket status = Constants.StatusCustomerTicket.CHECK_IN;
         Constants.Purpose purpose = Constants.Purpose.CONFERENCES;
         String keyword = "search";
 
@@ -1810,7 +1811,7 @@ class TicketServiceImplTest {
 
         // Call the method under test
         Page<CustomerTicketMap> result = ticketService.filterTicketAndCustomer(
-            pageableSort, null, null, roomId, status, purpose, null, null, null, null, null, null, null, null, null, keyword
+            pageableSort, null, null, roomId, purpose, null, null, null, null, null, null, null, null, null, keyword
         );
 
         // Verify that the repository filter method was called with the correct arguments
@@ -2188,7 +2189,7 @@ class TicketServiceImplTest {
 //        List<String> sites = List.of("06eb43a7-6ea8-4744-8231-760559fe2c07");
         List<String> usernames = List.of("john_doe", "jane_doe");
         UUID roomId = UUID.randomUUID();
-        Constants.StatusTicket status = Constants.StatusTicket.CHECK_IN;
+        Constants.StatusTicket status = Constants.StatusTicket.PENDING;
         Constants.Purpose purpose = Constants.Purpose.CONFERENCES;
         LocalDateTime createdOnStart = LocalDateTime.now().minusDays(7);
         LocalDateTime createdOnEnd = LocalDateTime.now();
@@ -2267,7 +2268,7 @@ class TicketServiceImplTest {
         // Mock data
         List<String> names = List.of("Meeting A", "Meeting B");
         UUID roomId = UUID.randomUUID();
-        Constants.StatusTicket status = Constants.StatusTicket.CHECK_IN;
+        Constants.StatusTicket status = Constants.StatusTicket.PENDING;
         Constants.Purpose purpose = Constants.Purpose.CONFERENCES;
         LocalDateTime createdOnStart = LocalDateTime.now().minusDays(7);
         LocalDateTime createdOnEnd = LocalDateTime.now();
@@ -2371,7 +2372,7 @@ class TicketServiceImplTest {
 
         // Call the method under test and expect a HttpClientErrorException
         assertThrows(CustomException.class, () ->
-            ticketService.checkNewCustomers(newCustomers, ticket, room));
+            ticketService.checkNewCustomers(newCustomers, ticket, room, true));
     }
 
     @Test
@@ -2404,7 +2405,7 @@ class TicketServiceImplTest {
 
         // Call the method under test and expect a RuntimeException
         RuntimeException exception = assertThrows(RuntimeException.class, () ->
-            ticketService.checkNewCustomers(newCustomers, ticket, room));
+            ticketService.checkNewCustomers(newCustomers, ticket, room, true));
 
         // Verify that the correct exception is thrown with the expected message
         assertEquals("Mapping error", exception.getMessage());
@@ -2463,7 +2464,7 @@ class TicketServiceImplTest {
         // Mock behavior
         CustomerTicketMap customerTicketMap = new CustomerTicketMap();
         customerTicketMap.setCustomerTicketMapPk(new CustomerTicketMapPk(UUID.randomUUID(), UUID.randomUUID()));
-        customerTicketMap.setStatus(Constants.StatusTicket.CHECK_IN);
+        customerTicketMap.setStatus(Constants.StatusCustomerTicket.CHECK_IN);
         when(customerTicketMapRepository.findByCheckInCodeIgnoreCase(checkInCode)).thenReturn(customerTicketMap);
 
         Ticket ticket = new Ticket();
@@ -2474,7 +2475,7 @@ class TicketServiceImplTest {
 
         when(settingUtils.getBoolean(Constants.SettingCode.CONFIGURATION_CARD)).thenReturn(true);
 
-        when(customerTicketMapRepository.existsByCardIdAndStatus(cardId, Constants.StatusTicket.CHECK_IN)).thenReturn(false);
+        when(customerTicketMapRepository.existsByCardIdAndStatus(cardId, Constants.StatusCustomerTicket.CHECK_IN)).thenReturn(false);
 
         // Execute the method
         boolean result = ticketService.addCardCustomerTicket(new ITicketController.CustomerTicketCardDTO(checkInCode, cardId));
@@ -2515,7 +2516,7 @@ class TicketServiceImplTest {
         when(customerRepository.existsByIdAndAndOrganizationId(UUID.fromString("c353835a-5e1e-4df5-973f-aec252bf260f"), "c353835a-5e1e-4df5-973f-aec252bf260f")).thenReturn(true);
 
         // Call the method
-        assertDoesNotThrow(() -> ticketService.checkOldCustomers(oldCustomers, ticket, room));
+        assertDoesNotThrow(() -> ticketService.checkOldCustomers(oldCustomers, ticket, room, true));
     }
 
     @Test
@@ -2548,7 +2549,7 @@ class TicketServiceImplTest {
         when(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CANCEL_EMAIL)).thenReturn("c353835a-5e1e-4df5-973f-aec252bf260f");
 
         // Call the method
-        assertThrows(CustomException.class, () -> ticketService.checkOldCustomers(oldCustomers, ticket, room));
+        assertThrows(CustomException.class, () -> ticketService.checkOldCustomers(oldCustomers, ticket, room, true));
 
     }
 
@@ -2579,7 +2580,7 @@ class TicketServiceImplTest {
         when(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CANCEL_EMAIL)).thenReturn("c353835a-5e1e-4df5-973f-aec252bf260f");
 
         // Call the method
-        assertDoesNotThrow(() -> ticketService.checkOldCustomers(oldCustomers, ticket, room));
+        assertDoesNotThrow(() -> ticketService.checkOldCustomers(oldCustomers, ticket, room, true));
 
     }
 
@@ -2612,6 +2613,6 @@ class TicketServiceImplTest {
         when(customerRepository.existsByIdAndAndOrganizationId(UUID.fromString("c353835a-5e1e-4df5-973f-aec252bf260f"), "c353835a-5e1e-4df5-973f-aec252bf260f")).thenReturn(true);
 
         // Call the method
-        assertDoesNotThrow(() -> ticketService.checkOldCustomers(oldCustomers, ticket, room));
+        assertDoesNotThrow(() -> ticketService.checkOldCustomers(oldCustomers, ticket, room, true));
     }
 }

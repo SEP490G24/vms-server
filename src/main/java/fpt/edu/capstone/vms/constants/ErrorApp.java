@@ -136,6 +136,8 @@ public enum ErrorApp {
     TICKET_IS_CANCEL_CAN_NOT_DO_UPDATE(185, I18n.getMessage("msg.ticket.is.cancel.can.not.do.update")),
     TICKET_IS_COMPLETE_CAN_NOT_DO_UPDATE(186, I18n.getMessage("msg.ticket.is.complete.can.not.do.update")),
     TICKET_IS_EXPIRED_CAN_NOT_UPDATE(187, I18n.getMessage("msg.ticket.is.expired.can.not.update")),
+    TICKET_IS_EXPIRED(188, I18n.getMessage("msg.ticket.is.expired")),
+    TICKET_IS_PENDING_CAN_NOT_SAVE_IS_DRAFT(189, I18n.getMessage("msg.ticket.is.pending.can.not.save.is.draft")),
     //card
     CARD_NOT_FOUND(170, I18n.getMessage("msg.card.not.found")),
     CARD_ID_NULL(171, I18n.getMessage("msg.card.id.null")),
