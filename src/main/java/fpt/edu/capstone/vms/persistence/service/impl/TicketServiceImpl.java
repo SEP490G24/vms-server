@@ -245,13 +245,6 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
      */
     private void setDataCustomer(ITicketController.CreateTicketInfo ticketInfo, Ticket ticket) {
 
-        List<ICustomerController.NewCustomers> newCustomers = ticketInfo.getNewCustomers();
-        List<String> oldCustomers = ticketInfo.getOldCustomers();
-
-        if (oldCustomers == null && newCustomers.isEmpty()) {
-            throw new CustomException(ErrorApp.CUSTOMER_IS_NULL);
-        }
-
         String orgId;
         if (SecurityUtils.getOrgId() == null) {
             Site site = siteRepository.findById(UUID.fromString(SecurityUtils.getSiteId())).orElse(null);
@@ -262,8 +255,8 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         } else {
             orgId = SecurityUtils.getOrgId();
         }
-        if (newCustomers != null) {
-            for (ICustomerController.NewCustomers customerDto : newCustomers) {
+        if (ticketInfo.getNewCustomers() != null && !ticketInfo.getNewCustomers().isEmpty()) {
+            for (ICustomerController.NewCustomers customerDto : ticketInfo.getNewCustomers()) {
                 if (ObjectUtils.isEmpty(customerDto))
                     throw new CustomException(ErrorApp.CUSTOMER_NOT_FOUND);
                 if (!Utils.isCCCDValid(customerDto.getIdentificationNumber())) {
@@ -279,8 +272,8 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             }
         }
 
-        if (oldCustomers != null) {
-            for (String oldCustomer : oldCustomers) {
+        if (ticketInfo.getOldCustomers() != null && !ticketInfo.getOldCustomers().isEmpty()) {
+            for (String oldCustomer : ticketInfo.getOldCustomers()) {
                 if (StringUtils.isEmpty(oldCustomer.trim()))
                     throw new CustomException(ErrorApp.CUSTOMER_NOT_FOUND);
                 if (!customerRepository.existsByIdAndAndOrganizationId(UUID.fromString(oldCustomer), orgId))
@@ -476,7 +469,11 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         LocalDateTime currentTime = LocalDateTime.now();
         LocalDateTime startTime = ticket.getStartTime();
 
-        if (!startTime.isAfter(currentTime.plusHours(2))) {
+        if (startTime.isBefore(LocalDateTime.now())) {
+            throw new CustomException(ErrorApp.TICKET_START_TIME_MUST_GREATER_THEM_CURRENT_TIME);
+        }
+
+        if (!startTime.isAfter(currentTime.plusHours(2)) && !ticket.getStatus().equals(Constants.StatusTicket.DRAFT)) {
             throw new CustomException(ErrorApp.TICKET_TIME_UPDATE_MEETING_MUST_BEFORE_2_HOURS);
         }
 
