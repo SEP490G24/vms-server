@@ -3,6 +3,7 @@ package fpt.edu.capstone.vms.persistence.service.impl;
 import com.google.zxing.WriterException;
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.constants.ErrorApp;
+import fpt.edu.capstone.vms.constants.I18n;
 import fpt.edu.capstone.vms.controller.ICustomerController;
 import fpt.edu.capstone.vms.controller.ITicketController;
 import fpt.edu.capstone.vms.exception.CustomException;
@@ -440,7 +441,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         parameterMap.put("dateTime", date);
         parameterMap.put("startTime", startTime1);
         parameterMap.put("endTime", endTime);
-        parameterMap.put("reason", reason != null ? reason.getName() : "Updating...");
+        parameterMap.put("reason", reason != null ? I18n.getMessage(reason.getCode()) : "Updating...");
         String replacedTemplate = emailUtils.replaceEmailParameters(template.getBody(), parameterMap);
 
         emailUtils.sendMailWithQRCode(customer.getEmail(), template.getSubject(), replacedTemplate, null, ticket.getSiteId());

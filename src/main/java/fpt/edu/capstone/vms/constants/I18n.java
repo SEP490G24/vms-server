@@ -26,7 +26,7 @@ public class I18n {
     public static String getMessage(String msgCode) {
         Locale locale = LocaleContextHolder.getLocale();
         if (locale.getLanguage() == null || locale.getLanguage().isEmpty()) {
-            locale = new Locale("vi");
+            locale = new Locale("en");
         }
         try {
             return messageSource.getMessage(msgCode, null, locale);
@@ -39,7 +39,7 @@ public class I18n {
     public static String getMessage(String msgCode, Object... arg) {
         Locale locale = LocaleContextHolder.getLocale();
         if (locale.getLanguage() == null || locale.getLanguage().isEmpty()) {
-            locale = new Locale("vi");
+            locale = new Locale("en");
         }
         return String.format(messageSource.getMessage(msgCode, null, locale), arg);
     }
