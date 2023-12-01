@@ -188,8 +188,8 @@ class TicketServiceImplTest {
         ITicketController.CreateTicketInfo ticketInfo = new ITicketController.CreateTicketInfo();
         ticketInfo.setDraft(true);
         ticketInfo.setPurpose(Constants.Purpose.MEETING);
-        ticketInfo.setStartTime(LocalDateTime.now().minusMinutes(30));
-        ticketInfo.setEndTime(LocalDateTime.now());
+        ticketInfo.setStartTime(LocalDateTime.now().plusMinutes(1));
+        ticketInfo.setEndTime(LocalDateTime.now().plusMinutes(31));
         ticketInfo.setNewCustomers(null);
         ticketInfo.setOldCustomers(oldCustomer);
         ticketInfo.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
@@ -234,8 +234,8 @@ class TicketServiceImplTest {
         ITicketController.CreateTicketInfo ticketInfo = new ITicketController.CreateTicketInfo();
         ticketInfo.setDraft(false);
         ticketInfo.setPurpose(Constants.Purpose.MEETING);
-        ticketInfo.setStartTime(LocalDateTime.now().minusMinutes(30));
-        ticketInfo.setEndTime(LocalDateTime.now());
+        ticketInfo.setStartTime(LocalDateTime.now().plusMinutes(1));
+        ticketInfo.setEndTime(LocalDateTime.now().plusMinutes(31));
         ticketInfo.setNewCustomers(null);
         ticketInfo.setOldCustomers(oldCustomer);
         ticketInfo.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
