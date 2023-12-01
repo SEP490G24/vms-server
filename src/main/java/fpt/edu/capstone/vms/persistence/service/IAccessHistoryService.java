@@ -16,10 +16,10 @@ import java.util.UUID;
 public interface IAccessHistoryService extends IGenericService<Ticket, UUID> {
 
     Page<CustomerTicketMap> accessHistory(
-        Pageable pageable, String keyword, Constants.StatusTicket status,
+        Pageable pageable, String keyword, List<Constants.StatusTicket> status,
         LocalDateTime formCheckInTime, LocalDateTime toCheckInTime,
         LocalDateTime formCheckOutTime, LocalDateTime toCheckOutTime, List<String> sites
     );
 
-    IAccessHistoryController.AccessHistoryResponseDTO viewAccessHistoryDetail(UUID ticketId, UUID customerId);
+    IAccessHistoryController.AccessHistoryResponseDTO viewAccessHistoryDetail(String checkInCode);
 }

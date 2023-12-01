@@ -11,13 +11,7 @@ import net.sf.jasperreports.engine.JRException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -32,10 +26,10 @@ import java.util.UUID;
 @PreAuthorize("isAuthenticated()")
 public interface IAccessHistoryController {
 
-    @GetMapping("/{ticketId}/customer/{customerId}")
+    @GetMapping("/{checkInCode}")
     @Operation(summary = "View detail access history")
     @PreAuthorize("hasRole('r:access-history:detail')")
-    ResponseEntity<?> viewDetailAccessHistory(@PathVariable UUID ticketId, @PathVariable UUID customerId);
+    ResponseEntity<?> viewDetailAccessHistory(@PathVariable String checkInCode);
 
     @PostMapping("")
     @Operation(summary = "Filter access history ")
@@ -54,7 +48,7 @@ public interface IAccessHistoryController {
         private LocalDateTime toCheckInTime;
         private LocalDateTime formCheckOutTime;
         private LocalDateTime toCheckOutTime;
-        private Constants.StatusTicket status;
+        private List<Constants.StatusTicket> status;
         List<String> sites;
     }
 

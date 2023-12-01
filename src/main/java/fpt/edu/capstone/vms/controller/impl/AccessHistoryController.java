@@ -1,5 +1,6 @@
 package fpt.edu.capstone.vms.controller.impl;
 
+import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.IAccessHistoryController;
 import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMap;
 import fpt.edu.capstone.vms.persistence.service.IAccessHistoryService;
@@ -14,10 +15,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 public class AccessHistoryController implements IAccessHistoryController {
@@ -33,19 +34,35 @@ public class AccessHistoryController implements IAccessHistoryController {
     }
 
     @Override
-    public ResponseEntity<?> viewDetailAccessHistory(UUID ticketId, UUID customerId) {
-        return ResponseEntity.ok(accessHistoryService.viewAccessHistoryDetail(ticketId, customerId));
+    public ResponseEntity<?> viewDetailAccessHistory(String checkInCode) {
+        return ResponseEntity.ok(accessHistoryService.viewAccessHistoryDetail(checkInCode));
     }
 
     @Override
     public ResponseEntity<?> filterAccessHistory(AccessHistoryFilter accessHistoryFilter, Pageable pageable) {
-        Page<CustomerTicketMap> customerTicketMapPage = accessHistoryService.accessHistory(pageable, accessHistoryFilter.getKeyword(), accessHistoryFilter.getStatus(),
-            accessHistoryFilter.getFormCheckInTime(), accessHistoryFilter.getToCheckInTime(), accessHistoryFilter.getFormCheckOutTime(),
-            accessHistoryFilter.getToCheckOutTime(), accessHistoryFilter.getSites());
-        List<AccessHistoryResponseDTO> accessHistoryResponseDTOS = mapper.map(customerTicketMapPage.getContent(), new TypeToken<List<AccessHistoryResponseDTO>>() {
-        }.getType());
-        Page<IAccessHistoryController.AccessHistoryResponseDTO> listData = new PageImpl<>(accessHistoryResponseDTOS, pageable, customerTicketMapPage.getTotalElements());
-        return ResponseEntity.ok(listData);
+        if (CollectionUtils.isEmpty(accessHistoryFilter.getStatus())) {
+            accessHistoryFilter.setStatus(List.of(Constants.StatusTicket.CHECK_IN, Constants.StatusTicket.CHECK_OUT));
+            Page<CustomerTicketMap> customerTicketMapPage = accessHistoryService.accessHistory(pageable, accessHistoryFilter.getKeyword(), accessHistoryFilter.getStatus(),
+                accessHistoryFilter.getFormCheckInTime(), accessHistoryFilter.getToCheckInTime(), accessHistoryFilter.getFormCheckOutTime(),
+                accessHistoryFilter.getToCheckOutTime(), accessHistoryFilter.getSites());
+            List<AccessHistoryResponseDTO> accessHistoryResponseDTOS = mapper.map(customerTicketMapPage.getContent(), new TypeToken<List<AccessHistoryResponseDTO>>() {
+            }.getType());
+            Page<IAccessHistoryController.AccessHistoryResponseDTO> listData = new PageImpl<>(accessHistoryResponseDTOS, pageable, customerTicketMapPage.getTotalElements());
+            return ResponseEntity.ok(listData);
+        } else {
+            if (accessHistoryFilter.getStatus().contains(Constants.StatusTicket.CHECK_IN) || accessHistoryFilter.getStatus().contains(Constants.StatusTicket.CHECK_OUT)
+            ) {
+                Page<CustomerTicketMap> customerTicketMapPage = accessHistoryService.accessHistory(pageable, accessHistoryFilter.getKeyword(), accessHistoryFilter.getStatus(),
+                    accessHistoryFilter.getFormCheckInTime(), accessHistoryFilter.getToCheckInTime(), accessHistoryFilter.getFormCheckOutTime(),
+                    accessHistoryFilter.getToCheckOutTime(), accessHistoryFilter.getSites());
+                List<AccessHistoryResponseDTO> accessHistoryResponseDTOS = mapper.map(customerTicketMapPage.getContent(), new TypeToken<List<AccessHistoryResponseDTO>>() {
+                }.getType());
+                Page<IAccessHistoryController.AccessHistoryResponseDTO> listData = new PageImpl<>(accessHistoryResponseDTOS, pageable, customerTicketMapPage.getTotalElements());
+                return ResponseEntity.ok(listData);
+            } else {
+                return ResponseEntity.badRequest().build();
+            }
+        }
     }
 
     @Override

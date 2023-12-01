@@ -2,17 +2,13 @@ package fpt.edu.capstone.vms.persistence.service.excel;
 
 import fpt.edu.capstone.vms.controller.IAuditLogController;
 import fpt.edu.capstone.vms.persistence.service.IAuditLogService;
+import fpt.edu.capstone.vms.util.SecurityUtils;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import net.sf.jasperreports.engine.JREmptyDataSource;
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JasperCompileManager;
-import net.sf.jasperreports.engine.JasperFillManager;
-import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;
 import net.sf.jasperreports.export.SimpleExporterInput;
@@ -50,6 +46,7 @@ public class ExportAuditLog {
                 listData.getContent().size() == 0 ? Collections.singletonList(new IAuditLogController.AuditLogFilterDTO()) : listData.getContent());
             Map<String, Object> parameters = new HashMap<>();
             parameters.put("tableDataset", listDataSource);
+            parameters.put("exporter", SecurityUtils.fullName());
             JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, new JREmptyDataSource());
 
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();

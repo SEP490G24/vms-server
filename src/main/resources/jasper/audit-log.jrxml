@@ -63,13 +63,14 @@
         <field name="createBy" class="java.lang.String"/>
     </subDataset>
     <parameter name="tableDataset" class="net.sf.jasperreports.engine.data.JRBeanCollectionDataSource"/>
+    <parameter name="exporter" class="java.lang.String"/>
     <queryString>
         <![CDATA[]]>
     </queryString>
     <detail>
         <band height="30">
             <staticText>
-                <reportElement x="660" y="0" width="320" height="30" uuid="95513898-adc2-4daa-a29e-dc34559d7a42"/>
+                <reportElement x="740" y="0" width="310" height="30" uuid="95513898-adc2-4daa-a29e-dc34559d7a42"/>
                 <textElement textAlignment="Center" verticalAlignment="Middle">
                     <font fontName="Times New Roman" size="18" isBold="true"/>
                 </textElement>
@@ -78,12 +79,12 @@
         </band>
         <band height="20">
             <textField>
-                <reportElement x="660" y="0" width="320" height="20" uuid="c953c572-8d74-4c44-9580-ce2d92d0ba80"/>
+                <reportElement x="740" y="0" width="310" height="20" uuid="c953c572-8d74-4c44-9580-ce2d92d0ba80"/>
                 <textElement textAlignment="Center" verticalAlignment="Middle">
                     <font fontName="Times New Roman" size="12"/>
                 </textElement>
                 <textFieldExpression>
-                    <![CDATA["Ngày xuất file: " + new SimpleDateFormat("dd/MM/yyyy").format(new java.util.Date())]]></textFieldExpression>
+                    <![CDATA["Export Date: " + new SimpleDateFormat("dd/MM/yyyy").format(new java.util.Date())   + "       Exporter: " + $P{exporter}]]></textFieldExpression>
             </textField>
         </band>
         <band height="60">
