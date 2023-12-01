@@ -134,6 +134,10 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         LocalDateTime startTime = ticketInfo.getStartTime();
         LocalDateTime endTime = ticketInfo.getEndTime();
 
+        if (startTime.isBefore(LocalDateTime.now())) {
+            throw new CustomException(ErrorApp.TICKET_START_TIME_MUST_GREATER_THEM_CURRENT_TIME);
+        }
+
         //check time
         checkTimeForTicket(startTime, endTime);
         BooleanUtils.toBooleanDefaultIfNull(ticketInfo.isDraft(), false);
@@ -217,10 +221,6 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     }
 
     private void checkTimeForTicket(LocalDateTime startTime, LocalDateTime endTime) {
-
-        if (startTime.isBefore(LocalDateTime.now())) {
-            throw new CustomException(ErrorApp.TICKET_START_TIME_MUST_GREATER_THEM_CURRENT_TIME);
-        }
 
         if (startTime.isAfter(endTime)) {
             throw new CustomException(ErrorApp.TICKET_START_TIME_IS_AFTER_THAN_END_TIME);
@@ -469,7 +469,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         LocalDateTime currentTime = LocalDateTime.now();
         LocalDateTime startTime = ticket.getStartTime();
 
-        if (startTime.isBefore(LocalDateTime.now())) {
+        if (ticketInfo.getStartTime().isBefore(LocalDateTime.now())) {
             throw new CustomException(ErrorApp.TICKET_START_TIME_MUST_GREATER_THEM_CURRENT_TIME);
         }
 
