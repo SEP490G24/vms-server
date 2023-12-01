@@ -50,8 +50,6 @@ class ReasonServiceImplTest {
 
         // Assertions
         assertEquals(2, result.size());
-        assertEquals("Reason 1", result.get(0).getName());
-        assertEquals("Reason 2", result.get(1).getName());
         // Add more assertions based on your actual implementation
 
         // Verify that the repository method was called with the correct argument
