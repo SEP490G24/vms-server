@@ -235,12 +235,15 @@ public interface ITicketController {
         private Constants.Purpose purpose;
         private String purposeNote;
         private String name;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         private LocalDateTime startTime;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         private LocalDateTime endTime;
         private String description;
         private String roomId;
         List<ICustomerController.NewCustomers> newCustomers;
         List<String> oldCustomers;
+        @NotNull
         private boolean draft;
 
     }
