@@ -63,8 +63,8 @@ public interface DeviceRepository extends GenericRepository<Device, Integer> {
 
     @Query(value = "select u from Device u " +
         "left join Room r on r.deviceId = u.id " +
-        "where ((coalesce(:siteIds) is null) or (u.siteId in :siteIds)) and r.deviceId is null and u.deviceType = 'DOOR'")
-    List<Device> findAllWithNotUseInSite(@Param("siteIds") Collection<UUID> siteIds);
+        "where ((coalesce(:siteIds) is null) or (u.siteId in :siteIds)) and r.deviceId is null and u.deviceType = :deviceType")
+    List<Device> findAllWithNotUseInSite(@Param("siteIds") Collection<UUID> siteIds, Constants.DeviceType deviceType);
 
     boolean existsByCodeAndSiteId(String code, UUID siteId);
 }
