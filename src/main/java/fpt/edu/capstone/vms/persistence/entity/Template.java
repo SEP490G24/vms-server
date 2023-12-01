@@ -74,4 +74,19 @@ public class Template extends AbstractBaseEntity<UUID> {
         if (template.getCreatedOn() != null) this.setCreatedOn(template.getCreatedOn());
         return this;
     }
+
+    @Override
+    public String toString() {
+        return "Template{" +
+            "id=" + id +
+            ", name='" + name + '\'' +
+            ", code='" + code + '\'' +
+            ", subject='" + subject + '\'' +
+            ", description='" + description + '\'' +
+            ", body='" + body + '\'' +
+            ", type=" + type +
+            ", enable=" + enable +
+            ", siteId=" + siteId +
+            '}';
+    }
 }

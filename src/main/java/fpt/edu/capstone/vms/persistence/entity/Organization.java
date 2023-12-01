@@ -1,10 +1,6 @@
 package fpt.edu.capstone.vms.persistence.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -78,5 +74,21 @@ public class Organization extends AbstractBaseEntity<UUID> {
     @Override
     public void setId(UUID id) {
         this.id = id;
+    }
+
+    @Override
+    public String toString() {
+        return "Organization{" +
+            "id=" + id +
+            ", name='" + name + '\'' +
+            ", code='" + code + '\'' +
+            ", website='" + website + '\'' +
+            ", representative='" + representative + '\'' +
+            ", description='" + description + '\'' +
+            ", logo='" + logo + '\'' +
+            ", contactInfo='" + contactInfo + '\'' +
+            ", contactPhoneNumber='" + contactPhoneNumber + '\'' +
+            ", enable=" + enable +
+            '}';
     }
 }

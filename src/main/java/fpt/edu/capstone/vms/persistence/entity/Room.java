@@ -71,4 +71,18 @@ public class Room extends AbstractBaseEntity<UUID> {
         if (room.getCreatedOn() != null) this.setCreatedOn(room.getCreatedOn());
         return this;
     }
+
+    @Override
+    public String toString() {
+        return "Room{" +
+            "id=" + id +
+            ", name='" + name + '\'' +
+            ", code='" + code + '\'' +
+            ", description='" + description + '\'' +
+            ", enable=" + enable +
+            ", siteId=" + siteId +
+            ", deviceId=" + deviceId +
+            ", isSecurity=" + isSecurity +
+            '}';
+    }
 }

@@ -2,17 +2,7 @@ package fpt.edu.capstone.vms.persistence.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import fpt.edu.capstone.vms.constants.Constants;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -84,5 +74,20 @@ public class Setting extends AbstractBaseEntity<Long> {
     @Override
     public void setId(Long id) {
         this.id = id;
+    }
+
+    @Override
+    public String toString() {
+        return "Setting{" +
+            "id=" + id +
+            ", code='" + code + '\'' +
+            ", name='" + name + '\'' +
+            ", description='" + description + '\'' +
+            ", type=" + type +
+            ", defaultValue='" + defaultValue + '\'' +
+            ", valueList='" + valueList + '\'' +
+            ", enable=" + enable +
+            ", groupId=" + groupId +
+            '}';
     }
 }

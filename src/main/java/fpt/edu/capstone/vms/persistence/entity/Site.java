@@ -109,4 +109,22 @@ public class Site extends AbstractBaseEntity<UUID> {
     public void setId(UUID id) {
         this.id = id;
     }
+
+    @Override
+    public String toString() {
+        return "Site{" +
+            "id=" + id +
+            ", name='" + name + '\'' +
+            ", code='" + code + '\'' +
+            ", organizationId=" + organizationId +
+            ", phoneNumber='" + phoneNumber + '\'' +
+            ", provinceId=" + provinceId +
+            ", districtId=" + districtId +
+            ", communeId=" + communeId +
+            ", address='" + address + '\'' +
+            ", taxCode='" + taxCode + '\'' +
+            ", description='" + description + '\'' +
+            ", enable=" + enable +
+            '}';
+    }
 }

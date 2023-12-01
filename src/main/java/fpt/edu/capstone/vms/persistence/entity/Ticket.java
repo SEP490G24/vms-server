@@ -2,16 +2,7 @@ package fpt.edu.capstone.vms.persistence.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import fpt.edu.capstone.vms.constants.Constants;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -121,5 +112,27 @@ public class Ticket extends AbstractBaseEntity<UUID> {
     @Override
     public void setId(UUID id) {
         this.id = id;
+    }
+
+    @Override
+    public String toString() {
+        return "Ticket{" +
+            "id=" + id +
+            ", code='" + code + '\'' +
+            ", name='" + name + '\'' +
+            ", purpose=" + purpose +
+            ", purposeNote='" + purposeNote + '\'' +
+            ", startTime=" + startTime +
+            ", endTime=" + endTime +
+            ", description='" + description + '\'' +
+            ", status=" + status +
+            ", isBookmark=" + isBookmark +
+            ", username='" + username + '\'' +
+            ", roomId=" + roomId +
+            ", settings='" + settings + '\'' +
+            ", siteId='" + siteId + '\'' +
+            ", reasonId=" + reasonId +
+            ", reasonNote='" + reasonNote + '\'' +
+            '}';
     }
 }
