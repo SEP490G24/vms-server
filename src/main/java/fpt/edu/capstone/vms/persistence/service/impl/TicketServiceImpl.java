@@ -484,10 +484,10 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         if (!ticket.getUsername().equals(SecurityUtils.loginUsername())) {
             throw new CustomException(ErrorApp.TICKET_YOU_CAN_UPDATE_THIS_TICKET);
         }
-
+        Room room = null;
         if (StringUtils.isNotEmpty(ticketInfo.getRoomId())) {
             if (!ticketInfo.getRoomId().equals(ticket.getRoomId().toString())) {
-                Room room = roomRepository.findById(UUID.fromString(ticketInfo.getRoomId())).orElse(null);
+                room = roomRepository.findById(UUID.fromString(ticketInfo.getRoomId())).orElse(null);
 
                 if (ObjectUtils.isEmpty(room)) {
                     throw new CustomException(ErrorApp.ROOM_NOT_FOUND);
@@ -532,8 +532,6 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         Ticket oldValue = ticket;
         ticketRepository.save(ticket.update(ticketMap));
 
-
-        Room room = roomRepository.findById(ticket.getRoomId()).orElse(null);
         if (ticketInfo.getOldCustomers() != null) {
             checkOldCustomers(ticketInfo.getOldCustomers(), ticket, room, ticketInfo.isDraft());
         }
@@ -574,12 +572,12 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
 
         // Customer to add
         List<String> customersToAdd = oldCustomers.stream()
-            .filter(customerToRemove -> !CustomerOfTicket.contains(customerToRemove))
+            .filter(customerToAdd -> !CustomerOfTicket.contains(customerToAdd))
             .collect(Collectors.toList());
 
         // Customer to remove
         List<String> customersToRemove = CustomerOfTicket.stream()
-            .filter(customerToAdd -> !oldCustomers.contains(customerToAdd))
+            .filter(customerToRemove -> !oldCustomers.contains(customerToRemove))
             .collect(Collectors.toList());
 
         Template template = templateRepository.findById(UUID.fromString(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CANCEL_EMAIL))).orElse(null);
@@ -1094,7 +1092,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             String address = site.getAddress() != null ? site.getAddress() + ", " + addressSite : site.getCommune().getName() + ", " + site.getDistrict().getName() + ", " + site.getProvince().getName();
             parameterMap.put("address", address != null ? address : "Updating...");
             String roomName = room != null ? room.getName() : "Updating....";
-            parameterMap.put("roomName", roomName != null ? roomName : "Updating...");
+            parameterMap.put("roomName", roomName);
             parameterMap.put("staffName", user.getFirstName() + " " + user.getLastName());
             parameterMap.put("staffPhone", user.getPhoneNumber() != null ? user.getPhoneNumber() : "Updating...");
             parameterMap.put("staffEmail", user.getEmail() != null ? user.getEmail() : "Updating...");
