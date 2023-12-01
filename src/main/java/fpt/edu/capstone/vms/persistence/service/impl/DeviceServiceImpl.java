@@ -146,7 +146,7 @@ public class DeviceServiceImpl extends GenericServiceImpl<Device, Integer> imple
     @Override
     public List<Device> findAllWithNotUseInSite(List<String> siteIds) {
         List<UUID> sites = SecurityUtils.getListSiteToUUID(siteRepository, siteIds);
-        return deviceRepository.findAllWithNotUseInSite(sites);
+        return deviceRepository.findAllWithNotUseInSite(sites, Constants.DeviceType.DOOR);
     }
 
     @Override
