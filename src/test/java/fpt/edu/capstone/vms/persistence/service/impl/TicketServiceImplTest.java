@@ -1017,7 +1017,7 @@ class TicketServiceImplTest {
         ticketInfo.setId(ticketId);
         ticketInfo.setRoomId("06eb43a7-6ea8-4744-8231-760559fe2c07");
         ticketInfo.setPurpose(Constants.Purpose.MEETING);
-        ticketInfo.setStartTime(LocalDateTime.now().minusHours(1));
+        ticketInfo.setStartTime(LocalDateTime.now().plusMinutes(1));
 
         Ticket mockTicket = new Ticket();
         mockTicket.setId(ticketId);
@@ -1069,6 +1069,7 @@ class TicketServiceImplTest {
         ITicketController.UpdateTicketInfo ticketInfo = new ITicketController.UpdateTicketInfo();
         UUID ticketId = UUID.randomUUID();
         ticketInfo.setId(ticketId);
+        ticketInfo.setStartTime(LocalDateTime.now().plusMinutes(1));
 
         Ticket mockTicket = new Ticket();
         mockTicket.setId(ticketId);
@@ -1111,7 +1112,7 @@ class TicketServiceImplTest {
         UUID ticketId = UUID.randomUUID();
         ticketInfo.setId(ticketId);
         ticketInfo.setRoomId("06eb43a7-6ea8-4744-8231-760559fe2c08");
-
+        ticketInfo.setStartTime(LocalDateTime.now().plusMinutes(1));
 
         Ticket mockTicket = new Ticket();
         mockTicket.setId(ticketId);
@@ -1158,6 +1159,7 @@ class TicketServiceImplTest {
         UUID ticketId = UUID.randomUUID();
         ticketInfo.setId(ticketId);
         ticketInfo.setRoomId("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        ticketInfo.setStartTime(LocalDateTime.now().plusMinutes(1));
 
 
         Ticket mockTicket = new Ticket();
