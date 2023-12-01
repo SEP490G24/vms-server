@@ -81,5 +81,19 @@ public class Card extends AbstractBaseEntity<UUID> {
     public void setId(UUID id) {
         this.id = id;
     }
+
+    @Override
+    public String toString() {
+        return "Card{" +
+            "id=" + id +
+            ", cardId='" + cardId + '\'' +
+            ", customerId=" + customerId +
+            ", meetingId=" + meetingId +
+            ", recordingTime=" + recordingTime +
+            ", readingTime=" + readingTime +
+            ", enable=" + enable +
+            ", siteId=" + siteId +
+            '}';
+    }
 }
 

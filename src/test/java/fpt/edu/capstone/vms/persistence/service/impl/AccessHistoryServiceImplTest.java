@@ -11,7 +11,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.stubbing.Answer;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -20,12 +24,22 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
 
-import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.*;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_REALM_ROLE;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_RESOURCE_ROLE;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.REALM_ADMIN;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.SCOPE_ORGANIZATION;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.SCOPE_SITE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class AccessHistoryServiceImplTest {
 
@@ -104,7 +118,7 @@ public class AccessHistoryServiceImplTest {
         Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("createdOn"), Sort.Order.desc("lastUpdatedOn")));
         Pageable pageableSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
         String keyword = "search";
-        List<Constants.StatusTicket> status = List.of(Constants.StatusTicket.CHECK_IN, Constants.StatusTicket.CHECK_OUT);
+        List<Constants.StatusCustomerTicket> status = List.of(Constants.StatusCustomerTicket.CHECK_IN, Constants.StatusCustomerTicket.CHECK_OUT);
         LocalDateTime formCheckInTime = LocalDateTime.now().minusDays(7);
         LocalDateTime toCheckInTime = LocalDateTime.now();
         LocalDateTime formCheckOutTime = LocalDateTime.now().minusDays(14);

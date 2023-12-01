@@ -20,6 +20,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -47,15 +48,26 @@ public class AccessHistoryServiceImpl extends GenericServiceImpl<Ticket, UUID> i
 
 
     @Override
-    public Page<CustomerTicketMap> accessHistory(Pageable pageable, String keyword, List<Constants.StatusTicket> status,
+    public Page<CustomerTicketMap> accessHistory(Pageable pageable, String keyword, List<Constants.StatusCustomerTicket> status,
                                                  LocalDateTime formCheckInTime, LocalDateTime toCheckInTime,
                                                  LocalDateTime formCheckOutTime, LocalDateTime toCheckOutTime, List<String> sites) {
         List<Sort.Order> sortColum = new ArrayList<>(PageableUtils.converterSort2List(pageable.getSort()));
         sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.createdOn));
         sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.lastUpdatedOn));
         Pageable pageableSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(sortColum));
-        Page<CustomerTicketMap> customerTicketMapPage = customerTicketMapRepository.accessHistory(pageableSort, SecurityUtils.getListSiteToString(siteRepository, sites), formCheckInTime, toCheckInTime, formCheckOutTime, toCheckOutTime, status, keyword, null);
-        return customerTicketMapPage;
+        if (CollectionUtils.isEmpty(status)) {
+            status = List.of(Constants.StatusCustomerTicket.CHECK_IN, Constants.StatusCustomerTicket.CHECK_OUT);
+            Page<CustomerTicketMap> customerTicketMapPage = customerTicketMapRepository.accessHistory(pageableSort, SecurityUtils.getListSiteToString(siteRepository, sites), formCheckInTime, toCheckInTime, formCheckOutTime, toCheckOutTime, status, keyword, null);
+            return customerTicketMapPage;
+        } else {
+            if (status.contains(Constants.StatusCustomerTicket.CHECK_IN) || status.contains(Constants.StatusCustomerTicket.CHECK_OUT)
+            ) {
+                Page<CustomerTicketMap> customerTicketMapPage = customerTicketMapRepository.accessHistory(pageableSort, SecurityUtils.getListSiteToString(siteRepository, sites), formCheckInTime, toCheckInTime, formCheckOutTime, toCheckOutTime, status, keyword, null);
+                return customerTicketMapPage;
+            } else {
+                return null;
+            }
+        }
     }
 
     @Override
@@ -63,5 +75,4 @@ public class AccessHistoryServiceImpl extends GenericServiceImpl<Ticket, UUID> i
         var customerTicketMap = customerTicketMapRepository.findByCheckInCode(checkInCode);
         return mapper.map(customerTicketMap, IAccessHistoryController.AccessHistoryResponseDTO.class);
     }
-
 }

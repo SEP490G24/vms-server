@@ -56,7 +56,7 @@ public interface IUserController {
     @PostMapping("/export")
     @Operation(summary = "Export list of user to excel")
     @PreAuthorize("hasRole('r:user:export')")
-    ResponseEntity<?> export(UserFilterRequest userFilterRequest);
+    ResponseEntity<?> export(@RequestBody UserFilterRequest userFilterRequest);
 
     @GetMapping("/import")
     @Operation(summary = "download template import user")

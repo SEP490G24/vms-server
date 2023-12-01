@@ -62,4 +62,16 @@ public class Department extends AbstractBaseEntity<UUID>{
     public void setId(UUID id) {
         this.id = id;
     }
+
+    @Override
+    public String toString() {
+        return "Department{" +
+            "id=" + id +
+            ", name='" + name + '\'' +
+            ", code='" + code + '\'' +
+            ", description='" + description + '\'' +
+            ", enable=" + enable +
+            ", siteId=" + siteId +
+            '}';
+    }
 }

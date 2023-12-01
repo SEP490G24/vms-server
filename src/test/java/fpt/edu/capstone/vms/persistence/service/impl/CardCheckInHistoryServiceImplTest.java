@@ -85,7 +85,7 @@ class CardCheckInHistoryServiceImplTest {
         pk.setTicketId(UUID.randomUUID());
         pk.setCustomerId(UUID.randomUUID());
         customerTicketMapMock.setCustomerTicketMapPk(pk);
-        customerTicketMapMock.setStatus(Constants.StatusTicket.CHECK_IN);
+        customerTicketMapMock.setStatus(Constants.StatusCustomerTicket.CHECK_IN);
         customerTicketMapMock.setCheckInTime(java.time.LocalDateTime.now().minusDays(1));
         customerTicketMapMock.setCheckInCode("sampleCheckInCode");
         cardCheckInHistoryMock.setCheckInCode(customerTicketMapMock.getCheckInCode());
@@ -124,7 +124,7 @@ class CardCheckInHistoryServiceImplTest {
         pk.setTicketId(UUID.randomUUID());
         pk.setCustomerId(UUID.randomUUID());
         customerTicketMapMock.setCustomerTicketMapPk(pk);
-        customerTicketMapMock.setStatus(Constants.StatusTicket.CHECK_IN);
+        customerTicketMapMock.setStatus(Constants.StatusCustomerTicket.CHECK_IN);
         customerTicketMapMock.setCheckInTime(java.time.LocalDateTime.now().minusDays(1));
         customerTicketMapMock.setCheckInCode("sampleCheckInCode");
         cardCheckInHistoryMock.setCheckInCode(customerTicketMapMock.getCheckInCode());
@@ -159,7 +159,7 @@ class CardCheckInHistoryServiceImplTest {
         pk.setTicketId(UUID.randomUUID());
         pk.setCustomerId(UUID.randomUUID());
         customerTicketMapMock.setCustomerTicketMapPk(pk);
-        customerTicketMapMock.setStatus(Constants.StatusTicket.CHECK_IN);
+        customerTicketMapMock.setStatus(Constants.StatusCustomerTicket.CHECK_IN);
         customerTicketMapMock.setCheckInTime(java.time.LocalDateTime.now().plusDays(1));
         customerTicketMapMock.setCheckInCode("sampleCheckInCode");
         cardCheckInHistoryMock.setCheckInCode(customerTicketMapMock.getCheckInCode());
@@ -198,7 +198,7 @@ class CardCheckInHistoryServiceImplTest {
         pk.setTicketId(UUID.randomUUID());
         pk.setCustomerId(UUID.randomUUID());
         customerTicketMapMock.setCustomerTicketMapPk(pk);
-        customerTicketMapMock.setStatus(Constants.StatusTicket.CHECK_OUT);
+        customerTicketMapMock.setStatus(Constants.StatusCustomerTicket.CHECK_OUT);
         customerTicketMapMock.setCheckOutTime(java.time.LocalDateTime.now().minusDays(1));
         customerTicketMapMock.setCheckInCode("sampleCheckInCode");
         cardCheckInHistoryMock.setCheckInCode(customerTicketMapMock.getCheckInCode());
@@ -237,7 +237,7 @@ class CardCheckInHistoryServiceImplTest {
         pk.setTicketId(UUID.randomUUID());
         pk.setCustomerId(UUID.randomUUID());
         customerTicketMapMock.setCustomerTicketMapPk(pk);
-        customerTicketMapMock.setStatus(Constants.StatusTicket.CHECK_OUT);
+        customerTicketMapMock.setStatus(Constants.StatusCustomerTicket.CHECK_OUT);
         customerTicketMapMock.setCheckOutTime(java.time.LocalDateTime.now().minusDays(1));
         customerTicketMapMock.setCheckInCode("sampleCheckInCode");
         cardCheckInHistoryMock.setCheckInCode(customerTicketMapMock.getCheckInCode());

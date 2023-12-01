@@ -1,12 +1,7 @@
 package fpt.edu.capstone.vms.persistence.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Column;
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -54,6 +49,7 @@ public class SettingSiteMap extends AbstractBaseEntity<SettingSiteMapPk> {
         if (settingSiteMap.getCreatedOn() != null) this.setCreatedOn(settingSiteMap.getCreatedOn());
         return this;
     }
+
     @Override
     public void setId(SettingSiteMapPk id) {
         this.settingSiteMapPk = id;
@@ -62,5 +58,15 @@ public class SettingSiteMap extends AbstractBaseEntity<SettingSiteMapPk> {
     @Override
     public SettingSiteMapPk getId() {
         return this.settingSiteMapPk;
+    }
+
+    @Override
+    public String toString() {
+        return "SettingSiteMap{" +
+            "settingSiteMapPk=" + settingSiteMapPk +
+            ", description='" + description + '\'' +
+            ", value='" + value + '\'' +
+            ", status=" + status +
+            '}';
     }
 }

@@ -137,5 +137,24 @@ public class User extends AbstractBaseEntity<String> {
         return username;
     }
 
-
+    @Override
+    public String toString() {
+        return "User{" +
+            "username='" + username + '\'' +
+            ", role='" + role + '\'' +
+            ", firstName='" + firstName + '\'' +
+            ", lastName='" + lastName + '\'' +
+            ", avatar='" + avatar + '\'' +
+            ", email='" + email + '\'' +
+            ", phoneNumber='" + phoneNumber + '\'' +
+            ", enable=" + enable +
+            ", gender=" + gender +
+            ", dateOfBirth=" + dateOfBirth +
+            ", provinceId=" + provinceId +
+            ", districtId=" + districtId +
+            ", communeId=" + communeId +
+            ", address='" + address + '\'' +
+            ", departmentId=" + departmentId +
+            '}';
+    }
 }

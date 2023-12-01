@@ -19,7 +19,11 @@ import java.time.Year;
 import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,7 +36,7 @@ public class DashboardServiceImpl implements IDashboardService {
     final SiteRepository siteRepository;
     final List<String> allPurposes = Arrays.asList("CONFERENCES", "INTERVIEW", "MEETING", "OTHERS", "WORKING");
     final List<Constants.StatusTicket> ticketStatus = List.of(Constants.StatusTicket.COMPLETE, Constants.StatusTicket.CANCEL);
-    final List<Constants.StatusTicket> visitsStatus = List.of(Constants.StatusTicket.REJECT, Constants.StatusTicket.CHECK_IN, Constants.StatusTicket.CHECK_OUT);
+    final List<Constants.StatusCustomerTicket> visitsStatus = List.of(Constants.StatusCustomerTicket.REJECT, Constants.StatusCustomerTicket.CHECK_IN, Constants.StatusCustomerTicket.CHECK_OUT);
     final List<String> ticketStatusStrings = ticketStatus.stream()
         .map(Constants.StatusTicket::name)
         .collect(Collectors.toList());
@@ -150,12 +154,12 @@ public class DashboardServiceImpl implements IDashboardService {
 
         List<String> sites = SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSites());
 
-        int totalVisits = dashboardRepository.countTotalVisits(null, null, List.of(Constants.StatusTicket.CHECK_IN, Constants.StatusTicket.CHECK_OUT, Constants.StatusTicket.REJECT), sites);
-        int totalVisitsWithCondition = dashboardRepository.countTotalVisits(firstDay, lastDay, List.of(Constants.StatusTicket.CHECK_IN, Constants.StatusTicket.CHECK_OUT, Constants.StatusTicket.REJECT), sites);
-        int totalAcceptanceVisits = dashboardRepository.countTotalVisits(null, null, List.of(Constants.StatusTicket.CHECK_IN, Constants.StatusTicket.CHECK_OUT), sites);
-        int totalAcceptanceVisitsWithCondition = dashboardRepository.countTotalVisits(firstDay, lastDay, List.of(Constants.StatusTicket.CHECK_IN, Constants.StatusTicket.CHECK_OUT), sites);
-        int totalRejectVisits = dashboardRepository.countTotalVisits(null, null, List.of(Constants.StatusTicket.REJECT), sites);
-        int totalRejectVisitsWithCondition = dashboardRepository.countTotalVisits(firstDay, lastDay, List.of(Constants.StatusTicket.REJECT), sites);
+        int totalVisits = dashboardRepository.countTotalVisits(null, null, List.of(Constants.StatusCustomerTicket.CHECK_IN, Constants.StatusCustomerTicket.CHECK_OUT, Constants.StatusCustomerTicket.REJECT), sites);
+        int totalVisitsWithCondition = dashboardRepository.countTotalVisits(firstDay, lastDay, List.of(Constants.StatusCustomerTicket.CHECK_IN, Constants.StatusCustomerTicket.CHECK_OUT, Constants.StatusCustomerTicket.REJECT), sites);
+        int totalAcceptanceVisits = dashboardRepository.countTotalVisits(null, null, List.of(Constants.StatusCustomerTicket.CHECK_IN, Constants.StatusCustomerTicket.CHECK_OUT), sites);
+        int totalAcceptanceVisitsWithCondition = dashboardRepository.countTotalVisits(firstDay, lastDay, List.of(Constants.StatusCustomerTicket.CHECK_IN, Constants.StatusCustomerTicket.CHECK_OUT), sites);
+        int totalRejectVisits = dashboardRepository.countTotalVisits(null, null, List.of(Constants.StatusCustomerTicket.REJECT), sites);
+        int totalRejectVisitsWithCondition = dashboardRepository.countTotalVisits(firstDay, lastDay, List.of(Constants.StatusCustomerTicket.REJECT), sites);
 
         return IDashboardController.TotalVisitsResponse.builder()
             .totalVisits(totalVisits)
@@ -205,14 +209,14 @@ public class DashboardServiceImpl implements IDashboardService {
             YearMonth yearMonth = YearMonth.of(yearFromDTO, monthFromDTO);
             LocalDateTime firstDayOfMonth = yearMonth.atDay(1).atStartOfDay();
             LocalDateTime lastDayOfMonth = yearMonth.atEndOfMonth().atStartOfDay().withHour(23).withMinute(59).withSecond(59);
-            return MultiLineResponse.formatDataWithWeekInMonth(convertToMonthlyTicketStats(dashboardRepository.countTicketsByStatusWithStackedColumn(firstDayOfMonth, lastDayOfMonth, visitsStatus, SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSites()))), dashboardDTO.getYear(), dashboardDTO.getMonth(), visitsStatusStrings);
+            return MultiLineResponse.formatDataWithWeekInMonth(convertToMonthlyTicketStats(dashboardRepository.countVisitsByStatusWithStackedColumn(firstDayOfMonth, lastDayOfMonth, visitsStatus, SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSites()))), dashboardDTO.getYear(), dashboardDTO.getMonth(), visitsStatusStrings);
         } else {
             YearMonth currentYearMonth = YearMonth.now();
             LocalDateTime firstDayOfMonth = currentYearMonth.atDay(1).atStartOfDay();
             LocalDateTime lastDayOfMonth = currentYearMonth.atEndOfMonth().atStartOfDay().withHour(23).withMinute(59).withSecond(59);
             int currentYear = currentYearMonth.getYear();
             int currentMonth = currentYearMonth.getMonthValue();
-            return MultiLineResponse.formatDataWithWeekInMonth(convertToMonthlyTicketStats(dashboardRepository.countTicketsByStatusWithStackedColumn(firstDayOfMonth, lastDayOfMonth, visitsStatus, SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSites()))), currentYear, currentMonth, visitsStatusStrings);
+            return MultiLineResponse.formatDataWithWeekInMonth(convertToMonthlyTicketStats(dashboardRepository.countVisitsByStatusWithStackedColumn(firstDayOfMonth, lastDayOfMonth, visitsStatus, SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSites()))), currentYear, currentMonth, visitsStatusStrings);
         }
     }
 

@@ -55,7 +55,7 @@ public interface DashboardRepository extends GenericRepository<Ticket, UUID> {
     Integer countTotalVisits(
         @Param("startTime") LocalDateTime startTime,
         @Param("endTime") LocalDateTime endTime,
-        @Param("status") @Nullable Collection<Constants.StatusTicket> status,
+        @Param("status") @Nullable Collection<Constants.StatusCustomerTicket> status,
         @Param("sites") @Nullable Collection<String> sites);
 
     @Query("SELECT TO_CHAR(t.startTime, 'YYYY-MM-DD') as day, t.status, COUNT(t) " +
@@ -82,7 +82,7 @@ public interface DashboardRepository extends GenericRepository<Ticket, UUID> {
     List<Object[]> countVisitsByStatusWithStackedColumn(
         @Param("startTime") LocalDateTime startTime,
         @Param("endTime") LocalDateTime endTime,
-        @Param("status") @Nullable Collection<Constants.StatusTicket> status,
+        @Param("status") @Nullable Collection<Constants.StatusCustomerTicket> status,
         @Param("sites") @Nullable Collection<String> sites);
 
     @Query("SELECT t FROM Ticket t WHERE " +

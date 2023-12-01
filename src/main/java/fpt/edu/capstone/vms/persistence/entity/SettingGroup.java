@@ -1,18 +1,11 @@
 package fpt.edu.capstone.vms.persistence.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-
-import java.util.UUID;
 
 @Data
 @Entity
@@ -47,4 +40,6 @@ public class SettingGroup extends AbstractBaseEntity<Long> {
         if (settingGroupEntity.getCreatedOn() != null) this.setCreatedOn(settingGroupEntity.getCreatedOn());
         return this;
     }
+
+
 }

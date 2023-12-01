@@ -55,4 +55,16 @@ public class Reason extends AbstractBaseEntity<Integer> {
         if (room.getCreatedOn() != null) this.setCreatedOn(room.getCreatedOn());
         return this;
     }
+
+    @Override
+    public String toString() {
+        return "Reason{" +
+            "id=" + id +
+            ", name='" + name + '\'' +
+            ", code='" + code + '\'' +
+            ", type=" + type +
+            ", description='" + description + '\'' +
+            ", enable=" + enable +
+            '}';
+    }
 }
