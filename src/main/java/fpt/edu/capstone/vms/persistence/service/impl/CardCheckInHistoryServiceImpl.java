@@ -14,11 +14,12 @@ import fpt.edu.capstone.vms.persistence.service.ICardCheckInHistoryService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 
 @Service
@@ -61,13 +62,13 @@ public class CardCheckInHistoryServiceImpl extends GenericServiceImpl<CardCheckI
     }
 
     @Override
-    public List<ITicketController.CardCheckInHistoryDTO> getAllCardHistoryOfCustomer(String checkInCode) {
+    public Page<ITicketController.CardCheckInHistoryDTO> getAllCardHistoryOfCustomer(Pageable pageable, String checkInCode) {
         var customerTicket = customerTicketMapRepository.findByCheckInCodeIgnoreCase(checkInCode);
         if (customerTicket != null) {
             if (!SecurityUtils.checkSiteAuthorization(siteRepository, customerTicket.getTicketEntity().getSiteId())) {
                 throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
             }
-            return cardCheckInHistoryRepository.getAllCardHistoryOfCustomer(checkInCode);
+            return cardCheckInHistoryRepository.getAllCardHistoryOfCustomer(pageable, checkInCode);
         }
         return null;
     }

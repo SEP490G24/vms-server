@@ -70,4 +70,6 @@ public interface DepartmentRepository extends GenericRepository<Department, UUID
 
     boolean existsByIdAndSiteId(UUID id, UUID siteId);
 
+    boolean existsBySiteId(UUID siteId);
+
 }

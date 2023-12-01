@@ -84,8 +84,9 @@ public class TicketController implements ITicketController {
     }
 
     @Override
-    public ResponseEntity<?> filterAllTicketBookmarkForUser() {
+    public ResponseEntity<?> filterAllTicketBookmarkForUser(Pageable pageable) {
         var ticketEntity = ticketService.filter(
+            pageable,
             null,
             null,
             null,
@@ -100,13 +101,13 @@ public class TicketController implements ITicketController {
             null,
             true,
             null);
-        List<TicketFilterDTO> ticketFilterDTOS = mapper.map(ticketEntity, new TypeToken<List<TicketFilterDTO>>() {
+        List<TicketFilterDTO> ticketFilterDTOS = mapper.map(ticketEntity.getContent(), new TypeToken<List<TicketFilterDTO>>() {
         }.getType());
         ticketFilterDTOS.forEach(o -> {
             setCustomer(o);
 
         });
-        return ResponseEntity.ok(ticketFilterDTOS);
+        return ResponseEntity.ok(new PageImpl(ticketFilterDTOS, pageable, ticketEntity.getTotalElements()));
     }
 
     @Override
@@ -345,9 +346,9 @@ public class TicketController implements ITicketController {
     }
 
     @Override
-    public ResponseEntity<?> getAllCardHistoryOfCustomer(String checkInCode) {
+    public ResponseEntity<?> getAllCardHistoryOfCustomer(String checkInCode, Pageable pageable) {
         try {
-            return ResponseUtils.getResponseEntityStatus(cardCheckInHistoryService.getAllCardHistoryOfCustomer(checkInCode));
+            return ResponseUtils.getResponseEntityStatus(cardCheckInHistoryService.getAllCardHistoryOfCustomer(pageable, checkInCode));
         } catch (CustomException e) {
             return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
         }

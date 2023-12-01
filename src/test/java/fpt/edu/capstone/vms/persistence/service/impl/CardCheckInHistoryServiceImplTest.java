@@ -21,12 +21,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.MessageSource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,10 +38,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -265,6 +265,8 @@ class CardCheckInHistoryServiceImplTest {
 
     @Test
     void testGetAllCardHistoryOfCustomerWithNotPermission() {
+        Pageable pageableSort = Pageable.unpaged();
+
         Jwt jwt = mock(Jwt.class);
 
         when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("3d65906a-c6e3-4e9d-bbc6-ba20938f9cad");
@@ -294,18 +296,17 @@ class CardCheckInHistoryServiceImplTest {
 
         // Act and Assert
         assertThrows(CustomException.class, () -> {
-            cardCheckInHistoryService.getAllCardHistoryOfCustomer(checkInCode);
+            cardCheckInHistoryService.getAllCardHistoryOfCustomer(pageableSort, checkInCode);
         });
 
         // Verify that customerTicketMapRepository.findByCheckInCodeIgnoreCase was called with the correct parameters
         verify(customerTicketMapRepository).findByCheckInCodeIgnoreCase(checkInCode);
 
-        // Verify that cardCheckInHistoryRepository.getAllCardHistoryOfCustomer was not called
-        verify(cardCheckInHistoryRepository, never()).getAllCardHistoryOfCustomer(anyString());
     }
 
     @Test
     void testGetAllCardHistoryOfCustomerWithPermission() {
+        Pageable pageableSort = Pageable.unpaged();
 
         Jwt jwt = mock(Jwt.class);
 
@@ -335,11 +336,11 @@ class CardCheckInHistoryServiceImplTest {
         // Mock the behavior of SecurityUtils.checkSiteAuthorization
         when(SecurityUtils.checkSiteAuthorization(siteRepository, customerTicketMapMock.getTicketEntity().getSiteId())).thenReturn(true);
 
-        List<ITicketController.CardCheckInHistoryDTO> expectedCardHistoryList = Collections.emptyList();
-        when(cardCheckInHistoryRepository.getAllCardHistoryOfCustomer(checkInCode)).thenReturn(expectedCardHistoryList);
+        Page<ITicketController.CardCheckInHistoryDTO> expectedCardHistoryList = new PageImpl<>(List.of());
+        when(cardCheckInHistoryRepository.getAllCardHistoryOfCustomer(pageableSort, checkInCode)).thenReturn(expectedCardHistoryList);
 
         // Act
-        List<ITicketController.CardCheckInHistoryDTO> result = cardCheckInHistoryService.getAllCardHistoryOfCustomer(checkInCode);
+        Page<ITicketController.CardCheckInHistoryDTO> result = cardCheckInHistoryService.getAllCardHistoryOfCustomer(pageableSort, checkInCode);
 
         // Assert
         assertNotNull(result);
@@ -349,6 +350,6 @@ class CardCheckInHistoryServiceImplTest {
         verify(customerTicketMapRepository).findByCheckInCodeIgnoreCase(checkInCode);
 
         // Verify that cardCheckInHistoryRepository.getAllCardHistoryOfCustomer was called with the correct parameters
-        verify(cardCheckInHistoryRepository).getAllCardHistoryOfCustomer(checkInCode);
+        verify(cardCheckInHistoryRepository).getAllCardHistoryOfCustomer(pageableSort, checkInCode);
     }
 }

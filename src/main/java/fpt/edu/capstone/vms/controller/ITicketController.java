@@ -61,7 +61,7 @@ public interface ITicketController {
 
     @GetMapping("/bookmark")
     @Operation(summary = "Get all ticket bookmark for user")
-    ResponseEntity<?> filterAllTicketBookmarkForUser();
+    ResponseEntity<?> filterAllTicketBookmarkForUser(Pageable pageable);
 
     @PostMapping("/cancel")
     @Operation(summary = "Cancel meeting ticket")
@@ -114,7 +114,7 @@ public interface ITicketController {
     @GetMapping("/history/{checkInCode}")
     @Operation(summary = "Find all card history of customer")
     @PreAuthorize("hasRole('r:ticket:viewCardCheckInHistory')")
-    ResponseEntity<?> getAllCardHistoryOfCustomer(@PathVariable String checkInCode);
+    ResponseEntity<?> getAllCardHistoryOfCustomer(@PathVariable String checkInCode, Pageable pageable);
 
     @Data
     class CreateTicketInfo {
