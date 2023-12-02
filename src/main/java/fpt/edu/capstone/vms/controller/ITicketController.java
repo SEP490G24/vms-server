@@ -187,7 +187,7 @@ public interface ITicketController {
     @Data
     class TicketFilter {
         List<String> names;
-        List<String> sites;
+        List<String> siteId;
         List<String> usernames;
         UUID roomId;
         Constants.StatusTicket status;
@@ -243,9 +243,7 @@ public interface ITicketController {
         private String roomId;
         List<ICustomerController.NewCustomers> newCustomers;
         List<String> oldCustomers;
-        @NotNull
-        private boolean draft;
-
+        private boolean draft = false;
     }
 
     @Data

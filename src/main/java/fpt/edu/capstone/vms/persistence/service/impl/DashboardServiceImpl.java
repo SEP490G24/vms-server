@@ -64,7 +64,7 @@ public class DashboardServiceImpl implements IDashboardService {
             lastDay = currentYearMonth.atEndOfMonth().atStartOfDay().withHour(23).withMinute(59).withSecond(59);
         }
 
-        List<String> sites = SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSites());
+        List<String> sites = SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSiteId());
         return mapToPurposePieResponse(dashboardRepository.countTicketsByPurposeWithPie(firstDay, lastDay, sites));
     }
 
@@ -75,21 +75,21 @@ public class DashboardServiceImpl implements IDashboardService {
             Year year = Year.of(dashboardDTO.getYear());
             LocalDateTime firstDayOfYear = year.atDay(1).atStartOfDay();
             LocalDateTime lastDayOfYear = year.atDay(1).with(TemporalAdjusters.lastDayOfYear()).atStartOfDay().withHour(23).withMinute(59).withSecond(59);
-            return MultiLineResponse.formatDataWithMonthInYear(convertToMonthlyTicketStats(dashboardRepository.countTicketsByPurposeWithMultiLine(firstDayOfYear, lastDayOfYear, SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSites()))), allPurposes);
+            return MultiLineResponse.formatDataWithMonthInYear(convertToMonthlyTicketStats(dashboardRepository.countTicketsByPurposeWithMultiLine(firstDayOfYear, lastDayOfYear, SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSiteId()))), allPurposes);
         } else if (dashboardDTO.getYear() != null && dashboardDTO.getMonth() != null) {
             Integer yearFromDTO = dashboardDTO.getYear();
             Integer monthFromDTO = dashboardDTO.getMonth();
             YearMonth yearMonth = YearMonth.of(yearFromDTO, monthFromDTO);
             LocalDateTime firstDayOfMonth = yearMonth.atDay(1).atStartOfDay();
             LocalDateTime lastDayOfMonth = yearMonth.atEndOfMonth().atStartOfDay().withHour(23).withMinute(59).withSecond(59);
-            return MultiLineResponse.formatDataWithWeekInMonth(convertToMonthlyTicketStats(dashboardRepository.countTicketsByPurposeWithMultiLine(firstDayOfMonth, lastDayOfMonth, SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSites()))), dashboardDTO.getYear(), dashboardDTO.getMonth(), allPurposes);
+            return MultiLineResponse.formatDataWithWeekInMonth(convertToMonthlyTicketStats(dashboardRepository.countTicketsByPurposeWithMultiLine(firstDayOfMonth, lastDayOfMonth, SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSiteId()))), dashboardDTO.getYear(), dashboardDTO.getMonth(), allPurposes);
         } else {
             YearMonth currentYearMonth = YearMonth.now();
             LocalDateTime firstDayOfMonth = currentYearMonth.atDay(1).atStartOfDay();
             LocalDateTime lastDayOfMonth = currentYearMonth.atEndOfMonth().atStartOfDay().withHour(23).withMinute(59).withSecond(59);
             int currentYear = currentYearMonth.getYear();
             int currentMonth = currentYearMonth.getMonthValue();
-            return MultiLineResponse.formatDataWithWeekInMonth(convertToMonthlyTicketStats(dashboardRepository.countTicketsByPurposeWithMultiLine(firstDayOfMonth, lastDayOfMonth, SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSites()))), currentYear, currentMonth, allPurposes);
+            return MultiLineResponse.formatDataWithWeekInMonth(convertToMonthlyTicketStats(dashboardRepository.countTicketsByPurposeWithMultiLine(firstDayOfMonth, lastDayOfMonth, SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSiteId()))), currentYear, currentMonth, allPurposes);
         }
     }
 
@@ -113,7 +113,7 @@ public class DashboardServiceImpl implements IDashboardService {
             lastDay = currentYearMonth.atEndOfMonth().atStartOfDay().withHour(23).withMinute(59).withSecond(59);
         }
 
-        List<String> sites = SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSites());
+        List<String> sites = SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSiteId());
 
         int totalTicket = dashboardRepository.countTotalTickets(null, null, null, sites);
         int totalTicketWithCondition = dashboardRepository.countTotalTickets(firstDay, lastDay, null, sites);
@@ -152,7 +152,7 @@ public class DashboardServiceImpl implements IDashboardService {
             lastDay = currentYearMonth.atEndOfMonth().atStartOfDay().withHour(23).withMinute(59).withSecond(59);
         }
 
-        List<String> sites = SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSites());
+        List<String> sites = SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSiteId());
 
         int totalVisits = dashboardRepository.countTotalVisits(null, null, List.of(Constants.StatusCustomerTicket.CHECK_IN, Constants.StatusCustomerTicket.CHECK_OUT, Constants.StatusCustomerTicket.REJECT), sites);
         int totalVisitsWithCondition = dashboardRepository.countTotalVisits(firstDay, lastDay, List.of(Constants.StatusCustomerTicket.CHECK_IN, Constants.StatusCustomerTicket.CHECK_OUT, Constants.StatusCustomerTicket.REJECT), sites);
@@ -177,14 +177,14 @@ public class DashboardServiceImpl implements IDashboardService {
             Year year = Year.of(dashboardDTO.getYear());
             LocalDateTime firstDayOfYear = year.atDay(1).atStartOfDay();
             LocalDateTime lastDayOfYear = year.atDay(1).with(TemporalAdjusters.lastDayOfYear()).atStartOfDay().withHour(23).withMinute(59).withSecond(59);
-            return MultiLineResponse.formatDataWithMonthInYear(convertToMonthlyTicketStats(dashboardRepository.countTicketsByStatusWithStackedColumn(firstDayOfYear, lastDayOfYear, ticketStatus, SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSites()))), ticketStatusStrings);
+            return MultiLineResponse.formatDataWithMonthInYear(convertToMonthlyTicketStats(dashboardRepository.countTicketsByStatusWithStackedColumn(firstDayOfYear, lastDayOfYear, ticketStatus, SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSiteId()))), ticketStatusStrings);
         } else if (dashboardDTO.getYear() != null && dashboardDTO.getMonth() != null) {
             Integer yearFromDTO = dashboardDTO.getYear();
             Integer monthFromDTO = dashboardDTO.getMonth();
             YearMonth yearMonth = YearMonth.of(yearFromDTO, monthFromDTO);
             LocalDateTime firstDayOfMonth = yearMonth.atDay(1).atStartOfDay();
             LocalDateTime lastDayOfMonth = yearMonth.atEndOfMonth().atStartOfDay().withHour(23).withMinute(59).withSecond(59);
-            return MultiLineResponse.formatDataWithWeekInMonth(convertToMonthlyTicketStats(dashboardRepository.countTicketsByStatusWithStackedColumn(firstDayOfMonth, lastDayOfMonth, ticketStatus, SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSites()))), dashboardDTO.getYear(), dashboardDTO.getMonth(), ticketStatusStrings);
+            return MultiLineResponse.formatDataWithWeekInMonth(convertToMonthlyTicketStats(dashboardRepository.countTicketsByStatusWithStackedColumn(firstDayOfMonth, lastDayOfMonth, ticketStatus, SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSiteId()))), dashboardDTO.getYear(), dashboardDTO.getMonth(), ticketStatusStrings);
         } else {
             YearMonth currentYearMonth = YearMonth.now();
             LocalDateTime firstDayOfMonth = currentYearMonth.atDay(1).atStartOfDay();
@@ -192,7 +192,7 @@ public class DashboardServiceImpl implements IDashboardService {
             lastDayOfMonth.withHour(23).withMinute(59).withSecond(59);
             int currentYear = currentYearMonth.getYear();
             int currentMonth = currentYearMonth.getMonthValue();
-            return MultiLineResponse.formatDataWithWeekInMonth(convertToMonthlyTicketStats(dashboardRepository.countTicketsByStatusWithStackedColumn(firstDayOfMonth, lastDayOfMonth, ticketStatus, SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSites()))), currentYear, currentMonth, ticketStatusStrings);
+            return MultiLineResponse.formatDataWithWeekInMonth(convertToMonthlyTicketStats(dashboardRepository.countTicketsByStatusWithStackedColumn(firstDayOfMonth, lastDayOfMonth, ticketStatus, SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSiteId()))), currentYear, currentMonth, ticketStatusStrings);
         }
     }
 
@@ -202,21 +202,21 @@ public class DashboardServiceImpl implements IDashboardService {
             Year year = Year.of(dashboardDTO.getYear());
             LocalDateTime firstDayOfYear = year.atDay(1).atStartOfDay();
             LocalDateTime lastDayOfYear = year.atDay(1).with(TemporalAdjusters.lastDayOfYear()).atStartOfDay().withHour(23).withMinute(59).withSecond(59);
-            return MultiLineResponse.formatDataWithMonthInYear(convertToMonthlyTicketStats(dashboardRepository.countVisitsByStatusWithStackedColumn(firstDayOfYear, lastDayOfYear, visitsStatus, SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSites()))), visitsStatusStrings);
+            return MultiLineResponse.formatDataWithMonthInYear(convertToMonthlyTicketStats(dashboardRepository.countVisitsByStatusWithStackedColumn(firstDayOfYear, lastDayOfYear, visitsStatus, SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSiteId()))), visitsStatusStrings);
         } else if (dashboardDTO.getYear() != null && dashboardDTO.getMonth() != null) {
             Integer yearFromDTO = dashboardDTO.getYear();
             Integer monthFromDTO = dashboardDTO.getMonth();
             YearMonth yearMonth = YearMonth.of(yearFromDTO, monthFromDTO);
             LocalDateTime firstDayOfMonth = yearMonth.atDay(1).atStartOfDay();
             LocalDateTime lastDayOfMonth = yearMonth.atEndOfMonth().atStartOfDay().withHour(23).withMinute(59).withSecond(59);
-            return MultiLineResponse.formatDataWithWeekInMonth(convertToMonthlyTicketStats(dashboardRepository.countVisitsByStatusWithStackedColumn(firstDayOfMonth, lastDayOfMonth, visitsStatus, SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSites()))), dashboardDTO.getYear(), dashboardDTO.getMonth(), visitsStatusStrings);
+            return MultiLineResponse.formatDataWithWeekInMonth(convertToMonthlyTicketStats(dashboardRepository.countVisitsByStatusWithStackedColumn(firstDayOfMonth, lastDayOfMonth, visitsStatus, SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSiteId()))), dashboardDTO.getYear(), dashboardDTO.getMonth(), visitsStatusStrings);
         } else {
             YearMonth currentYearMonth = YearMonth.now();
             LocalDateTime firstDayOfMonth = currentYearMonth.atDay(1).atStartOfDay();
             LocalDateTime lastDayOfMonth = currentYearMonth.atEndOfMonth().atStartOfDay().withHour(23).withMinute(59).withSecond(59);
             int currentYear = currentYearMonth.getYear();
             int currentMonth = currentYearMonth.getMonthValue();
-            return MultiLineResponse.formatDataWithWeekInMonth(convertToMonthlyTicketStats(dashboardRepository.countVisitsByStatusWithStackedColumn(firstDayOfMonth, lastDayOfMonth, visitsStatus, SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSites()))), currentYear, currentMonth, visitsStatusStrings);
+            return MultiLineResponse.formatDataWithWeekInMonth(convertToMonthlyTicketStats(dashboardRepository.countVisitsByStatusWithStackedColumn(firstDayOfMonth, lastDayOfMonth, visitsStatus, SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSiteId()))), currentYear, currentMonth, visitsStatusStrings);
         }
     }
 
@@ -226,7 +226,7 @@ public class DashboardServiceImpl implements IDashboardService {
         LocalDateTime currentTime = LocalDateTime.now();
         LocalDateTime timeMinus1Hours = currentTime.minus(1, ChronoUnit.HOURS);
         LocalDateTime timePlus1Hour = currentTime.plus(1, ChronoUnit.HOURS);
-        List<String> sites = SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSites());
+        List<String> sites = SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSiteId());
 
         List<Ticket> upcomingMeetings = dashboardRepository.getUpcomingMeetings(currentTime,timePlus1Hour,sites);
         List<Ticket> ongoingMeetings = dashboardRepository.getOngoingMeetings(currentTime,sites);

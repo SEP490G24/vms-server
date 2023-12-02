@@ -62,7 +62,7 @@ public interface IDashboardController {
         private Integer year;
         private Integer month;
         private List<Constants.StatusTicket> status;
-        List<String> sites;
+        List<String> siteId;
     }
 
     @Data

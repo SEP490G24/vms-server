@@ -108,7 +108,7 @@ class DashboardServiceImplTest {
     void testCountTicketsByPurposeWithPie() {
         // Test data
         IDashboardController.DashboardDTO dashboardDTO = new IDashboardController.DashboardDTO();
-        dashboardDTO.setSites(new ArrayList<>()); // Replace with your desired site names
+        dashboardDTO.setSiteId(new ArrayList<>()); // Replace with your desired site names
 
         LocalDateTime firstDay = LocalDateTime.of(2023, 12, 1, 0, 0);
         LocalDateTime lastDay = LocalDateTime.of(2023, 12, 31, 23, 59, 59);
@@ -138,7 +138,7 @@ class DashboardServiceImplTest {
         IDashboardController.DashboardDTO dashboardDTO = new IDashboardController.DashboardDTO();
         dashboardDTO.setYear(2023); // Replace with your desired year
         dashboardDTO.setMonth(11); // Replace with your desired month
-        dashboardDTO.setSites(new ArrayList<>()); // Replace with your desired site names
+        dashboardDTO.setSiteId(new ArrayList<>()); // Replace with your desired site names
 
         // Mock behavior
         LocalDateTime firstDay = LocalDateTime.of(2023, 11, 1, 0, 0);
@@ -169,7 +169,7 @@ class DashboardServiceImplTest {
         // Test data
         IDashboardController.DashboardDTO dashboardDTO = new IDashboardController.DashboardDTO();
         dashboardDTO.setYear(2023); // Replace with your desired year
-        dashboardDTO.setSites(new ArrayList<>()); // Replace with your desired site names
+        dashboardDTO.setSiteId(new ArrayList<>()); // Replace with your desired site names
 
         // Mock behavior
         LocalDateTime firstDay = LocalDateTime.of(2023, 1, 1, 0, 0);
@@ -199,7 +199,7 @@ class DashboardServiceImplTest {
         // Test data
         IDashboardController.DashboardDTO dashboardDTO = new IDashboardController.DashboardDTO();
         dashboardDTO.setYear(2023); // Replace with your desired year
-        dashboardDTO.setSites(new ArrayList<>()); // Replace with your desired site names
+        dashboardDTO.setSiteId(new ArrayList<>()); // Replace with your desired site names
 
         // Mock behavior
         LocalDateTime firstDay = LocalDateTime.of(2023, 1, 1, 0, 0);
@@ -230,7 +230,7 @@ class DashboardServiceImplTest {
         IDashboardController.DashboardDTO dashboardDTO = new IDashboardController.DashboardDTO();
         dashboardDTO.setYear(2023);
         dashboardDTO.setMonth(11);
-        dashboardDTO.setSites(new ArrayList<>());
+        dashboardDTO.setSiteId(new ArrayList<>());
 
         List<Object[]> repositoryResponse = Arrays.asList(
             new Object[]{"2023-11-01", "Purpose1", 5},
@@ -254,7 +254,7 @@ class DashboardServiceImplTest {
         // Arrange
         IDashboardController.DashboardDTO dashboardDTO = new IDashboardController.DashboardDTO();
         dashboardDTO.setYear(2023);
-        dashboardDTO.setSites(new ArrayList<>());
+        dashboardDTO.setSiteId(new ArrayList<>());
 
         List<Object[]> repositoryResponse = Arrays.asList(
             new Object[]{"2023-11-01", "Purpose1", 5},
@@ -277,7 +277,7 @@ class DashboardServiceImplTest {
     void testCountTicketsByPurposeByWithMultiLine_TimeFull() {
         // Arrange
         IDashboardController.DashboardDTO dashboardDTO = new IDashboardController.DashboardDTO();
-        dashboardDTO.setSites(new ArrayList<>());
+        dashboardDTO.setSiteId(new ArrayList<>());
 
         List<Object[]> repositoryResponse = Arrays.asList(
             new Object[]{"2023-11-01", "Purpose1", 5},
@@ -302,7 +302,7 @@ class DashboardServiceImplTest {
         IDashboardController.DashboardDTO dashboardDTO = new IDashboardController.DashboardDTO();
         dashboardDTO.setYear(2023);
         dashboardDTO.setMonth(11);
-        dashboardDTO.setSites(new ArrayList<>());
+        dashboardDTO.setSiteId(new ArrayList<>());
 
         // Mock repository response
         when(dashboardRepository.countTotalTickets(any(LocalDateTime.class), any(LocalDateTime.class), anyList(), anyList())).thenReturn(50);
@@ -320,7 +320,7 @@ class DashboardServiceImplTest {
         // Mock input data (dashboardDTO)
         IDashboardController.DashboardDTO dashboardDTO = new IDashboardController.DashboardDTO();
         dashboardDTO.setYear(2023);
-        dashboardDTO.setSites(new ArrayList<>());
+        dashboardDTO.setSiteId(new ArrayList<>());
 
         // Mock repository response
         when(dashboardRepository.countTotalTickets(any(LocalDateTime.class), any(LocalDateTime.class), anyList(), anyList())).thenReturn(50);
@@ -337,7 +337,7 @@ class DashboardServiceImplTest {
     void testCountTicketsByStatus() {
         // Mock input data (dashboardDTO)
         IDashboardController.DashboardDTO dashboardDTO = new IDashboardController.DashboardDTO();
-        dashboardDTO.setSites(new ArrayList<>());
+        dashboardDTO.setSiteId(new ArrayList<>());
 
         // Mock repository response
         when(dashboardRepository.countTotalTickets(any(LocalDateTime.class), any(LocalDateTime.class), anyList(), anyList())).thenReturn(50);
@@ -357,7 +357,7 @@ class DashboardServiceImplTest {
         IDashboardController.DashboardDTO dashboardDTO = new IDashboardController.DashboardDTO();
         dashboardDTO.setYear(2023);
         dashboardDTO.setMonth(11);
-        dashboardDTO.setSites(new ArrayList<>());
+        dashboardDTO.setSiteId(new ArrayList<>());
 
         // Mock repository response
         when(dashboardRepository.countTotalVisits(any(LocalDateTime.class), any(LocalDateTime.class), anyList(), anyList())).thenReturn(50);
@@ -376,7 +376,7 @@ class DashboardServiceImplTest {
         // Mock input data (dashboardDTO)
         IDashboardController.DashboardDTO dashboardDTO = new IDashboardController.DashboardDTO();
         dashboardDTO.setYear(2023);
-        dashboardDTO.setSites(new ArrayList<>());
+        dashboardDTO.setSiteId(new ArrayList<>());
 
         // Mock repository response
         when(dashboardRepository.countTotalVisits(any(LocalDateTime.class), any(LocalDateTime.class), anyList(), anyList())).thenReturn(50);
@@ -394,7 +394,7 @@ class DashboardServiceImplTest {
 
         // Mock input data (dashboardDTO)
         IDashboardController.DashboardDTO dashboardDTO = new IDashboardController.DashboardDTO();
-        dashboardDTO.setSites(new ArrayList<>());
+        dashboardDTO.setSiteId(new ArrayList<>());
 
         // Mock repository response
         when(dashboardRepository.countTotalVisits(any(LocalDateTime.class), any(LocalDateTime.class), anyList(), anyList())).thenReturn(50);
@@ -412,7 +412,7 @@ class DashboardServiceImplTest {
 
         // Mock input data
         IDashboardController.DashboardDTO dashboardDTO = new IDashboardController.DashboardDTO();
-        dashboardDTO.setSites(new ArrayList<>());
+        dashboardDTO.setSiteId(new ArrayList<>());
 
         List<Object[]> repositoryResponse = Arrays.asList(
             new Object[]{"2023-11-01", "Purpose1", 5},
@@ -442,7 +442,7 @@ class DashboardServiceImplTest {
         // Mock input data
         IDashboardController.DashboardDTO dashboardDTO = new IDashboardController.DashboardDTO();
         dashboardDTO.setYear(2023);
-        dashboardDTO.setSites(new ArrayList<>());
+        dashboardDTO.setSiteId(new ArrayList<>());
 
         List<Object[]> repositoryResponse = Arrays.asList(
             new Object[]{"2023-11-01", "Purpose1", 5},
@@ -473,7 +473,7 @@ class DashboardServiceImplTest {
         IDashboardController.DashboardDTO dashboardDTO = new IDashboardController.DashboardDTO();
         dashboardDTO.setYear(2023);
         dashboardDTO.setMonth(11);
-        dashboardDTO.setSites(new ArrayList<>());
+        dashboardDTO.setSiteId(new ArrayList<>());
 
         List<Object[]> repositoryResponse = Arrays.asList(
             new Object[]{"2023-11-01", "Purpose1", 5},
@@ -501,7 +501,7 @@ class DashboardServiceImplTest {
         IDashboardController.DashboardDTO dashboardDTO = new IDashboardController.DashboardDTO();
         dashboardDTO.setYear(2023);
         dashboardDTO.setMonth(11);
-        dashboardDTO.setSites(new ArrayList<>());
+        dashboardDTO.setSiteId(new ArrayList<>());
 
         List<Object[]> repositoryResponse = Arrays.asList(
             new Object[]{"2023-11-01", "Purpose1", 5},
@@ -528,7 +528,7 @@ class DashboardServiceImplTest {
         // Mock input data
         IDashboardController.DashboardDTO dashboardDTO = new IDashboardController.DashboardDTO();
         dashboardDTO.setYear(2023);
-        dashboardDTO.setSites(new ArrayList<>());
+        dashboardDTO.setSiteId(new ArrayList<>());
 
         List<Object[]> repositoryResponse = Arrays.asList(
             new Object[]{"2023-11-01", "Purpose1", 5},
@@ -559,7 +559,7 @@ class DashboardServiceImplTest {
 
         // Mock input data
         IDashboardController.DashboardDTO dashboardDTO = new IDashboardController.DashboardDTO();
-        dashboardDTO.setSites(new ArrayList<>());
+        dashboardDTO.setSiteId(new ArrayList<>());
 
         List<Object[]> repositoryResponse = Arrays.asList(
             new Object[]{"2023-11-01", "Purpose1", 5},
@@ -587,7 +587,7 @@ class DashboardServiceImplTest {
 
         // Mock input data
         IDashboardController.DashboardDTO dashboardDTO = new IDashboardController.DashboardDTO();
-        dashboardDTO.setSites(new ArrayList<>());
+        dashboardDTO.setSiteId(new ArrayList<>());
 
         // Mock external service calls
         when(dashboardRepository.getUpcomingMeetings(any(LocalDateTime.class), any(LocalDateTime.class), anyList()))

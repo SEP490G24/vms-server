@@ -71,7 +71,7 @@ public class KeycloakRealmRoleResource implements IRoleResource {
         var filteredRoles = roles.stream()
             .filter(roleRepresentation -> {
                 if (roleBasePayload.getCode() == null || roleRepresentation.getName().contains(roleBasePayload.getCode())) {
-                    List<String> siteIds = roleBasePayload.getAttributes() != null ? roleBasePayload.getAttributes().get("siteIds") : null;
+                    List<String> siteIds = roleBasePayload.getAttributes() != null ? roleBasePayload.getAttributes().get("siteId") : null;
                     List<String> names = roleBasePayload.getAttributes() != null ? roleBasePayload.getAttributes().get("name") : null;
                     return (siteIds == null || siteIds.isEmpty() ||
                         siteIds.stream().anyMatch(siteId ->
@@ -110,7 +110,7 @@ public class KeycloakRealmRoleResource implements IRoleResource {
             filteredRoles = roles.stream()
                 .filter(roleRepresentation -> {
                     if (roleBasePayload.getCode() == null || roleRepresentation.getName().contains(roleBasePayload.getCode())) {
-                        List<String> siteIds = roleBasePayload.getAttributes() != null ? roleBasePayload.getAttributes().get("siteIds") : null;
+                        List<String> siteIds = roleBasePayload.getAttributes() != null ? roleBasePayload.getAttributes().get("siteId") : null;
                         List<String> names = roleBasePayload.getAttributes() != null ? roleBasePayload.getAttributes().get("name") : null;
                         return (siteIds == null || siteIds.isEmpty() ||
                             siteIds.stream().anyMatch(siteId ->

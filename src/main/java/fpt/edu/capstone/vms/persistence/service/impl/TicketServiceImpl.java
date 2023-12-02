@@ -7,11 +7,33 @@ import fpt.edu.capstone.vms.constants.I18n;
 import fpt.edu.capstone.vms.controller.ICustomerController;
 import fpt.edu.capstone.vms.controller.ITicketController;
 import fpt.edu.capstone.vms.exception.CustomException;
-import fpt.edu.capstone.vms.persistence.entity.*;
-import fpt.edu.capstone.vms.persistence.repository.*;
+import fpt.edu.capstone.vms.persistence.entity.AuditLog;
+import fpt.edu.capstone.vms.persistence.entity.Customer;
+import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMap;
+import fpt.edu.capstone.vms.persistence.entity.CustomerTicketMapPk;
+import fpt.edu.capstone.vms.persistence.entity.Reason;
+import fpt.edu.capstone.vms.persistence.entity.Room;
+import fpt.edu.capstone.vms.persistence.entity.Site;
+import fpt.edu.capstone.vms.persistence.entity.Template;
+import fpt.edu.capstone.vms.persistence.entity.Ticket;
+import fpt.edu.capstone.vms.persistence.entity.User;
+import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
+import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
+import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
+import fpt.edu.capstone.vms.persistence.repository.ReasonRepository;
+import fpt.edu.capstone.vms.persistence.repository.RoomRepository;
+import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
+import fpt.edu.capstone.vms.persistence.repository.TemplateRepository;
+import fpt.edu.capstone.vms.persistence.repository.TicketRepository;
+import fpt.edu.capstone.vms.persistence.repository.UserRepository;
 import fpt.edu.capstone.vms.persistence.service.ITicketService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
-import fpt.edu.capstone.vms.util.*;
+import fpt.edu.capstone.vms.util.EmailUtils;
+import fpt.edu.capstone.vms.util.PageableUtils;
+import fpt.edu.capstone.vms.util.QRcodeUtils;
+import fpt.edu.capstone.vms.util.SecurityUtils;
+import fpt.edu.capstone.vms.util.SettingUtils;
+import fpt.edu.capstone.vms.util.Utils;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +56,13 @@ import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -820,7 +848,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             if (customerTicketMap.getTicketEntity().getEndTime().isBefore(LocalDateTime.now())) {
                 throw new CustomException(ErrorApp.TICKET_IS_EXPIRED_CAN_NOT_CHECK_IN);
             }
-            if (customerTicketMap.getTicketEntity().getStartTime().minusHours(1).isAfter(LocalDateTime.now().minusHours(1))) {
+            if (customerTicketMap.getTicketEntity().getStartTime().isAfter(LocalDateTime.now().plusHours(1))) {
                 throw new CustomException(ErrorApp.TICKET_NOT_START_CAN_NOT_CHECK_IN);
             }
             customerTicketMap.setStatus(checkInPayload.getStatus());
@@ -830,7 +858,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             if (!customerTicketMap.getStatus().equals(Constants.StatusCustomerTicket.CHECK_IN)) {
                 throw new CustomException(ErrorApp.CUSTOMER_NOT_CHECK_IN_TO_CHECK_OUT);
             }
-            if (customerTicketMap.getTicketEntity().getStartTime().isAfter(LocalDateTime.now())) {
+            if (customerTicketMap.getCheckInTime() == null) {
                 throw new CustomException(ErrorApp.TICKET_NOT_START_CAN_NOT_CHECK_OUT);
             }
             customerTicketMap.setCheckOutTime(LocalDateTime.now());
@@ -842,7 +870,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             if (count == 0) {
                 Ticket ticket = ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId()).orElse(null);
                 if (ticket != null) {
-                    if (ticket.getStartTime().isAfter(LocalDateTime.now())) {
+                    if (ticket.getStartTime().isAfter(LocalDateTime.now().plusHours(1))) {
                         throw new CustomException(ErrorApp.TICKET_NOT_START_CAN_NOT_CHECK_OUT);
                     }
                     ticket.setStatus(Constants.StatusTicket.COMPLETE);
@@ -859,7 +887,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             if (customerTicketMap.getTicketEntity().getEndTime().isAfter(LocalDateTime.now())) {
                 throw new CustomException(ErrorApp.TICKET_IS_EXPIRED_CAN_NOT_REJECT);
             }
-            if (customerTicketMap.getTicketEntity().getStartTime().minusHours(1).isBefore(LocalDateTime.now().minusHours(1))) {
+            if (customerTicketMap.getTicketEntity().getStartTime().isBefore(LocalDateTime.now().plusHours(1))) {
                 throw new CustomException(ErrorApp.TICKET_NOT_START_CAN_NOT_REJECT);
             }
             customerTicketMap.setReasonId(checkInPayload.getReasonId());

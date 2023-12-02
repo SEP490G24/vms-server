@@ -8,7 +8,6 @@ public enum ErrorApp {
     UNAUTHORIZED(401, I18n.getMessage("msg.unauthorized")),
     FORBIDDEN(403, I18n.getMessage("msg.access.denied")),
     INTERNAL_SERVER(500, I18n.getMessage("msg.internal.server")),
-    ENTITY_NOT_FOUND(100, I18n.getMessage("msg.entity.notFound")),
     OBJECT_NOT_EMPTY(101, I18n.getMessage("msg.object.not.empty")),
     OBJECT_CODE_NULL(102, I18n.getMessage("msg.object.code.null")),
 

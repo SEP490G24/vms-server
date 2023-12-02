@@ -57,4 +57,4 @@ replay_pid*
 /.docker/volume/redis/data/
 /.idea/
 /target/
-/target
+/target/*

@@ -42,8 +42,8 @@ public class RoleControllerImpl implements IRoleController {
     @Override
     public ResponseEntity<?> filter(RoleFilterPayload filterPayload, boolean isPageable, Pageable pageable) {
         if (filterPayload.getAttributes() != null) {
-            List<String> sites = filterPayload.getAttributes().get("siteIds");
-            filterPayload.getAttributes().put("siteIds", SecurityUtils.getListSiteToString(siteRepository, sites));
+            List<String> sites = filterPayload.getAttributes().get("siteId");
+            filterPayload.getAttributes().put("siteId", SecurityUtils.getListSiteToString(siteRepository, sites));
         }
         return isPageable ? ResponseEntity.ok(roleService.filter(filterPayload, pageable)) : ResponseEntity.ok(roleService.filter(filterPayload));
     }
