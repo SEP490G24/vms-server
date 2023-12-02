@@ -92,9 +92,7 @@ public interface ITicketService extends IGenericService<Ticket, UUID> {
 
     ITicketController.TicketByQRCodeResponseDTO updateStatusCustomerOfTicket(ITicketController.CheckInPayload checkInPayload);
 
-    ITicketController.TicketFilterDTO findByTicketForUser(UUID ticketId);
-
-    ITicketController.TicketFilterDTO findByTicketForAdmin(UUID ticketId, String siteId);
+    ITicketController.TicketFilterDTO findByTicket(UUID ticketId);
 
     Page<CustomerTicketMap> filterTicketAndCustomer(
         Pageable pageable,

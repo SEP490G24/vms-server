@@ -354,17 +354,11 @@ public class TicketController implements ITicketController {
     }
 
     @Override
-    public ResponseEntity<?> viewDetailTicket(UUID ticketId, String siteId) {
+    public ResponseEntity<?> viewDetailTicket(UUID ticketId) {
         try {
-            if (SecurityUtils.getUserDetails().isOrganizationAdmin() || SecurityUtils.getUserDetails().isSiteAdmin()) {
-                TicketFilterDTO ticketFilterDTO = ticketService.findByTicketForAdmin(ticketId, siteId);
-                setCustomer(ticketFilterDTO);
-                return ResponseUtils.getResponseEntityStatus(ticketFilterDTO);
-            } else {
-                TicketFilterDTO ticketFilterDTO = ticketService.findByTicketForUser(ticketId);
-                setCustomer(ticketFilterDTO);
-                return ResponseUtils.getResponseEntityStatus(ticketFilterDTO);
-            }
+            TicketFilterDTO ticketFilterDTO = ticketService.findByTicket(ticketId);
+            setCustomer(ticketFilterDTO);
+            return ResponseUtils.getResponseEntityStatus(ticketFilterDTO);
         } catch (CustomException e) {
             return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
