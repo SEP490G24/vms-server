@@ -133,7 +133,7 @@ public class TicketController implements ITicketController {
         if (SecurityUtils.getUserDetails().isOrganizationAdmin() || SecurityUtils.getUserDetails().isSiteAdmin()) {
             var ticketEntity = ticketService.filterAllBySite(
                 filter.getNames(),
-                filter.getSites(),
+                filter.getSiteId(),
                 filter.getUsernames(),
                 filter.getRoomId(),
                 filter.getStatus(),
@@ -150,7 +150,7 @@ public class TicketController implements ITicketController {
             var ticketEntityPageable = ticketService.filterAllBySite(
                 pageable,
                 filter.getNames(),
-                filter.getSites(),
+                filter.getSiteId(),
                 filter.getUsernames(),
                 filter.getRoomId(),
                 filter.getStatus(),
@@ -287,7 +287,7 @@ public class TicketController implements ITicketController {
     public ResponseEntity<?> filterTicketAndCustomer(TicketFilter filter, Pageable pageable) {
         Page<CustomerTicketMap> customerTicketMaps = ticketService.filterTicketAndCustomer(
             pageable,
-            filter.getSites(),
+            filter.getSiteId(),
             filter.getNames(),
             filter.getRoomId(),
             filter.getPurpose(),
@@ -310,7 +310,7 @@ public class TicketController implements ITicketController {
     public ResponseEntity<?> filterTicketByRoom(TicketFilter filter) {
         TicketByRoomResponseDTO ticketByRoomResponseDTO = ticketService.filterTicketByRoom(
             filter.getNames(),
-            filter.getSites(),
+            filter.getSiteId(),
             filter.getUsernames(),
             filter.getRoomId(),
             filter.getStatus(),
