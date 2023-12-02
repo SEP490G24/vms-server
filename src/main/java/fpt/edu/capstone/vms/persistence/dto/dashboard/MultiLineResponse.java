@@ -3,14 +3,13 @@ package fpt.edu.capstone.vms.persistence.dto.dashboard;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Data
 @AllArgsConstructor
@@ -108,7 +107,7 @@ public class MultiLineResponse {
                 }
             }
         }
-
+        convertDateFormat(weeklyCounts);
         return weeklyCounts;
     }
 
@@ -169,7 +168,6 @@ public class MultiLineResponse {
         LocalDate startDate, endDate, currentDate;
 
         try {
-            // Chuyển đổi các chuỗi thành đối tượng LocalDate
             startDate = LocalDate.parse(startDateString, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
             endDate = LocalDate.parse(endDateString, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
             currentDate = LocalDate.parse(date, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
@@ -177,8 +175,31 @@ public class MultiLineResponse {
             // Kiểm tra xem ngày có nằm trong khoảng thời gian của tuần không
             return !currentDate.isBefore(startDate) && !currentDate.isAfter(endDate);
         } catch (DateTimeParseException e) {
-            e.printStackTrace(); // Xử lý lỗi nếu cần thiết
+            e.printStackTrace();
             return false;
+        }
+    }
+
+
+    public static void convertDateFormat(List<MultiLineResponse> data) {
+        SimpleDateFormat inputFormat = new SimpleDateFormat("dd/MM/yyyy");
+        SimpleDateFormat outputFormat = new SimpleDateFormat("dd/MM");
+
+        for (MultiLineResponse item : data) {
+            String[] dateRange = item.getTime().split(" -> ");
+            try {
+                Date startDate = inputFormat.parse(dateRange[0]);
+                Date endDate = inputFormat.parse(dateRange[1]);
+
+                String formattedStartDate = outputFormat.format(startDate);
+                String formattedEndDate = outputFormat.format(endDate);
+
+                String formattedDateRange = formattedStartDate + " -> " + formattedEndDate;
+                item.setTime(formattedDateRange);
+
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
         }
     }
 

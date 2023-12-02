@@ -134,6 +134,10 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         LocalDateTime startTime = ticketInfo.getStartTime();
         LocalDateTime endTime = ticketInfo.getEndTime();
 
+        if (startTime.isBefore(LocalDateTime.now())) {
+            throw new CustomException(ErrorApp.TICKET_START_TIME_MUST_GREATER_THEM_CURRENT_TIME);
+        }
+
         //check time
         checkTimeForTicket(startTime, endTime);
         BooleanUtils.toBooleanDefaultIfNull(ticketInfo.isDraft(), false);
@@ -218,10 +222,6 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
 
     private void checkTimeForTicket(LocalDateTime startTime, LocalDateTime endTime) {
 
-        if (startTime.isBefore(LocalDateTime.now())) {
-            throw new CustomException(ErrorApp.TICKET_START_TIME_MUST_GREATER_THEM_CURRENT_TIME);
-        }
-
         if (startTime.isAfter(endTime)) {
             throw new CustomException(ErrorApp.TICKET_START_TIME_IS_AFTER_THAN_END_TIME);
         }
@@ -245,13 +245,6 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
      */
     private void setDataCustomer(ITicketController.CreateTicketInfo ticketInfo, Ticket ticket) {
 
-        List<ICustomerController.NewCustomers> newCustomers = ticketInfo.getNewCustomers();
-        List<String> oldCustomers = ticketInfo.getOldCustomers();
-
-        if (oldCustomers == null && newCustomers.isEmpty()) {
-            throw new CustomException(ErrorApp.CUSTOMER_IS_NULL);
-        }
-
         String orgId;
         if (SecurityUtils.getOrgId() == null) {
             Site site = siteRepository.findById(UUID.fromString(SecurityUtils.getSiteId())).orElse(null);
@@ -262,8 +255,8 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         } else {
             orgId = SecurityUtils.getOrgId();
         }
-        if (newCustomers != null) {
-            for (ICustomerController.NewCustomers customerDto : newCustomers) {
+        if (ticketInfo.getNewCustomers() != null && !ticketInfo.getNewCustomers().isEmpty()) {
+            for (ICustomerController.NewCustomers customerDto : ticketInfo.getNewCustomers()) {
                 if (ObjectUtils.isEmpty(customerDto))
                     throw new CustomException(ErrorApp.CUSTOMER_NOT_FOUND);
                 if (!Utils.isCCCDValid(customerDto.getIdentificationNumber())) {
@@ -279,8 +272,8 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             }
         }
 
-        if (oldCustomers != null) {
-            for (String oldCustomer : oldCustomers) {
+        if (ticketInfo.getOldCustomers() != null && !ticketInfo.getOldCustomers().isEmpty()) {
+            for (String oldCustomer : ticketInfo.getOldCustomers()) {
                 if (StringUtils.isEmpty(oldCustomer.trim()))
                     throw new CustomException(ErrorApp.CUSTOMER_NOT_FOUND);
                 if (!customerRepository.existsByIdAndAndOrganizationId(UUID.fromString(oldCustomer), orgId))
@@ -476,7 +469,11 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         LocalDateTime currentTime = LocalDateTime.now();
         LocalDateTime startTime = ticket.getStartTime();
 
-        if (!startTime.isAfter(currentTime.plusHours(2))) {
+        if (ticketInfo.getStartTime().isBefore(LocalDateTime.now())) {
+            throw new CustomException(ErrorApp.TICKET_START_TIME_MUST_GREATER_THEM_CURRENT_TIME);
+        }
+
+        if (!startTime.isAfter(currentTime.plusHours(2)) && !ticket.getStatus().equals(Constants.StatusTicket.DRAFT)) {
             throw new CustomException(ErrorApp.TICKET_TIME_UPDATE_MEETING_MUST_BEFORE_2_HOURS);
         }
 
@@ -487,10 +484,10 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         if (!ticket.getUsername().equals(SecurityUtils.loginUsername())) {
             throw new CustomException(ErrorApp.TICKET_YOU_CAN_UPDATE_THIS_TICKET);
         }
-
+        Room room = null;
         if (StringUtils.isNotEmpty(ticketInfo.getRoomId())) {
-            if (!ticketInfo.getRoomId().equals(ticket.getRoomId())) {
-                Room room = roomRepository.findById(UUID.fromString(ticketInfo.getRoomId())).orElse(null);
+            if (!ticketInfo.getRoomId().equals(ticket.getRoomId().toString())) {
+                room = roomRepository.findById(UUID.fromString(ticketInfo.getRoomId())).orElse(null);
 
                 if (ObjectUtils.isEmpty(room)) {
                     throw new CustomException(ErrorApp.ROOM_NOT_FOUND);
@@ -535,8 +532,6 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         Ticket oldValue = ticket;
         ticketRepository.save(ticket.update(ticketMap));
 
-
-        Room room = roomRepository.findById(ticket.getRoomId()).orElse(null);
         if (ticketInfo.getOldCustomers() != null) {
             checkOldCustomers(ticketInfo.getOldCustomers(), ticket, room, ticketInfo.isDraft());
         }
@@ -577,12 +572,12 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
 
         // Customer to add
         List<String> customersToAdd = oldCustomers.stream()
-            .filter(customerToRemove -> !CustomerOfTicket.contains(customerToRemove))
+            .filter(customerToAdd -> !CustomerOfTicket.contains(customerToAdd))
             .collect(Collectors.toList());
 
         // Customer to remove
         List<String> customersToRemove = CustomerOfTicket.stream()
-            .filter(customerToAdd -> !oldCustomers.contains(customerToAdd))
+            .filter(customerToRemove -> !oldCustomers.contains(customerToRemove))
             .collect(Collectors.toList());
 
         Template template = templateRepository.findById(UUID.fromString(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CANCEL_EMAIL))).orElse(null);
@@ -823,9 +818,6 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     @Override
     public ITicketController.TicketByQRCodeResponseDTO findByQRCode(String checkInCode) {
         CustomerTicketMap customerTicketMap = customerTicketMapRepository.findByCheckInCodeIgnoreCase(checkInCode);
-        if (customerTicketMap.getTicketEntity().getEndTime().isBefore(LocalDateTime.now())) {
-            throw new CustomException(ErrorApp.TICKET_IS_EXPIRED);
-        }
         String site = SecurityUtils.getSiteId();
         if (!site.equals(customerTicketMap.getTicketEntity().getSiteId())) {
             throw new CustomException(ErrorApp.SITE_NOT_FOUND);
@@ -856,7 +848,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             if (customerTicketMap.getTicketEntity().getEndTime().isBefore(LocalDateTime.now())) {
                 throw new CustomException(ErrorApp.TICKET_IS_EXPIRED_CAN_NOT_CHECK_IN);
             }
-            if (customerTicketMap.getTicketEntity().getStartTime().isAfter(LocalDateTime.now().minusHours(1))) {
+            if (customerTicketMap.getTicketEntity().getStartTime().isAfter(LocalDateTime.now().plusHours(1))) {
                 throw new CustomException(ErrorApp.TICKET_NOT_START_CAN_NOT_CHECK_IN);
             }
             customerTicketMap.setStatus(checkInPayload.getStatus());
@@ -866,7 +858,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             if (!customerTicketMap.getStatus().equals(Constants.StatusCustomerTicket.CHECK_IN)) {
                 throw new CustomException(ErrorApp.CUSTOMER_NOT_CHECK_IN_TO_CHECK_OUT);
             }
-            if (customerTicketMap.getTicketEntity().getStartTime().isAfter(LocalDateTime.now())) {
+            if (customerTicketMap.getCheckInTime() == null) {
                 throw new CustomException(ErrorApp.TICKET_NOT_START_CAN_NOT_CHECK_OUT);
             }
             customerTicketMap.setCheckOutTime(LocalDateTime.now());
@@ -878,7 +870,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             if (count == 0) {
                 Ticket ticket = ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId()).orElse(null);
                 if (ticket != null) {
-                    if (ticket.getStartTime().isAfter(LocalDateTime.now())) {
+                    if (ticket.getStartTime().isAfter(LocalDateTime.now().plusHours(1))) {
                         throw new CustomException(ErrorApp.TICKET_NOT_START_CAN_NOT_CHECK_OUT);
                     }
                     ticket.setStatus(Constants.StatusTicket.COMPLETE);
@@ -895,7 +887,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             if (customerTicketMap.getTicketEntity().getEndTime().isAfter(LocalDateTime.now())) {
                 throw new CustomException(ErrorApp.TICKET_IS_EXPIRED_CAN_NOT_REJECT);
             }
-            if (customerTicketMap.getTicketEntity().getStartTime().isBefore(LocalDateTime.now().minusHours(1))) {
+            if (customerTicketMap.getTicketEntity().getStartTime().isBefore(LocalDateTime.now().plusHours(1))) {
                 throw new CustomException(ErrorApp.TICKET_NOT_START_CAN_NOT_REJECT);
             }
             customerTicketMap.setReasonId(checkInPayload.getReasonId());
@@ -1097,7 +1089,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             String address = site.getAddress() != null ? site.getAddress() + ", " + addressSite : site.getCommune().getName() + ", " + site.getDistrict().getName() + ", " + site.getProvince().getName();
             parameterMap.put("address", address != null ? address : "Updating...");
             String roomName = room != null ? room.getName() : "Updating....";
-            parameterMap.put("roomName", roomName != null ? roomName : "Updating...");
+            parameterMap.put("roomName", roomName);
             parameterMap.put("staffName", user.getFirstName() + " " + user.getLastName());
             parameterMap.put("staffPhone", user.getPhoneNumber() != null ? user.getPhoneNumber() : "Updating...");
             parameterMap.put("staffEmail", user.getEmail() != null ? user.getEmail() : "Updating...");

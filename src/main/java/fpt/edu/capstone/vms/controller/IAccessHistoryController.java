@@ -14,7 +14,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -66,10 +65,10 @@ public interface IAccessHistoryController {
         private String ticketName;
         private Constants.Purpose purpose;
         private Constants.StatusTicket ticketStatus;
-        private Date startTime;
-        private Date endTime;
+        private LocalDateTime startTime;
+        private LocalDateTime endTime;
         private String createBy;
-        private Date createdOn;
+        private LocalDateTime createdOn;
 
         //Info Room
         private UUID roomId;
@@ -88,8 +87,8 @@ public interface IAccessHistoryController {
 
         //access history
 
-        private Date checkInTime;
-        private Date checkOutTime;
+        private LocalDateTime checkInTime;
+        private LocalDateTime checkOutTime;
         private Constants.StatusCustomerTicket ticketCustomerStatus;
     }
 }
