@@ -93,7 +93,7 @@ public interface ITicketController {
     @GetMapping("/view-detail/{ticketId}")
     @Operation(summary = "View Detail ticket by id")
     @PreAuthorize("hasRole('r:ticket:detail')")
-    ResponseEntity<?> viewDetailTicket(@PathVariable UUID ticketId, @RequestParam(value = "siteId", required = false) String siteId);
+    ResponseEntity<?> viewDetailTicket(@PathVariable UUID ticketId);
 
     @PostMapping("/check-in/filter")
     @Operation(summary = "Filter ticket and customer ")
@@ -259,7 +259,7 @@ public interface ITicketController {
         private String ticketName;
         private Constants.Purpose purpose;
         private Constants.StatusTicket ticketStatus;
-        private Constants.StatusTicket ticketCustomerStatus;
+        private Constants.StatusCustomerTicket ticketCustomerStatus;
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         private LocalDateTime startTime;
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)

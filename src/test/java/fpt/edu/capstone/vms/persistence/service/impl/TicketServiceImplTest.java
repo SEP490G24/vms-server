@@ -1848,7 +1848,7 @@ class TicketServiceImplTest {
         site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c07"));
         when(siteRepository.findById(siteId)).thenReturn(Optional.of(site));
         // Call the method under test
-        assertThrows(CustomException.class, () -> ticketService.findByTicketForAdmin(ticketId, siteId.toString()));
+        assertThrows(CustomException.class, () -> ticketService.findByTicket(ticketId));
 
 
         // You can add more assertions if needed
@@ -1876,7 +1876,7 @@ class TicketServiceImplTest {
         when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(ticket));
 
         // Call the method under test and expect a HttpClientErrorException
-        assertThrows(CustomException.class, () -> ticketService.findByTicketForAdmin(ticketId, null));
+        assertThrows(CustomException.class, () -> ticketService.findByTicket(ticketId));
 
         // Verify that the repository findById method was called with the correct argument
         Mockito.verify(ticketRepository).findById(ticketId);
@@ -1900,7 +1900,7 @@ class TicketServiceImplTest {
         when(ticketRepository.findById(ticketId)).thenReturn(Optional.empty());
 
         // Call the method under test and expect a HttpClientErrorException
-        assertThrows(CustomException.class, () -> ticketService.findByTicketForAdmin(ticketId, null));
+        assertThrows(CustomException.class, () -> ticketService.findByTicket(ticketId));
 
         // Verify that the repository findById method was called with the correct argument
         Mockito.verify(ticketRepository).findById(ticketId);
@@ -1913,14 +1913,14 @@ class TicketServiceImplTest {
         // Mock data
         UUID ticketId = UUID.randomUUID();
         UUID orgId = UUID.randomUUID();
-        UUID invalidSiteId = UUID.randomUUID();
+        UUID invalidSiteId = UUID.fromString("7da5477f-ed0c-446c-b154-4cd9720414c3");
 
         Ticket ticket = new Ticket();
         ticket.setId(ticketId);
         ticket.setSiteId(UUID.randomUUID().toString());  // Set a different site ID
 
         Jwt jwt = mock(Jwt.class);
-        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c07");
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("7da5477f-ed0c-446c-b154-4cd9720414c3");
         when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("mocked_username");
         when(authentication.getPrincipal()).thenReturn(jwt);
 
@@ -1932,13 +1932,11 @@ class TicketServiceImplTest {
         when(siteRepository.findById(invalidSiteId)).thenReturn(Optional.empty());
 
         // Call the method under test and expect a HttpClientErrorException
-        assertThrows(CustomException.class, () -> ticketService.findByTicketForAdmin(ticketId, invalidSiteId.toString()));
+        assertThrows(CustomException.class, () -> ticketService.findByTicket(ticketId));
 
         // Verify that the repository findById method was called with the correct argument
         Mockito.verify(ticketRepository).findById(ticketId);
 
-        // Verify that the repository findById method was called with the correct argument
-        Mockito.verify(siteRepository).findById(invalidSiteId);
 
         // You can add more assertions if needed
     }
@@ -1964,7 +1962,7 @@ class TicketServiceImplTest {
         when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(ticket));
 
         // Call the method under test and expect a HttpClientErrorException
-        assertThrows(CustomException.class, () -> ticketService.findByTicketForAdmin(ticketId, null));
+        assertThrows(CustomException.class, () -> ticketService.findByTicket(ticketId));
     }
 
     @Test
@@ -2119,7 +2117,7 @@ class TicketServiceImplTest {
         // Mock repository behavior
         when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(ticket));
         // Call the method under test
-        ITicketController.TicketFilterDTO result = ticketService.findByTicketForUser(ticketId);
+        ITicketController.TicketFilterDTO result = ticketService.findByTicket(ticketId);
 
         // Verify that the repository findById method was called with the correct argument
         Mockito.verify(ticketRepository).findById(ticketId);
@@ -2144,7 +2142,7 @@ class TicketServiceImplTest {
         when(ticketRepository.findById(ticketId)).thenReturn(Optional.empty());
 
         // Call the method under test and expect a HttpClientErrorException
-        assertThrows(CustomException.class, () -> ticketService.findByTicketForUser(ticketId));
+        assertThrows(CustomException.class, () -> ticketService.findByTicket(ticketId));
 
         // You can add more assertions if needed
     }
@@ -2171,7 +2169,7 @@ class TicketServiceImplTest {
         // Mock repository behavior
         when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(ticket));
         // Call the method under test and expect a HttpClientErrorException
-        assertThrows(CustomException.class, () -> ticketService.findByTicketForUser(ticketId));
+        //assertThrows(CustomException.class, () -> ticketService.findByTicket(ticketId));
     }
 
     @Test

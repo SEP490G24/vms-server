@@ -912,42 +912,23 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     }
 
     @Override
-    public ITicketController.TicketFilterDTO findByTicketForUser(UUID ticketId) {
+    public ITicketController.TicketFilterDTO findByTicket(UUID ticketId) {
         Ticket ticket = ticketRepository.findById(ticketId).orElse(null);
         if (ObjectUtils.isEmpty(ticket)) {
             throw new CustomException(ErrorApp.TICKET_NOT_FOUND);
         }
-        if (!ticket.getUsername().equals(SecurityUtils.loginUsername())) {
-            throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
+        if (SecurityUtils.getUserDetails().isOrganizationAdmin() || SecurityUtils.getUserDetails().isSiteAdmin()) {
+            List<String> sites = new ArrayList<>();
+            List<String> siteIds = SecurityUtils.getListSiteToString(siteRepository, sites);
+            if (!siteIds.contains(ticket.getSiteId())) {
+                throw new CustomException(ErrorApp.TICKET_NOT_FOUND);
+            }
+        } else if (!SecurityUtils.getUserDetails().isRealmAdmin()) {
+            if (!ticket.getUsername().equals(SecurityUtils.loginUsername())) {
+                throw new CustomException(ErrorApp.TICKET_NOT_FOUND);
+            }
         }
-        ITicketController.TicketFilterDTO ticketFilterDTO = mapper.map(ticket, ITicketController.TicketFilterDTO.class);
-        return ticketFilterDTO;
-    }
-
-    @Override
-    public ITicketController.TicketFilterDTO findByTicketForAdmin(UUID ticketId, String siteId) {
-        Ticket ticket = ticketRepository.findById(ticketId).orElse(null);
-        if (ObjectUtils.isEmpty(ticket)) {
-            throw new CustomException(ErrorApp.TICKET_NOT_FOUND);
-        }
-        if (SecurityUtils.getOrgId() != null) {
-            if (siteId == null) {
-                throw new CustomException(ErrorApp.MUST_TO_CHOOSE_SITE);
-            }
-            Site site = siteRepository.findById(UUID.fromString(siteId)).orElse(null);
-            if (ObjectUtils.isEmpty(site)) {
-                throw new CustomException(ErrorApp.SITE_NOT_FOUND);
-            }
-            if (!site.getOrganizationId().equals(SecurityUtils.getOrgId())) {
-                throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
-            }
-            return mapper.map(ticket, ITicketController.TicketFilterDTO.class);
-        } else {
-            if (!ticket.getSiteId().equals(SecurityUtils.getSiteId())) {
-                throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
-            }
-            return mapper.map(ticket, ITicketController.TicketFilterDTO.class);
-        }
+        return mapper.map(ticket, ITicketController.TicketFilterDTO.class);
     }
 
     @Override
