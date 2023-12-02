@@ -120,6 +120,8 @@ public interface IRoomController {
         private String siteName;
         private String description;
         private String macIp;
+        private Integer deviceId;
+        private String deviceName;
         private boolean isSecurity;
         private String createdBy;
         private String lastUpdatedBy;

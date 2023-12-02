@@ -81,7 +81,7 @@ public class MultiLineResponse {
 
     public static List<MultiLineResponse> formatDataWithWeekInMonth(List<MultiLineResponse> dailyCounts, int year, int month, List<String> allPurposes) {
         List<MultiLineResponse> weeklyCounts = new ArrayList<>();
-
+        dailyCounts = mergeCheckInAndCheckOut(dailyCounts);
         List<String> allWeeks = getAllIntervalsInMonth(year, month);
 
         for (String week : allWeeks) {

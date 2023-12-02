@@ -88,7 +88,9 @@ public class ModelMapperConfig {
         // room => roomDto
         modelMapper.createTypeMap(Room.class, IRoomController.RoomFilterResponse.class)
             .addMappings(mapping -> mapping.map((room -> room.getSite().getName()), IRoomController.RoomFilterResponse::setSiteName))
-            .addMappings(mapping -> mapping.map((room -> room.getDevice().getMacIp()), IRoomController.RoomFilterResponse::setMacIp));
+            .addMappings(mapping -> mapping.map((room -> room.getDevice().getMacIp()), IRoomController.RoomFilterResponse::setMacIp))
+            .addMappings(mapping -> mapping.map((room -> room.getDevice().getName()), IRoomController.RoomFilterResponse::setDeviceName))
+            .addMappings(mapping -> mapping.map((room -> room.getDevice().getId()), IRoomController.RoomFilterResponse::setDeviceId));
 
         // device => DeviceFilterResponse
         modelMapper.createTypeMap(Device.class, IDeviceController.DeviceFilterResponse.class)
