@@ -1658,7 +1658,7 @@ class TicketServiceImplTest {
         customerTicketMap.setCustomerTicketMapPk(new CustomerTicketMapPk(UUID.randomUUID(), UUID.randomUUID()));
         customerTicketMap.setStatus(Constants.StatusCustomerTicket.CHECK_IN);
         customerTicketMap.setCustomerTicketMapPk(new CustomerTicketMapPk(customerTicketMapId, ticketId));
-        customerTicketMap.setCheckInTime(currentTime.minusHours(1));  // Set a past check-in time
+        customerTicketMap.setCheckInTime(currentTime);  // Set a past check-in time
 
         Ticket ticket = new Ticket();
         ticket.setStartTime(LocalDateTime.now().minusMinutes(1));

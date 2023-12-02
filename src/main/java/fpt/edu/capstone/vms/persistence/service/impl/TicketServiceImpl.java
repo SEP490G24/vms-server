@@ -858,7 +858,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             if (!customerTicketMap.getStatus().equals(Constants.StatusCustomerTicket.CHECK_IN)) {
                 throw new CustomException(ErrorApp.CUSTOMER_NOT_CHECK_IN_TO_CHECK_OUT);
             }
-            if (customerTicketMap.getTicketEntity().getStartTime().isAfter(LocalDateTime.now())) {
+            if (customerTicketMap.getCheckInTime() == null) {
                 throw new CustomException(ErrorApp.TICKET_NOT_START_CAN_NOT_CHECK_OUT);
             }
             customerTicketMap.setCheckOutTime(LocalDateTime.now());
@@ -870,7 +870,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             if (count == 0) {
                 Ticket ticket = ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId()).orElse(null);
                 if (ticket != null) {
-                    if (ticket.getStartTime().isAfter(LocalDateTime.now())) {
+                    if (ticket.getStartTime().isAfter(LocalDateTime.now().plusHours(1))) {
                         throw new CustomException(ErrorApp.TICKET_NOT_START_CAN_NOT_CHECK_OUT);
                     }
                     ticket.setStatus(Constants.StatusTicket.COMPLETE);
