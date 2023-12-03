@@ -154,7 +154,6 @@ public class ModelMapperConfig {
 
         //User => ProfileUser
         modelMapper.createTypeMap(User.class, IUserController.ProfileUser.class)
-            .addMappings(mapping -> mapping.map((user -> user.getUsername()), IUserController.ProfileUser::setUserName))
             .addMappings(mapping -> mapping.map((user -> user.getDepartment().getName()), IUserController.ProfileUser::setDepartmentName))
             .addMappings(mapping -> mapping.map((user -> user.getDepartment().getSite().getId()), IUserController.ProfileUser::setSiteId))
             .addMappings(mapping -> mapping.map((user -> user.getDepartment().getSite().getName()), IUserController.ProfileUser::setSiteName));

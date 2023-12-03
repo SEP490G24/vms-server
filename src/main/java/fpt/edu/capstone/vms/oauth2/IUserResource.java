@@ -48,6 +48,7 @@ public interface IUserResource {
         private UUID departmentId;
         @JsonIgnore
         private Boolean isCreateUserOrg;
+        private String address;
     }
 
     @Data
