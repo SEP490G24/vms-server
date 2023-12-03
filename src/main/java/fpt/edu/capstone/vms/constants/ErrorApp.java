@@ -141,6 +141,10 @@ public enum ErrorApp {
 
     //QRCode
     QRCODE_NOT_FOUND(190, I18n.getMessage("msg.qrcode.not.found")),
+
+    //Role
+    ROLE_USED(200,I18n.getMessage("msg.role.used")),
+
     //card
     CARD_NOT_FOUND(170, I18n.getMessage("msg.card.not.found")),
     CARD_ID_NULL(171, I18n.getMessage("msg.card.id.null")),

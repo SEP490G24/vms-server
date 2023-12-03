@@ -32,4 +32,7 @@ public interface UserRepository extends GenericRepository<User, String>, UserRep
 
     @Query("select u from User u join Department d on u.departmentId = d.id where d.siteId = :siteId")
     List<User> findAllBySiteId(@Param("siteId") @NonNull UUID siteId);
+
+    @Query("SELECT u FROM User u WHERE u.role LIKE %:role%")
+    List<User> findByRole(@Param("role") String role);
 }

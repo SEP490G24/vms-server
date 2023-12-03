@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_REALM_ROLE;
 import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_RESOURCE_ROLE;
@@ -162,6 +163,20 @@ class DashboardServiceImplTest {
 
         // Verify method calls
         verify(dashboardRepository).countTicketsByPurposeWithPie(firstDay, lastDay, new ArrayList<>());
+    }
+
+    private boolean isValidPercentageValue(Object value) {
+        if (value instanceof Long) {
+            return true; // Long is a valid percentage value
+        } else if (value instanceof String) {
+            try {
+                Double.parseDouble((String) value);
+                return true;
+            } catch (NumberFormatException e) {
+                return false; // Invalid percentage value
+            }
+        }
+        return false; // Other types are considered invalid
     }
 
     @Test

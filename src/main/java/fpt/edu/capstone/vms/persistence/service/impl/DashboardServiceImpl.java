@@ -14,6 +14,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.YearMonth;
@@ -63,9 +64,9 @@ public class DashboardServiceImpl implements IDashboardService {
             firstDay = currentYearMonth.atDay(1).atStartOfDay();
             lastDay = currentYearMonth.atEndOfMonth().atStartOfDay().withHour(23).withMinute(59).withSecond(59);
         }
-
         List<String> sites = SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSiteId());
-        return mapToPurposePieResponse(dashboardRepository.countTicketsByPurposeWithPie(firstDay, lastDay, sites));
+        int totalTicket = dashboardRepository.countTotalTickets(firstDay, lastDay, null, sites);
+        return mapToPurposePieResponse(dashboardRepository.countTicketsByPurposeWithPie(firstDay, lastDay, sites),totalTicket);
     }
 
     @Override
@@ -239,14 +240,16 @@ public class DashboardServiceImpl implements IDashboardService {
             .build();
     }
 
-    private List<IDashboardController.PurposePieResponse> mapToPurposePieResponse(List<Object[]> result) {
+    private List<IDashboardController.PurposePieResponse> mapToPurposePieResponse(List<Object[]> result, int total) {
         List<IDashboardController.PurposePieResponse> responseList = new ArrayList<>();
 
         for (Object[] row : result) {
             Constants.Purpose type = (Constants.Purpose) row[0];
             Long count = (Long) row[1];
 
-            responseList.add(new IDashboardController.PurposePieResponse(type, count.intValue()));
+            double percentage = (double) count / total;
+            long roundedPercentage = Math.round(percentage * 100.0);
+            responseList.add(new IDashboardController.PurposePieResponse(type, roundedPercentage));
         }
 
         for (Constants.Purpose purpose : Constants.Purpose.values()) {

@@ -70,7 +70,7 @@ public interface IDashboardController {
     @NoArgsConstructor
     class PurposePieResponse {
         private Constants.Purpose type;
-        private int value;
+        private double value;
     }
 
     @Data
