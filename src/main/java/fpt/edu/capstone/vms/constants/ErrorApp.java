@@ -138,6 +138,9 @@ public enum ErrorApp {
     TICKET_IS_EXPIRED(188, I18n.getMessage("msg.ticket.is.expired")),
     TICKET_IS_PENDING_CAN_NOT_SAVE_IS_DRAFT(189, I18n.getMessage("msg.ticket.is.pending.can.not.save.is.draft")),
     TICKET_START_TIME_MUST_GREATER_THEM_CURRENT_TIME(190, I18n.getMessage("msg.ticket.start.time.must.greater.them.current.time")),
+
+    //QRCode
+    QRCODE_NOT_FOUND(190, I18n.getMessage("msg.qrcode.not.found")),
     //card
     CARD_NOT_FOUND(170, I18n.getMessage("msg.card.not.found")),
     CARD_ID_NULL(171, I18n.getMessage("msg.card.id.null")),
