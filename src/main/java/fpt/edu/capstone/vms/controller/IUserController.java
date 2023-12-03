@@ -220,7 +220,7 @@ public interface IUserController {
     class ProfileUser {
 
         //personal info
-        String userName;
+        String username;
         String firstName;
         String lastName;
         Constants.Gender gender;
