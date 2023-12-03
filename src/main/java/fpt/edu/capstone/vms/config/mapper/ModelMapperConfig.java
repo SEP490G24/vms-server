@@ -68,6 +68,11 @@ public class ModelMapperConfig {
         modelMapper.createTypeMap(IUserController.UpdateUserInfo.class, IUserResource.UserDto.class)
                 .addMappings(mapping -> mapping.map(IUserController.UpdateUserInfo::getPhoneNumber, IUserResource.UserDto::setPhone));
 
+        // UpdateProfileUserInfo => IUserResource.UserDto
+        modelMapper.createTypeMap(IUserController.UpdateProfileUserInfo.class, IUserResource.UserDto.class)
+            .addMappings(mapping -> mapping.map(IUserController.UpdateProfileUserInfo::getPhoneNumber, IUserResource.UserDto::setPhone));
+
+
         // department => departmentFilterDTO
         modelMapper.createTypeMap(Department.class, IDepartmentController.DepartmentFilterDTO.class)
             .addMappings(mapping -> mapping.map((department -> department.getSite().getName()), IDepartmentController.DepartmentFilterDTO::setSiteName));

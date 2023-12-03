@@ -51,8 +51,8 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
             queryParams.put("usernames", usernames);
         }
         if (role != null) {
-            sqlConditional.append("AND u.role = :role ");
-            queryParams.put("roles", "%" + role + "%");
+            sqlConditional.append("AND u.role LIKE :role ");
+            queryParams.put("role", "%" + role + "%");
         }
         if (createdOnStart != null && createdOnEnd != null) {
             sqlConditional.append("AND u.created_on between :createdOnStart and :createdOnEnd ");
