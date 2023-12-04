@@ -34,4 +34,6 @@ public interface ICustomerService extends IGenericService<Customer, UUID> {
     List<Customer> findAllByOrganizationId(ICustomerController.CustomerAvailablePayload customerAvailablePayload);
 
     void deleteCustomer(UUID id);
+
+    void checkExistCustomer(ICustomerController.CustomerCheckExist customerCheckExist);
 }

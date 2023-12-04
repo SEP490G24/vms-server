@@ -27,6 +27,12 @@ public interface CustomerRepository extends GenericRepository<Customer, UUID> {
 
     boolean existsByIdAndAndOrganizationId(UUID id, String organizationId);
 
+    boolean existsByEmailAndOrganizationId(String email, String organizationId);
+
+    boolean existsByPhoneNumberAndOrganizationId(String phoneNumber, String organizationId);
+
+    boolean existsByIdentificationNumberAndOrganizationId(String identificationNumber, String organizationId);
+
     @Query(value = "select u from Customer u " +
         "where ((coalesce(:names) is null) or (u.visitorName in :names)) " +
         "and (((cast(:createdOnStart as date) is null ) or (cast(:createdOnEnd as date) is null )) or (u.createdOn between :createdOnStart and :createdOnEnd)) " +
@@ -37,8 +43,6 @@ public interface CustomerRepository extends GenericRepository<Customer, UUID> {
         "and ((:keyword is null) " +
         "or (u.visitorName LIKE %:keyword% " +
         "or u.phoneNumber LIKE %:keyword% " +
-        "or u.lastUpdatedBy LIKE %:keyword% " +
-        "or u.createdBy LIKE %:keyword% " +
         "or u.email LIKE %:keyword% " +
         "or u.identificationNumber LIKE %:keyword% ))")
     List<Customer> filter(

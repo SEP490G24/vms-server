@@ -91,4 +91,14 @@ public class CustomerController implements ICustomerController {
         }
     }
 
+    @Override
+    public ResponseEntity<?> checkCustomerExist(CustomerCheckExist customerCheckExist) {
+        try {
+            customerService.checkExistCustomer(customerCheckExist);
+            return ResponseEntity.ok().build();
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }

@@ -112,6 +112,12 @@ public enum ErrorApp {
     CUSTOMER_NOT_CHECK_IN_TO_CHECK_OUT(162, I18n.getMessage("msg.customer.not.check.in.to.check.out")),
     CUSTOMER_NOT_CHECK_IN_TO_ADD_CARD(169, I18n.getMessage("msg.customer.not.check.in.to.add.card")),
     CUSTOMER_ERROR_IN_PROCESS_DELETE(176, I18n.getMessage("msg.customer.error.in.process.delete")),
+    CUSTOMER_EMAIL_NOT_FOUND(181, I18n.getMessage("msg.customer.email.not.found")),
+    CUSTOMER_EMAIL_EXIST(182, I18n.getMessage("msg.customer.email.exist")),
+    CUSTOMER_PHONE_NUMBER_NOT_FOUND(183, I18n.getMessage("msg.customer.phone.number.not.found")),
+    CUSTOMER_PHONE_NUMBER_EXIST(184, I18n.getMessage("msg.customer.phone.number.exist")),
+    CUSTOMER_IDENTIFICATION_NUMBER_NOT_FOUND(185, I18n.getMessage("msg.customer.identification.number.not.found")),
+    CUSTOMER_IDENTITY_EXIST(186, I18n.getMessage("msg.customer.identity.exist")),
 
     //ticket
     TICKET_NOT_FOUND(147, I18n.getMessage("msg.ticket.not.found")),

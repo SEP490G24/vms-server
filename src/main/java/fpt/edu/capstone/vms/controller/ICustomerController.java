@@ -59,6 +59,10 @@ public interface ICustomerController {
     @PreAuthorize("hasRole('r:customer:filter')")
     ResponseEntity<?> findByOrganizationId(@RequestBody CustomerAvailablePayload customerAvailablePayload);
 
+    @PostMapping("/check")
+    @Operation(summary = "check exist customer")
+    @PreAuthorize("hasRole('r:customer:check')")
+    ResponseEntity<?> checkCustomerExist(@RequestBody CustomerCheckExist customerCheckExist);
 
     @Data
     @AllArgsConstructor
@@ -132,5 +136,13 @@ public interface ICustomerController {
     class CustomerAvailablePayload {
         LocalDateTime startTime;
         LocalDateTime endTime;
+    }
+
+    @Data
+    class CustomerCheckExist {
+        String identificationNumber;
+        String email;
+        String phoneNumber;
+        Constants.CustomerCheckType type;
     }
 }

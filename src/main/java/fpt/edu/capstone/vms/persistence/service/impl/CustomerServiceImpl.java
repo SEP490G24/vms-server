@@ -133,4 +133,42 @@ public class CustomerServiceImpl extends GenericServiceImpl<Customer, UUID> impl
         customerRepository.deleteById(id);
 
     }
+
+    @Override
+    public void checkExistCustomer(ICustomerController.CustomerCheckExist customerCheckExist) {
+        String orgId;
+        if (SecurityUtils.getOrgId() == null) {
+            Site site = siteRepository.findById(UUID.fromString(SecurityUtils.getSiteId())).orElse(null);
+            if (ObjectUtils.isEmpty(site)) {
+                throw new CustomException(ErrorApp.SITE_NOT_FOUND);
+            }
+            orgId = String.valueOf(site.getOrganizationId());
+        } else {
+            orgId = SecurityUtils.getOrgId();
+        }
+        switch (customerCheckExist.getType()) {
+            case EMAIL:
+                if (customerCheckExist.getEmail() == null) {
+                    throw new CustomException(ErrorApp.CUSTOMER_EMAIL_NOT_FOUND);
+                }
+                if (customerRepository.existsByEmailAndOrganizationId(customerCheckExist.getEmail(), orgId)) {
+                    throw new CustomException(ErrorApp.CUSTOMER_EMAIL_EXIST);
+                }
+            case PHONE_NUMBER:
+                if (customerCheckExist.getPhoneNumber() == null) {
+                    throw new CustomException(ErrorApp.CUSTOMER_PHONE_NUMBER_NOT_FOUND);
+                }
+                if (customerRepository.existsByPhoneNumberAndOrganizationId(customerCheckExist.getPhoneNumber(), orgId)) {
+                    throw new CustomException(ErrorApp.CUSTOMER_PHONE_NUMBER_EXIST);
+                }
+            case IDENTIFICATION_NUMBER:
+                if (customerCheckExist.getIdentificationNumber() == null) {
+                    throw new CustomException(ErrorApp.CUSTOMER_IDENTIFICATION_NUMBER_NOT_FOUND);
+                }
+                if (customerRepository.existsByIdentificationNumberAndOrganizationId(customerCheckExist.getIdentificationNumber(), orgId)) {
+                    throw new CustomException(ErrorApp.CUSTOMER_IDENTITY_EXIST);
+                }
+            default:
+        }
+    }
 }
