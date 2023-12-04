@@ -3,6 +3,7 @@ package fpt.edu.capstone.vms.oauth2.provider.keycloak;
 import fpt.edu.capstone.vms.controller.IPermissionController;
 import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.oauth2.IPermissionResource;
+import fpt.edu.capstone.vms.util.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RealmResource;
@@ -52,7 +53,34 @@ public class KeycloakClientRoleResource implements IPermissionResource {
         var permissions = this.realmResource.clients().get(cId).roles().list(false);
         var permissionDtos = (List<PermissionDto>) mapper.map(permissions, new TypeToken<List<PermissionDto>>() {
         }.getType());
-        permissionDtos.forEach(PermissionDto::initMetadata);
+
+        if (SecurityUtils.getUserDetails().isOrganizationAdmin()) {
+
+            permissionDtos = permissionDtos.stream()
+                .filter(permissionDto -> {
+                    List<String> scopes = permissionDto.getAttributes().get("scope");
+                    return scopes != null && scopes.contains("organization");
+                })
+                .peek(PermissionDto::initMetadata)
+                .collect(Collectors.toList());
+        } else if (SecurityUtils.getUserDetails().isSiteAdmin()) {
+
+            permissionDtos = permissionDtos.stream()
+                .filter(permissionDto -> {
+                    List<String> scopes = permissionDto.getAttributes().get("scope");
+                    return scopes != null && scopes.contains("site");
+                })
+                .peek(PermissionDto::initMetadata)
+                .collect(Collectors.toList());
+        } else {
+            permissionDtos = permissionDtos.stream()
+                .filter(permissionDto -> {
+                    List<String> scopes = permissionDto.getAttributes().get("scope");
+                    return scopes != null && scopes.contains("system");
+                })
+                .peek(PermissionDto::initMetadata)
+                .collect(Collectors.toList());
+        }
         return permissionDtos;
     }
 
