@@ -85,7 +85,6 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
 
         checkAddress(entity.getProvinceId(), entity.getDistrictId(), entity.getCommuneId());
         entity.setOrganizationId(UUID.fromString(SecurityUtils.getOrgId()));
-        entity.setEnable(true);
         var site = siteRepository.save(entity);
         auditLogRepository.save(new AuditLog(site.getId().toString()
             , site.getOrganizationId().toString()

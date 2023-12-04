@@ -1,5 +1,6 @@
 package fpt.edu.capstone.vms.persistence.repository;
 
+import fpt.edu.capstone.vms.persistence.dto.common.Option;
 import fpt.edu.capstone.vms.persistence.entity.Site;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -78,6 +80,10 @@ public interface SiteRepository extends GenericRepository<Site, UUID> {
         @Param("keyword") @Nullable String keyword);
 
     List<Site> findAllByOrganizationId(UUID organizationId);
+
+    @Query("select s.organizationId from Site s where s.id =:siteId ")
+    Optional<String> findOrganizationIdBySiteId(@Param("siteId") UUID siteId);
+
     boolean existsByIdAndOrganizationId(UUID siteId, UUID organizationId);
 
     boolean existsByCodeAndOrganizationId(String code, UUID organizationId);
