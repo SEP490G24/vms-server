@@ -306,14 +306,13 @@ public class UserServiceImpl implements IUserService {
             throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
         }
 
+        BlobClient blobClient = fileService.getBlobClient(oldImage);
+        blobClient.deleteIfExists();
         if (!ObjectUtils.isEmpty(oldFile)) {
-            BlobClient blobClient = fileService.getBlobClient(oldImage);
-            blobClient.deleteIfExists();
             fileRepository.delete(oldFile);
             return true;
         }
-
-        return false;
+        return true;
     }
 
 }

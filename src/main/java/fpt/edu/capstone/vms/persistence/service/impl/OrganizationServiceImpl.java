@@ -137,7 +137,9 @@ public class OrganizationServiceImpl extends GenericServiceImpl<Organization, UU
         IUserResource.UserDto userDto = new IUserResource.UserDto();
         userDto.setUsername(entity.getCode().toLowerCase() + "_" + "admin");
         userDto.setPassword("123456aA@");
-        userDto.setFirstName("Admin");
+        userDto.setFirstName(entity.getCode().toLowerCase());
+        userDto.setLastName("admin");
+        userDto.setEnable(true);
         userDto.setOrgId(organization.getId().toString());
         userDto.setRoles(List.of(organization.getCode().toUpperCase() + "_" + "ADMIN"));
         iUserService.createAdmin(userDto);
