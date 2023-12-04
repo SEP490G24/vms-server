@@ -87,6 +87,12 @@ public class Constants {
         DOOR
     }
 
+    public enum CustomerCheckType {
+        EMAIL,
+        PHONE_NUMBER,
+        IDENTIFICATION_NUMBER
+    }
+
     public enum Gender {
         FEMALE,
         MALE,
