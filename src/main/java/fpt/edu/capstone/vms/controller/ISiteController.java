@@ -87,7 +87,7 @@ public interface ISiteController {
         private String taxCode;
         private String description;
         @NotNull
-        private Boolean enable;
+        private boolean enable;
     }
 
     @Data
