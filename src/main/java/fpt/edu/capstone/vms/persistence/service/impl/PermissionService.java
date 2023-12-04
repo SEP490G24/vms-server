@@ -29,6 +29,11 @@ public class PermissionService implements IPermissionService {
     }
 
     @Override
+    public List<IPermissionResource.PermissionDto> findAllOrgByModuleId(String moduleId) {
+        return permissionResource.findAllOrgByModuleId(moduleId);
+    }
+
+    @Override
     public IPermissionResource.PermissionDto findById(String moduleId, String permissionId) {
         return permissionResource.findById(moduleId, permissionId);
     }

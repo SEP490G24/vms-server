@@ -12,6 +12,7 @@ public interface IPermissionService {
     List<IPermissionResource.ModuleDto> findAllModules(boolean fetchPermission);
 
     List<IPermissionResource.PermissionDto> findAllByModuleId(String moduleId);
+    List<IPermissionResource.PermissionDto> findAllOrgByModuleId(String moduleId);
 
     IPermissionResource.PermissionDto findById(String moduleId, String permissionId);
 

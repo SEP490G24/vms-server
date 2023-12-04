@@ -31,6 +31,7 @@ public interface IPermissionResource {
      * @return List<PermissionDto>
      */
     List<PermissionDto> findAllByModuleId(String clientId);
+    List<PermissionDto> findAllOrgByModuleId(String clientId);
 
     /**
      * Find permission by id (Keycloak: modules is client, permission is Client role)

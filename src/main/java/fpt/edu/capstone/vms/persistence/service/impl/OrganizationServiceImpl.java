@@ -119,13 +119,13 @@ public class OrganizationServiceImpl extends GenericServiceImpl<Organization, UU
         //create role admin for organization
         IRoleResource.RoleDto roleDto = new IRoleResource.RoleDto();
         roleDto.setCode(organization.getCode().toUpperCase() + "_" + "ADMIN");
-        roleDto.setDescription("Role này là role admin của tổ chức " + organization.getName());
+        roleDto.setDescription(organization.getName());
         Map<String, List<String>> attributes = new HashMap<>();
         attributes.put("org_id", List.of(organization.getId().toString()));
         attributes.put("name", List.of("ADMIN"));
         roleDto.setAttributes(attributes);
-        List<IPermissionResource.PermissionDto> permissionsApi = permissionService.findAllByModuleId("339f9a15-bacf-48dd-acd6-87c482ebb36e");
-        List<IPermissionResource.PermissionDto> permissionsScreen = permissionService.findAllByModuleId("75366af1-57bd-4115-b672-b2de7fa40a7d");
+        List<IPermissionResource.PermissionDto> permissionsApi = permissionService.findAllOrgByModuleId("339f9a15-bacf-48dd-acd6-87c482ebb36e");
+        List<IPermissionResource.PermissionDto> permissionsScreen = permissionService.findAllOrgByModuleId("75366af1-57bd-4115-b672-b2de7fa40a7d");
         Set<IPermissionResource.PermissionDto> permissionsSet = new HashSet<>();
         permissionsSet.addAll(permissionsApi);
         permissionsSet.addAll(permissionsScreen);
