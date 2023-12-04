@@ -1124,7 +1124,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
      * @return The method is returning a boolean value.
      */
     boolean isRoomBooked(UUID roomId, LocalDateTime startTime, LocalDateTime endTime) {
-        int count = ticketRepository.countByRoomIdAndEndTimeGreaterThanEqualAndStartTimeLessThanEqualAndStatusNotLike(roomId, startTime, endTime, Constants.StatusTicket.CANCEL);
+        int count = ticketRepository.countTicketsWithStatusNotLike(roomId, startTime, endTime, Constants.StatusTicket.CANCEL,Constants.StatusTicket.COMPLETE);
         return count > 0;
     }
 

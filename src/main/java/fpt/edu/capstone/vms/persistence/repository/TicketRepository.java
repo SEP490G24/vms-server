@@ -17,6 +17,18 @@ import java.util.UUID;
 @Repository
 public interface TicketRepository extends GenericRepository<Ticket, UUID> {
 
+    @Query("SELECT COUNT(t) FROM Ticket t WHERE " +
+        "t.roomId = :roomId " +
+        "AND t.endTime >= :startTime " +
+        "AND t.startTime <= :endTime " +
+        "AND t.status NOT LIKE :cancel " +
+        "AND t.status NOT LIKE :complete")
+    int countTicketsWithStatusNotLike(@Param("roomId") UUID roomId,
+                                      @Param("startTime") LocalDateTime startTime,
+                                      @Param("endTime") LocalDateTime endTime,
+                                      @Param("cancel") Constants.StatusTicket cancel,
+                                      @Param("complete") Constants.StatusTicket complete);
+
     Integer countByRoomIdAndEndTimeGreaterThanEqualAndStartTimeLessThanEqualAndStatusNotLike(UUID roomId, LocalDateTime startTime, LocalDateTime endTime, Constants.StatusTicket statusTicket);
 
     Integer countByUsernameAndEndTimeGreaterThanEqualAndStartTimeLessThanEqualAndStatusNotLike(String username, LocalDateTime startTime, LocalDateTime endTime, Constants.StatusTicket statusTicket);
