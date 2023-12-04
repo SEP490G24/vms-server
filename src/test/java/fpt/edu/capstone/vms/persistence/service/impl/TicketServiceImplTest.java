@@ -1803,12 +1803,14 @@ class TicketServiceImplTest {
         Constants.StatusCustomerTicket status = Constants.StatusCustomerTicket.CHECK_IN;
         Constants.Purpose purpose = Constants.Purpose.CONFERENCES;
         String keyword = "search";
+        List<String> sites = new ArrayList<>();
+        sites.add("06eb43a7-6ea8-4744-8231-760559fe2c07");
 
         List<CustomerTicketMap> ticketMapList = new ArrayList<>();
 
         Page<CustomerTicketMap> customerTicketMapPage = new PageImpl<>(List.of());
 
-        when(customerTicketMapRepository.filter(pageable, null, null, null, null, null, roomId, status, purpose, keyword))
+        when(customerTicketMapRepository.filter(pageable, sites, null, null, null, null, roomId, status, purpose, keyword))
             .thenReturn(customerTicketMapPage);
 
         // Call the method under test
@@ -1817,7 +1819,7 @@ class TicketServiceImplTest {
         );
 
         // Verify that the repository filter method was called with the correct arguments
-        Mockito.verify(customerTicketMapRepository).filter(pageable, null, null, null, null, null, roomId, status, purpose, keyword);
+        Mockito.verify(customerTicketMapRepository).filter(pageable, sites, null, null, null, null, roomId, status, purpose, keyword);
 
         // Verify that the result has the expected content
         assertEquals(ticketMapList, result.getContent());
