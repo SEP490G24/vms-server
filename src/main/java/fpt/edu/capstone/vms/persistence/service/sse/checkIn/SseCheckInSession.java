@@ -10,6 +10,7 @@ import java.util.UUID;
 @Builder
 @EqualsAndHashCode
 public class SseCheckInSession {
+    private String organizationId;
     private String siteId;
     private String username;
     private UUID sessionId;

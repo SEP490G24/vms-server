@@ -246,16 +246,10 @@ public class TicketController implements ITicketController {
     }
 
     @Override
-    public SseEmitter subscribeCheckIn(String siteId) {
-        if (SecurityUtils.getOrgId() != null) {
-            if (SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
-                throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "You don't have permission to access this site");
-            }
-        } else {
-            siteId = SecurityUtils.getSiteId();
-        }
+    public SseEmitter subscribeCheckIn() {
         var key = SseCheckInSession.builder()
-            .siteId(siteId)
+            .siteId(SecurityUtils.getSiteId())
+            .organizationId(SecurityUtils.getOrgId())
             .username(SecurityUtils.loginUsername())
             .sessionId(UUID.randomUUID())
             .build();

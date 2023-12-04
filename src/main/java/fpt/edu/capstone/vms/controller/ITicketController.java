@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -83,7 +82,7 @@ public interface ITicketController {
     ResponseEntity<?> findByQRCode(@PathVariable String checkInCode);
 
     @GetMapping(value = "/subscribe/check-in", consumes = MediaType.ALL_VALUE)
-    SseEmitter subscribeCheckIn(@RequestParam(value = "siteId", required = false) String siteId);
+    SseEmitter subscribeCheckIn();
 
     @PutMapping("/update-status")
     @Operation(summary = "Update status customer for ticket")
