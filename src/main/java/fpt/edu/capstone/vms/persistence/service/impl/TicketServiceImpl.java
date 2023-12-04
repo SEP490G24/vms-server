@@ -948,7 +948,8 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         , String lastUpdatedBy
         , Boolean bookmark
         , String keyword) {
-        Page<CustomerTicketMap> customerTicketMaps = customerTicketMapRepository.filter(pageable, sites, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd
+        List<String> _sites = SecurityUtils.getListSiteToString(siteRepository, sites);
+        Page<CustomerTicketMap> customerTicketMaps = customerTicketMapRepository.filter(pageable, _sites, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd
             , roomId
             , Constants.StatusCustomerTicket.CHECK_IN
             , purpose

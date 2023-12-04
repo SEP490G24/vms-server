@@ -31,6 +31,7 @@ public interface CustomerRepository extends GenericRepository<Customer, UUID> {
         "where ((coalesce(:names) is null) or (u.visitorName in :names)) " +
         "and (((cast(:createdOnStart as date) is null ) or (cast(:createdOnEnd as date) is null )) or (u.createdOn between :createdOnStart and :createdOnEnd)) " +
         "and ((:createBy is null) or (u.createdBy in :createBy)) " +
+        "and ((:organizationId is null) or (u.organizationId in :organizationId)) " +
         "and ((:lastUpdatedBy is null) or (u.lastUpdatedBy in :lastUpdatedBy)) " +
         "and ((:identificationNumber is null) or (u.identificationNumber in :identificationNumber)) " +
         "and ((:keyword is null) " +
@@ -45,6 +46,7 @@ public interface CustomerRepository extends GenericRepository<Customer, UUID> {
         @Param("createdOnStart") @Nullable LocalDateTime createdOnStart,
         @Param("createdOnEnd") @Nullable LocalDateTime createdOnEnd,
         @Param("createBy") @Nullable String createBy,
+        @Param("organizationId") @Nullable String organizationId,
         @Param("lastUpdatedBy") @Nullable String lastUpdatedBy,
         @Param("identificationNumber") @Nullable String identificationNumber,
         @Param("keyword") @Nullable String keyword);
@@ -53,6 +55,7 @@ public interface CustomerRepository extends GenericRepository<Customer, UUID> {
         "where ((coalesce(:names) is null) or (u.visitorName in :names)) " +
         "and (((cast(:createdOnStart as date) is null ) or (cast(:createdOnEnd as date) is null )) or (u.createdOn between :createdOnStart and :createdOnEnd)) " +
         "and ((:createBy is null) or (u.createdBy in :createBy)) " +
+        "and ((:organizationId is null) or (u.organizationId in :organizationId)) " +
         "and ((:lastUpdatedBy is null) or (u.lastUpdatedBy in :lastUpdatedBy)) " +
         "and ((:identificationNumber is null) or (u.identificationNumber in :identificationNumber)) " +
         "and ((:keyword is null) " +
@@ -67,6 +70,7 @@ public interface CustomerRepository extends GenericRepository<Customer, UUID> {
                           @Param("createdOnStart") @Nullable LocalDateTime createdOnStart,
                           @Param("createdOnEnd") @Nullable LocalDateTime createdOnEnd,
                           @Param("createBy") @Nullable String createBy,
+                          @Param("organizationId") @Nullable String organizationId,
                           @Param("lastUpdatedBy") @Nullable String lastUpdatedBy,
                           @Param("identificationNumber") @Nullable String identificationNumber,
                           @Param("keyword") @Nullable String keyword);

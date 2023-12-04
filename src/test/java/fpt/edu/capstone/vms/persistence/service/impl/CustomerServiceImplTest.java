@@ -74,6 +74,7 @@ class CustomerServiceImplTest {
         String lastUpdatedBy = "Jane Doe";
         String identificationNumber = "123456";
         String keyword = "some keyword";
+        String organizationId = "3d65906a-c6e3-4e9d-bbc6-ba20938f9cad";
 
         List<Customer> mockedCustomers = new ArrayList<>();  // Add mocked customers as needed
 
@@ -85,6 +86,7 @@ class CustomerServiceImplTest {
             eq(createdOnStart),
             eq(createdOnEnd),
             eq(createBy),
+            eq(organizationId),
             eq(lastUpdatedBy),
             eq(identificationNumber),
             eq(keyword)
@@ -117,6 +119,8 @@ class CustomerServiceImplTest {
         String lastUpdatedBy = "Jane Doe";
         String identificationNumber = "123456";
         String keyword = "nonexistent";
+        String organizationId = "3d65906a-c6e3-4e9d-bbc6-ba20938f9cad";
+
 
         List<Customer> mockedCustomers = new ArrayList<>();  // Empty list
 
@@ -128,6 +132,7 @@ class CustomerServiceImplTest {
             eq(createdOnStart),
             eq(createdOnEnd),
             eq(createBy),
+            eq(organizationId),
             eq(lastUpdatedBy),
             eq(identificationNumber),
             eq(keyword)
@@ -155,6 +160,7 @@ class CustomerServiceImplTest {
             eq(createdOnStart),
             eq(createdOnEnd),
             eq(createBy),
+            eq(organizationId),
             eq(lastUpdatedBy),
             eq(identificationNumber),
             eq(keyword)
@@ -171,6 +177,8 @@ class CustomerServiceImplTest {
         String lastUpdatedBy = "Jane Doe";
         String identificationNumber = "123456";
         String keyword = "some keyword";
+        String organizationId = "3d65906a-c6e3-4e9d-bbc6-ba20938f9cad";
+
 
         List<Customer> mockedCustomers = new ArrayList<>();  // Add mocked customers as needed
 
@@ -179,6 +187,7 @@ class CustomerServiceImplTest {
             eq(createdOnStart),
             eq(createdOnEnd),
             eq(createBy),
+            eq(organizationId),
             eq(lastUpdatedBy),
             eq(identificationNumber),
             eq(keyword)
@@ -204,6 +213,7 @@ class CustomerServiceImplTest {
             eq(createdOnStart),
             eq(createdOnEnd),
             eq(createBy),
+            eq(organizationId),
             eq(lastUpdatedBy),
             eq(identificationNumber),
             eq(keyword)
@@ -220,6 +230,8 @@ class CustomerServiceImplTest {
         String lastUpdatedBy = "Jane Doe";
         String identificationNumber = "123456";
         String keyword = "nonexistent";
+        String organizationId = "3d65906a-c6e3-4e9d-bbc6-ba20938f9cad";
+
 
         List<Customer> mockedCustomers = new ArrayList<>();  // Empty list
 
@@ -228,6 +240,7 @@ class CustomerServiceImplTest {
             eq(createdOnStart),
             eq(createdOnEnd),
             eq(createBy),
+            eq(organizationId),
             eq(lastUpdatedBy),
             eq(identificationNumber),
             eq(keyword)
@@ -253,6 +266,7 @@ class CustomerServiceImplTest {
             eq(createdOnStart),
             eq(createdOnEnd),
             eq(createBy),
+            eq(organizationId),
             eq(lastUpdatedBy),
             eq(identificationNumber),
             eq(keyword)

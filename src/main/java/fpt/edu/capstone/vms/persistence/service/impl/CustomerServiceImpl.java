@@ -53,12 +53,23 @@ public class CustomerServiceImpl extends GenericServiceImpl<Customer, UUID> impl
         sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.createdOn));
         sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.lastUpdatedOn));
         Pageable pageableSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(sortColum));
+        String orgId;
+        if (SecurityUtils.getOrgId() == null) {
+            Site site = siteRepository.findById(UUID.fromString(SecurityUtils.getSiteId())).orElse(null);
+            if (ObjectUtils.isEmpty(site)) {
+                throw new CustomException(ErrorApp.SITE_NOT_FOUND);
+            }
+            orgId = String.valueOf(site.getOrganizationId());
+        } else {
+            orgId = SecurityUtils.getOrgId();
+        }
         return customerRepository.filter(
             pageableSort,
             names,
             createdOnStart,
             createdOnEnd,
             createBy,
+            orgId,
             lastUpdatedBy,
             identificationNumber,
             keyword);
@@ -66,11 +77,22 @@ public class CustomerServiceImpl extends GenericServiceImpl<Customer, UUID> impl
 
     @Override
     public List<Customer> filter(List<String> names, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, String createBy, String lastUpdatedBy, String identificationNumber, String keyword) {
+        String orgId;
+        if (SecurityUtils.getOrgId() == null) {
+            Site site = siteRepository.findById(UUID.fromString(SecurityUtils.getSiteId())).orElse(null);
+            if (ObjectUtils.isEmpty(site)) {
+                throw new CustomException(ErrorApp.SITE_NOT_FOUND);
+            }
+            orgId = String.valueOf(site.getOrganizationId());
+        } else {
+            orgId = SecurityUtils.getOrgId();
+        }
         return customerRepository.filter(
             names,
             createdOnStart,
             createdOnEnd,
             createBy,
+            orgId,
             lastUpdatedBy,
             identificationNumber,
             keyword);
