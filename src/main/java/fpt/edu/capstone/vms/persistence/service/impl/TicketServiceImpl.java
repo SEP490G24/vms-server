@@ -885,10 +885,10 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             if (customerTicketMap.isCheckOut()) {
                 throw new CustomException(ErrorApp.CUSTOMER_IS_CHECK_OUT);
             }
-            if (customerTicketMap.getTicketEntity().getEndTime().isAfter(LocalDateTime.now())) {
+            if (customerTicketMap.getTicketEntity().getEndTime().isBefore(LocalDateTime.now())) {
                 throw new CustomException(ErrorApp.TICKET_IS_EXPIRED_CAN_NOT_REJECT);
             }
-            if (customerTicketMap.getTicketEntity().getStartTime().isBefore(LocalDateTime.now().plusHours(1))) {
+            if (customerTicketMap.getTicketEntity().getStartTime().isAfter(LocalDateTime.now().plusHours(1))) {
                 throw new CustomException(ErrorApp.TICKET_NOT_START_CAN_NOT_REJECT);
             }
             customerTicketMap.setReasonId(checkInPayload.getReasonId());
