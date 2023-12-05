@@ -416,7 +416,7 @@ class CustomerServiceImplTest {
 
         ICustomerController.CustomerCheckExist customerCheckExist = new ICustomerController.CustomerCheckExist();
         customerCheckExist.setType(Constants.CustomerCheckType.EMAIL);
-        customerCheckExist.setEmail("test@example.com");
+        customerCheckExist.setValue("test@example.com");
 
         // Mock site
         Site site = new Site();
@@ -452,7 +452,7 @@ class CustomerServiceImplTest {
 
         ICustomerController.CustomerCheckExist customerCheckExist = new ICustomerController.CustomerCheckExist();
         customerCheckExist.setType(Constants.CustomerCheckType.IDENTIFICATION_NUMBER);
-        customerCheckExist.setIdentificationNumber("123456789012");
+        customerCheckExist.setValue("123456789012");
 
         // Mock site
         Site site = new Site();
@@ -488,7 +488,7 @@ class CustomerServiceImplTest {
 
         ICustomerController.CustomerCheckExist customerCheckExist = new ICustomerController.CustomerCheckExist();
         customerCheckExist.setType(Constants.CustomerCheckType.PHONE_NUMBER);
-        customerCheckExist.setPhoneNumber("1234567890");
+        customerCheckExist.setValue("1234567890");
 
         // Mock site
         Site site = new Site();
@@ -524,7 +524,7 @@ class CustomerServiceImplTest {
 
         ICustomerController.CustomerCheckExist customerCheckExist = new ICustomerController.CustomerCheckExist();
         customerCheckExist.setType(Constants.CustomerCheckType.PHONE_NUMBER);
-        customerCheckExist.setPhoneNumber(null);
+        customerCheckExist.setValue(null);
 
         // Mock site
         Site site = new Site();
@@ -555,7 +555,7 @@ class CustomerServiceImplTest {
 
         ICustomerController.CustomerCheckExist customerCheckExist = new ICustomerController.CustomerCheckExist();
         customerCheckExist.setType(Constants.CustomerCheckType.EMAIL);
-        customerCheckExist.setEmail(null);
+        customerCheckExist.setValue(null);
 
         // Mock site
         Site site = new Site();
@@ -585,7 +585,7 @@ class CustomerServiceImplTest {
 
         ICustomerController.CustomerCheckExist customerCheckExist = new ICustomerController.CustomerCheckExist();
         customerCheckExist.setType(Constants.CustomerCheckType.IDENTIFICATION_NUMBER);
-        customerCheckExist.setIdentificationNumber(null);
+        customerCheckExist.setValue(null);
 
         // Mock site
         Site site = new Site();

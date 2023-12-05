@@ -148,24 +148,24 @@ public class CustomerServiceImpl extends GenericServiceImpl<Customer, UUID> impl
         }
         switch (customerCheckExist.getType()) {
             case EMAIL:
-                if (customerCheckExist.getEmail() == null) {
+                if (customerCheckExist.getValue() == null) {
                     throw new CustomException(ErrorApp.CUSTOMER_EMAIL_NOT_FOUND);
                 }
-                if (customerRepository.existsByEmailAndOrganizationId(customerCheckExist.getEmail(), orgId)) {
+                if (customerRepository.existsByEmailAndOrganizationId(customerCheckExist.getValue(), orgId)) {
                     throw new CustomException(ErrorApp.CUSTOMER_EMAIL_EXIST);
                 }
             case PHONE_NUMBER:
-                if (customerCheckExist.getPhoneNumber() == null) {
+                if (customerCheckExist.getValue() == null) {
                     throw new CustomException(ErrorApp.CUSTOMER_PHONE_NUMBER_NOT_FOUND);
                 }
-                if (customerRepository.existsByPhoneNumberAndOrganizationId(customerCheckExist.getPhoneNumber(), orgId)) {
+                if (customerRepository.existsByPhoneNumberAndOrganizationId(customerCheckExist.getValue(), orgId)) {
                     throw new CustomException(ErrorApp.CUSTOMER_PHONE_NUMBER_EXIST);
                 }
             case IDENTIFICATION_NUMBER:
-                if (customerCheckExist.getIdentificationNumber() == null) {
+                if (customerCheckExist.getValue() == null) {
                     throw new CustomException(ErrorApp.CUSTOMER_IDENTIFICATION_NUMBER_NOT_FOUND);
                 }
-                if (customerRepository.existsByIdentificationNumberAndOrganizationId(customerCheckExist.getIdentificationNumber(), orgId)) {
+                if (customerRepository.existsByIdentificationNumberAndOrganizationId(customerCheckExist.getValue(), orgId)) {
                     throw new CustomException(ErrorApp.CUSTOMER_IDENTITY_EXIST);
                 }
             default:
