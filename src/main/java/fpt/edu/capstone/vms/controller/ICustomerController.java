@@ -140,9 +140,7 @@ public interface ICustomerController {
 
     @Data
     class CustomerCheckExist {
-        String identificationNumber;
-        String email;
-        String phoneNumber;
+        String value;
         Constants.CustomerCheckType type;
     }
 }
