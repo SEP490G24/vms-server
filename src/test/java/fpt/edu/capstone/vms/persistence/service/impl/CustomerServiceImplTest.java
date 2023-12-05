@@ -5,6 +5,7 @@ import fpt.edu.capstone.vms.controller.ICustomerController;
 import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.entity.Customer;
+import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
 import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
@@ -305,41 +306,6 @@ class CustomerServiceImplTest {
         verify(customerRepository, times(1)).findAllByOrganizationId("3d65906a-c6e3-4e9d-bbc6-ba20938f9cad", now, now);
     }
 
-//    @Test
-//    public void testFindAllByOrganizationIdWithSiteId() {
-//        Jwt jwt = mock(Jwt.class);
-//
-//        when(jwt.getClaim(Constants.Claims.Name)).thenReturn("username");
-//        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("preferred_username");
-//        when(jwt.getClaim(Constants.Claims.GivenName)).thenReturn("given_name");
-//        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("3d65906a-c6e3-4e9d-bbc6-ba20938f9cad");
-//        when(jwt.getClaim(Constants.Claims.FamilyName)).thenReturn("family_name");
-//        when(jwt.getClaim(Constants.Claims.Email)).thenReturn("email");
-//        when(authentication.getPrincipal()).thenReturn(jwt);
-//
-//        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
-//        when(securityContext.getAuthentication()).thenReturn(authentication);
-//        SecurityContextHolder.setContext(securityContext);
-//
-//        // Mock siteRepository response
-//        Site mockedSite = new Site();  // Add necessary properties
-//        mockedSite.setOrganizationId(UUID.randomUUID());
-//        when(siteRepository.findById(any(UUID.class))).thenReturn(java.util.Optional.of(mockedSite));
-//
-//        // Mock customerRepository response
-//        List<Customer> mockedCustomers = new ArrayList<>();  // Add mocked customers as needed
-//        when(customerRepository.findAllByOrganizationId(any(String.class), LocalDateTime.now(), LocalDateTime.now())).thenReturn(mockedCustomers);
-//
-//        // Call the method to test
-//        List<Customer> result = customerService.findAllByOrganizationId(ICustomerController.CustomerAvailablePayload.builder().startTime(LocalDateTime.now()).endTime(LocalDateTime.now()).build());
-//
-//        // Assertions
-//        assertEquals(mockedCustomers, result);
-//
-//        // Verify that the repository method was called with the expected argument
-//        verify(customerRepository, times(1)).findAllByOrganizationId(any(String.class), LocalDateTime.now(), LocalDateTime.now());
-//    }
-
     @Test
     public void testFindAllByOrganizationIdWithInvalidSite() {
         Jwt jwt = mock(Jwt.class);
@@ -429,5 +395,205 @@ class CustomerServiceImplTest {
         verify(customerRepository, times(1)).findById(customerId);
         verify(auditLogRepository, never()).save(any(AuditLog.class));
         verify(customerRepository, never()).deleteById(any(UUID.class));
+    }
+
+    @Test
+    void testCheckExistCustomerWithEmail() {
+
+        Jwt jwt = mock(Jwt.class);
+
+        when(jwt.getClaim(Constants.Claims.Name)).thenReturn("username");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("preferred_username");
+        when(jwt.getClaim(Constants.Claims.GivenName)).thenReturn("given_name");
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("3d65906a-c6e3-4e9d-bbc6-ba20938f9cad");
+        when(jwt.getClaim(Constants.Claims.FamilyName)).thenReturn("family_name");
+        when(jwt.getClaim(Constants.Claims.Email)).thenReturn("email");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        ICustomerController.CustomerCheckExist customerCheckExist = new ICustomerController.CustomerCheckExist();
+        customerCheckExist.setType(Constants.CustomerCheckType.EMAIL);
+        customerCheckExist.setEmail("test@example.com");
+
+        // Mock site
+        Site site = new Site();
+        site.setOrganizationId(UUID.fromString("3d65906a-c6e3-4e9d-bbc6-ba20938f9cad"));
+        when(siteRepository.findById(any(UUID.class))).thenReturn(java.util.Optional.of(site));
+
+        // Mock repository behavior
+        when(customerRepository.existsByEmailAndOrganizationId(eq("test@example.com"), eq("3d65906a-c6e3-4e9d-bbc6-ba20938f9cad"))).thenReturn(true);
+
+        // Perform the test
+        assertThrows(CustomException.class, () -> customerService.checkExistCustomer(customerCheckExist));
+
+        // Verify that the repository method was called
+        verify(customerRepository, times(1)).existsByEmailAndOrganizationId("test@example.com", "3d65906a-c6e3-4e9d-bbc6-ba20938f9cad");
+    }
+
+    @Test
+    void testCheckExistCustomerWithIdentificationNumber() {
+
+        Jwt jwt = mock(Jwt.class);
+
+        when(jwt.getClaim(Constants.Claims.Name)).thenReturn("username");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("preferred_username");
+        when(jwt.getClaim(Constants.Claims.GivenName)).thenReturn("given_name");
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("3d65906a-c6e3-4e9d-bbc6-ba20938f9cad");
+        when(jwt.getClaim(Constants.Claims.FamilyName)).thenReturn("family_name");
+        when(jwt.getClaim(Constants.Claims.Email)).thenReturn("email");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        ICustomerController.CustomerCheckExist customerCheckExist = new ICustomerController.CustomerCheckExist();
+        customerCheckExist.setType(Constants.CustomerCheckType.IDENTIFICATION_NUMBER);
+        customerCheckExist.setIdentificationNumber("123456789012");
+
+        // Mock site
+        Site site = new Site();
+        site.setOrganizationId(UUID.fromString("3d65906a-c6e3-4e9d-bbc6-ba20938f9cad"));
+        when(siteRepository.findById(any(UUID.class))).thenReturn(java.util.Optional.of(site));
+
+        // Mock repository behavior
+        when(customerRepository.existsByIdentificationNumberAndOrganizationId(eq("123456789012"), eq("3d65906a-c6e3-4e9d-bbc6-ba20938f9cad"))).thenReturn(true);
+
+        // Perform the test
+        assertThrows(CustomException.class, () -> customerService.checkExistCustomer(customerCheckExist));
+
+        // Verify that the repository method was called
+        verify(customerRepository, times(1)).existsByIdentificationNumberAndOrganizationId("123456789012", "3d65906a-c6e3-4e9d-bbc6-ba20938f9cad");
+    }
+
+    @Test
+    void testCheckExistCustomerWithPhoneNumber() {
+
+        Jwt jwt = mock(Jwt.class);
+
+        when(jwt.getClaim(Constants.Claims.Name)).thenReturn("username");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("preferred_username");
+        when(jwt.getClaim(Constants.Claims.GivenName)).thenReturn("given_name");
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("3d65906a-c6e3-4e9d-bbc6-ba20938f9cad");
+        when(jwt.getClaim(Constants.Claims.FamilyName)).thenReturn("family_name");
+        when(jwt.getClaim(Constants.Claims.Email)).thenReturn("email");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        ICustomerController.CustomerCheckExist customerCheckExist = new ICustomerController.CustomerCheckExist();
+        customerCheckExist.setType(Constants.CustomerCheckType.PHONE_NUMBER);
+        customerCheckExist.setPhoneNumber("1234567890");
+
+        // Mock site
+        Site site = new Site();
+        site.setOrganizationId(UUID.fromString("3d65906a-c6e3-4e9d-bbc6-ba20938f9cad"));
+        when(siteRepository.findById(any(UUID.class))).thenReturn(java.util.Optional.of(site));
+
+        // Mock repository behavior
+        when(customerRepository.existsByPhoneNumberAndOrganizationId(eq("1234567890"), eq("3d65906a-c6e3-4e9d-bbc6-ba20938f9cad"))).thenReturn(true);
+
+        // Perform the test
+        assertThrows(CustomException.class, () -> customerService.checkExistCustomer(customerCheckExist));
+
+        // Verify that the repository method was called
+        verify(customerRepository, times(1)).existsByPhoneNumberAndOrganizationId("1234567890", "3d65906a-c6e3-4e9d-bbc6-ba20938f9cad");
+    }
+
+    @Test
+    void testCheckExistCustomerWithPhoneNumberNull() {
+
+        Jwt jwt = mock(Jwt.class);
+
+        when(jwt.getClaim(Constants.Claims.Name)).thenReturn("username");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("preferred_username");
+        when(jwt.getClaim(Constants.Claims.GivenName)).thenReturn("given_name");
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("3d65906a-c6e3-4e9d-bbc6-ba20938f9cad");
+        when(jwt.getClaim(Constants.Claims.FamilyName)).thenReturn("family_name");
+        when(jwt.getClaim(Constants.Claims.Email)).thenReturn("email");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        ICustomerController.CustomerCheckExist customerCheckExist = new ICustomerController.CustomerCheckExist();
+        customerCheckExist.setType(Constants.CustomerCheckType.PHONE_NUMBER);
+        customerCheckExist.setPhoneNumber(null);
+
+        // Mock site
+        Site site = new Site();
+        site.setOrganizationId(UUID.fromString("3d65906a-c6e3-4e9d-bbc6-ba20938f9cad"));
+        when(siteRepository.findById(any(UUID.class))).thenReturn(java.util.Optional.of(site));
+
+        // Perform the test
+        assertThrows(CustomException.class, () -> customerService.checkExistCustomer(customerCheckExist));
+
+    }
+
+    @Test
+    void testCheckExistCustomerWithEmailNull() {
+
+        Jwt jwt = mock(Jwt.class);
+
+        when(jwt.getClaim(Constants.Claims.Name)).thenReturn("username");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("preferred_username");
+        when(jwt.getClaim(Constants.Claims.GivenName)).thenReturn("given_name");
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("3d65906a-c6e3-4e9d-bbc6-ba20938f9cad");
+        when(jwt.getClaim(Constants.Claims.FamilyName)).thenReturn("family_name");
+        when(jwt.getClaim(Constants.Claims.Email)).thenReturn("email");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        ICustomerController.CustomerCheckExist customerCheckExist = new ICustomerController.CustomerCheckExist();
+        customerCheckExist.setType(Constants.CustomerCheckType.EMAIL);
+        customerCheckExist.setEmail(null);
+
+        // Mock site
+        Site site = new Site();
+        site.setOrganizationId(UUID.fromString("3d65906a-c6e3-4e9d-bbc6-ba20938f9cad"));
+        when(siteRepository.findById(any(UUID.class))).thenReturn(java.util.Optional.of(site));
+
+        // Perform the test
+        assertThrows(CustomException.class, () -> customerService.checkExistCustomer(customerCheckExist));
+    }
+
+    @Test
+    void testCheckExistCustomerWithIdentificationNumberNull() {
+
+        Jwt jwt = mock(Jwt.class);
+
+        when(jwt.getClaim(Constants.Claims.Name)).thenReturn("username");
+        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("preferred_username");
+        when(jwt.getClaim(Constants.Claims.GivenName)).thenReturn("given_name");
+        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("3d65906a-c6e3-4e9d-bbc6-ba20938f9cad");
+        when(jwt.getClaim(Constants.Claims.FamilyName)).thenReturn("family_name");
+        when(jwt.getClaim(Constants.Claims.Email)).thenReturn("email");
+        when(authentication.getPrincipal()).thenReturn(jwt);
+
+        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        ICustomerController.CustomerCheckExist customerCheckExist = new ICustomerController.CustomerCheckExist();
+        customerCheckExist.setType(Constants.CustomerCheckType.IDENTIFICATION_NUMBER);
+        customerCheckExist.setIdentificationNumber(null);
+
+        // Mock site
+        Site site = new Site();
+        site.setOrganizationId(UUID.fromString("3d65906a-c6e3-4e9d-bbc6-ba20938f9cad"));
+        when(siteRepository.findById(any(UUID.class))).thenReturn(java.util.Optional.of(site));
+
+        // Perform the test
+        assertThrows(CustomException.class, () -> customerService.checkExistCustomer(customerCheckExist));
+
     }
 }
