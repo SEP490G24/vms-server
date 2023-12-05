@@ -192,7 +192,8 @@ class DepartmentServiceImplTest {
 
         // Mock auditLogRepository save method
         when(auditLogRepository.save(Mockito.any())).thenReturn(new AuditLog());
-        when(departmentRepository.save(Mockito.any())).thenReturn(department);
+        when(departmentRepository.save(department)).thenReturn(department);
+        when(mapper.map(departmentInfo, Department.class)).thenReturn(department);
         department.setEnable(true);
         // Act
         Department result = departmentService.createDepartment(departmentInfo);

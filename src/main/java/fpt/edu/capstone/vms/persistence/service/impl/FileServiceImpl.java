@@ -56,8 +56,10 @@ public class FileServiceImpl extends GenericServiceImpl<File, UUID> implements I
 
         if (ObjectUtils.isEmpty(newFile))
             throw new CustomException(ErrorApp.FILE_NOT_FOUND);
-        BlobClient blobClient = getBlobClient(oldImage);
-        blobClient.deleteIfExists();
+        if (oldImage != null) {
+            BlobClient blobClient = getBlobClient(oldImage);
+            blobClient.deleteIfExists();
+        }
         if (!ObjectUtils.isEmpty(oldFile)) {
             fileRepository.delete(oldFile);
             return true;

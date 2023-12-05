@@ -1,6 +1,10 @@
 package fpt.edu.capstone.vms.persistence.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -60,6 +64,7 @@ public class Organization extends AbstractBaseEntity<UUID> {
         if (organizationEntity.contactInfo != null) this.contactInfo = organizationEntity.contactInfo;
         if (organizationEntity.contactPhoneNumber != null) this.contactPhoneNumber = organizationEntity.contactPhoneNumber;
         if (organizationEntity.enable != null) this.enable = organizationEntity.enable;
+        if (organizationEntity.getLogo() != null) this.setLogo(organizationEntity.getLogo());
         if (organizationEntity.getCreatedBy() != null) this.setCreatedBy(organizationEntity.getCreatedBy());
         if (organizationEntity.getCreatedOn() != null) this.setCreatedOn(organizationEntity.getCreatedOn());
         return this;
