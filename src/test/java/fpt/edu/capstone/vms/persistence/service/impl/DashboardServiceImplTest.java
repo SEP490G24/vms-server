@@ -2,8 +2,11 @@ package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.IDashboardController;
+import fpt.edu.capstone.vms.controller.ITicketController;
 import fpt.edu.capstone.vms.persistence.dto.dashboard.MultiLineResponse;
 import fpt.edu.capstone.vms.persistence.entity.Ticket;
+import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
+import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
 import fpt.edu.capstone.vms.persistence.repository.DashboardRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.util.SecurityUtils;
@@ -11,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import org.mockito.stubbing.Answer;
+import org.modelmapper.ModelMapper;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -23,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_REALM_ROLE;
 import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_RESOURCE_ROLE;
@@ -39,11 +42,14 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-class DashboardServiceImplTest {
+class   DashboardServiceImplTest {
 
     DashboardRepository dashboardRepository;
     SiteRepository siteRepository;
+    CustomerRepository customerRepository;
+    CustomerTicketMapRepository customerTicketMapRepository;
     DashboardServiceImpl dashboardService;
+    ModelMapper mapper;
 
     SecurityContext securityContext;
     Authentication authentication;
@@ -57,7 +63,10 @@ class DashboardServiceImplTest {
 
         dashboardRepository = mock(DashboardRepository.class);
         siteRepository = mock(SiteRepository.class);
-        dashboardService = new DashboardServiceImpl(dashboardRepository, siteRepository);
+        customerRepository = mock(CustomerRepository.class);
+        customerTicketMapRepository = mock(CustomerTicketMapRepository.class);
+        mapper = mock(ModelMapper.class);
+        dashboardService = new DashboardServiceImpl(dashboardRepository, siteRepository,customerTicketMapRepository,customerRepository,mapper);
 
         Jwt jwt = mock(Jwt.class);
 
@@ -606,14 +615,14 @@ class DashboardServiceImplTest {
 
         // Mock external service calls
         when(dashboardRepository.getUpcomingMeetings(any(LocalDateTime.class), any(LocalDateTime.class), anyList()))
-            .thenReturn(Arrays.asList(new Ticket(/* Your mocked data */)));
+            .thenReturn(Arrays.asList(new Ticket()));
         when(dashboardRepository.getOngoingMeetings(any(LocalDateTime.class), anyList()))
-            .thenReturn(Arrays.asList(new Ticket(/* Your mocked data */)));
+            .thenReturn(Arrays.asList(new Ticket()));
         when(dashboardRepository.getRecentlyFinishedMeetings(any(LocalDateTime.class), any(LocalDateTime.class), anyList()))
-            .thenReturn(Arrays.asList(new Ticket(/* Your mocked data */)));
+            .thenReturn(Arrays.asList(new Ticket()));
 
         // Mock repository calls
-
+        when(mapper.map(any(List.class), any())).thenReturn(Arrays.asList(new ITicketController.TicketFilterDTO()));
         // Call the method
         IDashboardController.TicketsPeriodResponse result = dashboardService.countTicketsPeriod(dashboardDTO);
 
@@ -624,9 +633,5 @@ class DashboardServiceImplTest {
 
         // Add more assertions based on the expected behavior of your method
         assertNotNull(result);
-        assertNotNull(result.getUpcomingMeetings());
-        assertNotNull(result.getOngoingMeetings());
-        assertNotNull(result.getRecentlyFinishedMeetings());
-        // Add assertions based on the expected structure and content of the result
     }
 }

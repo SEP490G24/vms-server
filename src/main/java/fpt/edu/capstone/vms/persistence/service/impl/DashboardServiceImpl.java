@@ -1,9 +1,14 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.constants.Constants;
+import fpt.edu.capstone.vms.controller.ICustomerController;
 import fpt.edu.capstone.vms.controller.IDashboardController;
+import fpt.edu.capstone.vms.controller.ITicketController;
 import fpt.edu.capstone.vms.persistence.dto.dashboard.MultiLineResponse;
+import fpt.edu.capstone.vms.persistence.entity.Customer;
 import fpt.edu.capstone.vms.persistence.entity.Ticket;
+import fpt.edu.capstone.vms.persistence.repository.CustomerRepository;
+import fpt.edu.capstone.vms.persistence.repository.CustomerTicketMapRepository;
 import fpt.edu.capstone.vms.persistence.repository.DashboardRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.service.IDashboardService;
@@ -12,6 +17,8 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.stereotype.Service;
 
 import java.text.DecimalFormat;
@@ -35,6 +42,9 @@ public class DashboardServiceImpl implements IDashboardService {
 
     final DashboardRepository dashboardRepository;
     final SiteRepository siteRepository;
+    final CustomerTicketMapRepository customerTicketMapRepository;
+    final CustomerRepository customerRepository;
+    final ModelMapper mapper;
     final List<String> allPurposes = Arrays.asList("CONFERENCES", "INTERVIEW", "MEETING", "OTHERS", "WORKING");
     final List<Constants.StatusTicket> ticketStatus = List.of(Constants.StatusTicket.COMPLETE, Constants.StatusTicket.CANCEL);
     final List<Constants.StatusCustomerTicket> visitsStatus = List.of(Constants.StatusCustomerTicket.REJECT, Constants.StatusCustomerTicket.CHECK_IN, Constants.StatusCustomerTicket.CHECK_OUT);
@@ -230,13 +240,39 @@ public class DashboardServiceImpl implements IDashboardService {
         List<String> sites = SecurityUtils.getListSiteToString(siteRepository, dashboardDTO.getSiteId());
 
         List<Ticket> upcomingMeetings = dashboardRepository.getUpcomingMeetings(currentTime,timePlus1Hour,sites);
+        List<ITicketController.TicketFilterDTO> upcomingMeetingsDTO = mapper.map(upcomingMeetings, new TypeToken<List<ITicketController.TicketFilterDTO>>() {
+        }.getType());
+        if(upcomingMeetingsDTO != null){
+            upcomingMeetingsDTO.forEach(o -> {
+                setCustomer(o);
+            });
+        }
+
+
         List<Ticket> ongoingMeetings = dashboardRepository.getOngoingMeetings(currentTime,sites);
+        List<ITicketController.TicketFilterDTO> ongoingMeetingsDTO = mapper.map(ongoingMeetings, new TypeToken<List<ITicketController.TicketFilterDTO>>() {
+        }.getType());
+        if(ongoingMeetingsDTO != null){
+            ongoingMeetingsDTO.forEach(o -> {
+                setCustomer(o);
+
+            });
+        }
+
         List<Ticket> recentlyFinishedMeetings = dashboardRepository.getRecentlyFinishedMeetings(timeMinus1Hours,currentTime,sites);
+        List<ITicketController.TicketFilterDTO> recentlyFinishedMeetingsDTO = mapper.map(recentlyFinishedMeetings, new TypeToken<List<ITicketController.TicketFilterDTO>>() {
+        }.getType());
+        if(recentlyFinishedMeetingsDTO != null){
+            recentlyFinishedMeetingsDTO.forEach(o -> {
+                setCustomer(o);
+
+            });
+        }
 
         return IDashboardController.TicketsPeriodResponse.builder()
-            .upcomingMeetings(upcomingMeetings)
-            .ongoingMeetings(ongoingMeetings)
-            .recentlyFinishedMeetings(recentlyFinishedMeetings)
+            .upcomingMeetings(upcomingMeetingsDTO)
+            .ongoingMeetings(ongoingMeetingsDTO)
+            .recentlyFinishedMeetings(recentlyFinishedMeetingsDTO)
             .build();
     }
 
@@ -285,5 +321,12 @@ public class DashboardServiceImpl implements IDashboardService {
         );
 
         return responseList;
+    }
+    private void setCustomer(ITicketController.TicketFilterDTO ticketFilterDTO) {
+        List<ICustomerController.CustomerInfo> customerInfos = new ArrayList<>();
+        customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(ticketFilterDTO.getId()).forEach(a -> {
+            customerInfos.add(mapper.map(customerRepository.findById(a.getCustomerTicketMapPk().getCustomerId()).orElse(null), ICustomerController.CustomerInfo.class));
+        });
+        ticketFilterDTO.setCustomers(customerInfos);
     }
 }

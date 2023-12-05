@@ -104,9 +104,9 @@ public interface IDashboardController {
     @NoArgsConstructor
     @Builder
     class TicketsPeriodResponse {
-        private List<Ticket> upcomingMeetings;
-        private List<Ticket> ongoingMeetings;
-        private List<Ticket> recentlyFinishedMeetings;
+        private List<ITicketController.TicketFilterDTO> upcomingMeetings;
+        private List<ITicketController.TicketFilterDTO> ongoingMeetings;
+        private List<ITicketController.TicketFilterDTO> recentlyFinishedMeetings;
     }
 
 }

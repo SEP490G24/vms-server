@@ -1637,7 +1637,155 @@ class TicketServiceImplTest {
 
     }
 
-    private static final String CUSTOMER_TICKET_TABLE_NAME = "CustomerTicketMap";
+    @Test
+    public void testCheckInCustomer_WithCustomerIsCheckIn() {
+        // Mock input parameters
+        ITicketController.CheckInPayload checkInPayload = new ITicketController.CheckInPayload();
+        checkInPayload.setStatus(Constants.StatusCustomerTicket.CHECK_IN);
+        checkInPayload.setCheckInCode("checkInCode");
+
+        CustomerTicketMap customerTicketMap = new CustomerTicketMap();
+        customerTicketMap.setStatus(Constants.StatusCustomerTicket.CHECK_IN);
+        customerTicketMap.setCustomerTicketMapPk(new CustomerTicketMapPk(UUID.randomUUID(), UUID.randomUUID()));
+
+        // Mock repository behavior
+        Mockito.when(customerTicketMapRepository.findByCheckInCodeIgnoreCase(checkInPayload.getCheckInCode()))
+            .thenReturn(customerTicketMap);
+
+        Site site = new Site();
+        site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+        Ticket ticket = new Ticket();
+        ticket.setStartTime(LocalDateTime.now().minusHours(2));
+        ticket.setEndTime(LocalDateTime.now().plusMinutes(1));
+        ticket.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        ticket.setStatus(Constants.StatusTicket.PENDING);
+        customerTicketMap.setTicketEntity(ticket);
+        when(ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId())).thenReturn(Optional.of(ticket));
+        when(siteRepository.findById(UUID.fromString(ticket.getSiteId()))).thenReturn(Optional.of(site));
+        // Verify that the customerTicketMap has been updated with the new status, reasonId, and reasonNote
+        assertThrows(CustomException.class, () -> ticketService.updateStatusCustomerOfTicket(checkInPayload));
+
+    }
+
+    @Test
+    public void testCheckInCustomer_WithCustomerIsCheckOUT() {
+        // Mock input parameters
+        ITicketController.CheckInPayload checkInPayload = new ITicketController.CheckInPayload();
+        checkInPayload.setStatus(Constants.StatusCustomerTicket.CHECK_OUT);
+        checkInPayload.setCheckInCode("checkInCode");
+
+        CustomerTicketMap customerTicketMap = new CustomerTicketMap();
+        customerTicketMap.setStatus(Constants.StatusCustomerTicket.CHECK_OUT);
+        customerTicketMap.setCustomerTicketMapPk(new CustomerTicketMapPk(UUID.randomUUID(), UUID.randomUUID()));
+
+        // Mock repository behavior
+        Mockito.when(customerTicketMapRepository.findByCheckInCodeIgnoreCase(checkInPayload.getCheckInCode()))
+            .thenReturn(customerTicketMap);
+
+        Site site = new Site();
+        site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+        Ticket ticket = new Ticket();
+        ticket.setStartTime(LocalDateTime.now().minusHours(2));
+        ticket.setEndTime(LocalDateTime.now().plusMinutes(1));
+        ticket.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        ticket.setStatus(Constants.StatusTicket.PENDING);
+        customerTicketMap.setTicketEntity(ticket);
+        when(ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId())).thenReturn(Optional.of(ticket));
+        when(siteRepository.findById(UUID.fromString(ticket.getSiteId()))).thenReturn(Optional.of(site));
+        // Verify that the customerTicketMap has been updated with the new status, reasonId, and reasonNote
+        assertThrows(CustomException.class, () -> ticketService.updateStatusCustomerOfTicket(checkInPayload));
+
+    }
+
+    @Test
+    public void testCheckInCustomer_WithTicketIsComplete() {
+        // Mock input parameters
+        ITicketController.CheckInPayload checkInPayload = new ITicketController.CheckInPayload();
+        checkInPayload.setStatus(Constants.StatusCustomerTicket.CHECK_IN);
+        checkInPayload.setCheckInCode("checkInCode");
+
+        CustomerTicketMap customerTicketMap = new CustomerTicketMap();
+        customerTicketMap.setStatus(Constants.StatusCustomerTicket.PENDING);
+        customerTicketMap.setCustomerTicketMapPk(new CustomerTicketMapPk(UUID.randomUUID(), UUID.randomUUID()));
+
+        // Mock repository behavior
+        Mockito.when(customerTicketMapRepository.findByCheckInCodeIgnoreCase(checkInPayload.getCheckInCode()))
+            .thenReturn(customerTicketMap);
+
+        Site site = new Site();
+        site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+        Ticket ticket = new Ticket();
+        ticket.setStartTime(LocalDateTime.now().minusHours(2));
+        ticket.setEndTime(LocalDateTime.now().plusMinutes(1));
+        ticket.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        ticket.setStatus(Constants.StatusTicket.COMPLETE);
+        customerTicketMap.setTicketEntity(ticket);
+        when(ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId())).thenReturn(Optional.of(ticket));
+
+        // Verify that the customerTicketMap has been updated with the new status, reasonId, and reasonNote
+        assertThrows(CustomException.class, () -> ticketService.updateStatusCustomerOfTicket(checkInPayload));
+
+    }
+
+    @Test
+    public void testCheckInCustomer_WithTicketIsDraft() {
+        // Mock input parameters
+        ITicketController.CheckInPayload checkInPayload = new ITicketController.CheckInPayload();
+        checkInPayload.setStatus(Constants.StatusCustomerTicket.CHECK_IN);
+        checkInPayload.setCheckInCode("checkInCode");
+
+        CustomerTicketMap customerTicketMap = new CustomerTicketMap();
+        customerTicketMap.setStatus(Constants.StatusCustomerTicket.PENDING);
+        customerTicketMap.setCustomerTicketMapPk(new CustomerTicketMapPk(UUID.randomUUID(), UUID.randomUUID()));
+
+        // Mock repository behavior
+        Mockito.when(customerTicketMapRepository.findByCheckInCodeIgnoreCase(checkInPayload.getCheckInCode()))
+            .thenReturn(customerTicketMap);
+
+        Site site = new Site();
+        site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+        Ticket ticket = new Ticket();
+        ticket.setStartTime(LocalDateTime.now().minusHours(2));
+        ticket.setEndTime(LocalDateTime.now().plusMinutes(1));
+        ticket.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        ticket.setStatus(Constants.StatusTicket.DRAFT);
+        customerTicketMap.setTicketEntity(ticket);
+        when(ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId())).thenReturn(Optional.of(ticket));
+
+        // Verify that the customerTicketMap has been updated with the new status, reasonId, and reasonNote
+        assertThrows(CustomException.class, () -> ticketService.updateStatusCustomerOfTicket(checkInPayload));
+
+    }
+
+    @Test
+    public void testCheckInCustomer_WithTicketIsCancel() {
+        // Mock input parameters
+        ITicketController.CheckInPayload checkInPayload = new ITicketController.CheckInPayload();
+        checkInPayload.setStatus(Constants.StatusCustomerTicket.CHECK_IN);
+        checkInPayload.setCheckInCode("checkInCode");
+
+        CustomerTicketMap customerTicketMap = new CustomerTicketMap();
+        customerTicketMap.setStatus(Constants.StatusCustomerTicket.PENDING);
+        customerTicketMap.setCustomerTicketMapPk(new CustomerTicketMapPk(UUID.randomUUID(), UUID.randomUUID()));
+
+        // Mock repository behavior
+        Mockito.when(customerTicketMapRepository.findByCheckInCodeIgnoreCase(checkInPayload.getCheckInCode()))
+            .thenReturn(customerTicketMap);
+
+        Site site = new Site();
+        site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+        Ticket ticket = new Ticket();
+        ticket.setStartTime(LocalDateTime.now().minusHours(2));
+        ticket.setEndTime(LocalDateTime.now().plusMinutes(1));
+        ticket.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        ticket.setStatus(Constants.StatusTicket.CANCEL);
+        customerTicketMap.setTicketEntity(ticket);
+        when(ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId())).thenReturn(Optional.of(ticket));
+
+        // Verify that the customerTicketMap has been updated with the new status, reasonId, and reasonNote
+        assertThrows(CustomException.class, () -> ticketService.updateStatusCustomerOfTicket(checkInPayload));
+
+    }
 
     @Test
     void testCheckOutCustomer() {
@@ -1693,6 +1841,59 @@ class TicketServiceImplTest {
         // You can add more assertions if needed
     }
 
+    @Test
+    void testRejectCustomer() {
+        // Mock data
+        UUID customerTicketMapId = UUID.randomUUID();
+        UUID ticketId = UUID.randomUUID();
+        String siteId = UUID.randomUUID().toString();
+        LocalDateTime currentTime = LocalDateTime.now();
+        Integer reasonId = 1;
+
+        ITicketController.CheckInPayload checkOutPayload = new ITicketController.CheckInPayload();
+        checkOutPayload.setCheckInCode("ABCDE");
+        checkOutPayload.setStatus(Constants.StatusCustomerTicket.REJECT);
+        checkOutPayload.setReasonId(reasonId);
+        checkOutPayload.setReasonNote("Customer requested checkout");
+
+        CustomerTicketMap customerTicketMap = new CustomerTicketMap();
+        customerTicketMap.setCustomerTicketMapPk(new CustomerTicketMapPk(UUID.randomUUID(), UUID.randomUUID()));
+        customerTicketMap.setStatus(Constants.StatusCustomerTicket.REJECT);
+        customerTicketMap.setCustomerTicketMapPk(new CustomerTicketMapPk(customerTicketMapId, ticketId));
+        customerTicketMap.setCheckInTime(currentTime);  // Set a past check-in time
+
+        Ticket ticket = new Ticket();
+        ticket.setStartTime(LocalDateTime.now().minusMinutes(1));
+        ticket.setEndTime(LocalDateTime.now().plusMinutes(1));
+        ticket.setId(customerTicketMap.getCustomerTicketMapPk().getTicketId());
+        ticket.setSiteId(siteId);
+        ticket.setStatus(Constants.StatusTicket.PENDING);
+        when(ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId())).thenReturn(java.util.Optional.of(ticket));
+
+        customerTicketMap.setTicketEntity(ticket);
+        Site site = new Site();
+        site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+
+        // Mock repository behavior
+        when(customerTicketMapRepository.findByCheckInCodeIgnoreCase("ABCDE")).thenReturn(customerTicketMap);
+        when(siteRepository.findById(UUID.fromString(siteId))).thenReturn(java.util.Optional.of(new Site()));
+        when(siteRepository.findById(UUID.fromString(ticket.getSiteId()))).thenReturn(Optional.of(site));
+
+        ITicketController.TicketByQRCodeResponseDTO ticketByQRCodeResponseDTO = new ITicketController.TicketByQRCodeResponseDTO();
+        ticketByQRCodeResponseDTO.setSiteId(ticket.getSiteId());
+        when(mapper.map(customerTicketMap, ITicketController.TicketByQRCodeResponseDTO.class)).thenReturn(ticketByQRCodeResponseDTO);
+
+        // Call the method under test
+        ticketService.updateStatusCustomerOfTicket(checkOutPayload);
+
+        // Verify that the status is updated to CHECK_OUT
+        Mockito.verify(customerTicketMapRepository).save(customerTicketMap);
+
+        // Verify that the audit log is created
+        Mockito.verify(auditLogRepository).save(any(AuditLog.class));
+
+        // You can add more assertions if needed
+    }
 
     @Test
     void testGenerateCheckInCode() {
