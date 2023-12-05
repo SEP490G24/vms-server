@@ -13,7 +13,11 @@ import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.entity.Department;
 import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.entity.User;
-import fpt.edu.capstone.vms.persistence.repository.*;
+import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
+import fpt.edu.capstone.vms.persistence.repository.DepartmentRepository;
+import fpt.edu.capstone.vms.persistence.repository.FileRepository;
+import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
+import fpt.edu.capstone.vms.persistence.repository.UserRepository;
 import fpt.edu.capstone.vms.persistence.service.IUserService;
 import fpt.edu.capstone.vms.util.PageableUtils;
 import fpt.edu.capstone.vms.util.SecurityUtils;
@@ -305,9 +309,10 @@ public class UserServiceImpl implements IUserService {
         if (!SecurityUtils.loginUsername().equals(username)) {
             throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
         }
-
-        BlobClient blobClient = fileService.getBlobClient(oldImage);
-        blobClient.deleteIfExists();
+        if (oldImage != null) {
+            BlobClient blobClient = fileService.getBlobClient(oldImage);
+            blobClient.deleteIfExists();
+        }
         if (!ObjectUtils.isEmpty(oldFile)) {
             fileRepository.delete(oldFile);
             return true;
