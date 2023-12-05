@@ -175,6 +175,7 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
 
 
         var department = mapper.map(departmentInfo, Department.class);
+        department.setEnable(true);
         var departmentCreate = departmentRepository.save(department);
         auditLogRepository.save(new AuditLog(siteId.toString()
             , site.getOrganizationId().toString()

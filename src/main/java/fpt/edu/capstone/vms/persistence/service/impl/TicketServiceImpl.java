@@ -846,6 +846,9 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             if (customerTicketMap.isCheckOut()) {
                 throw new CustomException(ErrorApp.CUSTOMER_IS_CHECK_OUT);
             }
+            if (customerTicketMap.getStatus().equals(Constants.StatusCustomerTicket.CHECK_IN)) {
+                throw new CustomException(ErrorApp.CUSTOMER_IS_REJECT);
+            }
             if (customerTicketMap.getTicketEntity().getEndTime().isBefore(LocalDateTime.now())) {
                 throw new CustomException(ErrorApp.TICKET_IS_EXPIRED_CAN_NOT_CHECK_IN);
             }
