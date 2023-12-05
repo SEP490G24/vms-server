@@ -3,6 +3,7 @@ package fpt.edu.capstone.vms.persistence.service.impl;
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.controller.IRoomController;
 import fpt.edu.capstone.vms.exception.CustomException;
+import fpt.edu.capstone.vms.persistence.entity.Device;
 import fpt.edu.capstone.vms.persistence.entity.Room;
 import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
@@ -499,11 +500,11 @@ class RoomServiceImplTest {
         // Mock site repository behavior
         when(siteRepository.findById(roomDto.getSiteId())).thenReturn(java.util.Optional.of(new Site()));
 
+        Device device = new Device();
         // Mock device repository behavior
-        when(deviceRepository.findById(roomDto.getDeviceId())).thenReturn(java.util.Optional.empty());
+        when(deviceRepository.findById(roomDto.getDeviceId())).thenReturn(java.util.Optional.of(device));
 
         // Call the method and expect an exception
         assertThrows(CustomException.class, () -> roomService.create(roomDto));
     }
-
 }
