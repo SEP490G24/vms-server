@@ -23,12 +23,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_REALM_ROLE;
 import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_RESOURCE_ROLE;
@@ -606,7 +604,7 @@ class   DashboardServiceImplTest {
         // Add assertions based on the expected structure and content of the result
     }
 
-/*    @Test
+    @Test
     void testCountTicketsPeriod() {
         // Initialize mocks
         MockitoAnnotations.openMocks(this);
@@ -617,14 +615,14 @@ class   DashboardServiceImplTest {
 
         // Mock external service calls
         when(dashboardRepository.getUpcomingMeetings(any(LocalDateTime.class), any(LocalDateTime.class), anyList()))
-            .thenReturn(Arrays.asList(new Ticket(*//* Your mocked data *//*)));
+            .thenReturn(Arrays.asList(new Ticket()));
         when(dashboardRepository.getOngoingMeetings(any(LocalDateTime.class), anyList()))
-            .thenReturn(Arrays.asList(new Ticket(*//* Your mocked data *//*)));
+            .thenReturn(Arrays.asList(new Ticket()));
         when(dashboardRepository.getRecentlyFinishedMeetings(any(LocalDateTime.class), any(LocalDateTime.class), anyList()))
-            .thenReturn(Arrays.asList(new Ticket(*//* Your mocked data *//*)));
+            .thenReturn(Arrays.asList(new Ticket()));
 
         // Mock repository calls
-        when(mapper.map(any(List.class), any())).thenReturn(Arrays.asList(new ITicketController.TicketFilterDTO(*//* Your mocked data *//*)));
+        when(mapper.map(any(List.class), any())).thenReturn(Arrays.asList(new ITicketController.TicketFilterDTO()));
         // Call the method
         IDashboardController.TicketsPeriodResponse result = dashboardService.countTicketsPeriod(dashboardDTO);
 
@@ -635,9 +633,5 @@ class   DashboardServiceImplTest {
 
         // Add more assertions based on the expected behavior of your method
         assertNotNull(result);
-        assertNotNull(result.getUpcomingMeetings());
-        assertNotNull(result.getOngoingMeetings());
-        assertNotNull(result.getRecentlyFinishedMeetings());
-        // Add assertions based on the expected structure and content of the result
-    }*/
+    }
 }
