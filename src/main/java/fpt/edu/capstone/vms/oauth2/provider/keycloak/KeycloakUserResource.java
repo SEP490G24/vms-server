@@ -86,6 +86,7 @@ public class KeycloakUserResource implements IUserResource {
         user.setEnabled(userDto.getEnable());
         user.setEmailVerified(false);
         user.setAttributes(attributes);
+        user.setEnabled(true);
         user.setCredentials(List.of(passwordCred));
 
         try (var response = usersResource.create(user)) {
