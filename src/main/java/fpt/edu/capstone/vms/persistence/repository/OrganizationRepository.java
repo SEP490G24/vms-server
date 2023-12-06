@@ -24,12 +24,12 @@ public interface OrganizationRepository extends GenericRepository<Organization, 
         "and ((:lastUpdatedBy is null) or (u.lastUpdatedBy in :lastUpdatedBy)) " +
         "and ((:enable is null) or (u.enable = :enable)) " +
         "and ((:keyword is null) " +
-        "or (u.name LIKE %:keyword% " +
-        "or u.code LIKE %:keyword% " +
-        "or u.website LIKE %:keyword% " +
-        "or u.representative LIKE %:keyword% " +
-        "or u.lastUpdatedBy LIKE %:keyword% " +
-        "or u.createdBy LIKE %:keyword%))")
+        "or (UPPER(u.name) LIKE %:keyword% " +
+        "or UPPER(u.code) LIKE %:keyword% " +
+        "or UPPER(u.website) LIKE %:keyword% " +
+        "or UPPER(u.representative) LIKE %:keyword% " +
+        "or UPPER(u.lastUpdatedBy) LIKE %:keyword% " +
+        "or UPPER(u.createdBy) LIKE %:keyword%))")
     Page<Organization> filter(Pageable pageable,
                               @Param("names") @Nullable Collection<String> names,
                               @Param("createdOnStart") @Nullable LocalDateTime createdOnStart,
@@ -46,12 +46,12 @@ public interface OrganizationRepository extends GenericRepository<Organization, 
         "and ((:lastUpdatedBy is null) or (u.lastUpdatedBy in :lastUpdatedBy)) " +
         "and ((:enable is null) or (u.enable = :enable)) " +
         "and ((:keyword is null) " +
-        "or (u.name LIKE %:keyword% " +
-        "or u.code LIKE %:keyword% " +
-        "or u.website LIKE %:keyword% " +
-        "or u.representative LIKE %:keyword% " +
-        "or u.lastUpdatedBy LIKE %:keyword% " +
-        "or u.createdBy LIKE %:keyword%))")
+        "or (UPPER(u.name) LIKE %:keyword% " +
+        "or UPPER(u.code) LIKE %:keyword% " +
+        "or UPPER(u.website) LIKE %:keyword% " +
+        "or UPPER(u.representative) LIKE %:keyword% " +
+        "or UPPER(u.lastUpdatedBy) LIKE %:keyword% " +
+        "or UPPER(u.createdBy) LIKE %:keyword%))")
     List<Organization> filter(@Param("names") @Nullable Collection<String> names,
                               @Param("createdOnStart") @Nullable LocalDateTime createdOnStart,
                               @Param("createdOnEnd") @Nullable LocalDateTime createdOnEnd,

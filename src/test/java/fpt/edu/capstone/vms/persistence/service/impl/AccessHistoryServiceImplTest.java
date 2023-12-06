@@ -117,7 +117,6 @@ public class AccessHistoryServiceImplTest {
         // Arrange
         Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Order.desc("createdOn"), Sort.Order.desc("lastUpdatedOn")));
         Pageable pageableSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
-        String keyword = "search";
         List<Constants.StatusCustomerTicket> status = List.of(Constants.StatusCustomerTicket.CHECK_IN, Constants.StatusCustomerTicket.CHECK_OUT);
         LocalDateTime formCheckInTime = LocalDateTime.now().minusDays(7);
         LocalDateTime toCheckInTime = LocalDateTime.now();
@@ -134,13 +133,13 @@ public class AccessHistoryServiceImplTest {
             formCheckOutTime,
             toCheckOutTime,
             status,
-            keyword,
+            null,
             null
         )).thenReturn(customerTicketMapPage);
 
         // Mock mapper behavior// Act
         Page<CustomerTicketMap> result = accessHistoryService.accessHistory(
-            pageableSort, keyword, status, formCheckInTime, toCheckInTime, formCheckOutTime, toCheckOutTime, sites
+            pageableSort, null, status, formCheckInTime, toCheckInTime, formCheckOutTime, toCheckOutTime, sites
         );
         List<String> sites1 = new ArrayList<>();
         sites1.add("06eb43a7-6ea8-4744-8231-760559fe2c07");
@@ -154,7 +153,7 @@ public class AccessHistoryServiceImplTest {
             formCheckOutTime,
             toCheckOutTime,
             status,
-            keyword,
+            null,
             null
         );
     }

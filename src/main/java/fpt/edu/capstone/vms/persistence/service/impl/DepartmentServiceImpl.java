@@ -225,7 +225,7 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
             createBy,
             lastUpdatedBy,
             enable,
-            keyword);
+            keyword == null ? null : keyword.toUpperCase());
     }
 
     /**
@@ -259,7 +259,7 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
             createBy,
             lastUpdatedBy,
             enable,
-            keyword);
+            keyword == null ? null : keyword.toUpperCase());
     }
 
 }

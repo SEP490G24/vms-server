@@ -162,7 +162,7 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
             provinceId,
             districtId,
             communeId,
-            keyword);
+            keyword != null ? keyword.toUpperCase() : null);
     }
 
     @Override
@@ -187,7 +187,7 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
             provinceId,
             districtId,
             communeId,
-            keyword);
+            keyword != null ? keyword.toUpperCase() : null);
     }
 
     @Override

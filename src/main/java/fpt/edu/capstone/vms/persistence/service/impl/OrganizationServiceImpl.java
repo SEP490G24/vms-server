@@ -168,7 +168,7 @@ public class OrganizationServiceImpl extends GenericServiceImpl<Organization, UU
             createBy,
             lastUpdatedBy,
             enable,
-            keyword);
+            keyword != null ? keyword.toUpperCase() : null);
     }
 
     @Override
@@ -180,6 +180,6 @@ public class OrganizationServiceImpl extends GenericServiceImpl<Organization, UU
             createBy,
             lastUpdatedBy,
             enable,
-            keyword);
+            keyword != null ? keyword.toUpperCase() : null);
     }
 }
