@@ -8,7 +8,5 @@ import java.util.List;
 
 @Repository
 public interface ReasonRepository extends GenericRepository<Reason, Integer> {
-
-
     List<Reason> findAllByType(Constants.Reason reason);
 }

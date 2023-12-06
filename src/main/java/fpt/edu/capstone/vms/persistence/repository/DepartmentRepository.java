@@ -24,11 +24,11 @@ public interface DepartmentRepository extends GenericRepository<Department, UUID
         "and ((:enable is null) or (u.enable = :enable)) " +
         "and ((coalesce(:siteId) is null) or (u.siteId in :siteId))" +
         "and ((:keyword is null) " +
-        "or (u.name LIKE %:keyword% " +
-        "or u.code LIKE %:keyword% " +
-        "or u.description LIKE %:keyword% " +
-        "or u.createdBy LIKE %:keyword% " +
-        "or u.lastUpdatedBy LIKE %:keyword%))")
+        "or (UPPER(u.name) LIKE %:keyword% " +
+        "or UPPER(u.code) LIKE %:keyword% " +
+        "or UPPER(u.description) LIKE %:keyword% " +
+        "or UPPER(u.createdBy) LIKE %:keyword% " +
+        "or UPPER(u.lastUpdatedBy) LIKE %:keyword%))")
     Page<Department> filter(Pageable pageable,
                             @Param("names") @Nullable Collection<String> names,
                             @Param("siteId") @Nullable Collection<UUID> siteId,
@@ -47,11 +47,11 @@ public interface DepartmentRepository extends GenericRepository<Department, UUID
         "and ((:enable is null) or (u.enable = :enable)) " +
         "and ((coalesce(:siteId) is null) or (u.siteId in :siteId)) " +
         "and ((:keyword is null) " +
-        "or (u.name LIKE %:keyword% " +
-        "or u.code LIKE %:keyword% " +
-        "or u.description LIKE %:keyword% " +
-        "or u.createdBy LIKE %:keyword% " +
-        "or u.lastUpdatedBy LIKE %:keyword%))")
+        "or (UPPER(u.name) LIKE %:keyword% " +
+        "or UPPER(u.code) LIKE %:keyword% " +
+        "or UPPER(u.description) LIKE %:keyword% " +
+        "or UPPER(u.createdBy) LIKE %:keyword% " +
+        "or UPPER(u.lastUpdatedBy) LIKE %:keyword%))")
     List<Department> filter(
         @Param("names") @Nullable Collection<String> names,
         @Param("siteId") @Nullable Collection<UUID> siteId,

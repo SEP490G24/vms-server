@@ -41,10 +41,10 @@ public interface CustomerRepository extends GenericRepository<Customer, UUID> {
         "and ((:lastUpdatedBy is null) or (u.lastUpdatedBy in :lastUpdatedBy)) " +
         "and ((:identificationNumber is null) or (u.identificationNumber in :identificationNumber)) " +
         "and ((:keyword is null) " +
-        "or (u.visitorName LIKE %:keyword% " +
-        "or u.phoneNumber LIKE %:keyword% " +
-        "or u.email LIKE %:keyword% " +
-        "or u.identificationNumber LIKE %:keyword% ))")
+        "or (UPPER(u.visitorName) LIKE %:keyword% " +
+        "or UPPER(u.phoneNumber) LIKE %:keyword% " +
+        "or UPPER(u.email) LIKE %:keyword% " +
+        "or UPPER(u.identificationNumber) LIKE %:keyword% ))")
     List<Customer> filter(
         @Param("names") @Nullable Collection<String> names,
         @Param("createdOnStart") @Nullable LocalDateTime createdOnStart,
@@ -63,12 +63,12 @@ public interface CustomerRepository extends GenericRepository<Customer, UUID> {
         "and ((:lastUpdatedBy is null) or (u.lastUpdatedBy in :lastUpdatedBy)) " +
         "and ((:identificationNumber is null) or (u.identificationNumber in :identificationNumber)) " +
         "and ((:keyword is null) " +
-        "or (u.phoneNumber LIKE %:keyword% " +
-        "or u.visitorName LIKE %:keyword% " +
-        "or u.lastUpdatedBy LIKE %:keyword% " +
-        "or u.createdBy LIKE %:keyword% " +
-        "or u.email LIKE %:keyword% " +
-        "or u.identificationNumber LIKE %:keyword% ))")
+        "or (UPPER(u.phoneNumber) LIKE %:keyword% " +
+        "or UPPER(u.visitorName) LIKE %:keyword% " +
+        "or UPPER(u.lastUpdatedBy) LIKE %:keyword% " +
+        "or UPPER(u.createdBy) LIKE %:keyword% " +
+        "or UPPER(u.email) LIKE %:keyword% " +
+        "or UPPER(u.identificationNumber) LIKE %:keyword% ))")
     Page<Customer> filter(Pageable pageable,
                           @Param("names") @Nullable Collection<String> names,
                           @Param("createdOnStart") @Nullable LocalDateTime createdOnStart,

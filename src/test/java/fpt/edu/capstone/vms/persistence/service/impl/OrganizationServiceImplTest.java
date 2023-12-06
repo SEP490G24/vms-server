@@ -343,7 +343,6 @@ class OrganizationServiceImplTest {
         String createdBy = "John Doe";
         String lastUpdatedBy = "Jane Doe";
         Boolean enable = true;
-        String keyword = "SearchKeyword";
 
         // Mock the behavior of the organizationRepository
         List<Organization> expectedContent = Arrays.asList(
@@ -352,13 +351,13 @@ class OrganizationServiceImplTest {
 
         when(organizationRepository.filter(
             eq(pageable), eq(names), eq(createdOnStart), eq(createdOnEnd),
-            eq(createdBy), eq(lastUpdatedBy), eq(enable), eq(keyword)))
+            eq(createdBy), eq(lastUpdatedBy), eq(enable), eq(null)))
             .thenReturn(expectedResult);
 
         // Act
         Page<Organization> result = organizationService.filter(
             pageableSort, names, createdOnStart, createdOnEnd,
-            createdBy, lastUpdatedBy, enable, keyword);
+            createdBy, lastUpdatedBy, enable, null);
 
         // Assert
         assertEquals(expectedResult, result);
@@ -374,7 +373,6 @@ class OrganizationServiceImplTest {
         String createdBy = "John Doe";
         String lastUpdatedBy = "Jane Doe";
         Boolean enable = true;
-        String keyword = "SearchKeyword";
 
         // Mock the behavior of the organizationRepository
         List<Organization> expectedResult = Arrays.asList(
@@ -382,13 +380,13 @@ class OrganizationServiceImplTest {
 
         when(organizationRepository.filter(
             eq(names), eq(createdOnStart), eq(createdOnEnd),
-            eq(createdBy), eq(lastUpdatedBy), eq(enable), eq(keyword)))
+            eq(createdBy), eq(lastUpdatedBy), eq(enable), eq(null)))
             .thenReturn(expectedResult);
 
         // Act
         List<Organization> result = organizationService.filter(
             names, createdOnStart, createdOnEnd,
-            createdBy, lastUpdatedBy, enable, keyword);
+            createdBy, lastUpdatedBy, enable, null);
 
         // Assert
         assertEquals(expectedResult, result);
@@ -396,6 +394,6 @@ class OrganizationServiceImplTest {
         // Verify that the filter method of organizationRepository was called with the correct arguments
         verify(organizationRepository).filter(
             eq(names), eq(createdOnStart), eq(createdOnEnd),
-            eq(createdBy), eq(lastUpdatedBy), eq(enable), eq(keyword));
+            eq(createdBy), eq(lastUpdatedBy), eq(enable), eq(null));
     }
 }

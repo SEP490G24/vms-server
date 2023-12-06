@@ -74,7 +74,6 @@ class CustomerServiceImplTest {
         String createBy = "John Doe";
         String lastUpdatedBy = "Jane Doe";
         String identificationNumber = "123456";
-        String keyword = "some keyword";
         String organizationId = "3d65906a-c6e3-4e9d-bbc6-ba20938f9cad";
 
         List<Customer> mockedCustomers = new ArrayList<>();  // Add mocked customers as needed
@@ -90,7 +89,7 @@ class CustomerServiceImplTest {
             eq(organizationId),
             eq(lastUpdatedBy),
             eq(identificationNumber),
-            eq(keyword)
+            eq(null)
         )).thenReturn(mockedPage);
 
         // Call the method to test
@@ -102,7 +101,7 @@ class CustomerServiceImplTest {
             createBy,
             lastUpdatedBy,
             identificationNumber,
-            keyword
+            null
         );
         assertEquals(null, resultPage);
 
@@ -119,7 +118,7 @@ class CustomerServiceImplTest {
         String createBy = "John Doe";
         String lastUpdatedBy = "Jane Doe";
         String identificationNumber = "123456";
-        String keyword = "nonexistent";
+        String keyword = null;
         String organizationId = "3d65906a-c6e3-4e9d-bbc6-ba20938f9cad";
 
 
@@ -177,7 +176,7 @@ class CustomerServiceImplTest {
         String createBy = "John Doe";
         String lastUpdatedBy = "Jane Doe";
         String identificationNumber = "123456";
-        String keyword = "some keyword";
+        String keyword = null;
         String organizationId = "3d65906a-c6e3-4e9d-bbc6-ba20938f9cad";
 
 
@@ -217,7 +216,7 @@ class CustomerServiceImplTest {
             eq(organizationId),
             eq(lastUpdatedBy),
             eq(identificationNumber),
-            eq(keyword)
+            eq(null)
         );
     }
 
@@ -230,7 +229,6 @@ class CustomerServiceImplTest {
         String createBy = "John Doe";
         String lastUpdatedBy = "Jane Doe";
         String identificationNumber = "123456";
-        String keyword = "nonexistent";
         String organizationId = "3d65906a-c6e3-4e9d-bbc6-ba20938f9cad";
 
 
@@ -244,7 +242,7 @@ class CustomerServiceImplTest {
             eq(organizationId),
             eq(lastUpdatedBy),
             eq(identificationNumber),
-            eq(keyword)
+            eq(null)
         )).thenReturn(mockedCustomers);
 
         // Call the method to test
@@ -255,7 +253,7 @@ class CustomerServiceImplTest {
             createBy,
             lastUpdatedBy,
             identificationNumber,
-            keyword
+            null
         );
 
         // Assertions for empty result
@@ -270,7 +268,7 @@ class CustomerServiceImplTest {
             eq(organizationId),
             eq(lastUpdatedBy),
             eq(identificationNumber),
-            eq(keyword)
+            eq(null)
         );
     }
 

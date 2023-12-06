@@ -1,6 +1,5 @@
 package fpt.edu.capstone.vms.persistence.repository;
 
-import fpt.edu.capstone.vms.persistence.dto.common.Option;
 import fpt.edu.capstone.vms.persistence.entity.Site;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,12 +28,12 @@ public interface SiteRepository extends GenericRepository<Site, UUID> {
         "and ((:communeId is null) or (u.communeId = :communeId)) " +
         "and ((cast(:orgId as string) is null) or (u.organizationId = :orgId)) " +
         "and ((:keyword is null) " +
-        "or (u.name LIKE %:keyword% " +
-        "or u.address LIKE %:keyword% " +
-        "or u.taxCode LIKE %:keyword% " +
-        "or u.lastUpdatedBy LIKE %:keyword% " +
-        "or u.createdBy LIKE %:keyword% " +
-        "or u.phoneNumber LIKE %:keyword% ))")
+        "or ( UPPER(u.name) LIKE %:keyword% " +
+        "or UPPER(u.address) LIKE %:keyword% " +
+        "or UPPER(u.taxCode) LIKE %:keyword% " +
+        "or UPPER(u.lastUpdatedBy) LIKE %:keyword% " +
+        "or UPPER(u.createdBy) LIKE %:keyword% " +
+        "or UPPER(u.phoneNumber) LIKE %:keyword% ))")
     Page<Site> filter(Pageable pageable,
                       @Param("names") @Nullable Collection<String> names,
                       @Param("orgId") @Nullable UUID orgId,
@@ -60,12 +59,12 @@ public interface SiteRepository extends GenericRepository<Site, UUID> {
         "and ((:communeId is null) or (u.communeId = :communeId)) " +
         "and ((cast(:orgId as string) is null) or (u.organizationId = :orgId)) " +
         "and ((:keyword is null) " +
-        "or (u.name LIKE %:keyword% " +
-        "or u.address LIKE %:keyword% " +
-        "or u.taxCode LIKE %:keyword% " +
-        "or u.lastUpdatedBy LIKE %:keyword% " +
-        "or u.createdBy LIKE %:keyword% " +
-        "or u.phoneNumber LIKE %:keyword% ))")
+        "or (UPPER(u.name) LIKE %:keyword% " +
+        "or UPPER(u.address) LIKE %:keyword% " +
+        "or UPPER(u.taxCode) LIKE %:keyword% " +
+        "or UPPER(u.lastUpdatedBy) LIKE %:keyword% " +
+        "or UPPER(u.createdBy) LIKE %:keyword% " +
+        "or UPPER(u.phoneNumber) LIKE %:keyword% ))")
     List<Site> filter(
         @Param("names") @Nullable Collection<String> names,
         @Param("orgId") @Nullable UUID orgId,

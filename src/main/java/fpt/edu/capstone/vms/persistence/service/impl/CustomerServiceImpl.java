@@ -72,7 +72,7 @@ public class CustomerServiceImpl extends GenericServiceImpl<Customer, UUID> impl
             orgId,
             lastUpdatedBy,
             identificationNumber,
-            keyword);
+            keyword != null ? keyword.toUpperCase() : null);
     }
 
     @Override
@@ -95,7 +95,7 @@ public class CustomerServiceImpl extends GenericServiceImpl<Customer, UUID> impl
             orgId,
             lastUpdatedBy,
             identificationNumber,
-            keyword);
+            keyword != null ? keyword.toUpperCase() : null);
     }
 
     @Override
