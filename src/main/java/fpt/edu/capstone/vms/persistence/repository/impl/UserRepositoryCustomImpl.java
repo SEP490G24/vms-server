@@ -72,8 +72,10 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
         }
 
         if (departmentIds != null && !departmentIds.isEmpty() && departmentIds.size() > 0) {
-            sqlConditional.append("AND d.id IN :departmentIds ");
+            sqlConditional.append("AND u.department_id IN :departmentIds ");
             queryParams.put("departmentIds", departmentIds);
+        } else {
+            sqlConditional.append("AND u.department_id = null ");
         }
 
         if (enable != null) {
@@ -178,6 +180,8 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
         if (departmentIds != null && !departmentIds.isEmpty() && departmentIds.size() > 0) {
             sqlConditional.append("AND d.id IN :departmentIds ");
             queryParams.put("departmentIds", departmentIds);
+        } else {
+            sqlConditional.append("AND u.department_id = null ");
         }
 
         if (enable != null) {
