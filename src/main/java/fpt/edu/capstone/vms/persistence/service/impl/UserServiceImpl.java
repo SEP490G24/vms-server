@@ -253,7 +253,7 @@ public class UserServiceImpl implements IUserService {
                 }
             }
             Site site = null;
-            if (!SecurityUtils.getUserDetails().isOrganizationAdmin()) {
+            if (!SecurityUtils.getUserDetails().isOrganizationAdmin() && !SecurityUtils.getUserDetails().isRealmAdmin()) {
                 site = siteRepository.findById(userEntity.getDepartment().getSiteId()).orElse(null);
             }
 

@@ -77,7 +77,7 @@ public class CustomerController implements ICustomerController {
         }.getType());
 
         return isPageable ?
-            ResponseEntity.ok(new PageImpl(customerInfos, pageable, customerInfos.size()))
+            ResponseEntity.ok(new PageImpl(customerInfos, pageable, customerEntityPageable.getTotalElements()))
             : ResponseEntity.ok(mapper.map(customerEntity, new TypeToken<List<CustomerInfo>>() {
         }.getType()));
     }

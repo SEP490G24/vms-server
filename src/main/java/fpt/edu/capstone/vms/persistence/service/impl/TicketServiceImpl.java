@@ -487,19 +487,24 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         }
         Room room = null;
         if (StringUtils.isNotEmpty(ticketInfo.getRoomId())) {
-            if (!ticketInfo.getRoomId().equals(ticket.getRoomId().toString())) {
-                room = roomRepository.findById(UUID.fromString(ticketInfo.getRoomId())).orElse(null);
+            room = roomRepository.findById(UUID.fromString(ticketInfo.getRoomId())).orElse(null);
 
-                if (ObjectUtils.isEmpty(room)) {
-                    throw new CustomException(ErrorApp.ROOM_NOT_FOUND);
+            if (ObjectUtils.isEmpty(room)) {
+                throw new CustomException(ErrorApp.ROOM_NOT_FOUND);
+            }
+
+            if (!room.getSiteId().equals(UUID.fromString(ticket.getSiteId())))
+                throw new CustomException(ErrorApp.ROOM_USER_CAN_NOT_CREATE_TICKET);
+
+            if (isRoomBooked(UUID.fromString(ticketInfo.getRoomId()), ticketInfo.getStartTime(), ticketInfo.getEndTime())) {
+                throw new CustomException(ErrorApp.ROOM_HAVE_TICKET_IN_THIS_TIME);
+            }
+
+            if (ticket.getRoom() != null) {
+                if (!ticketInfo.getRoomId().equals(ticket.getRoomId().toString())) {
+                    ticketMap.setRoomId(UUID.fromString(ticketInfo.getRoomId()));
                 }
-
-                if (!room.getSiteId().equals(UUID.fromString(ticket.getSiteId())))
-                    throw new CustomException(ErrorApp.ROOM_USER_CAN_NOT_CREATE_TICKET);
-
-                if (isRoomBooked(UUID.fromString(ticketInfo.getRoomId()), ticketInfo.getStartTime(), ticketInfo.getEndTime())) {
-                    throw new CustomException(ErrorApp.ROOM_HAVE_TICKET_IN_THIS_TIME);
-                }
+            } else {
                 ticketMap.setRoomId(UUID.fromString(ticketInfo.getRoomId()));
             }
         }
