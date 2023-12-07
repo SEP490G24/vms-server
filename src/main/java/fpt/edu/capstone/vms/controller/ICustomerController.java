@@ -61,7 +61,6 @@ public interface ICustomerController {
 
     @PostMapping("/check")
     @Operation(summary = "check exist customer")
-    @PreAuthorize("hasRole('r:customer:check')")
     ResponseEntity<?> checkCustomerExist(@RequestBody CustomerCheckExist customerCheckExist);
 
     @Data
