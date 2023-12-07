@@ -84,7 +84,11 @@ public class KeycloakUserResource implements IUserResource {
         user.setLastName(userDto.getLastName());
         user.setEmail(userDto.getEmail());
         user.setEnabled(userDto.getEnable());
-        user.setEmailVerified(false);
+        if (SecurityUtils.getUserDetails().isRealmAdmin()) {
+            user.setEmailVerified(true);
+        } else {
+            user.setEmailVerified(false);
+        }
         user.setAttributes(attributes);
         user.setEnabled(true);
         user.setCredentials(List.of(passwordCred));
