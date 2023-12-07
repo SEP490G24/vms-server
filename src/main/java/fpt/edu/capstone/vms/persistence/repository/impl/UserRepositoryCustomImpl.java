@@ -12,7 +12,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 @RequiredArgsConstructor
 public class UserRepositoryCustomImpl implements UserRepositoryCustom {
 
@@ -40,8 +47,8 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
             " d2.name as districtName, c.id as communeId, c.name as communeName, d.id as departmentId ";
         StringBuilder sqlConditional = new StringBuilder();
         sqlConditional.append("FROM \"user\" u ");
-        sqlConditional.append("LEFT JOIN department d ON u.department_id = d.id ");
-        sqlConditional.append("LEFT JOIN site s ON s.id = d.site_id ");
+        sqlConditional.append("INNER JOIN department d ON u.department_id = d.id ");
+        sqlConditional.append("INNER JOIN site s ON s.id = d.site_id ");
         sqlConditional.append("LEFT JOIN province p ON u.province_id = p.id ");
         sqlConditional.append("LEFT JOIN district d2 ON u.district_id = d2.id ");
         sqlConditional.append("LEFT JOIN commune c ON u.commune_id = c.id ");
@@ -144,8 +151,8 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
             " d2.name as districtName, c.id as communeId, c.name as communeName, d.id as departmentId ";
         StringBuilder sqlConditional = new StringBuilder();
         sqlConditional.append("FROM \"user\" u ");
-        sqlConditional.append("LEFT JOIN department d ON u.department_id = d.id ");
-        sqlConditional.append("LEFT JOIN site s ON s.id = d.site_id ");
+        sqlConditional.append("INNER JOIN department d ON u.department_id = d.id ");
+        sqlConditional.append("INNER JOIN site s ON s.id = d.site_id ");
         sqlConditional.append("LEFT JOIN province p ON u.province_id = p.id ");
         sqlConditional.append("LEFT JOIN district d2 ON u.district_id = d2.id ");
         sqlConditional.append("LEFT JOIN commune c ON u.commune_id = c.id ");
