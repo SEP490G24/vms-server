@@ -62,6 +62,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -1157,12 +1158,21 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             byte[] hash = md.digest(input.getBytes());
 
-            long randomNumber = 0;
-            for (int i = 0; i < 8; i++) {
-                randomNumber = (randomNumber << 8) | (hash[i] & 0xff);
+            Random random = new Random();
+            long randomNumber = random.nextLong();
+
+            // Concatenate the input with the random number
+            String combinedInput = input + randomNumber;
+
+            // Hash the combined input
+            byte[] combinedHash = md.digest(combinedInput.getBytes());
+
+            long finalRandomNumber = 0;
+            for (int i = 0; i < 16; i++) {
+                finalRandomNumber = (finalRandomNumber << 16) | (combinedHash[i] & 0xff);
             }
 
-            return per + dateCreated + String.format("%04d", Math.abs(randomNumber));
+            return per + dateCreated + String.format("%04d", Math.abs(finalRandomNumber));
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
             throw new RuntimeException();
