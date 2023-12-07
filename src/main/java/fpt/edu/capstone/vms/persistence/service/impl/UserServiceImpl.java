@@ -221,6 +221,7 @@ public class UserServiceImpl implements IUserService {
                 userEntity = mapper.map(userDto, User.class).setOpenid(kcUserId);
                 String role = String.join(";", userDto.getRoles());
                 userEntity.setRole(role);
+                userEntity.setEnable(true);
                 User user = userRepository.save(userEntity);
                 auditLogRepository.save(new AuditLog(siteId
                     , site.getOrganizationId().toString()
