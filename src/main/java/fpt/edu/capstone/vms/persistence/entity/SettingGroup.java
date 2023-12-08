@@ -1,6 +1,11 @@
 package fpt.edu.capstone.vms.persistence.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -17,12 +22,15 @@ import lombok.experimental.Accessors;
 public class SettingGroup extends AbstractBaseEntity<Long> {
 
     @Id
-    @Column(name = "id",columnDefinition = "int", updatable = false, nullable = false)
-    @GeneratedValue (strategy = GenerationType.IDENTITY)
+    @Column(name = "id", columnDefinition = "int", updatable = false, nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "name")
     private String name;
+
+    @Column(name = "code")
+    private String code;
 
     @Override
     public Long getId() {

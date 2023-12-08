@@ -437,7 +437,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                 if (ObjectUtils.isEmpty(template)) {
                     throw new CustomException(ErrorApp.TEMPLATE_NOT_FOUND);
                 }
-                sendEmailCancel(ticket, customer, template, reason);
+                sendEmailCancel(ticket, customer, template, reason, cancelTicket.getReasonNote());
             });
 
         }
@@ -451,7 +451,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         return true;
     }
 
-    public void sendEmailCancel(Ticket ticket, Customer customer, Template template, Reason reason) {
+    public void sendEmailCancel(Ticket ticket, Customer customer, Template template, Reason reason, String reasonNote) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
 
         String date = ticket.getStartTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
@@ -466,7 +466,8 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         parameterMap.put("dateTime", date);
         parameterMap.put("startTime", startTime1);
         parameterMap.put("endTime", endTime);
-        parameterMap.put("reason", reason != null ? I18n.getMessage(reason.getCode()) : "Updating...");
+        String _reasonNote = reasonNote != null ? reasonNote : "";
+        parameterMap.put("reason", reason != null ? I18n.getMessage(reason.getCode()) + "\n" + "Reason note:" + _reasonNote : "Updating...");
         String replacedTemplate = emailUtils.replaceEmailParameters(template.getBody(), parameterMap);
 
         emailUtils.sendMailWithQRCode(customer.getEmail(), template.getSubject(), replacedTemplate, null, ticket.getSiteId());
@@ -647,7 +648,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                 if (customerTicketMap != null) {
                     customerTicketMapRepository.delete(customerTicketMap);
                     if (!isDraft) {
-                        sendEmailCancel(ticket, customerTicketMap.getCustomerEntity(), template, null);
+                        sendEmailCancel(ticket, customerTicketMap.getCustomerEntity(), template, null, null);
                     }
                 }
             }
