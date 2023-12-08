@@ -1027,6 +1027,7 @@ class TicketServiceImplTest {
         ticketInfo.setRoomId("06eb43a7-6ea8-4744-8231-760559fe2c07");
         ticketInfo.setPurpose(Constants.Purpose.MEETING);
         ticketInfo.setStartTime(LocalDateTime.now().plusMinutes(1));
+        ticketInfo.setOldCustomers(List.of("06eb43a7-6ea8-4744-8231-760559fe2c09"));
 
         Ticket mockTicket = new Ticket();
         mockTicket.setId(ticketId);
@@ -1065,11 +1066,27 @@ class TicketServiceImplTest {
         site.setCommune(commune);
         when(siteRepository.findById(UUID.fromString(mockTicket.getSiteId()))).thenReturn(java.util.Optional.of(site));
 
+        Customer customer = new Customer();
+        customer.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c09"));
+        CustomerTicketMap customerTicketMap = new CustomerTicketMap();
+        customerTicketMap.setCustomerTicketMapPk(new CustomerTicketMapPk(mockTicket.getId(), UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c09")));
+        customerTicketMap.setCustomerEntity(customer);
+        when(customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(mockTicket.getId())).thenReturn(List.of(customerTicketMap));
+        when(customerTicketMapRepository.findById(customerTicketMap.getCustomerTicketMapPk())).thenReturn(Optional.of(customerTicketMap));
+        Template template = new Template();
+        template.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c06"));
+        when(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CANCEL_EMAIL)).thenReturn(template.getId().toString());
+        when(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CONFIRM_EMAIL)).thenReturn(template.getId().toString());
+        when(templateRepository.findById(UUID.fromString(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CANCEL_EMAIL)))).thenReturn(Optional.of(template));
+        when(templateRepository.findById(UUID.fromString(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CONFIRM_EMAIL)))).thenReturn(Optional.of(template));
         when(mapper.map(ticketInfo, Ticket.class)).thenReturn(mockTicket);
 
+        User user = new User();
+        user.setFirstName("first_name");
+        when(userRepository.findFirstByUsername(mockTicket.getUsername())).thenReturn(user);
         Ticket result = ticketService.updateTicket(ticketInfo);
-
         assertNotNull(result);
+
     }
 
     @Test
@@ -2667,7 +2684,7 @@ class TicketServiceImplTest {
         when(customerRepository.existsByIdAndAndOrganizationId(UUID.fromString("c353835a-5e1e-4df5-973f-aec252bf260f"), "c353835a-5e1e-4df5-973f-aec252bf260f")).thenReturn(true);
 
         // Call the method
-        assertDoesNotThrow(() -> ticketService.checkOldCustomers(oldCustomers, ticket, room, true));
+        assertDoesNotThrow(() -> ticketService.checkOldCustomers(oldCustomers, ticket, room, true, Arrays.asList(customerTicketMap1)));
     }
 
     @Test
@@ -2700,7 +2717,7 @@ class TicketServiceImplTest {
         when(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CANCEL_EMAIL)).thenReturn("c353835a-5e1e-4df5-973f-aec252bf260f");
 
         // Call the method
-        assertThrows(CustomException.class, () -> ticketService.checkOldCustomers(oldCustomers, ticket, room, true));
+        assertThrows(CustomException.class, () -> ticketService.checkOldCustomers(oldCustomers, ticket, room, true, Arrays.asList(customerTicketMap1)));
 
     }
 
@@ -2731,7 +2748,7 @@ class TicketServiceImplTest {
         when(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CANCEL_EMAIL)).thenReturn("c353835a-5e1e-4df5-973f-aec252bf260f");
 
         // Call the method
-        assertDoesNotThrow(() -> ticketService.checkOldCustomers(oldCustomers, ticket, room, true));
+        assertDoesNotThrow(() -> ticketService.checkOldCustomers(oldCustomers, ticket, room, true, Arrays.asList(customerTicketMap1)));
 
     }
 
@@ -2764,6 +2781,6 @@ class TicketServiceImplTest {
         when(customerRepository.existsByIdAndAndOrganizationId(UUID.fromString("c353835a-5e1e-4df5-973f-aec252bf260f"), "c353835a-5e1e-4df5-973f-aec252bf260f")).thenReturn(true);
 
         // Call the method
-        assertDoesNotThrow(() -> ticketService.checkOldCustomers(oldCustomers, ticket, room, true));
+        assertDoesNotThrow(() -> ticketService.checkOldCustomers(oldCustomers, ticket, room, true, Arrays.asList(customerTicketMap1)));
     }
 }

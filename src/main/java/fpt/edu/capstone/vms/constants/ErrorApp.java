@@ -118,6 +118,8 @@ public enum ErrorApp {
     CUSTOMER_PHONE_NUMBER_EXIST(184, I18n.getMessage("msg.customer.phone.number.exist")),
     CUSTOMER_IDENTIFICATION_NUMBER_NOT_FOUND(185, I18n.getMessage("msg.customer.identification.number.not.found")),
     CUSTOMER_IDENTITY_EXIST(186, I18n.getMessage("msg.customer.identity.exist")),
+    CUSTOMER_NOT_EMPTY_WHEN_CREATE_TICKET(187, I18n.getMessage("msg.customer.not.empty.when.create.ticket")),
+    CUSTOMER_NOT_EMPTY_WHEN_UPDATE_TICKET(188, I18n.getMessage("msg.customer.not.empty.when.update.ticket")),
 
     //ticket
     TICKET_NOT_FOUND(147, I18n.getMessage("msg.ticket.not.found")),

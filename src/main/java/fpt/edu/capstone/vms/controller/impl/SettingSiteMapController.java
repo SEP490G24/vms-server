@@ -1,13 +1,10 @@
 package fpt.edu.capstone.vms.controller.impl;
 
-import fpt.edu.capstone.vms.constants.ErrorApp;
 import fpt.edu.capstone.vms.controller.ISettingSiteMapController;
 import fpt.edu.capstone.vms.exception.CustomException;
-import fpt.edu.capstone.vms.persistence.entity.SettingSiteMapPk;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.service.ISettingSiteMapService;
 import fpt.edu.capstone.vms.util.ResponseUtils;
-import fpt.edu.capstone.vms.util.SecurityUtils;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -17,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @AllArgsConstructor
@@ -26,40 +22,6 @@ public class SettingSiteMapController implements ISettingSiteMapController {
     private final ISettingSiteMapService settingSiteService;
     private final ModelMapper mapper;
     private final SiteRepository siteRepository;
-
-    /**
-     * The function returns a ResponseEntity containing a SettingSiteMap object found by its siteId and settingId.
-     *
-     * @param siteId    The siteId parameter is a String that represents the unique identifier of a site. It is used to
-     *                  identify a specific site in the system.
-     * @param settingId The settingId parameter is of type Long and represents the ID of the setting.
-     * @return The method is returning a ResponseEntity object containing a SettingSiteMap object.
-     */
-    @Override
-    public ResponseEntity<?> findById(String siteId, Long settingId) {
-        if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
-            return ResponseUtils.getResponseEntity(ErrorApp.USER_NOT_PERMISSION, HttpStatus.FORBIDDEN);
-        }
-        SettingSiteMapPk pk = new SettingSiteMapPk(settingId, UUID.fromString(siteId));
-        return ResponseEntity.ok(settingSiteService.findById(pk));
-    }
-
-    /**
-     * The function deletes a setting from a site map using the provided site ID and setting ID.
-     *
-     * @param siteId    The siteId parameter is a String representing the unique identifier of a site.
-     * @param settingId The settingId parameter is a Long value that represents the unique identifier of a setting in the
-     *                  system.
-     * @return The method is returning a ResponseEntity object with a generic type of SettingSiteMap.
-     */
-    @Override
-    public ResponseEntity<?> delete(String siteId, Long settingId) {
-        if (!SecurityUtils.checkSiteAuthorization(siteRepository, siteId)) {
-            return ResponseUtils.getResponseEntity(ErrorApp.USER_NOT_PERMISSION, HttpStatus.FORBIDDEN);
-        }
-        SettingSiteMapPk pk = new SettingSiteMapPk(settingId, UUID.fromString(siteId));
-        return settingSiteService.delete(pk);
-    }
 
     /**
      * The function creates or updates a setting site map and returns a ResponseEntity object.
