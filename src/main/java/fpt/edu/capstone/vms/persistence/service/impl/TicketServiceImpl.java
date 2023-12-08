@@ -178,6 +178,11 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             if (ticketInfo.getRoomId() != null) {
                 room = roomRepository.findById(ticketInfo.getRoomId()).orElse(null);
             }
+
+            if (ticketInfo.getOldCustomers() == null && ticketInfo.getOldCustomers().isEmpty() && ticketInfo.getNewCustomers() == null && ticketInfo.getNewCustomers().isEmpty()) {
+                throw new CustomException(ErrorApp.CUSTOMER_NOT_EMPTY_WHEN_CREATE_TICKET);
+            }
+
             setDataCustomer(ticketInfo, ticket);
             var customerTicketMaps = customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(ticket.getId());
             if (customerTicketMaps.isEmpty())
@@ -547,6 +552,16 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             checkTimeForTicket(updateStartTime, updateEndTime);
         }
 
+        if (SecurityUtils.getOrgId() != null) {
+            if (StringUtils.isEmpty(ticket.getSiteId().trim()))
+                throw new CustomException(ErrorApp.SITE_ID_NULL);
+            if (!siteRepository.existsByIdAndOrganizationId(UUID.fromString(ticket.getSiteId()), UUID.fromString(SecurityUtils.getOrgId())))
+                throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
+            settingUtils.loadSettingsSite(ticket.getSiteId());
+        } else {
+            settingUtils.loadSettingsSite(SecurityUtils.getSiteId());
+        }
+
         if (ticketMap.getPurpose() == Constants.Purpose.OTHERS && ticketMap.getPurposeNote() == null) {
             throw new CustomException(ErrorApp.PURPOSE_OTHER_NOT_NULL_OTHER);
         } else if (ticketMap.getPurpose() != Constants.Purpose.OTHERS && ticketMap.getPurposeNote() != null) {
@@ -556,21 +571,27 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         if (ticketInfo.isDraft() == true && ticket.getStatus().equals(Constants.StatusTicket.PENDING)) {
             throw new CustomException(ErrorApp.TICKET_IS_PENDING_CAN_NOT_SAVE_IS_DRAFT);
         }
+        List<CustomerTicketMap> customerTicketMaps = customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(ticket.getId());
 
         if (ticketInfo.isDraft() == true) {
             ticket.setStatus(Constants.StatusTicket.DRAFT);
         } else {
+            if (customerTicketMaps.isEmpty()
+                && (ticketInfo.getOldCustomers().isEmpty() && ticketInfo.getOldCustomers() == null)
+                && (ticketInfo.getNewCustomers().isEmpty() && ticketInfo.getNewCustomers() == null)) {
+                throw new CustomException(ErrorApp.CUSTOMER_NOT_EMPTY_WHEN_UPDATE_TICKET);
+            }
             ticket.setStatus(Constants.StatusTicket.PENDING);
         }
 
         Ticket oldValue = ticket;
         ticketRepository.save(ticket.update(ticketMap));
 
-        if (ticketInfo.getOldCustomers() != null) {
-            checkOldCustomers(ticketInfo.getOldCustomers(), ticket, room, ticketInfo.isDraft());
+        if (ticketInfo.getOldCustomers() != null && !ticketInfo.getOldCustomers().isEmpty()) {
+            checkOldCustomers(ticketInfo.getOldCustomers(), ticket, room, ticketInfo.isDraft(), customerTicketMaps);
         }
 
-        if (ticketInfo.getNewCustomers() != null) {
+        if (ticketInfo.getNewCustomers() != null && !ticketInfo.getNewCustomers().isEmpty()) {
             checkNewCustomers(ticketInfo.getNewCustomers(), ticket, room, ticketInfo.isDraft());
         }
 
@@ -585,7 +606,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         return ticket;
     }
 
-    public void checkOldCustomers(List<String> oldCustomers, Ticket ticket, Room room, boolean isDraft) {
+    public void checkOldCustomers(List<String> oldCustomers, Ticket ticket, Room room, boolean isDraft, List<CustomerTicketMap> customerTicketMaps) {
         String orgId;
         if (SecurityUtils.getOrgId() == null) {
             Site site = siteRepository.findById(UUID.fromString(SecurityUtils.getSiteId())).orElse(null);
@@ -597,7 +618,6 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             orgId = SecurityUtils.getOrgId();
         }
 
-        List<CustomerTicketMap> customerTicketMaps = customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(ticket.getId());
 
         // List of customer id old
         List<String> CustomerOfTicket = customerTicketMaps.stream()
