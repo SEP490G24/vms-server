@@ -128,6 +128,24 @@ public class KeycloakRealmRoleResource implements IRoleResource {
         var results = (List<RoleDto>) mapper.map(filteredRoles, new TypeToken<List<RoleDto>>() {
         }.getType());
         results.forEach(this::updatePermission4Role);
+
+        if(SecurityUtils.getUserDetails().isSiteAdmin()){
+            Iterator<RoleDto> iterator = results.iterator();
+
+            while (iterator.hasNext()) {
+                RoleDto result = iterator.next();
+
+                Optional<IPermissionResource.PermissionDto> permissionDtoOptional = result.getPermissionDtos().stream()
+                    .filter(x -> "scope:site".equals(x.getName()))
+                    .findFirst();
+
+                if (permissionDtoOptional.isPresent()) {
+                    // Nếu tồn tại PermissionDto có tên là "scope:site", thì xóa result khỏi danh sách.
+                    iterator.remove();
+                }
+            }
+        }
+
         return results;
     }
 
