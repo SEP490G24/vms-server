@@ -72,6 +72,9 @@ public class KeycloakClientRoleResource implements IPermissionResource {
                 })
                 .peek(PermissionDto::initMetadata)
                 .collect(Collectors.toList());
+        }else {
+            permissionDtos = permissionDtos.stream().peek(PermissionDto::initMetadata)
+                .collect(Collectors.toList());
         }
         return permissionDtos;
     }
