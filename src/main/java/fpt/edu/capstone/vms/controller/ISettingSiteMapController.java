@@ -9,7 +9,6 @@ import lombok.Data;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,16 +29,6 @@ import java.util.UUID;
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 @PreAuthorize("isAuthenticated()")
 public interface ISettingSiteMapController {
-
-    @GetMapping("/{siteId}/{settingId}")
-    @Operation(summary = "Find by id")
-    @PreAuthorize("hasRole('r:setting-site:detail')")
-    ResponseEntity<?> findById(@PathVariable String siteId, @PathVariable Long settingId);
-
-    @DeleteMapping("/{siteId}/{settingId}")
-    @Operation(summary = "Delete")
-    @PreAuthorize("hasRole('r:setting-site:delete')")
-    ResponseEntity<?> delete(@PathVariable String siteId, @PathVariable Long settingId);
 
     @PostMapping()
     @Operation(summary = "Create or Update setting site")
