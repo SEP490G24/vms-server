@@ -72,13 +72,8 @@ public class KeycloakClientRoleResource implements IPermissionResource {
                 })
                 .peek(PermissionDto::initMetadata)
                 .collect(Collectors.toList());
-        } else {
-            permissionDtos = permissionDtos.stream()
-                .filter(permissionDto -> {
-                    List<String> scopes = permissionDto.getAttributes().get("scope");
-                    return scopes != null && scopes.contains("system");
-                })
-                .peek(PermissionDto::initMetadata)
+        }else {
+            permissionDtos = permissionDtos.stream().peek(PermissionDto::initMetadata)
                 .collect(Collectors.toList());
         }
         return permissionDtos;
@@ -90,6 +85,7 @@ public class KeycloakClientRoleResource implements IPermissionResource {
         var permissions = this.realmResource.clients().get(cId).roles().list(false);
         var permissionDtos = (List<PermissionDto>) mapper.map(permissions, new TypeToken<List<PermissionDto>>() {
         }.getType());
+        var permissionsAdmin = permissionDtos.stream().filter(x -> "scope:organization".equals(x.getName())).findFirst();
 
         permissionDtos = permissionDtos.stream()
             .filter(permissionDto -> {
@@ -98,6 +94,14 @@ public class KeycloakClientRoleResource implements IPermissionResource {
             })
             .peek(PermissionDto::initMetadata)
             .collect(Collectors.toList());
+
+        var permissionsSite = permissionDtos.stream().filter(x -> "scope:site".equals(x.getName())).findFirst();
+        if(permissionsAdmin.isPresent()){
+            permissionDtos.add(permissionsAdmin.get());
+        }
+        if(permissionsSite.isPresent()){
+            permissionDtos.remove(permissionsSite.get());
+        }
         return permissionDtos;
     }
 
