@@ -1,6 +1,7 @@
 package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.constants.ErrorApp;
+import fpt.edu.capstone.vms.constants.I18n;
 import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.persistence.entity.SettingGroup;
 import fpt.edu.capstone.vms.persistence.repository.SettingGroupRepository;
@@ -9,6 +10,9 @@ import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -41,4 +45,11 @@ public class SettingGroupServiceImpl extends GenericServiceImpl<SettingGroup, Lo
         return settingGroupRepository.save(settingGroup.update(entity));
     }
 
+    @Override
+    public List<SettingGroup> findAll() {
+        var settingGroups = settingGroupRepository.findAll();
+        settingGroups.stream().map(settingGroup ->
+            settingGroup.setName(I18n.getMessage(settingGroup.getCode()))).collect(Collectors.toList());
+        return settingGroups;
+    }
 }

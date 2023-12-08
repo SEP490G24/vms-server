@@ -35,8 +35,7 @@ public class Constants {
         /* Setting for Configuration */
 
         public static final String CONFIGURATION_CARD = "configuration.card";
-        public static final String CONFIGURATION_SITE_GUARD = "configuration.site.guard";
-        public static final String CONFIGURATION_SITE_RECEPTIONIST = "configuration.site.receptionist";
+
 
     }
 

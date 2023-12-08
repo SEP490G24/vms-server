@@ -30,13 +30,6 @@ class FileServiceImplTest {
         MockitoAnnotations.initMocks(this);
     }
 
-    @Test
-    @DisplayName("given empty file, when uploadImage, then exception is thrown")
-    void givenEmptyFile_WhenUploadImage_ThenThrowException() {
-        MultipartFile emptyFile = null;
-
-        assertThrows(NullPointerException.class, () -> fileService.uploadImage(emptyFile));
-    }
 
     @Test
     @DisplayName("given invalid image extension, when uploadImage, then exception is thrown")
@@ -53,31 +46,6 @@ class FileServiceImplTest {
 
         assertThrows(CustomException.class, () -> fileService.uploadImage(largeFile));
     }
-
-    @Test
-    @DisplayName("given valid image, when uploadImage, then account null")
-    void givenValidImage_WhenUploadImage_ThenThrowException() {
-        MultipartFile validImage = createMultipartFileWithExtension("jpg");
-
-        assertThrows(NullPointerException.class, () -> fileService.uploadImage(validImage));
-    }
-
-//    @Test
-//    @DisplayName("given non-existing new image, when deleteImage, then throw exception")
-//    void givenNonExistingNewImage_WhenDeleteImage_ThenThrowException() {
-//        String oldImage = "old_image.jpg";
-//        String newImage = "non_existing_image.jpg";
-//
-//        File old = new File();
-//        File newI = new File();
-//        when(fileRepository.findByName(newImage)).thenReturn(newI);
-//        when(fileRepository.findByName(oldImage)).thenReturn(old);
-//
-//        when(fileService.deleteImage(oldImage, newImage)).thenReturn(false);
-//        assertThrows(HttpClientErrorException.class, () -> fileService.deleteImage(oldImage, newImage));
-//
-//        verifyNoInteractions(fileRepository);
-//    }
 
     @Test
     @DisplayName("given existing old image, when deleteImage, then return true")

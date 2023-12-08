@@ -2,6 +2,7 @@ package fpt.edu.capstone.vms.persistence.service.impl;
 
 import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.constants.ErrorApp;
+import fpt.edu.capstone.vms.constants.I18n;
 import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.persistence.dto.common.Option;
 import fpt.edu.capstone.vms.persistence.entity.Setting;
@@ -59,6 +60,7 @@ public class SettingServiceImpl extends GenericServiceImpl<Setting, Long> implem
     public List<Setting> findAllByGroupIdAndSiteId(Integer groupId, String siteId) {
         var settings = settingRepository.findAllByGroupId(groupId.longValue());
         settings.forEach(setting -> {
+            setting.setName(I18n.getMessage(setting.getCode()));
             if (setting.getType().equals(Constants.SettingType.API)) {
                 switch (setting.getCode()) {
                     case Constants.SettingCode.TICKET_TEMPLATE_CONFIRM_EMAIL ->
