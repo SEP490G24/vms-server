@@ -382,6 +382,22 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         LocalDateTime currentTime = LocalDateTime.now();
         LocalDateTime startTime = ticket.getStartTime();
 
+        if (ticket.getStatus().equals(Constants.StatusTicket.COMPLETE)) {
+            throw new CustomException(ErrorApp.TICKET_IS_COMPLETE_CAN_NOT_DO_CANCEL);
+        }
+
+        if (ticket.getStatus().equals(Constants.StatusTicket.CANCEL)) {
+            throw new CustomException(ErrorApp.TICKET_IS_CANCEL_CAN_NOT_DO_CANCEL);
+        }
+
+        if (ticket.getStatus().equals(Constants.StatusTicket.DRAFT)) {
+            throw new CustomException(ErrorApp.TICKET_IS_DRAFT_CAN_NOT_DO_CANCEL);
+        }
+
+        if (ticket.getEndTime().isBefore(LocalDateTime.now()) && !ticket.getStatus().equals(Constants.StatusTicket.DRAFT)) {
+            throw new CustomException(ErrorApp.TICKET_IS_EXPIRED_CAN_NOT_DO_CANCEL);
+        }
+
         if (!startTime.isAfter(currentTime.plusHours(2))) {
             throw new CustomException(ErrorApp.TICKET_TIME_CANCEL_MEETING_MUST_BEFORE_2_HOURS);
         }
@@ -397,31 +413,37 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
 
         Template template = templateRepository.findById(UUID.fromString(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CANCEL_EMAIL))).orElse(null);
         Reason reason = reasonRepository.findById(cancelTicket.getReasonId()).orElse(null);
-        if (ticketRepository.existsByIdAndUsername(cancelTicket.getTicketId(), SecurityUtils.loginUsername())) {
-            Ticket oldValue = ticket;
-            ticket.setStatus(Constants.StatusTicket.CANCEL);
-            ticketRepository.save(ticket);
-            List<CustomerTicketMap> customerTicketMaps = customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(ticket.getId());
-            if (!customerTicketMaps.isEmpty()) {
-                customerTicketMaps.forEach(o -> {
-                    Customer customer = o.getCustomerEntity();
-                    if (ObjectUtils.isEmpty(template)) {
-                        throw new CustomException(ErrorApp.TEMPLATE_NOT_FOUND);
-                    }
-                    sendEmailCancel(ticket, customer, template, reason);
-                });
-
+        if (SecurityUtils.getUserDetails().isOrganizationAdmin() || SecurityUtils.getUserDetails().isSiteAdmin()) {
+            if (!SecurityUtils.checkSiteAuthorization(siteRepository, ticket.getSiteId())) {
+                throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
             }
-            auditLogRepository.save(new AuditLog(ticket.getSiteId()
-                , siteRepository.findById(UUID.fromString(ticket.getSiteId())).orElse(null).getOrganizationId().toString()
-                , ticket.getId().toString()
-                , TICKET_TABLE_NAME
-                , Constants.AuditType.UPDATE
-                , oldValue.toString()
-                , ticket.toString()));
-            return true;
+        } else {
+            if (!ticket.getUsername().equals(SecurityUtils.loginUsername())) {
+                throw new CustomException(ErrorApp.TICKET_YOU_CAN_UPDATE_THIS_TICKET);
+            }
         }
-        return false;
+        Ticket oldValue = ticket;
+        ticket.setStatus(Constants.StatusTicket.CANCEL);
+        ticketRepository.save(ticket);
+        List<CustomerTicketMap> customerTicketMaps = customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(ticket.getId());
+        if (!customerTicketMaps.isEmpty()) {
+            customerTicketMaps.forEach(o -> {
+                Customer customer = o.getCustomerEntity();
+                if (ObjectUtils.isEmpty(template)) {
+                    throw new CustomException(ErrorApp.TEMPLATE_NOT_FOUND);
+                }
+                sendEmailCancel(ticket, customer, template, reason);
+            });
+
+        }
+        auditLogRepository.save(new AuditLog(ticket.getSiteId()
+            , siteRepository.findById(UUID.fromString(ticket.getSiteId())).orElse(null).getOrganizationId().toString()
+            , ticket.getId().toString()
+            , TICKET_TABLE_NAME
+            , Constants.AuditType.UPDATE
+            , oldValue.toString()
+            , ticket.toString()));
+        return true;
     }
 
     public void sendEmailCancel(Ticket ticket, Customer customer, Template template, Reason reason) {
@@ -482,8 +504,14 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             throw new CustomException(ErrorApp.TICKET_NOT_FOUND);
         }
 
-        if (!ticket.getUsername().equals(SecurityUtils.loginUsername())) {
-            throw new CustomException(ErrorApp.TICKET_YOU_CAN_UPDATE_THIS_TICKET);
+        if (SecurityUtils.getUserDetails().isOrganizationAdmin() || SecurityUtils.getUserDetails().isSiteAdmin()) {
+            if (!SecurityUtils.checkSiteAuthorization(siteRepository, ticket.getSiteId())) {
+                throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
+            }
+        } else {
+            if (!ticket.getUsername().equals(SecurityUtils.loginUsername())) {
+                throw new CustomException(ErrorApp.TICKET_YOU_CAN_UPDATE_THIS_TICKET);
+            }
         }
         Room room = null;
         if (StringUtils.isNotEmpty(ticketInfo.getRoomId())) {

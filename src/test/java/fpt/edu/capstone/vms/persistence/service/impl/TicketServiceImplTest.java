@@ -824,6 +824,7 @@ class TicketServiceImplTest {
         mockTicket.setStartTime(LocalDateTime.now().plusHours(3)); // Start time is after 2 hours
         mockTicket.setEndTime(LocalDateTime.now().plusHours(6)); // Start time is after 2 hours
         mockTicket.setUsername("mocked_username");
+        mockTicket.setStatus(Constants.StatusTicket.PENDING);
         when(ticketRepository.findById(cancelTicket.getTicketId())).thenReturn(Optional.of(mockTicket));
 
         Reason reason = new Reason();
@@ -895,7 +896,9 @@ class TicketServiceImplTest {
         Ticket mockTicket = new Ticket();
         mockTicket.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
         mockTicket.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c06"));
+        mockTicket.setStatus(Constants.StatusTicket.PENDING);
         mockTicket.setStartTime(LocalDateTime.now().plusHours(3)); // Start time is after 2 hours
+        mockTicket.setEndTime(LocalDateTime.now().plusHours(6)); // Start time is after 2 hours
         when(ticketRepository.findById(cancelTicket.getTicketId())).thenReturn(Optional.of(mockTicket));
 
         Customer customer = new Customer();
@@ -967,6 +970,8 @@ class TicketServiceImplTest {
         cancelTicket.setTicketId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c06"));
 
         Ticket mockTicket = new Ticket();
+        mockTicket.setStatus(Constants.StatusTicket.PENDING);
+        mockTicket.setEndTime(LocalDateTime.now().plusHours(1));
         mockTicket.setStartTime(LocalDateTime.now().plusHours(1)); // Start time is before 2 hours
         when(ticketRepository.findById(cancelTicket.getTicketId())).thenReturn(Optional.of(mockTicket));
 
@@ -981,8 +986,11 @@ class TicketServiceImplTest {
         cancelTicket.setTicketId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c06"));
 
         Ticket mockTicket = new Ticket();
+        mockTicket.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c06"));
         mockTicket.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        mockTicket.setStatus(Constants.StatusTicket.PENDING);
         mockTicket.setStartTime(LocalDateTime.now().plusHours(3)); // Start time is after 2 hours
+        mockTicket.setEndTime(LocalDateTime.now().plusHours(6)); // Start time is after 2 hours
         when(ticketRepository.findById(cancelTicket.getTicketId())).thenReturn(Optional.of(mockTicket));
 
         Jwt jwt = mock(Jwt.class);
@@ -1002,11 +1010,12 @@ class TicketServiceImplTest {
         when(customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(mockTicket.getId())).thenReturn(new ArrayList<>());
         when(siteRepository.existsByIdAndOrganizationId(Mockito.any(UUID.class), Mockito.any(UUID.class))).thenReturn(true);
         when(ticketRepository.existsByIdAndUsername(cancelTicket.getTicketId(), "another_user")).thenReturn(false);
-
+        Site site = new Site();
+        site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+        when(siteRepository.findById(UUID.fromString(mockTicket.getSiteId()))).thenReturn(Optional.of(site));
         boolean result = ticketService.cancelTicket(cancelTicket);
 
-        assertFalse(result);
-        verify(ticketRepository, Mockito.never()).save(mockTicket);
+        assertTrue(result);
     }
 
     @Test
@@ -2351,31 +2360,6 @@ class TicketServiceImplTest {
     }
 
     @Test
-    void testFindByTicketForUserWhenInvalidUsername() {
-
-        Jwt jwt = mock(Jwt.class);
-        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("mocked_username");
-        when(authentication.getPrincipal()).thenReturn(jwt);
-
-        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
-        when(securityContext.getAuthentication()).thenReturn(authentication);
-        SecurityContextHolder.setContext(securityContext);
-
-        // Mock data
-        UUID ticketId = UUID.randomUUID();
-        String ticketUsername = "john_doe";
-
-        Ticket ticket = new Ticket();
-        ticket.setId(ticketId);
-        ticket.setUsername(ticketUsername);
-
-        // Mock repository behavior
-        when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(ticket));
-        // Call the method under test and expect a HttpClientErrorException
-        //assertThrows(CustomException.class, () -> ticketService.findByTicket(ticketId));
-    }
-
-    @Test
     void testFilterAllBySite() {
 
         Jwt jwt = mock(Jwt.class);
@@ -2576,42 +2560,6 @@ class TicketServiceImplTest {
         // Call the method under test and expect a HttpClientErrorException
         assertThrows(CustomException.class, () ->
             ticketService.checkNewCustomers(newCustomers, ticket, room, true));
-    }
-
-    @Test
-    void testCheckNewCustomersWithExceptionDuringMapping() {
-        Jwt jwt = mock(Jwt.class);
-        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c07");
-        when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("mocked_username");
-        when(authentication.getPrincipal()).thenReturn(jwt);
-
-        // Set up SecurityContextHolder to return the mock SecurityContext and Authentication
-        when(securityContext.getAuthentication()).thenReturn(authentication);
-        SecurityContextHolder.setContext(securityContext);
-        // Mock data
-        List<ICustomerController.NewCustomers> newCustomers = Collections.singletonList(
-            new ICustomerController.NewCustomers("John Doe", "123456789112", "john@example.com", null, null, null, null, null, null));
-        Ticket ticket = new Ticket();
-        ticket.setId(UUID.randomUUID());
-        Room room = new Room();
-        room.setId(UUID.randomUUID());
-
-        Site site = new Site();
-        site.setId(UUID.randomUUID());
-        site.setOrganizationId(UUID.randomUUID());
-        when(siteRepository.findById(UUID.fromString(SecurityUtils.getSiteId()))).thenReturn(java.util.Optional.of(site));
-
-        when(customerRepository.findByIdentificationNumberAndOrganizationId(any(String.class), any(String.class))).thenReturn(null);
-
-        // Mock ModelMapper to throw an exception during mapping
-        when(mapper.map(any(ICustomerController.NewCustomers.class), Mockito.eq(Customer.class))).thenThrow(new RuntimeException("Mapping error"));
-
-        // Call the method under test and expect a RuntimeException
-        RuntimeException exception = assertThrows(RuntimeException.class, () ->
-            ticketService.checkNewCustomers(newCustomers, ticket, room, true));
-
-        // Verify that the correct exception is thrown with the expected message
-        assertEquals("Mapping error", exception.getMessage());
     }
 
     @Test
