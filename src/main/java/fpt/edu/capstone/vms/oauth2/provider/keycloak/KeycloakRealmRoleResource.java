@@ -103,9 +103,7 @@ public class KeycloakRealmRoleResource implements IRoleResource {
         List<RoleRepresentation> roles = this.rolesResource.list(false);
         List<RoleRepresentation> filteredRoles;
         if (SecurityUtils.getUserDetails().isRealmAdmin()) {
-            filteredRoles = roles.stream()
-                .filter(roleRepresentation -> roleRepresentation.getAttributes().containsKey("org_id"))
-                .toList();
+             filteredRoles = new ArrayList<>();
         } else {
             filteredRoles = roles.stream()
                 .filter(roleRepresentation -> {
