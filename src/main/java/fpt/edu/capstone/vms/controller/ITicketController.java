@@ -179,33 +179,7 @@ public interface ITicketController {
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         private LocalDateTime lastUpdatedOn;
         private String siteId;
-        List<ICustomerController.CustomerInfo> Customers;
-    }
-
-    @Data
-    class TicketFilterWithBookmarkDTO {
-        private UUID id;
-        private String code;
-        private String name;
-        private String roomName;
-        private Constants.Purpose purpose;
-        private String purposeNote;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
-        private LocalDateTime startTime;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
-        private LocalDateTime endTime;
-        private String comment;
-        private Constants.StatusTicket status;
-        private String username;
-        private UUID roomId;
-        private String createdBy;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
-        private LocalDateTime createdOn;
-        private String lastUpdatedBy;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
-        private LocalDateTime lastUpdatedOn;
-        private String siteId;
-        boolean isBookmark;
+        private Boolean isBookmark;
         List<ICustomerController.CustomerInfo> Customers;
     }
 

@@ -103,7 +103,9 @@ public class ModelMapperConfig {
 
         // ticket => TicketFilterDTO
         modelMapper.createTypeMap(Ticket.class, ITicketController.TicketFilterDTO.class)
-            .addMappings(mapping -> mapping.map((ticket -> ticket.getRoom().getName()), ITicketController.TicketFilterDTO::setRoomName));
+            .addMappings(mapping -> mapping.map((ticket -> ticket.getRoom().getName()), ITicketController.TicketFilterDTO::setRoomName))
+            .addMappings(mapping -> mapping.map((ticket -> ticket.isBookmark()), ITicketController.TicketFilterDTO::setIsBookmark));
+
 
         // customerTicketMap => TicketByQRCodeResponseDTO
         modelMapper.createTypeMap(CustomerTicketMap.class, ITicketController.TicketByQRCodeResponseDTO.class)
