@@ -92,11 +92,6 @@ public interface ICustomerController {
 
         private String description;
 
-        private Integer provinceId;
-
-        private Integer districtId;
-
-        private Integer communeId;
     }
 
     @Data

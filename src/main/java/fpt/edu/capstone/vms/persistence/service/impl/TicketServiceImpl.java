@@ -308,7 +308,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             throw new CustomException(ErrorApp.YOU_CAN_NOT_SET_BOOKMARK_FOR_THIS_TICKET);
         }
         Ticket oldValue = ticket;
-        ticketRepository.save(ticket.setBookmark(true));
+        ticketRepository.save(ticket.setBookmark(ticketBookmark.isBookmark()));
         auditLogRepository.save(new AuditLog(ticket.getSiteId()
             , siteRepository.findById(UUID.fromString(ticket.getSiteId())).orElse(null).getOrganizationId().toString()
             , ticket.getId().toString()
