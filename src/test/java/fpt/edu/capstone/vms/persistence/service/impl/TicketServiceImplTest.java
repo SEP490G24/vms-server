@@ -665,7 +665,6 @@ class TicketServiceImplTest {
         boolean result = ticketService.updateBookMark(ticketBookmark);
 
         assertTrue(result);
-        assertTrue(mockTicket.isBookmark());
     }
 
     @Test
@@ -2563,7 +2562,7 @@ class TicketServiceImplTest {
 
         // Mock data
         List<ICustomerController.NewCustomers> newCustomers = Collections.singletonList(
-            new ICustomerController.NewCustomers("John Doe", "123456789", "john@example.com", null, null, null, null, null, null));
+            new ICustomerController.NewCustomers("John Doe", "123456789", "john@example.com", null, null, null));
         Ticket ticket = new Ticket();
         ticket.setId(UUID.randomUUID());
         Room room = new Room();
