@@ -306,20 +306,20 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         if (ObjectUtils.isEmpty(ticket)) {
             throw new CustomException(ErrorApp.TICKET_NOT_FOUND);
         }
-        if (ticketRepository.existsByIdAndUsername(UUID.fromString(ticketBookmark.getTicketId()), SecurityUtils.loginUsername())) {
-            Ticket oldValue = ticket;
-            ticketRepository.save(ticket.setBookmark(true));
-            auditLogRepository.save(new AuditLog(ticket.getSiteId()
-                , siteRepository.findById(UUID.fromString(ticket.getSiteId())).orElse(null).getOrganizationId().toString()
-                , ticket.getId().toString()
-                , TICKET_TABLE_NAME
-                , Constants.AuditType.UPDATE
-                , oldValue.toString()
-                , ticket.toString()));
-
-            return true;
+        if (!ticketRepository.existsByIdAndUsername(UUID.fromString(ticketBookmark.getTicketId()), SecurityUtils.loginUsername())) {
+            throw new CustomException(ErrorApp.YOU_CAN_NOT_SET_BOOKMARK_FOR_THIS_TICKET);
         }
-        return false;
+        Ticket oldValue = ticket;
+        ticketRepository.save(ticket.setBookmark(true));
+        auditLogRepository.save(new AuditLog(ticket.getSiteId()
+            , siteRepository.findById(UUID.fromString(ticket.getSiteId())).orElse(null).getOrganizationId().toString()
+            , ticket.getId().toString()
+            , TICKET_TABLE_NAME
+            , Constants.AuditType.UPDATE
+            , oldValue.toString()
+            , ticket.toString()));
+
+        return true;
     }
 
     /**

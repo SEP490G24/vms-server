@@ -150,6 +150,7 @@ public enum ErrorApp {
     TICKET_IS_CANCEL_CAN_NOT_DO_CANCEL(204, I18n.getMessage("msg.ticket.is.cancel.can.not.do.cancel")),
     TICKET_IS_EXPIRED_CAN_NOT_DO_CANCEL(205, I18n.getMessage("msg.ticket.is.expired.can.not.do.cancel")),
     TICKET_IS_DRAFT_CAN_NOT_DO_CANCEL(206, I18n.getMessage("msg.ticket.is.draft.can.not.do.cancel")),
+    YOU_CAN_NOT_SET_BOOKMARK_FOR_THIS_TICKET(207, I18n.getMessage("msg.you.can.not.set.bookmark.for.this.ticket")),
     //QRCode
     QRCODE_NOT_FOUND(190, I18n.getMessage("msg.qrcode.not.found")),
 

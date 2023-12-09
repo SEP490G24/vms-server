@@ -705,10 +705,7 @@ class TicketServiceImplTest {
 
         when(ticketRepository.existsByIdAndUsername(UUID.fromString(ticketBookmark.getTicketId()), "another_user")).thenReturn(false);
 
-        boolean result = ticketService.updateBookMark(ticketBookmark);
-
-        assertFalse(result);
-        assertFalse(mockTicket.isBookmark());
+        assertThrows(CustomException.class, () -> ticketService.updateBookMark(ticketBookmark));
     }
 
     @Test
