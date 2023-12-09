@@ -716,7 +716,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     }
 
     @Override
-    public Page<Ticket> filter(Pageable pageable
+    public Page<Ticket> getAllTicketPageableByUsername(Pageable pageable
         , List<String> names
         , UUID roomId
         , Constants.StatusTicket status
@@ -800,7 +800,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     }
 
     @Override
-    public List<Ticket> filter(List<String> names
+    public List<Ticket> getAllTicketByUsername(List<String> names
         , UUID roomId
         , Constants.StatusTicket status
         , Constants.Purpose purpose

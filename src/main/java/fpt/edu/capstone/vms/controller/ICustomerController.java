@@ -113,12 +113,6 @@ public interface ICustomerController {
         private String phoneNumber;
         private Constants.Gender gender;
         private String description;
-        private Integer provinceId;
-        private Integer districtId;
-        private Integer communeId;
-        private String provinceName;
-        private String districtName;
-        private String communeName;
     }
 
     @Data
