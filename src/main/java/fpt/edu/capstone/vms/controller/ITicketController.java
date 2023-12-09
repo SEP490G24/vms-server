@@ -137,7 +137,7 @@ public interface ITicketController {
 
         List<ICustomerController.NewCustomers> newCustomers;
 
-        List<String> oldCustomers;
+        List<ICustomerController.CustomerInfo> oldCustomers;
 
         @NotNull
         private boolean draft;
@@ -241,7 +241,7 @@ public interface ITicketController {
         private String description;
         private String roomId;
         List<ICustomerController.NewCustomers> newCustomers;
-        List<String> oldCustomers;
+        List<ICustomerController.CustomerInfo> oldCustomers;
         private boolean draft = false;
     }
 
