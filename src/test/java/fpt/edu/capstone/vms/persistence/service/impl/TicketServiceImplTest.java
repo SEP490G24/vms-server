@@ -182,8 +182,8 @@ class TicketServiceImplTest {
 //        List<ICustomerController.NewCustomers> newCustomers = Collections.singletonList(
 //            new ICustomerController.NewCustomers("John Doe", "123456789112", "john@example.com", null, null, null, null, null, null));
 
-        List<String> oldCustomer = new ArrayList<>();
-        oldCustomer.add("06eb43a7-6ea8-4744-8231-760559fe2c09");
+        List<ICustomerController.CustomerInfo> oldCustomer = new ArrayList<>();
+        oldCustomer.add(new ICustomerController.CustomerInfo().setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c09")));
 
         ITicketController.CreateTicketInfo ticketInfo = new ITicketController.CreateTicketInfo();
         ticketInfo.setDraft(true);
@@ -228,8 +228,8 @@ class TicketServiceImplTest {
     @Test
     @DisplayName("Given Pending Ticket, When Creating, Then Set Status to PENDING")
     public void givenPendingTicket_WhenCreating_ThenSetStatusToPending() {
-        List<String> oldCustomer = new ArrayList<>();
-        oldCustomer.add("06eb43a7-6ea8-4744-8231-760559fe2c09");
+        List<ICustomerController.CustomerInfo> oldCustomer = new ArrayList<>();
+        oldCustomer.add(new ICustomerController.CustomerInfo().setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c09")));
 
         ITicketController.CreateTicketInfo ticketInfo = new ITicketController.CreateTicketInfo();
         ticketInfo.setDraft(false);
@@ -312,8 +312,8 @@ class TicketServiceImplTest {
     @Test
     @DisplayName("Given Pending Ticket, When Creating, Then Set Status to PENDING")
     public void givenTicketWithRoomNotInSite_WhenCreating_ThenThrowException() {
-        List<String> oldCustomer = new ArrayList<>();
-        oldCustomer.add("06eb43a7-6ea8-4744-8231-760559fe2c09");
+        List<ICustomerController.CustomerInfo> oldCustomer = new ArrayList<>();
+        oldCustomer.add(new ICustomerController.CustomerInfo().setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c09")));
 
         ITicketController.CreateTicketInfo ticketInfo = new ITicketController.CreateTicketInfo();
         ticketInfo.setDraft(false);
@@ -363,8 +363,8 @@ class TicketServiceImplTest {
     @Test
     @DisplayName("Given Pending Ticket, When Creating, Then Set Status to PENDING")
     public void givenTicketWithRoomNull_WhenCreating_ThenThrowException() {
-        List<String> oldCustomer = new ArrayList<>();
-        oldCustomer.add("06eb43a7-6ea8-4744-8231-760559fe2c09");
+        List<ICustomerController.CustomerInfo> oldCustomer = new ArrayList<>();
+        oldCustomer.add(new ICustomerController.CustomerInfo().setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c09")));
 
         ITicketController.CreateTicketInfo ticketInfo = new ITicketController.CreateTicketInfo();
         ticketInfo.setDraft(false);
@@ -411,8 +411,8 @@ class TicketServiceImplTest {
     @Test
     @DisplayName("Given Pending Ticket, When Creating, Then Set Status to PENDING")
     public void givenTicketWithRoomHaveTime_WhenCreating_ThenThrowException() {
-        List<String> oldCustomer = new ArrayList<>();
-        oldCustomer.add("06eb43a7-6ea8-4744-8231-760559fe2c09");
+        List<ICustomerController.CustomerInfo> oldCustomer = new ArrayList<>();
+        oldCustomer.add(new ICustomerController.CustomerInfo().setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c09")));
 
         ITicketController.CreateTicketInfo ticketInfo = new ITicketController.CreateTicketInfo();
         ticketInfo.setDraft(false);
@@ -464,8 +464,8 @@ class TicketServiceImplTest {
 
     @Test
     public void testCreatePendingTicketWithInvalidSiteNull() {
-        List<String> oldCustomer = new ArrayList<>();
-        oldCustomer.add("06eb43a7-6ea8-4744-8231-760559fe2c09");
+        List<ICustomerController.CustomerInfo> oldCustomer = new ArrayList<>();
+        oldCustomer.add(new ICustomerController.CustomerInfo().setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c09")));
         ITicketController.CreateTicketInfo ticketInfo = new ITicketController.CreateTicketInfo();
         ticketInfo.setDraft(false);
         ticketInfo.setStartTime(LocalDateTime.now()); // Invalid start time
@@ -529,8 +529,8 @@ class TicketServiceImplTest {
 
     @Test
     public void testCreatePendingTicketWithInvalidSiteId() {
-        List<String> oldCustomer = new ArrayList<>();
-        oldCustomer.add("06eb43a7-6ea8-4744-8231-760559fe2c09");
+        List<ICustomerController.CustomerInfo> oldCustomer = new ArrayList<>();
+        oldCustomer.add(new ICustomerController.CustomerInfo().setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c09")));
         ITicketController.CreateTicketInfo ticketInfo = new ITicketController.CreateTicketInfo();
         ticketInfo.setDraft(false);
         ticketInfo.setStartTime(LocalDateTime.now());
@@ -593,8 +593,8 @@ class TicketServiceImplTest {
     @Test
     @DisplayName("Given Ticket Info with Other Purpose and No Purpose Note, When Creating, Then Throw Exception")
     public void givenTicketInfoWithOtherPurposeAndNoPurposeNote_WhenCreating_ThenThrowException() {
-        List<String> oldCustomer = new ArrayList<>();
-        oldCustomer.add("06eb43a7-6ea8-4744-8231-760559fe2c09");
+        List<ICustomerController.CustomerInfo> oldCustomer = new ArrayList<>();
+        oldCustomer.add(new ICustomerController.CustomerInfo().setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c09")));
         ITicketController.CreateTicketInfo ticketInfo = new ITicketController.CreateTicketInfo();
         ticketInfo.setDraft(false);
         ticketInfo.setStartTime(LocalDateTime.now());
@@ -1021,13 +1021,16 @@ class TicketServiceImplTest {
     @Test
     @DisplayName("Given Valid TicketInfo, When Updating, Then Update Ticket")
     public void givenValidTicketInfo_WhenUpdating_ThenUpdateTicket() {
+        List<ICustomerController.CustomerInfo> oldCustomer = new ArrayList<>();
+        oldCustomer.add(new ICustomerController.CustomerInfo().setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c09")));
+
         ITicketController.UpdateTicketInfo ticketInfo = new ITicketController.UpdateTicketInfo();
         UUID ticketId = UUID.randomUUID();
         ticketInfo.setId(ticketId);
         ticketInfo.setRoomId("06eb43a7-6ea8-4744-8231-760559fe2c07");
         ticketInfo.setPurpose(Constants.Purpose.MEETING);
         ticketInfo.setStartTime(LocalDateTime.now().plusMinutes(1));
-        ticketInfo.setOldCustomers(List.of("06eb43a7-6ea8-4744-8231-760559fe2c09"));
+        ticketInfo.setOldCustomers(oldCustomer);
 
         Ticket mockTicket = new Ticket();
         mockTicket.setId(ticketId);

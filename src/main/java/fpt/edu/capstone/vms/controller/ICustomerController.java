@@ -15,6 +15,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Accessors;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -102,6 +103,7 @@ public interface ICustomerController {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
+    @Accessors(chain = true)
     class CustomerInfo {
         private UUID id;
         private String visitorName;
