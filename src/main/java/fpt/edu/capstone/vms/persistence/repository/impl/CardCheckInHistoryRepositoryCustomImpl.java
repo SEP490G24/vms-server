@@ -39,7 +39,8 @@ public class CardCheckInHistoryRepositoryCustomImpl implements CardCheckInHistor
             " u.created_on, c.name ";
         StringBuilder sqlConditional = new StringBuilder();
         sqlConditional.append("FROM card_check_in_history u ");
-        sqlConditional.append("LEFT JOIN room_site c ON c.mac_ip = u.mac_ip ");
+        sqlConditional.append("LEFT JOIN device d ON d.mac_ip = u.mac_ip ");
+        sqlConditional.append("LEFT JOIN room_site c ON c.device_id = d.id ");
         sqlConditional.append("WHERE 1=1 ");
 
         sqlConditional.append("AND u.check_in_code = :checkInCode ");
