@@ -100,12 +100,8 @@ public class TicketController implements ITicketController {
             null,
             true,
             null);
-        List<TicketFilterWithBookmarkDTO> ticketFilterDTOS = mapper.map(ticketEntity.getContent(), new TypeToken<List<TicketFilterWithBookmarkDTO>>() {
+        List<TicketFilterDTO> ticketFilterDTOS = mapper.map(ticketEntity.getContent(), new TypeToken<List<TicketFilterDTO>>() {
         }.getType());
-        ticketFilterDTOS.forEach(o -> {
-            setCustomerWithBookMark(o);
-
-        });
         return ResponseEntity.ok(new PageImpl(ticketFilterDTOS, pageable, ticketEntity.getTotalElements()));
     }
 
@@ -168,14 +164,16 @@ public class TicketController implements ITicketController {
             List<TicketFilterDTO> ticketFilterPageDTOS = mapper.map(ticketEntityPageable.getContent(), new TypeToken<List<TicketFilterDTO>>() {
             }.getType());
             ticketFilterPageDTOS.forEach(o -> {
-                setCustomer(o);
-
+                if (!o.getUsername().equals(SecurityUtils.loginUsername())) {
+                    o.setIsBookmark(null);
+                }
             });
             List<TicketFilterDTO> ticketFilterDTOS = mapper.map(ticketEntity, new TypeToken<List<TicketFilterDTO>>() {
             }.getType());
             ticketFilterDTOS.forEach(o -> {
-                setCustomer(o);
-
+                if (!o.getUsername().equals(SecurityUtils.loginUsername())) {
+                    o.setIsBookmark(null);
+                }
             });
             return isPageable ?
                 ResponseEntity.ok(new PageImpl(ticketFilterPageDTOS, pageable, ticketEntityPageable.getTotalElements()))
@@ -217,17 +215,9 @@ public class TicketController implements ITicketController {
 
             List<TicketFilterDTO> ticketFilterPageDTOS = mapper.map(ticketEntityPageable.getContent(), new TypeToken<List<TicketFilterDTO>>() {
             }.getType());
-            ticketFilterPageDTOS.forEach(o -> {
-                setCustomer(o);
-
-            });
 
             List<TicketFilterDTO> ticketFilterDTOS = mapper.map(ticketEntity, new TypeToken<List<TicketFilterDTO>>() {
             }.getType());
-            ticketFilterDTOS.forEach(o -> {
-                setCustomer(o);
-
-            });
 
             return isPageable ?
                 ResponseEntity.ok(new PageImpl(ticketFilterPageDTOS, pageable, ticketEntityPageable.getTotalElements()))
@@ -319,7 +309,9 @@ public class TicketController implements ITicketController {
         List<ITicketController.TicketFilterDTO> ticketFilterDTOS = mapper.map(ticketByRoomResponseDTO.getTickets(), new TypeToken<List<ITicketController.TicketFilterDTO>>() {
         }.getType());
         ticketFilterDTOS.forEach(o -> {
-            setCustomer(o);
+            if (!o.getUsername().equals(SecurityUtils.loginUsername())) {
+                o.setIsBookmark(null);
+            }
         });
 
         TicketByRoomResponse ticketByRoomResponse = new TicketByRoomResponse();
@@ -358,14 +350,6 @@ public class TicketController implements ITicketController {
     }
 
     private void setCustomer(TicketFilterDTO ticketFilterDTO) {
-        List<ICustomerController.CustomerInfo> customerInfos = new ArrayList<>();
-        customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(ticketFilterDTO.getId()).forEach(a -> {
-            customerInfos.add(mapper.map(customerRepository.findById(a.getCustomerTicketMapPk().getCustomerId()).orElse(null), ICustomerController.CustomerInfo.class));
-        });
-        ticketFilterDTO.setCustomers(customerInfos);
-    }
-
-    private void setCustomerWithBookMark(TicketFilterWithBookmarkDTO ticketFilterDTO) {
         List<ICustomerController.CustomerInfo> customerInfos = new ArrayList<>();
         customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(ticketFilterDTO.getId()).forEach(a -> {
             customerInfos.add(mapper.map(customerRepository.findById(a.getCustomerTicketMapPk().getCustomerId()).orElse(null), ICustomerController.CustomerInfo.class));
