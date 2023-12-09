@@ -35,8 +35,7 @@ import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConve
 import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.SCOPE_SITE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -616,9 +615,12 @@ class   DashboardServiceImplTest {
         // Mock external service calls
         when(dashboardRepository.getUpcomingMeetings(any(LocalDateTime.class), any(LocalDateTime.class), anyList()))
             .thenReturn(Arrays.asList(new Ticket()));
-        when(dashboardRepository.getOngoingMeetings(any(LocalDateTime.class), anyList(), Constants.StatusTicket.PENDING))
+        when(dashboardRepository.getOngoingMeetings(
+            any(LocalDateTime.class),
+            anyList(),
+            eq(Constants.StatusTicket.PENDING)))
             .thenReturn(Arrays.asList(new Ticket()));
-        when(dashboardRepository.getRecentlyFinishedMeetings(any(LocalDateTime.class), any(LocalDateTime.class), anyList(), Constants.StatusTicket.COMPLETE))
+        when(dashboardRepository.getRecentlyFinishedMeetings(any(LocalDateTime.class), any(LocalDateTime.class), anyList(), eq(Constants.StatusTicket.COMPLETE)))
             .thenReturn(Arrays.asList(new Ticket()));
 
         // Mock repository calls
@@ -628,8 +630,8 @@ class   DashboardServiceImplTest {
 
         // Verify the interactions and assertions
         verify(dashboardRepository, times(1)).getUpcomingMeetings(any(LocalDateTime.class), any(LocalDateTime.class), anyList());
-        verify(dashboardRepository, times(1)).getOngoingMeetings(any(LocalDateTime.class), anyList(), Constants.StatusTicket.PENDING);
-        verify(dashboardRepository, times(1)).getRecentlyFinishedMeetings(any(LocalDateTime.class), any(LocalDateTime.class), anyList(), Constants.StatusTicket.COMPLETE);
+        verify(dashboardRepository, times(1)).getOngoingMeetings(any(LocalDateTime.class), anyList(), eq(Constants.StatusTicket.PENDING));
+        verify(dashboardRepository, times(1)).getRecentlyFinishedMeetings(any(LocalDateTime.class), any(LocalDateTime.class), anyList(), eq(Constants.StatusTicket.COMPLETE));
 
         // Add more assertions based on the expected behavior of your method
         assertNotNull(result);
