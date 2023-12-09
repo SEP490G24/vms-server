@@ -142,7 +142,7 @@ public class ImportUser {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
             headers.setContentDispositionFormData("attachment", "error-import-users.xlsx");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).headers(headers).body(byteData);
+            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).headers(headers).body(byteData);
 
         } catch (CustomException e) {
             log.error("Lỗi xảy ra trong quá trình import", e);
