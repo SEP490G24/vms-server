@@ -1520,7 +1520,7 @@ class TicketServiceImplTest {
         when(ticketRepository.filter(pageable, names, null, usernames, roomId, status, purpose, createdOnStart, createdOnEnd, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd, createdBy, lastUpdatedBy, bookmark, keyword))
             .thenReturn(expectedPage);
 
-        Page<Ticket> filteredTickets = ticketService.filter(pageableSort, names, roomId, status, purpose, createdOnStart, createdOnEnd, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd, createdBy, lastUpdatedBy, bookmark, keyword);
+        Page<Ticket> filteredTickets = ticketService.getAllTicketPageableByUsername(pageableSort, names, roomId, status, purpose, createdOnStart, createdOnEnd, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd, createdBy, lastUpdatedBy, bookmark, keyword);
 
         assertNotNull(filteredTickets);
         assertEquals(2, filteredTickets.getTotalElements());
@@ -2508,7 +2508,7 @@ class TicketServiceImplTest {
             .thenReturn(mockResult);
 
         // Call the method under test
-        List<Ticket> result = ticketService.filter(
+        List<Ticket> result = ticketService.getAllTicketByUsername(
             names,
             roomId,
             status,

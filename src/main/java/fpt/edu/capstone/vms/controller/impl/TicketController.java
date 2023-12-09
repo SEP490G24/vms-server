@@ -25,7 +25,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.ArrayList;
@@ -85,7 +84,7 @@ public class TicketController implements ITicketController {
 
     @Override
     public ResponseEntity<?> filterAllTicketBookmarkForUser(Pageable pageable) {
-        var ticketEntity = ticketService.filter(
+        var ticketEntity = ticketService.getAllTicketPageableByUsername(
             pageable,
             null,
             null,
@@ -101,10 +100,10 @@ public class TicketController implements ITicketController {
             null,
             true,
             null);
-        List<TicketFilterDTO> ticketFilterDTOS = mapper.map(ticketEntity.getContent(), new TypeToken<List<TicketFilterDTO>>() {
+        List<TicketFilterWithBookmarkDTO> ticketFilterDTOS = mapper.map(ticketEntity.getContent(), new TypeToken<List<TicketFilterWithBookmarkDTO>>() {
         }.getType());
         ticketFilterDTOS.forEach(o -> {
-            setCustomer(o);
+            setCustomerWithBookMark(o);
 
         });
         return ResponseEntity.ok(new PageImpl(ticketFilterDTOS, pageable, ticketEntity.getTotalElements()));
@@ -182,7 +181,7 @@ public class TicketController implements ITicketController {
                 ResponseEntity.ok(new PageImpl(ticketFilterPageDTOS, pageable, ticketEntityPageable.getTotalElements()))
                 : ResponseEntity.ok(ticketFilterDTOS);
         } else {
-            var ticketEntity = ticketService.filter(
+            var ticketEntity = ticketService.getAllTicketByUsername(
                 filter.getNames(),
                 filter.getRoomId(),
                 filter.getStatus(),
@@ -198,7 +197,7 @@ public class TicketController implements ITicketController {
                 filter.getBookmark(),
                 filter.getKeyword());
 
-            var ticketEntityPageable = ticketService.filter(
+            var ticketEntityPageable = ticketService.getAllTicketPageableByUsername(
                 pageable,
                 filter.getNames(),
                 filter.getRoomId(),
@@ -359,6 +358,14 @@ public class TicketController implements ITicketController {
     }
 
     private void setCustomer(TicketFilterDTO ticketFilterDTO) {
+        List<ICustomerController.CustomerInfo> customerInfos = new ArrayList<>();
+        customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(ticketFilterDTO.getId()).forEach(a -> {
+            customerInfos.add(mapper.map(customerRepository.findById(a.getCustomerTicketMapPk().getCustomerId()).orElse(null), ICustomerController.CustomerInfo.class));
+        });
+        ticketFilterDTO.setCustomers(customerInfos);
+    }
+
+    private void setCustomerWithBookMark(TicketFilterWithBookmarkDTO ticketFilterDTO) {
         List<ICustomerController.CustomerInfo> customerInfos = new ArrayList<>();
         customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(ticketFilterDTO.getId()).forEach(a -> {
             customerInfos.add(mapper.map(customerRepository.findById(a.getCustomerTicketMapPk().getCustomerId()).orElse(null), ICustomerController.CustomerInfo.class));

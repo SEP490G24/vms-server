@@ -1,8 +1,13 @@
 package fpt.edu.capstone.vms.persistence.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import fpt.edu.capstone.vms.constants.Constants;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
@@ -51,44 +56,6 @@ public class Customer extends AbstractBaseEntity<UUID> {
     @Column(name = "organization_id")
     private String organizationId;
 
-    @Column(name = "province_id")
-    private Integer provinceId;
-
-    @ManyToOne
-    @JoinColumn(name = "province_id", referencedColumnName = "id", insertable = false, updatable = false)
-    @JsonIgnore
-    private Province province;
-
-    @Column(name = "district_id")
-    private Integer districtId;
-
-    @ManyToOne
-    @JoinColumn(name = "district_id", referencedColumnName = "id", insertable = false, updatable = false)
-    @JsonIgnore
-    private District district;
-
-    @Column(name = "commune_id")
-    private Integer communeId;
-
-    @ManyToOne
-    @JoinColumn(name = "commune_id", referencedColumnName = "id", insertable = false, updatable = false)
-    @JsonIgnore
-    private Commune commune;
-
-    public Customer(UUID id, String visitorName, String identificationNumber, String email, String phoneNumber, Constants.Gender gender, String description, String organizationId, Integer provinceId, Integer districtId, Integer communeId) {
-        this.id = id;
-        this.visitorName = visitorName;
-        this.identificationNumber = identificationNumber;
-        this.email = email;
-        this.phoneNumber = phoneNumber;
-        this.gender = gender;
-        this.description = description;
-        this.organizationId = organizationId;
-        this.provinceId = provinceId;
-        this.districtId = districtId;
-        this.communeId = communeId;
-    }
-
     @Override
     public UUID getId() {
         return id;
@@ -110,9 +77,6 @@ public class Customer extends AbstractBaseEntity<UUID> {
             ", gender=" + gender +
             ", description='" + description + '\'' +
             ", organizationId='" + organizationId + '\'' +
-            ", provinceId=" + provinceId +
-            ", districtId=" + districtId +
-            ", communeId=" + communeId +
             '}';
     }
 }
