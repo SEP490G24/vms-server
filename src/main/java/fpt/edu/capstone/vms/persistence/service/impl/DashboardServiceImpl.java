@@ -249,7 +249,7 @@ public class DashboardServiceImpl implements IDashboardService {
         }
 
 
-        List<Ticket> ongoingMeetings = dashboardRepository.getOngoingMeetings(currentTime,sites);
+        List<Ticket> ongoingMeetings = dashboardRepository.getOngoingMeetings(currentTime,sites, Constants.StatusTicket.PENDING);
         List<ITicketController.TicketFilterDTO> ongoingMeetingsDTO = mapper.map(ongoingMeetings, new TypeToken<List<ITicketController.TicketFilterDTO>>() {
         }.getType());
         if(ongoingMeetingsDTO != null){
@@ -259,7 +259,7 @@ public class DashboardServiceImpl implements IDashboardService {
             });
         }
 
-        List<Ticket> recentlyFinishedMeetings = dashboardRepository.getRecentlyFinishedMeetings(timeMinus1Hours,currentTime,sites);
+        List<Ticket> recentlyFinishedMeetings = dashboardRepository.getRecentlyFinishedMeetings(timeMinus1Hours,currentTime,sites, Constants.StatusTicket.COMPLETE);
         List<ITicketController.TicketFilterDTO> recentlyFinishedMeetingsDTO = mapper.map(recentlyFinishedMeetings, new TypeToken<List<ITicketController.TicketFilterDTO>>() {
         }.getType());
         if(recentlyFinishedMeetingsDTO != null){

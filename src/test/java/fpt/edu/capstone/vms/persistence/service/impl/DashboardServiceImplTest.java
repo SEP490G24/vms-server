@@ -616,9 +616,9 @@ class   DashboardServiceImplTest {
         // Mock external service calls
         when(dashboardRepository.getUpcomingMeetings(any(LocalDateTime.class), any(LocalDateTime.class), anyList()))
             .thenReturn(Arrays.asList(new Ticket()));
-        when(dashboardRepository.getOngoingMeetings(any(LocalDateTime.class), anyList()))
+        when(dashboardRepository.getOngoingMeetings(any(LocalDateTime.class), anyList(), Constants.StatusTicket.PENDING))
             .thenReturn(Arrays.asList(new Ticket()));
-        when(dashboardRepository.getRecentlyFinishedMeetings(any(LocalDateTime.class), any(LocalDateTime.class), anyList()))
+        when(dashboardRepository.getRecentlyFinishedMeetings(any(LocalDateTime.class), any(LocalDateTime.class), anyList(), Constants.StatusTicket.COMPLETE))
             .thenReturn(Arrays.asList(new Ticket()));
 
         // Mock repository calls
@@ -628,8 +628,8 @@ class   DashboardServiceImplTest {
 
         // Verify the interactions and assertions
         verify(dashboardRepository, times(1)).getUpcomingMeetings(any(LocalDateTime.class), any(LocalDateTime.class), anyList());
-        verify(dashboardRepository, times(1)).getOngoingMeetings(any(LocalDateTime.class), anyList());
-        verify(dashboardRepository, times(1)).getRecentlyFinishedMeetings(any(LocalDateTime.class), any(LocalDateTime.class), anyList());
+        verify(dashboardRepository, times(1)).getOngoingMeetings(any(LocalDateTime.class), anyList(), Constants.StatusTicket.PENDING);
+        verify(dashboardRepository, times(1)).getRecentlyFinishedMeetings(any(LocalDateTime.class), any(LocalDateTime.class), anyList(), Constants.StatusTicket.COMPLETE);
 
         // Add more assertions based on the expected behavior of your method
         assertNotNull(result);
