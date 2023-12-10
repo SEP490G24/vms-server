@@ -637,9 +637,6 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         List<String> unchangedCustomers = new ArrayList<>(CustomerOfTicket);
         unchangedCustomers.removeAll(customersToRemove);
 
-        // Log unchanged customers
-        System.out.println("Unchanged customers: " + unchangedCustomers);
-
         Template template = templateRepository.findById(UUID.fromString(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CANCEL_EMAIL))).orElse(null);
 
         if (!customersToRemove.isEmpty()) {
