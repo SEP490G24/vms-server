@@ -44,7 +44,7 @@ public interface TicketRepository extends GenericRepository<Ticket, UUID> {
         "where ((coalesce(:names) is null) or (u.name in :names))" +
         "and ((coalesce(:sites) is null) or (u.siteId in :sites))" +
         "and (((cast(:createdOnStart as date) is null ) or (cast(:createdOnEnd as date) is null )) or (u.createdOn between :createdOnStart and :createdOnEnd)) " +
-        "and ((:createdBy is null) or (u.createdBy in :createdBy)) " +
+        "and ((:createdBy is null) or (u.createdBy like :createdBy)) " +
         "and ((:bookmark is null) or (u.isBookmark = :bookmark)) " +
         "and ((:lastUpdatedBy is null) or (u.lastUpdatedBy in :lastUpdatedBy)) " +
         "and (((cast(:startTimeStart as date) is null ) or (cast(:startTimeEnd as date) is null )) or (u.startTime between :startTimeStart and :startTimeEnd)) " +
@@ -79,7 +79,7 @@ public interface TicketRepository extends GenericRepository<Ticket, UUID> {
         "where ((coalesce(:names) is null) or (u.name in :names))" +
         "and ((coalesce(:sites) is null) or (u.siteId in :sites))" +
         "and (((cast(:createdOnStart as date) is null ) or (cast(:createdOnEnd as date) is null )) or (u.createdOn between :createdOnStart and :createdOnEnd)) " +
-        "and ((:createdBy is null) or (u.createdBy in :createdBy)) " +
+        "and ((:createdBy is null) or (u.createdBy like :createdBy)) " +
         "and ((:bookmark is null) or (u.isBookmark = :bookmark)) " +
         "and ((:lastUpdatedBy is null) or (u.lastUpdatedBy in :lastUpdatedBy)) " +
         "and (((cast(:startTimeStart as date) is null ) or (cast(:startTimeEnd as date) is null )) or (u.startTime between :startTimeStart and :startTimeEnd)) " +

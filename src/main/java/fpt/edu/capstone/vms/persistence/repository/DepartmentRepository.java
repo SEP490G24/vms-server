@@ -19,7 +19,7 @@ public interface DepartmentRepository extends GenericRepository<Department, UUID
     @Query(value = "select u from Department u " +
         "where ((coalesce(:names) is null) or (u.name in :names)) " +
         "and (((cast(:createdOnStart as date) is null ) or (cast(:createdOnEnd as date) is null )) or (u.createdOn between :createdOnStart and :createdOnEnd)) " +
-        "and ((:createBy is null) or (u.createdBy in :createBy)) " +
+        "and ((:createBy is null) or (u.createdBy like :createBy)) " +
         "and ((:lastUpdatedBy is null) or (u.lastUpdatedBy in :lastUpdatedBy)) " +
         "and ((:enable is null) or (u.enable = :enable)) " +
         "and ((coalesce(:siteId) is null) or (u.siteId in :siteId))" +
@@ -42,7 +42,7 @@ public interface DepartmentRepository extends GenericRepository<Department, UUID
     @Query(value = "select u from Department u " +
         "where ((coalesce(:names) is null) or (u.name in :names)) " +
         "and (((cast(:createdOnStart as date) is null ) or (cast(:createdOnEnd as date) is null )) or (u.createdOn between :createdOnStart and :createdOnEnd)) " +
-        "and ((:createBy is null) or (u.createdBy in :createBy)) " +
+        "and ((:createBy is null) or (u.createdBy like :createBy)) " +
         "and ((:lastUpdatedBy is null) or (u.lastUpdatedBy in :lastUpdatedBy)) " +
         "and ((:enable is null) or (u.enable = :enable)) " +
         "and ((coalesce(:siteId) is null) or (u.siteId in :siteId)) " +
