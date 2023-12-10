@@ -102,6 +102,9 @@ public class TicketController implements ITicketController {
             null);
         List<TicketFilterDTO> ticketFilterDTOS = mapper.map(ticketEntity.getContent(), new TypeToken<List<TicketFilterDTO>>() {
         }.getType());
+        ticketFilterDTOS.forEach(o -> {
+            o.setCustomerCount(countCustomer(o.getId()));
+        });
         return ResponseEntity.ok(new PageImpl(ticketFilterDTOS, pageable, ticketEntity.getTotalElements()));
     }
 
