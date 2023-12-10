@@ -164,6 +164,7 @@ public class TicketController implements ITicketController {
             List<TicketFilterDTO> ticketFilterPageDTOS = mapper.map(ticketEntityPageable.getContent(), new TypeToken<List<TicketFilterDTO>>() {
             }.getType());
             ticketFilterPageDTOS.forEach(o -> {
+                o.setCustomerCount(countCustomer(o.getId()));
                 if (!o.getUsername().equals(SecurityUtils.loginUsername())) {
                     o.setIsBookmark(null);
                 }
@@ -171,6 +172,7 @@ public class TicketController implements ITicketController {
             List<TicketFilterDTO> ticketFilterDTOS = mapper.map(ticketEntity, new TypeToken<List<TicketFilterDTO>>() {
             }.getType());
             ticketFilterDTOS.forEach(o -> {
+                o.setCustomerCount(countCustomer(o.getId()));
                 if (!o.getUsername().equals(SecurityUtils.loginUsername())) {
                     o.setIsBookmark(null);
                 }
@@ -309,6 +311,7 @@ public class TicketController implements ITicketController {
         List<ITicketController.TicketFilterDTO> ticketFilterDTOS = mapper.map(ticketByRoomResponseDTO.getTickets(), new TypeToken<List<ITicketController.TicketFilterDTO>>() {
         }.getType());
         ticketFilterDTOS.forEach(o -> {
+            o.setCustomerCount(countCustomer(o.getId()));
             if (!o.getUsername().equals(SecurityUtils.loginUsername())) {
                 o.setIsBookmark(null);
             }
@@ -343,6 +346,7 @@ public class TicketController implements ITicketController {
         try {
             TicketFilterDTO ticketFilterDTO = ticketService.findByTicket(ticketId);
             setCustomer(ticketFilterDTO);
+            ticketFilterDTO.setCustomerCount(countCustomer(ticketId));
             return ResponseUtils.getResponseEntityStatus(ticketFilterDTO);
         } catch (CustomException e) {
             return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -355,5 +359,9 @@ public class TicketController implements ITicketController {
             customerInfos.add(mapper.map(customerRepository.findById(a.getCustomerTicketMapPk().getCustomerId()).orElse(null), ICustomerController.CustomerInfo.class));
         });
         ticketFilterDTO.setCustomers(customerInfos);
+    }
+
+    private Integer countCustomer(UUID ticketId) {
+        return customerTicketMapRepository.countAllByCustomerTicketMapPk_TicketId(ticketId);
     }
 }
