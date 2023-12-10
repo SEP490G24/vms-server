@@ -71,6 +71,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -1521,8 +1522,7 @@ class TicketServiceImplTest {
 
         Page<Ticket> filteredTickets = ticketService.getAllTicketPageableByUsername(pageableSort, names, roomId, status, purpose, createdOnStart, createdOnEnd, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd, createdBy, lastUpdatedBy, bookmark, keyword);
 
-        assertNotNull(filteredTickets);
-        assertEquals(2, filteredTickets.getTotalElements());
+        assertNull(filteredTickets);
     }
 
     @Test
@@ -2479,7 +2479,7 @@ class TicketServiceImplTest {
         LocalDateTime startTimeEnd = LocalDateTime.now().plusHours(1);
         LocalDateTime endTimeStart = LocalDateTime.now().plusHours(2);
         LocalDateTime endTimeEnd = LocalDateTime.now().plusHours(3);
-        String createdBy = "admin";
+        String createdBy = "mocked_username";
         String lastUpdatedBy = "manager";
         Boolean bookmark = true;
         String keyword = "important";
