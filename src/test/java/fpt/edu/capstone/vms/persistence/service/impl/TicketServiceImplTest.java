@@ -274,11 +274,14 @@ class TicketServiceImplTest {
         ticket.setUsername("mocked_username");
 
         CustomerTicketMap customerTicketMap = new CustomerTicketMap();
+        customerTicketMap.setSendMail(false);
+        customerTicketMap.setCheckInCode("abc");
         customerTicketMap.setCustomerTicketMapPk(new CustomerTicketMapPk(customer.getId(), ticket.getId()));
         List<CustomerTicketMap> customerTicketMaps = new ArrayList<>();
         customerTicketMaps.add(customerTicketMap);
         when(customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(ticket.getId())).thenReturn(customerTicketMaps);
         when(customerRepository.findById(customerTicketMap.getCustomerTicketMapPk().getCustomerId())).thenReturn(Optional.of(customer));
+        when(customerTicketMapRepository.findByCheckInCode(customerTicketMap.getCheckInCode())).thenReturn(customerTicketMap);
 
         Commune commune = new Commune().setName("abc");
         District district = new District().setName("abc");
@@ -1069,14 +1072,18 @@ class TicketServiceImplTest {
         Customer customer = new Customer();
         customer.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c09"));
         CustomerTicketMap customerTicketMap = new CustomerTicketMap();
+        customerTicketMap.setSendMail(false);
+        customerTicketMap.setCheckInCode("abc");
         customerTicketMap.setCustomerTicketMapPk(new CustomerTicketMapPk(mockTicket.getId(), UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c09")));
         customerTicketMap.setCustomerEntity(customer);
+
         when(customerTicketMapRepository.findAllByCustomerTicketMapPk_TicketId(mockTicket.getId())).thenReturn(List.of(customerTicketMap));
         when(customerTicketMapRepository.findById(customerTicketMap.getCustomerTicketMapPk())).thenReturn(Optional.of(customerTicketMap));
         Template template = new Template();
         template.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c06"));
         when(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CANCEL_EMAIL)).thenReturn(template.getId().toString());
         when(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CONFIRM_EMAIL)).thenReturn(template.getId().toString());
+        when(customerTicketMapRepository.findByCheckInCode(customerTicketMap.getCheckInCode())).thenReturn(customerTicketMap);
         when(templateRepository.findById(UUID.fromString(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CANCEL_EMAIL)))).thenReturn(Optional.of(template));
         when(templateRepository.findById(UUID.fromString(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CONFIRM_EMAIL)))).thenReturn(Optional.of(template));
         when(mapper.map(ticketInfo, Ticket.class)).thenReturn(mockTicket);
@@ -1084,6 +1091,7 @@ class TicketServiceImplTest {
         User user = new User();
         user.setFirstName("first_name");
         when(userRepository.findFirstByUsername(mockTicket.getUsername())).thenReturn(user);
+
         Ticket result = ticketService.updateTicket(ticketInfo);
         assertNotNull(result);
 
@@ -2240,6 +2248,13 @@ class TicketServiceImplTest {
         site.setDistrict(district);
         site.setProvince(province);
 
+        CustomerTicketMap customerTicketMap = new CustomerTicketMap();
+        customerTicketMap.setCustomerTicketMapPk(new CustomerTicketMapPk(UUID.randomUUID(), UUID.randomUUID()));
+        customerTicketMap.setCheckInCode(checkInCode);
+        customerTicketMap.setTicketEntity(ticket);
+        customerTicketMap.setCustomerEntity(customer);
+        customerTicketMap.setSendMail(true);
+        when(customerTicketMapRepository.findByCheckInCode(checkInCode)).thenReturn(customerTicketMap);
         // Mock dependencies
         when(siteRepository.findById(UUID.fromString(ticket.getSiteId()))).thenReturn(Optional.of(site));
         when(templateRepository.findById(templateId)).thenReturn(Optional.of(template));
@@ -2263,7 +2278,7 @@ class TicketServiceImplTest {
         });
 
         // Call the method under test
-        ticketService.sendEmail(customer, ticket, room, checkInCode, false);
+        ticketService.sendEmail(customer, ticket, room, checkInCode, false, false);
 
         // You can add more assertions if needed
     }
@@ -2276,7 +2291,7 @@ class TicketServiceImplTest {
         String checkInCode = "ABCDE";
 
         // Call the method under test and expect a HttpClientErrorException
-        assertThrows(CustomException.class, () -> ticketService.sendEmail(null, ticket, room, checkInCode, false));
+        assertThrows(CustomException.class, () -> ticketService.sendEmail(null, ticket, room, checkInCode, false, false));
 
         // You can add more assertions if needed
     }
@@ -2318,7 +2333,7 @@ class TicketServiceImplTest {
         when(templateRepository.findById(UUID.fromString(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CONFIRM_EMAIL)))).thenReturn(Optional.empty());
 
         // Call the method under test and expect a HttpClientErrorException
-        assertThrows(CustomException.class, () -> ticketService.sendEmail(customer, ticket, room, checkInCode, false));
+        assertThrows(CustomException.class, () -> ticketService.sendEmail(customer, ticket, room, checkInCode, false, false));
 
         // You can add more assertions if needed
     }

@@ -83,4 +83,13 @@ public class SettingSiteMapController implements ISettingSiteMapController {
         }
     }
 
+    @Override
+    public ResponseEntity<?> getSettingByCode(String siteId, String code) {
+        try {
+            return ResponseUtils.getResponseEntityStatus(settingSiteService.findBySiteIdAndCode(siteId, code));
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }

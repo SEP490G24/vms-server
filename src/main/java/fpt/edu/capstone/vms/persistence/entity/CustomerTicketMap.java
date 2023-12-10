@@ -2,7 +2,15 @@ package fpt.edu.capstone.vms.persistence.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import fpt.edu.capstone.vms.constants.Constants;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -56,6 +64,8 @@ public class CustomerTicketMap extends AbstractBaseEntity<CustomerTicketMapPk> {
     @Column(name = "check_out", nullable = false, columnDefinition = "boolean default false")
     private boolean checkOut;
 
+    @Column(name = "send_email", columnDefinition = "boolean default false")
+    private boolean sendMail;
     @Column(name = "card_id")
     private String cardId;
 

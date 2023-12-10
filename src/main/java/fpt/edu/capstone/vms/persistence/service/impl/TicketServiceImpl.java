@@ -660,7 +660,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                     throw new CustomException(ErrorApp.CUSTOMER_NOT_IN_ORGANIZATION);
                 createCustomerTicket(ticket, UUID.fromString(customer.trim()), generateCheckInCode());
                 if (!isDraft) {
-                    customerRepository.findById(UUID.fromString(customer.trim())).ifPresent(customerEntity -> sendEmail(customerEntity, ticket, room, generateCheckInCode(), false));
+                    customerRepository.findById(UUID.fromString(customer.trim())).ifPresent(customerEntity -> sendEmail(customerEntity, ticket, room, generateCheckInCode(), false, false));
                 }
             }
         }
@@ -671,7 +671,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                 customerTicketMapPk.setTicketId(ticket.getId());
                 customerTicketMapPk.setCustomerId(UUID.fromString(customer.trim()));
                 CustomerTicketMap customerTicketMap = customerTicketMapRepository.findById(customerTicketMapPk).orElse(null);
-                sendEmail(customerTicketMap.getCustomerEntity(), ticket, room, customerTicketMap.getCheckInCode(), true);
+                sendEmail(customerTicketMap.getCustomerEntity(), ticket, room, customerTicketMap.getCheckInCode(), true, customerTicketMap.isSendMail());
             });
         }
 
@@ -704,12 +704,12 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                     String checkInCode = generateCheckInCode();
                     createCustomerTicket(ticket, customer.getId(), checkInCode);
                     if (!isDraft)
-                        sendEmail(customer, ticket, room, checkInCode, false);
+                        sendEmail(customer, ticket, room, checkInCode, false, false);
                 } else {
                     String checkInCode = generateCheckInCode();
                     createCustomerTicket(ticket, customerExist.getId(), checkInCode);
                     if (!isDraft)
-                        sendEmail(customerExist, ticket, room, checkInCode, false);
+                        sendEmail(customerExist, ticket, room, checkInCode, false, false);
                 }
             }
         }
@@ -1079,7 +1079,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     private void sendQr(List<CustomerTicketMap> customerTicketMap, Ticket ticket, Room room) {
         customerTicketMap.forEach(o -> {
             var customer = customerRepository.findById(o.getCustomerTicketMapPk().getCustomerId()).orElse(null);
-            sendEmail(customer, ticket, room, o.getCheckInCode(), false);
+            sendEmail(customer, ticket, room, o.getCheckInCode(), false, false);
         });
     }
 
@@ -1091,7 +1091,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
      * @param ticket   The `ticket` parameter is an object of the `Ticket` class. It contains information about a ticket,
      *                 such as its ID and site ID.
      */
-    public void sendEmail(Customer customer, Ticket ticket, Room room, String checkInCode, boolean isUpdate) {
+    public void sendEmail(Customer customer, Ticket ticket, Room room, String checkInCode, boolean isUpdate, boolean isSendMail) {
         String meetingUrl = "https://web-vms.azurewebsites.net/check-in/" + checkInCode;
 
         if (ObjectUtils.isEmpty(customer))
@@ -1139,12 +1139,15 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             String replacedTemplate = emailUtils.replaceEmailParameters(template.getBody(), parameterMap);
 
             String subject;
-            if (isUpdate) {
+            if (isUpdate && isSendMail) {
                 subject = "Update information of meeting #" + checkInCode;
             } else {
                 subject = template.getSubject();
             }
 
+            CustomerTicketMap customerTicketMap = customerTicketMapRepository.findByCheckInCode(checkInCode);
+            customerTicketMap.setSendMail(true);
+            customerTicketMapRepository.save(customerTicketMap);
             emailUtils.sendMailWithQRCode(customer.getEmail(), subject, replacedTemplate, qrCodeData, ticket.getSiteId());
         } catch (WriterException e) {
             throw new RuntimeException(e);

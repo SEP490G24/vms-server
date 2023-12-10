@@ -15,5 +15,7 @@ public interface ISettingSiteMapService extends IGenericService<SettingSiteMap, 
 
     Boolean setDefaultValueBySite(String siteId);
 
+    ISettingSiteMapController.SettingSiteMapDTO findBySiteIdAndCode(String siteId, String code);
+
 }
 
