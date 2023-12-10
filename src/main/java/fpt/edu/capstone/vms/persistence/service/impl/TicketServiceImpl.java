@@ -662,7 +662,9 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                 createCustomerTicket(ticket, UUID.fromString(customer.trim()), checkInCode);
                 if (!isDraft) {
                     var customerTicketMap = customerTicketMapRepository.findByCheckInCode(checkInCode);
-                    sendEmail(customerTicketMap.getCustomerEntity(), ticket, room, customerTicketMap.getCheckInCode(), false, false);
+                    customerRepository.findById(customerTicketMap.getCustomerTicketMapPk().getCustomerId()).ifPresent(customerEntity -> {
+                        sendEmail(customerEntity, ticket, room, customerTicketMap.getCheckInCode(), false, false);
+                    });
                 }
             }
         }
