@@ -336,7 +336,7 @@ public class ImportUser {
                         continue;
                     }
 
-                    //Department code
+                    //Role code
                     if (cellIndex == UserIndexColumn.ROLE_CODE.getValue()) {
                         if (validateMaxLength(HEADER_EXCEL_FILE.get(9), cellValue, 150) && validateEmptyCell(HEADER_EXCEL_FILE.get(9), cellValue)) {
                             List<String> rolesName = splitStringByComma(cellValue);
@@ -346,7 +346,7 @@ public class ImportUser {
                             for (String name : rolesName
                             ) {
                                 Optional<IRoleResource.RoleDto> roleDto = rolesOfSite.stream()
-                                    .filter(x -> name.equalsIgnoreCase(x.getAttributes().get("name").get(0)))
+                                    .filter(x -> name.equalsIgnoreCase(x.getCode()))
                                     .findFirst();
                                 if (roleDto.isPresent()) {
                                     if (uniqueName.contains(name)) {
@@ -462,7 +462,7 @@ public class ImportUser {
     private boolean validateEmptyCell(String cellName, String cellValue) {
         cellValue = cellValue.trim();
         if (cellValue.isEmpty()) {
-            setCommentAndColorError(cellName + " không đươc bỏ trống");
+            setCommentAndColorError(cellName + " cannot be left blank");
             return false;
         } else {
             return true;
@@ -472,24 +472,24 @@ public class ImportUser {
     private boolean validateMaxLength(String cellName, String cellValue, int maxlength) {
         cellValue = cellValue.trim();
         if (cellValue.length() > maxlength) {
-            setCommentAndColorError("Độ dài của " + cellName + " vượt quá " + maxlength);
+            setCommentAndColorError("Length of " + cellName + " exceed " + maxlength);
             return false;
         }
         return true;
     }
 
     private void setErrorNotExist(String cellName) {
-        setCommentAndColorError(cellName + " không tồn tại");
+        setCommentAndColorError(cellName + " does not exist");
     }
 
     private Boolean validateBeforeCurrentDate(String dateRequest, String cellName) {
         LocalDate localDate = formatDate(dateRequest);
         if (localDate == null) {
-            setCommentAndColorError(cellName + " không đúng định dạng yyyy-MM-dd");
+            setCommentAndColorError(cellName + " Incorrect format yyyy-MM-dd");
             return false;
         }
         if (isDateOfBirthGreaterThanCurrentDate(localDate)) {
-            setCommentAndColorError(cellName + " phải nhỏ hơn hoặc bằng ngày hiện tại");
+            setCommentAndColorError(cellName + " must be less than or equal to the current date");
             return false;
         } else {
             return true;

@@ -871,6 +871,9 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     @Override
     public ITicketController.TicketByQRCodeResponseDTO findByQRCode(String checkInCode) {
         CustomerTicketMap customerTicketMap = customerTicketMapRepository.findByCheckInCodeIgnoreCase(checkInCode);
+        if(customerTicketMap == null){
+            throw new CustomException(ErrorApp.QRCODE_NOT_FOUND);
+        }
         List<String> sites = new ArrayList<>();
         List<String> siteIds = SecurityUtils.getListSiteToString(siteRepository,sites);
         if (!siteIds.contains(customerTicketMap.getTicketEntity().getSiteId())) {
