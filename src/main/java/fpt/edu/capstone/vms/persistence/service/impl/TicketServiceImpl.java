@@ -752,7 +752,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             , startTimeEnd
             , endTimeStart
             , endTimeEnd
-            , createdBy
+            , SecurityUtils.loginUsername()
             , lastUpdatedBy
             , bookmark
             , keyword);
@@ -828,7 +828,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             , startTimeEnd
             , endTimeStart
             , endTimeEnd
-            , createdBy
+            , SecurityUtils.loginUsername()
             , lastUpdatedBy
             , bookmark
             , keyword);
