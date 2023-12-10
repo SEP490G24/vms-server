@@ -633,6 +633,13 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             .filter(customerToRemove -> !oldCustomers.contains(customerToRemove))
             .collect(Collectors.toList());
 
+        // Customers not changed (intersection)
+        List<String> unchangedCustomers = new ArrayList<>(CustomerOfTicket);
+        unchangedCustomers.removeAll(customersToRemove);
+
+        // Log unchanged customers
+        System.out.println("Unchanged customers: " + unchangedCustomers);
+
         Template template = templateRepository.findById(UUID.fromString(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_CANCEL_EMAIL))).orElse(null);
 
         if (!customersToRemove.isEmpty()) {
@@ -665,6 +672,21 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                     customerRepository.findById(customerTicketMap.getCustomerTicketMapPk().getCustomerId()).ifPresent(customerEntity -> {
                         sendEmail(customerEntity, ticket, room, customerTicketMap.getCheckInCode(), false, false);
                     });
+                }
+            }
+        }
+
+        if (!unchangedCustomers.isEmpty() && !isDraft && (!customersToRemove.isEmpty() || !customersToAdd.isEmpty())) {
+            for (String customer : unchangedCustomers) {
+                if (StringUtils.isEmpty(customer.trim()))
+                    throw new CustomException(ErrorApp.CUSTOMER_NOT_FOUND);
+                CustomerTicketMapPk customerTicketMapPk = new CustomerTicketMapPk();
+                customerTicketMapPk.setTicketId(ticket.getId());
+                customerTicketMapPk.setCustomerId(UUID.fromString(customer.trim()));
+                CustomerTicketMap customerTicketMap = customerTicketMapRepository.findById(customerTicketMapPk).orElse(null);
+                if (customerTicketMap != null) {
+                    customerTicketMapRepository.save(customerTicketMap);
+                    sendEmail(customerTicketMap.getCustomerEntity(), ticket, room, customerTicketMap.getCheckInCode(), true, customerTicketMap.isSendMail());
                 }
             }
         }
