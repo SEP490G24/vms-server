@@ -180,6 +180,7 @@ public interface ITicketController {
         private LocalDateTime lastUpdatedOn;
         private String siteId;
         private Boolean isBookmark;
+        private Integer customerCount;
         List<ICustomerController.CustomerInfo> Customers;
     }
 
