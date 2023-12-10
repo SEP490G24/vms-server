@@ -174,5 +174,24 @@ public class SettingSiteMapServiceImpl extends GenericServiceImpl<SettingSiteMap
         return false;
     }
 
+    @Override
+    public ISettingSiteMapController.SettingSiteMapDTO findBySiteIdAndCode(String siteId, String code) {
+        ISettingSiteMapController.SettingSiteMapDTO settingSiteMapDTO = new ISettingSiteMapController.SettingSiteMapDTO();
+        var userDetails = SecurityUtils.getUserDetails();
+        var _siteId = userDetails.isOrganizationAdmin() ? siteId : userDetails.getSiteId();
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, _siteId)) {
+            throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
+        }
+        var setting = settingRepository.findByCode(code);
+        var settingSite = settingSiteMapRepository.findBySettingSiteMapPk_SiteIdAndSettingSiteMapPk_SettingId(UUID.fromString(_siteId), setting.getId());
+        settingSiteMapDTO.setCode(code);
+        if (settingSite != null) {
+            settingSiteMapDTO.setValue(settingSite.getValue());
+        } else {
+            settingSiteMapDTO.setValue(setting.getDefaultValue());
+        }
+        return settingSiteMapDTO;
+    }
+
 
 }

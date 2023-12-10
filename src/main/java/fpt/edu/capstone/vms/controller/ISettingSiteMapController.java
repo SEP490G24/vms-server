@@ -50,6 +50,11 @@ public interface ISettingSiteMapController {
     @PreAuthorize("hasRole('r:setting-site:set-default')")
     ResponseEntity<?> setDefault(@RequestParam(value = "siteId", required = false) String siteId);
 
+    @GetMapping("/get-setting/{code}")
+    @Operation(summary = "Get setting by code for site")
+    @PreAuthorize("hasRole('r:setting-site:set-default')")
+    ResponseEntity<?> getSettingByCode(@RequestParam(value = "siteId", required = false) String siteId, @PathVariable(value = "code") String code);
+
     @Data
     @Builder
     class SettingSiteInfo {
@@ -88,4 +93,9 @@ public interface ISettingSiteMapController {
         private Map<String, String> settings;
     }
 
+    @Data
+    class SettingSiteMapDTO {
+        private String code;
+        private String value;
+    }
 }
