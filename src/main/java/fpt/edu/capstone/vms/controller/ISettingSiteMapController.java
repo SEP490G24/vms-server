@@ -52,7 +52,7 @@ public interface ISettingSiteMapController {
 
     @GetMapping("/get-setting/{code}")
     @Operation(summary = "Get setting by code for site")
-    @PreAuthorize("hasRole('r:setting-site:set-default')")
+    @PreAuthorize("hasRole('r:setting-site:filter')")
     ResponseEntity<?> getSettingByCode(@RequestParam(value = "siteId", required = false) String siteId, @PathVariable(value = "code") String code);
 
     @Data
