@@ -797,6 +797,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         , LocalDateTime endTimeEnd
         , String createdBy
         , String lastUpdatedBy
+        , Boolean bookmark
         , String keyword) {
 
         List<Sort.Order> sortColum = new ArrayList<>(PageableUtils.converterSort2List(pageable.getSort()));
@@ -818,7 +819,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             , endTimeEnd
             , createdBy
             , lastUpdatedBy
-            , null
+            , bookmark
             , keyword);
     }
 
@@ -872,6 +873,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         , LocalDateTime endTimeEnd
         , String createdBy
         , String lastUpdatedBy
+        , Boolean bookmark
         , String keyword) {
         return ticketRepository.filter(names
             , SecurityUtils.getListSiteToString(siteRepository, sites)
@@ -887,7 +889,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             , endTimeEnd
             , createdBy
             , lastUpdatedBy
-            , null
+            , bookmark
             , keyword);
     }
 
@@ -1078,10 +1080,10 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         List<Room> rooms;
         List<Ticket> tickets;
         if (SecurityUtils.getUserDetails().isOrganizationAdmin() || SecurityUtils.getUserDetails().isSiteAdmin()) {
-            tickets = filterAllBySite(null, sites, null, null, status, purpose, createdOnStart, createdOnEnd, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd, null, null, keyword);
+            tickets = filterAllBySite(null, sites, null, null, status, purpose, createdOnStart, createdOnEnd, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd, null, null, null, keyword);
             rooms = roomRepository.filter(null, SecurityUtils.getListSiteToUUID(siteRepository, sites), null, null, null, null, null);
         } else {
-            tickets = filterAllBySite(names, null, null, null, status, purpose, createdOnStart, createdOnEnd, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd, SecurityUtils.loginUsername(), null, keyword);
+            tickets = filterAllBySite(names, null, null, null, status, purpose, createdOnStart, createdOnEnd, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd, SecurityUtils.loginUsername(), null, null, keyword);
             rooms = roomRepository.filter(null, null, null, null, null, null, SecurityUtils.loginUsername());
         }
         ITicketController.TicketByRoomResponseDTO ticketByRoomResponseDTO = new ITicketController.TicketByRoomResponseDTO();

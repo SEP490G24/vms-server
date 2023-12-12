@@ -83,32 +83,6 @@ public class TicketController implements ITicketController {
     }
 
     @Override
-    public ResponseEntity<?> filterAllTicketBookmarkForUser(Pageable pageable) {
-        var ticketEntity = ticketService.getAllTicketPageableByUsername(
-            pageable,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            true,
-            null);
-        List<TicketFilterDTO> ticketFilterDTOS = mapper.map(ticketEntity.getContent(), new TypeToken<List<TicketFilterDTO>>() {
-        }.getType());
-        ticketFilterDTOS.forEach(o -> {
-            o.setCustomerCount(countCustomer(o.getId()));
-        });
-        return ResponseEntity.ok(new PageImpl(ticketFilterDTOS, pageable, ticketEntity.getTotalElements()));
-    }
-
-    @Override
     public ResponseEntity<?> cancelMeeting(CancelTicket cancelTicket) {
         try {
             return ResponseUtils.getResponseEntityStatus(ticketService.cancelTicket(cancelTicket));
@@ -129,21 +103,6 @@ public class TicketController implements ITicketController {
     @Override
     public ResponseEntity<?> filterAllTicket(TicketFilter filter, boolean isPageable, Pageable pageable) {
         if (SecurityUtils.getUserDetails().isOrganizationAdmin() || SecurityUtils.getUserDetails().isSiteAdmin()) {
-            var ticketEntity = ticketService.filterAllBySite(
-                filter.getNames(),
-                filter.getSiteId(),
-                filter.getUsernames(),
-                filter.getRoomId(),
-                filter.getStatus(),
-                filter.getPurpose(),
-                filter.getCreatedOnStart(),
-                filter.getCreatedOnEnd(),
-                filter.getStartTimeStart(),
-                filter.getStartTimeEnd(),
-                filter.getEndTimeStart(),
-                filter.getEndTimeEnd(),
-                filter.getCreatedBy(),
-                filter.getLastUpdatedBy(), filter.getKeyword());
 
             var ticketEntityPageable = ticketService.filterAllBySite(
                 pageable,
@@ -161,45 +120,26 @@ public class TicketController implements ITicketController {
                 filter.getEndTimeEnd(),
                 filter.getCreatedBy(),
                 filter.getLastUpdatedBy(),
+                filter.getBookmark(),
                 filter.getKeyword());
 
 
             List<TicketFilterDTO> ticketFilterPageDTOS = mapper.map(ticketEntityPageable.getContent(), new TypeToken<List<TicketFilterDTO>>() {
             }.getType());
+            List<TicketFilterDTO> ticketsToRemove = new ArrayList<>();
             ticketFilterPageDTOS.forEach(o -> {
                 o.setCustomerCount(countCustomer(o.getId()));
                 if (!o.getUsername().equals(SecurityUtils.loginUsername())) {
-                    o.setIsBookmark(null);
+                    if (filter.getBookmark() != null) {
+                        ticketsToRemove.add(o);
+                    } else {
+                        o.setIsBookmark(null);
+                    }
                 }
             });
-            List<TicketFilterDTO> ticketFilterDTOS = mapper.map(ticketEntity, new TypeToken<List<TicketFilterDTO>>() {
-            }.getType());
-            ticketFilterDTOS.forEach(o -> {
-                o.setCustomerCount(countCustomer(o.getId()));
-                if (!o.getUsername().equals(SecurityUtils.loginUsername())) {
-                    o.setIsBookmark(null);
-                }
-            });
-            return isPageable ?
-                ResponseEntity.ok(new PageImpl(ticketFilterPageDTOS, pageable, ticketEntityPageable.getTotalElements()))
-                : ResponseEntity.ok(ticketFilterDTOS);
+            ticketFilterPageDTOS.removeAll(ticketsToRemove);
+            return ResponseEntity.ok(new PageImpl(ticketFilterPageDTOS, pageable, ticketEntityPageable.getTotalElements()));
         } else {
-            var ticketEntity = ticketService.getAllTicketByUsername(
-                filter.getNames(),
-                filter.getRoomId(),
-                filter.getStatus(),
-                filter.getPurpose(),
-                filter.getCreatedOnStart(),
-                filter.getCreatedOnEnd(),
-                filter.getStartTimeStart(),
-                filter.getStartTimeEnd(),
-                filter.getEndTimeStart(),
-                filter.getEndTimeEnd(),
-                filter.getCreatedBy(),
-                filter.getLastUpdatedBy(),
-                filter.getBookmark(),
-                filter.getKeyword());
-
             var ticketEntityPageable = ticketService.getAllTicketPageableByUsername(
                 pageable,
                 filter.getNames(),
@@ -221,12 +161,8 @@ public class TicketController implements ITicketController {
             List<TicketFilterDTO> ticketFilterPageDTOS = mapper.map(ticketEntityPageable.getContent(), new TypeToken<List<TicketFilterDTO>>() {
             }.getType());
 
-            List<TicketFilterDTO> ticketFilterDTOS = mapper.map(ticketEntity, new TypeToken<List<TicketFilterDTO>>() {
-            }.getType());
 
-            return isPageable ?
-                ResponseEntity.ok(new PageImpl(ticketFilterPageDTOS, pageable, ticketEntityPageable.getTotalElements()))
-                : ResponseEntity.ok(ticketFilterDTOS);
+            return ResponseEntity.ok(new PageImpl(ticketFilterPageDTOS, pageable, ticketEntityPageable.getTotalElements()));
         }
     }
 

@@ -57,10 +57,6 @@ public interface ITicketController {
     @Operation(summary = "Set bookmark ticket")
     ResponseEntity<?> updateBookmark(@RequestBody @Valid TicketBookmark ticketBookmark);
 
-    @GetMapping("/bookmark")
-    @Operation(summary = "Get all ticket bookmark for user")
-    ResponseEntity<?> filterAllTicketBookmarkForUser(Pageable pageable);
-
     @PostMapping("/cancel")
     @Operation(summary = "Cancel meeting ticket")
     @PreAuthorize("hasRole('r:ticket:cancel')")
@@ -140,7 +136,7 @@ public interface ITicketController {
         List<ICustomerController.CustomerInfo> oldCustomers;
 
         @NotNull
-        private boolean draft;
+        private boolean draft = true;
 
     }
 
@@ -205,24 +201,6 @@ public interface ITicketController {
     }
 
     @Data
-    class TicketFilterUser {
-        List<String> names;
-        UUID roomId;
-        Constants.StatusTicket status;
-        Constants.Purpose purpose;
-        LocalDateTime createdOnStart;
-        LocalDateTime createdOnEnd;
-        LocalDateTime startTimeStart;
-        LocalDateTime startTimeEnd;
-        LocalDateTime endTimeStart;
-        LocalDateTime endTimeEnd;
-        String createdBy;
-        String lastUpdatedBy;
-        Boolean bookmark;
-        String keyword;
-    }
-
-    @Data
     class CancelTicket {
         private Integer reasonId;
         private String reasonNote;
@@ -243,7 +221,7 @@ public interface ITicketController {
         private String roomId;
         List<ICustomerController.NewCustomers> newCustomers;
         List<ICustomerController.CustomerInfo> oldCustomers;
-        private boolean draft = false;
+        private boolean draft = true;
     }
 
     @Data
