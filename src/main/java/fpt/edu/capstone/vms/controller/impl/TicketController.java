@@ -104,65 +104,119 @@ public class TicketController implements ITicketController {
     public ResponseEntity<?> filterAllTicket(TicketFilter filter, boolean isPageable, Pageable pageable) {
         if (SecurityUtils.getUserDetails().isOrganizationAdmin() || SecurityUtils.getUserDetails().isSiteAdmin()) {
 
-            var ticketEntityPageable = ticketService.filterAllBySite(
-                pageable,
-                filter.getNames(),
-                filter.getSiteId(),
-                filter.getUsernames(),
-                filter.getRoomId(),
-                filter.getStatus(),
-                filter.getPurpose(),
-                filter.getCreatedOnStart(),
-                filter.getCreatedOnEnd(),
-                filter.getStartTimeStart(),
-                filter.getStartTimeEnd(),
-                filter.getEndTimeStart(),
-                filter.getEndTimeEnd(),
-                filter.getCreatedBy(),
-                filter.getLastUpdatedBy(),
-                filter.getBookmark(),
-                filter.getKeyword());
-
-
-            List<TicketFilterDTO> ticketFilterPageDTOS = mapper.map(ticketEntityPageable.getContent(), new TypeToken<List<TicketFilterDTO>>() {
-            }.getType());
-            List<TicketFilterDTO> ticketsToRemove = new ArrayList<>();
-            ticketFilterPageDTOS.forEach(o -> {
-                o.setCustomerCount(countCustomer(o.getId()));
-                if (!o.getUsername().equals(SecurityUtils.loginUsername())) {
-                    if (filter.getBookmark() != null) {
-                        ticketsToRemove.add(o);
-                    } else {
-                        o.setIsBookmark(null);
+            if (!isPageable) {
+                var ticketEntities = ticketService.filterAllBySite(
+                    filter.getNames(),
+                    filter.getSiteId(),
+                    filter.getUsernames(),
+                    filter.getRoomId(),
+                    filter.getStatus(),
+                    filter.getPurpose(),
+                    filter.getCreatedOnStart(),
+                    filter.getCreatedOnEnd(),
+                    filter.getStartTimeStart(),
+                    filter.getStartTimeEnd(),
+                    filter.getEndTimeStart(),
+                    filter.getEndTimeEnd(),
+                    filter.getCreatedBy(),
+                    filter.getLastUpdatedBy(),
+                    filter.getBookmark(),
+                    filter.getKeyword());
+                List<TicketFilterDTO> ticketFilterPageDTOS = mapper.map(ticketEntities, new TypeToken<List<TicketFilterDTO>>() {
+                }.getType());
+                List<TicketFilterDTO> ticketsToRemove = new ArrayList<>();
+                ticketFilterPageDTOS.forEach(o -> {
+                    o.setCustomerCount(countCustomer(o.getId()));
+                    if (!o.getUsername().equals(SecurityUtils.loginUsername())) {
+                        if (filter.getBookmark() != null) {
+                            ticketsToRemove.add(o);
+                        } else {
+                            o.setIsBookmark(null);
+                        }
                     }
-                }
-            });
-            ticketFilterPageDTOS.removeAll(ticketsToRemove);
-            return ResponseEntity.ok(new PageImpl(ticketFilterPageDTOS, pageable, ticketEntityPageable.getTotalElements()));
+                });
+                ticketFilterPageDTOS.removeAll(ticketsToRemove);
+                return ResponseEntity.ok(ticketEntities);
+            } else {
+                var ticketEntityPageable = ticketService.filterAllBySite(
+                    pageable,
+                    filter.getNames(),
+                    filter.getSiteId(),
+                    filter.getUsernames(),
+                    filter.getRoomId(),
+                    filter.getStatus(),
+                    filter.getPurpose(),
+                    filter.getCreatedOnStart(),
+                    filter.getCreatedOnEnd(),
+                    filter.getStartTimeStart(),
+                    filter.getStartTimeEnd(),
+                    filter.getEndTimeStart(),
+                    filter.getEndTimeEnd(),
+                    filter.getCreatedBy(),
+                    filter.getLastUpdatedBy(),
+                    filter.getBookmark(),
+                    filter.getKeyword());
+                List<TicketFilterDTO> ticketFilterPageDTOS = mapper.map(ticketEntityPageable.getContent(), new TypeToken<List<TicketFilterDTO>>() {
+                }.getType());
+                List<TicketFilterDTO> ticketsToRemove = new ArrayList<>();
+                ticketFilterPageDTOS.forEach(o -> {
+                    o.setCustomerCount(countCustomer(o.getId()));
+                    if (!o.getUsername().equals(SecurityUtils.loginUsername())) {
+                        if (filter.getBookmark() != null) {
+                            ticketsToRemove.add(o);
+                        } else {
+                            o.setIsBookmark(null);
+                        }
+                    }
+                });
+                ticketFilterPageDTOS.removeAll(ticketsToRemove);
+                return ResponseEntity.ok(new PageImpl(ticketFilterPageDTOS, pageable, ticketEntityPageable.getTotalElements()));
+            }
         } else {
-            var ticketEntityPageable = ticketService.getAllTicketPageableByUsername(
-                pageable,
-                filter.getNames(),
-                filter.getRoomId(),
-                filter.getStatus(),
-                filter.getPurpose(),
-                filter.getCreatedOnStart(),
-                filter.getCreatedOnEnd(),
-                filter.getStartTimeStart(),
-                filter.getStartTimeEnd(),
-                filter.getEndTimeStart(),
-                filter.getEndTimeEnd(),
-                filter.getCreatedBy(),
-                filter.getLastUpdatedBy(),
-                filter.getBookmark(),
-                filter.getKeyword());
+            if (!isPageable) {
+                var ticketEntities = ticketService.getAllTicketByUsername(
+                    filter.getNames(),
+                    filter.getRoomId(),
+                    filter.getStatus(),
+                    filter.getPurpose(),
+                    filter.getCreatedOnStart(),
+                    filter.getCreatedOnEnd(),
+                    filter.getStartTimeStart(),
+                    filter.getStartTimeEnd(),
+                    filter.getEndTimeStart(),
+                    filter.getEndTimeEnd(),
+                    filter.getCreatedBy(),
+                    filter.getLastUpdatedBy(),
+                    filter.getBookmark(),
+                    filter.getKeyword());
+                List<TicketFilterDTO> ticketFilterPageDTOS = mapper.map(ticketEntities, new TypeToken<List<TicketFilterDTO>>() {
+                }.getType());
+
+                return ResponseEntity.ok(ticketEntities);
+            } else {
+                var ticketEntityPageable = ticketService.getAllTicketPageableByUsername(
+                    pageable,
+                    filter.getNames(),
+                    filter.getRoomId(),
+                    filter.getStatus(),
+                    filter.getPurpose(),
+                    filter.getCreatedOnStart(),
+                    filter.getCreatedOnEnd(),
+                    filter.getStartTimeStart(),
+                    filter.getStartTimeEnd(),
+                    filter.getEndTimeStart(),
+                    filter.getEndTimeEnd(),
+                    filter.getCreatedBy(),
+                    filter.getLastUpdatedBy(),
+                    filter.getBookmark(),
+                    filter.getKeyword());
+
+                List<TicketFilterDTO> ticketFilterPageDTOS = mapper.map(ticketEntityPageable.getContent(), new TypeToken<List<TicketFilterDTO>>() {
+                }.getType());
 
 
-            List<TicketFilterDTO> ticketFilterPageDTOS = mapper.map(ticketEntityPageable.getContent(), new TypeToken<List<TicketFilterDTO>>() {
-            }.getType());
-
-
-            return ResponseEntity.ok(new PageImpl(ticketFilterPageDTOS, pageable, ticketEntityPageable.getTotalElements()));
+                return ResponseEntity.ok(new PageImpl(ticketFilterPageDTOS, pageable, ticketEntityPageable.getTotalElements()));
+            }
         }
     }
 
