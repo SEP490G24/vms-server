@@ -1574,7 +1574,7 @@ class TicketServiceImplTest {
         when(ticketRepository.filter(pageable, names, siteList, usernames, roomId, status, purpose, createdOnStart, createdOnEnd, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd, createdBy, lastUpdatedBy, null, keyword))
             .thenReturn(expectedPage);
 
-        Page<Ticket> filteredTickets = ticketService.filterAllBySite(pageable, names, siteList, usernames, roomId, status, purpose, createdOnStart, createdOnEnd, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd, createdBy, lastUpdatedBy, keyword);
+        Page<Ticket> filteredTickets = ticketService.filterAllBySite(pageable, names, siteList, usernames, roomId, status, purpose, createdOnStart, createdOnEnd, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd, createdBy, lastUpdatedBy, null, keyword);
 
         assertNotNull(expectedPage);
         assertEquals(2, expectedPage.getTotalElements());
@@ -2445,7 +2445,7 @@ class TicketServiceImplTest {
 
 
         // Call the method under test
-        List<Ticket> result = ticketService.filterAllBySite(names, null, usernames, roomId, status, purpose, createdOnStart, createdOnEnd, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd, createdBy, lastUpdatedBy, keyword);
+        List<Ticket> result = ticketService.filterAllBySite(names, null, usernames, roomId, status, purpose, createdOnStart, createdOnEnd, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd, createdBy, lastUpdatedBy, null, keyword);
 
         // Verify that the repository filter method was called with the correct arguments
         Mockito.verify(ticketRepository).filter(
@@ -2615,7 +2615,7 @@ class TicketServiceImplTest {
         // Mock behavior
         // Assuming you have proper implementations for filterAllBySite and roomRepository.filter
         List<Ticket> tickets = List.of(new Ticket(), new Ticket());
-        when(ticketService.filterAllBySite(null, sites, null, null, status, purpose, createdOnStart, createdOnEnd, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd, createdBy, lastUpdatedBy, keyword))
+        when(ticketService.filterAllBySite(null, sites, null, null, status, purpose, createdOnStart, createdOnEnd, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd, createdBy, lastUpdatedBy, null, keyword))
             .thenReturn(tickets);
 
         List<Room> rooms = new ArrayList<>();

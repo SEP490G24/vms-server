@@ -55,6 +55,7 @@ public interface ITicketService extends IGenericService<Ticket, UUID> {
                                  LocalDateTime endTimeEnd,
                                  String createdBy,
                                  String lastUpdatedBy,
+                                 Boolean bookmark,
                                  String keyword);
 
     List<Ticket> getAllTicketByUsername(List<String> names,
@@ -86,6 +87,7 @@ public interface ITicketService extends IGenericService<Ticket, UUID> {
                                  LocalDateTime endTimeEnd,
                                  String createdBy,
                                  String lastUpdatedBy,
+                                 Boolean bookmark,
                                  String keyword);
 
     ITicketController.TicketByQRCodeResponseDTO findByQRCode(String checkInCode);
