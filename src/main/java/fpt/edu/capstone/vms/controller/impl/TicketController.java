@@ -192,7 +192,7 @@ public class TicketController implements ITicketController {
                 List<TicketFilterDTO> ticketFilterPageDTOS = mapper.map(ticketEntities, new TypeToken<List<TicketFilterDTO>>() {
                 }.getType());
 
-                return ResponseEntity.ok(ticketEntities);
+                return ResponseEntity.ok(ticketFilterPageDTOS);
             } else {
                 var ticketEntityPageable = ticketService.getAllTicketPageableByUsername(
                     pageable,
