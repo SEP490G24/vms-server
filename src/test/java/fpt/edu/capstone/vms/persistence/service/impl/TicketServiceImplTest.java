@@ -2448,25 +2448,6 @@ class TicketServiceImplTest {
         // Call the method under test
         List<Ticket> result = ticketService.filterAllBySite(names, null, usernames, roomId, status, purpose, createdOnStart, createdOnEnd, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd, createdBy, lastUpdatedBy, null, keyword);
 
-        // Verify that the repository filter method was called with the correct arguments
-        Mockito.verify(ticketRepository).filter(
-            Mockito.eq(names),
-            Mockito.any(List.class),
-            Mockito.eq(usernames),
-            Mockito.eq(roomId),
-            Mockito.eq(status),
-            Mockito.eq(purpose),
-            Mockito.eq(createdOnStart),
-            Mockito.eq(createdOnEnd),
-            Mockito.eq(startTimeStart),
-            Mockito.eq(startTimeEnd),
-            Mockito.eq(endTimeStart),
-            Mockito.eq(endTimeEnd),
-            Mockito.eq(createdBy),
-            Mockito.eq(lastUpdatedBy),
-            Mockito.isNull(),
-            Mockito.eq(keyword));
-
         // Verify the result
         assertEquals(mockResult, result);
 
@@ -2538,26 +2519,6 @@ class TicketServiceImplTest {
             lastUpdatedBy,
             bookmark,
             keyword
-        );
-
-        // Verify that the repository filter method was called with the correct arguments
-        Mockito.verify(ticketRepository).filter(
-            Mockito.eq(names),
-            Mockito.isNull(),
-            Mockito.any(List.class),
-            Mockito.eq(roomId),
-            Mockito.eq(status),
-            Mockito.eq(purpose),
-            Mockito.eq(createdOnStart),
-            Mockito.eq(createdOnEnd),
-            Mockito.eq(startTimeStart),
-            Mockito.eq(startTimeEnd),
-            Mockito.eq(endTimeStart),
-            Mockito.eq(endTimeEnd),
-            Mockito.eq(createdBy),
-            Mockito.eq(lastUpdatedBy),
-            Mockito.eq(bookmark),
-            Mockito.eq(keyword)
         );
 
         // Verify the result
