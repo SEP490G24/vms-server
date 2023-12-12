@@ -107,8 +107,7 @@ public interface DashboardRepository extends GenericRepository<Ticket, UUID> {
 
 
     @Query("SELECT t FROM Ticket t WHERE " +
-        " ((t.endTime BETWEEN :startTime AND :endTime) " +
-        " OR (t.lastUpdatedOn BETWEEN :startTime AND :endTime)) " +
+        " (t.endTime BETWEEN :startTime AND :endTime) " +
         "AND (t.status = :status) " +
         "AND ((COALESCE(:sites) IS NULL) OR (t.siteId IN :sites)) ")
     List<Ticket> getRecentlyFinishedMeetings(

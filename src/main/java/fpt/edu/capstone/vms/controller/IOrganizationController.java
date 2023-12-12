@@ -86,6 +86,7 @@ public interface IOrganizationController {
         String logo;
         String contactInfo;
         String contactPhoneNumber;
+        String description;
     }
 
     @Data

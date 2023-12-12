@@ -61,6 +61,14 @@ public class OrganizationServiceImpl extends GenericServiceImpl<Organization, UU
     @Transactional(rollbackFor = {Exception.class, Throwable.class, Error.class, NullPointerException.class})
     public Organization update(Organization entity, UUID id) {
 
+        if (SecurityUtils.getUserDetails().isOrganizationAdmin()) {
+            if (!SecurityUtils.getOrgId().equals(id.toString())) {
+                throw new CustomException(ErrorApp.ORGANIZATION_NOT_PERMISSION);
+            }
+        } else if (!SecurityUtils.getUserDetails().isRealmAdmin()) {
+            throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
+        }
+
         if (StringUtils.isEmpty(id.toString())) {
             throw new CustomException(ErrorApp.ORGANIZATION_ID_NULL);
         }
@@ -71,9 +79,6 @@ public class OrganizationServiceImpl extends GenericServiceImpl<Organization, UU
             }
         }
 
-        if (!SecurityUtils.getOrgId().equals(id.toString())) {
-            throw new CustomException(ErrorApp.ORGANIZATION_NOT_PERMISSION);
-        }
         if (ObjectUtils.isEmpty(entity)) throw new CustomException(ErrorApp.OBJECT_NOT_EMPTY);
         var organizationEntity = organizationRepository.findById(id).orElse(null);
 
