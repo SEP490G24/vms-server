@@ -170,7 +170,8 @@ public class TicketController implements ITicketController {
                     }
                 });
                 ticketFilterPageDTOS.removeAll(ticketsToRemove);
-                return ResponseEntity.ok(new PageImpl(ticketFilterPageDTOS, pageable, ticketEntityPageable.getTotalElements()));
+                long remainingElements = ticketFilterPageDTOS.size();
+                return ResponseEntity.ok(new PageImpl(ticketFilterPageDTOS, pageable, ticketsToRemove.isEmpty() ? ticketEntityPageable.getTotalElements() : remainingElements));
             }
         } else {
             if (!isPageable) {
@@ -303,13 +304,6 @@ public class TicketController implements ITicketController {
             filter.getLastUpdatedBy(), filter.getKeyword());
         List<ITicketController.TicketFilterDTO> ticketFilterDTOS = mapper.map(ticketByRoomResponseDTO.getTickets(), new TypeToken<List<ITicketController.TicketFilterDTO>>() {
         }.getType());
-        ticketFilterDTOS.forEach(o -> {
-            o.setCustomerCount(countCustomer(o.getId()));
-            if (!o.getUsername().equals(SecurityUtils.loginUsername())) {
-                o.setIsBookmark(null);
-            }
-        });
-
         TicketByRoomResponse ticketByRoomResponse = new TicketByRoomResponse();
         ticketByRoomResponse.setRooms(ticketByRoomResponseDTO.getRooms());
         ticketByRoomResponse.setTickets(ticketFilterDTOS);
