@@ -1031,6 +1031,7 @@ class TicketServiceImplTest {
         ticketInfo.setPurpose(Constants.Purpose.MEETING);
         ticketInfo.setStartTime(LocalDateTime.now().plusMinutes(1));
         ticketInfo.setOldCustomers(oldCustomer);
+        ticketInfo.setDraft(false);
 
         Ticket mockTicket = new Ticket();
         mockTicket.setId(ticketId);
