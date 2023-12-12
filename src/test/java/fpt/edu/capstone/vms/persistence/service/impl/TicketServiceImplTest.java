@@ -2464,7 +2464,7 @@ class TicketServiceImplTest {
             Mockito.eq(endTimeEnd),
             Mockito.eq(createdBy),
             Mockito.eq(lastUpdatedBy),
-            Mockito.isNull(),
+            Mockito.eq(null),
             Mockito.eq(keyword));
 
         // Verify the result
@@ -2543,7 +2543,7 @@ class TicketServiceImplTest {
         // Verify that the repository filter method was called with the correct arguments
         Mockito.verify(ticketRepository).filter(
             Mockito.eq(names),
-            Mockito.isNull(),
+            Mockito.eq(null),
             Mockito.any(List.class),
             Mockito.eq(roomId),
             Mockito.eq(status),
