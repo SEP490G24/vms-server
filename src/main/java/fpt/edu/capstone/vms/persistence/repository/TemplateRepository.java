@@ -24,7 +24,7 @@ public interface TemplateRepository extends GenericRepository<Template, UUID> {
         "and ((:type is null) or (u.type = :type)) " +
         "and ((coalesce(:siteId) is null) or (u.siteId in :siteId)) " +
         "and ((:keyword is null) " +
-        "or ( UPPER(u.name) LIKE %:keyword% " +
+        "or (UPPER(u.name) LIKE %:keyword% " +
         "or UPPER(u.code) LIKE %:keyword% " +
         "or UPPER(u.subject) LIKE %:keyword% " +
         "or UPPER(u.body) LIKE %:keyword% " +

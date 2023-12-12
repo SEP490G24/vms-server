@@ -54,9 +54,9 @@ public interface TicketRepository extends GenericRepository<Ticket, UUID> {
         "and ((cast(:status as string) is null) or (u.status = :status)) " +
         "and ((cast(:purpose as string) is null) or (u.purpose = :purpose)) " +
         "and ((:keyword is null) " +
-        "or (u.lastUpdatedBy LIKE %:keyword% " +
-        "or u.name LIKE %:keyword% " +
-        "or u.createdBy LIKE %:keyword% ))")
+        "or (UPPER(u.lastUpdatedBy) LIKE %:keyword% " +
+        "or UPPER(u.name) LIKE %:keyword% " +
+        "or UPPER(u.createdBy) LIKE %:keyword% ))")
     Page<Ticket> filter(Pageable pageable,
                         @Param("names") @Nullable Collection<String> names,
                         @Param("sites") @Nullable Collection<String> sites,
@@ -89,9 +89,9 @@ public interface TicketRepository extends GenericRepository<Ticket, UUID> {
         "and ((cast(:status as string) is null) or (u.status = :status)) " +
         "and ((cast(:purpose as string) is null) or (u.purpose = :purpose)) " +
         "and ((:keyword is null) " +
-        "or (u.lastUpdatedBy LIKE %:keyword% " +
-        "or u.name LIKE %:keyword% " +
-        "or u.createdBy LIKE %:keyword% ))")
+        "or (UPPER(u.lastUpdatedBy) LIKE %:keyword% " +
+        "or UPPER(u.name) LIKE %:keyword% " +
+        "or UPPER(u.createdBy) LIKE %:keyword% ))")
     List<Ticket> filter(@Param("names") @Nullable Collection<String> names,
                         @Param("sites") @Nullable Collection<String> sites,
                         @Param("usernames") @Nullable Collection<String> usernames,
