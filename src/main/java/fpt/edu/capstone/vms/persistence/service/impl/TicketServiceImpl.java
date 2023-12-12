@@ -778,7 +778,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             , SecurityUtils.loginUsername()
             , lastUpdatedBy
             , bookmark
-            , keyword.toUpperCase());
+            , keyword != null ? keyword.toUpperCase() : null);
     }
 
     @Override
@@ -820,7 +820,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             , createdBy
             , lastUpdatedBy
             , bookmark
-            , keyword.toUpperCase());
+            , keyword != null ? keyword.toUpperCase() : null);
     }
 
     @Override
