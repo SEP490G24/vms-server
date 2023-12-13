@@ -21,13 +21,15 @@ public interface TicketRepository extends GenericRepository<Ticket, UUID> {
         "t.roomId = :roomId " +
         "AND t.endTime >= :startTime " +
         "AND t.startTime <= :endTime " +
-        "AND t.status NOT LIKE :cancel " +
-        "AND t.status NOT LIKE :complete")
+        "AND t.status <> :cancel " +
+        "AND t.status <> :draft " +
+        "AND t.status <> :complete")
     int countTicketsWithStatusNotLike(@Param("roomId") UUID roomId,
                                       @Param("startTime") LocalDateTime startTime,
                                       @Param("endTime") LocalDateTime endTime,
                                       @Param("cancel") Constants.StatusTicket cancel,
-                                      @Param("complete") Constants.StatusTicket complete);
+                                      @Param("complete") Constants.StatusTicket complete,
+                                      @Param("draft") Constants.StatusTicket draft);
 
     Integer countByRoomIdAndEndTimeGreaterThanEqualAndStartTimeLessThanEqualAndStatusNotLike(UUID roomId, LocalDateTime startTime, LocalDateTime endTime, Constants.StatusTicket statusTicket);
 

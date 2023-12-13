@@ -525,18 +525,27 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                 throw new CustomException(ErrorApp.ROOM_NOT_FOUND);
             }
 
-            if (!room.getSiteId().equals(UUID.fromString(ticket.getSiteId())))
-                throw new CustomException(ErrorApp.ROOM_USER_CAN_NOT_CREATE_TICKET);
-
-            if (isRoomBooked(UUID.fromString(ticketInfo.getRoomId()), ticketInfo.getStartTime(), ticketInfo.getEndTime())) {
-                throw new CustomException(ErrorApp.ROOM_HAVE_TICKET_IN_THIS_TIME);
-            }
-
             if (ticket.getRoom() != null) {
                 if (!ticketInfo.getRoomId().equals(ticket.getRoomId().toString())) {
+
+                    if (!room.getSiteId().equals(UUID.fromString(ticket.getSiteId())))
+                        throw new CustomException(ErrorApp.ROOM_USER_CAN_NOT_CREATE_TICKET);
+
+                    if (isRoomBooked(UUID.fromString(ticketInfo.getRoomId()), ticketInfo.getStartTime(), ticketInfo.getEndTime())) {
+                        throw new CustomException(ErrorApp.ROOM_HAVE_TICKET_IN_THIS_TIME);
+                    }
+
                     ticketMap.setRoomId(UUID.fromString(ticketInfo.getRoomId()));
                 }
             } else {
+
+                if (!room.getSiteId().equals(UUID.fromString(ticket.getSiteId())))
+                    throw new CustomException(ErrorApp.ROOM_USER_CAN_NOT_CREATE_TICKET);
+
+                if (isRoomBooked(UUID.fromString(ticketInfo.getRoomId()), ticketInfo.getStartTime(), ticketInfo.getEndTime())) {
+                    throw new CustomException(ErrorApp.ROOM_HAVE_TICKET_IN_THIS_TIME);
+                }
+
                 ticketMap.setRoomId(UUID.fromString(ticketInfo.getRoomId()));
             }
         }
@@ -1212,7 +1221,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
      * @return The method is returning a boolean value.
      */
     boolean isRoomBooked(UUID roomId, LocalDateTime startTime, LocalDateTime endTime) {
-        int count = ticketRepository.countTicketsWithStatusNotLike(roomId, startTime, endTime, Constants.StatusTicket.CANCEL,Constants.StatusTicket.COMPLETE);
+        int count = ticketRepository.countTicketsWithStatusNotLike(roomId, startTime, endTime, Constants.StatusTicket.CANCEL, Constants.StatusTicket.COMPLETE, Constants.StatusTicket.DRAFT);
         return count > 0;
     }
 
