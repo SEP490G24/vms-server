@@ -211,6 +211,7 @@ class DepartmentServiceImplTest {
         UUID id = UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08");
         Department updateDepartmentInfo = new Department();
         updateDepartmentInfo.setCode("newCode");
+        updateDepartmentInfo.setEnable(true);
 
         Site site = new Site();
         site.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));

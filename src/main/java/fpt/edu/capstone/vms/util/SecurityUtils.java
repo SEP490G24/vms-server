@@ -17,7 +17,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.*;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_REALM_ROLE;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_RESOURCE_ROLE;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.REALM_ADMIN;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.SCOPE_ORGANIZATION;
+import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.SCOPE_SITE;
 
 
 public class SecurityUtils {
@@ -129,7 +133,11 @@ public class SecurityUtils {
         List<UUID> sites = new ArrayList<>();
         if (SecurityUtils.getOrgId() != null) {
             if (siteId == null || siteId.isEmpty()) {
-                siteRepository.findAllByOrganizationId(UUID.fromString(SecurityUtils.getOrgId())).forEach(o -> {
+                var listSite = siteRepository.findAllByOrganizationId(UUID.fromString(SecurityUtils.getOrgId()));
+                if (listSite.isEmpty()) {
+                    throw new CustomException(ErrorApp.SITE_PLEASE_CREATE_SITE);
+                }
+                listSite.forEach(o -> {
                     sites.add(o.getId());
                 });
             } else {
@@ -155,7 +163,11 @@ public class SecurityUtils {
         List<String> sites = new ArrayList<>();
         if (SecurityUtils.getOrgId() != null) {
             if (siteId == null || siteId.isEmpty()) {
-                siteRepository.findAllByOrganizationId(UUID.fromString(SecurityUtils.getOrgId())).forEach(o -> {
+                var listSite = siteRepository.findAllByOrganizationId(UUID.fromString(SecurityUtils.getOrgId()));
+                if (listSite.isEmpty()) {
+                    throw new CustomException(ErrorApp.SITE_PLEASE_CREATE_SITE);
+                }
+                listSite.forEach(o -> {
                     sites.add(o.getId().toString());
                 });
             } else {
