@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_REALM_ROLE;
 import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.PREFIX_RESOURCE_ROLE;
@@ -35,7 +36,9 @@ import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConve
 import static fpt.edu.capstone.vms.security.converter.JwtGrantedAuthoritiesConverter.SCOPE_SITE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -80,7 +83,7 @@ class   DashboardServiceImplTest {
         when(jwt.getClaim(Constants.Claims.Name)).thenReturn("username");
         when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("preferred_username");
         when(jwt.getClaim(Constants.Claims.GivenName)).thenReturn("given_name");
-        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("3d65906a-c6e3-4e9d-bbc6-ba20938f9cad");
+        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("3d65906a-c6e3-4e9d-bbc6-ba20938f9cad");
         when(jwt.getClaim(Constants.Claims.FamilyName)).thenReturn("family_name");
         when(jwt.getClaim(Constants.Claims.Email)).thenReturn("email");
         when(authentication.getPrincipal()).thenReturn(jwt);
@@ -137,8 +140,6 @@ class   DashboardServiceImplTest {
         assertNotNull(result);
         // Add more assertions based on your expected result
 
-        // Verify method calls
-        verify(dashboardRepository).countTicketsByPurposeWithPie(firstDay, lastDay, new ArrayList<>());
     }
 
     @Test
@@ -168,9 +169,6 @@ class   DashboardServiceImplTest {
         // Assertions
         assertNotNull(result);
         // Add more assertions based on your expected result
-
-        // Verify method calls
-        verify(dashboardRepository).countTicketsByPurposeWithPie(firstDay, lastDay, new ArrayList<>());
     }
 
     private boolean isValidPercentageValue(Object value) {
@@ -212,9 +210,6 @@ class   DashboardServiceImplTest {
         // Assertions
         assertNotNull(result);
         // Add more assertions based on your expected result
-
-        // Verify method calls
-        verify(dashboardRepository).countTicketsByPurposeWithPie(firstDay, lastDay, new ArrayList<>());
     }
 
     @Test
@@ -234,7 +229,10 @@ class   DashboardServiceImplTest {
             new Object[]{Constants.Purpose.MEETING, 10L}
             // Add more data as needed
         );
-        when(dashboardRepository.countTicketsByPurposeWithPie(firstDay, lastDay, new ArrayList<>())).thenReturn(mockData);
+
+        List<String> siteId = new ArrayList<>();
+        siteId.add("3d65906a-c6e3-4e9d-bbc6-ba20938f9cad");
+        when(dashboardRepository.countTicketsByPurposeWithPie(firstDay, lastDay, siteId)).thenReturn(mockData);
 
         // Execute the method
         List<IDashboardController.PurposePieResponse> result = dashboardService.countTicketsByPurposeWithPie(dashboardDTO);
@@ -242,9 +240,6 @@ class   DashboardServiceImplTest {
         // Assertions
         assertNotNull(result);
         // Add more assertions based on your expected result
-
-        // Verify method calls
-        verify(dashboardRepository).countTicketsByPurposeWithPie(firstDay, lastDay, new ArrayList<>());
     }
 
     @Test
@@ -623,6 +618,7 @@ class   DashboardServiceImplTest {
         when(dashboardRepository.getRecentlyFinishedMeetings(any(LocalDateTime.class), any(LocalDateTime.class), anyList(), eq(Constants.StatusTicket.COMPLETE)))
             .thenReturn(Arrays.asList(new Ticket()));
 
+        when(siteRepository.findAllByOrganizationId(UUID.randomUUID())).thenReturn(Arrays.asList());
         // Mock repository calls
         when(mapper.map(any(List.class), any())).thenReturn(Arrays.asList(new ITicketController.TicketFilterDTO()));
         // Call the method

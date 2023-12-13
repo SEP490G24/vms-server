@@ -75,7 +75,13 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
             if (device.getDeviceType().equals(Constants.DeviceType.SCAN_CARD)) {
                 throw new CustomException(ErrorApp.DEVICE_TYPE_SCAN_CARD);
             }
+            room.setSecurity(true);
         }
+
+        if (roomInfo.getDeviceId() == null) {
+            room.setSecurity(false);
+        }
+
         if (!roomInfo.getEnable()) {
             if (ticketRepository.existsByRoomId(room.getId())) {
                 throw new CustomException(ErrorApp.ROOM_CAN_NOT_DISABLE);
@@ -135,8 +141,12 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
                 throw new CustomException(ErrorApp.ROOM_DUPLICATE);
             }
         }
-
         var room = mapper.map(roomDto, Room.class);
+        if (room.getDeviceId() != null) {
+            room.setSecurity(true);
+        } else {
+            room.setSecurity(false);
+        }
         room.setEnable(true);
         var roomSave = roomRepository.save(room);
         auditLogRepository.save(new AuditLog(roomDto.getSiteId().toString()
