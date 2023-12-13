@@ -1220,7 +1220,8 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
      *                  class in Java that represents a date and time without a time zone.
      * @return The method is returning a boolean value.
      */
-    boolean isRoomBooked(UUID roomId, LocalDateTime startTime, LocalDateTime endTime) {
+    @Override
+    public boolean isRoomBooked(UUID roomId, LocalDateTime startTime, LocalDateTime endTime) {
         int count = ticketRepository.countTicketsWithStatusNotLike(roomId, startTime, endTime, Constants.StatusTicket.CANCEL, Constants.StatusTicket.COMPLETE, Constants.StatusTicket.DRAFT);
         return count > 0;
     }

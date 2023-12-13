@@ -117,4 +117,6 @@ public interface ITicketService extends IGenericService<Ticket, UUID> {
     boolean addCardCustomerTicket(ITicketController.CustomerTicketCardDTO customerTicketCardDTO);
 
     ITicketController.TicketByRoomResponseDTO filterTicketByRoom(List<String> names, List<String> sites, List<String> usernames, UUID roomId, Constants.StatusTicket status, Constants.Purpose purpose, LocalDateTime createdOnStart, LocalDateTime createdOnEnd, LocalDateTime startTimeStart, LocalDateTime startTimeEnd, LocalDateTime endTimeStart, LocalDateTime endTimeEnd, String createdBy, String lastUpdatedBy, String keyword);
+
+    boolean isRoomBooked(UUID roomId, LocalDateTime startTime, LocalDateTime endTime);
 }

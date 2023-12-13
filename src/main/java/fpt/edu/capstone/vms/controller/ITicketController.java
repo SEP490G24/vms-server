@@ -110,6 +110,17 @@ public interface ITicketController {
     @PreAuthorize("hasRole('r:ticket:viewCardCheckInHistory')")
     ResponseEntity<?> getAllCardHistoryOfCustomer(@PathVariable String checkInCode, Pageable pageable);
 
+    @GetMapping("/check-room")
+    @Operation(summary = "Check room when create ticket")
+    ResponseEntity<?> checkRoom(@RequestBody CheckRoom checkRoom);
+
+    @Data
+    class CheckRoom {
+        private String roomId;
+        private LocalDateTime startTime;
+        private LocalDateTime endTime;
+    }
+
     @Data
     class CreateTicketInfo {
 

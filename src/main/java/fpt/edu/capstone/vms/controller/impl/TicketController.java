@@ -1,5 +1,6 @@
 package fpt.edu.capstone.vms.controller.impl;
 
+import fpt.edu.capstone.vms.constants.Constants;
 import fpt.edu.capstone.vms.constants.ErrorApp;
 import fpt.edu.capstone.vms.controller.ICustomerController;
 import fpt.edu.capstone.vms.controller.ITicketController;
@@ -128,6 +129,9 @@ public class TicketController implements ITicketController {
                 ticketFilterPageDTOS.forEach(o -> {
                     o.setCustomerCount(countCustomer(o.getId()));
                     if (!o.getUsername().equals(SecurityUtils.loginUsername())) {
+                        if (o.getStatus().equals(Constants.StatusTicket.DRAFT)) {
+                            ticketsToRemove.add(o);
+                        }
                         if (filter.getBookmark() != null) {
                             ticketsToRemove.add(o);
                         } else {
@@ -162,6 +166,9 @@ public class TicketController implements ITicketController {
                 ticketFilterPageDTOS.forEach(o -> {
                     o.setCustomerCount(countCustomer(o.getId()));
                     if (!o.getUsername().equals(SecurityUtils.loginUsername())) {
+                        if (o.getStatus().equals(Constants.StatusTicket.DRAFT)) {
+                            ticketsToRemove.add(o);
+                        }
                         if (filter.getBookmark() != null) {
                             ticketsToRemove.add(o);
                         } else {
@@ -304,6 +311,15 @@ public class TicketController implements ITicketController {
             filter.getLastUpdatedBy(), filter.getKeyword());
         List<ITicketController.TicketFilterDTO> ticketFilterDTOS = mapper.map(ticketByRoomResponseDTO.getTickets(), new TypeToken<List<ITicketController.TicketFilterDTO>>() {
         }.getType());
+        List<TicketFilterDTO> ticketsToRemove = new ArrayList<>();
+        ticketFilterDTOS.forEach(o -> {
+            if (!o.getUsername().equals(SecurityUtils.loginUsername())) {
+                if (o.getStatus().equals(Constants.StatusTicket.DRAFT)) {
+                    ticketsToRemove.add(o);
+                }
+            }
+        });
+        ticketFilterDTOS.removeAll(ticketsToRemove);
         TicketByRoomResponse ticketByRoomResponse = new TicketByRoomResponse();
         ticketByRoomResponse.setRooms(ticketByRoomResponseDTO.getRooms());
         ticketByRoomResponse.setTickets(ticketFilterDTOS);
@@ -323,6 +339,19 @@ public class TicketController implements ITicketController {
     public ResponseEntity<?> getAllCardHistoryOfCustomer(String checkInCode, Pageable pageable) {
         try {
             return ResponseUtils.getResponseEntityStatus(cardCheckInHistoryService.getAllCardHistoryOfCustomer(pageable, checkInCode));
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> checkRoom(CheckRoom checkRoom) {
+        try {
+            if (ticketService.isRoomBooked(UUID.fromString(checkRoom.getRoomId()), checkRoom.getStartTime(), checkRoom.getEndTime())) {
+                return ResponseUtils.getResponseEntityStatus(ErrorApp.ROOM_HAVE_TICKET_IN_THIS_TIME, HttpStatus.INTERNAL_SERVER_ERROR);
+            } else {
+                return ResponseUtils.getResponseEntityStatus(ErrorApp.SUCCESS, HttpStatus.OK);
+            }
         } catch (CustomException e) {
             return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
