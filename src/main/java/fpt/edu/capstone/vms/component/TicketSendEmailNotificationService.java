@@ -73,19 +73,20 @@ public class TicketSendEmailNotificationService {
                     String startTime = ticket.getStartTime().format(formatter);
                     String endTime = ticket.getEndTime().format(formatter);
                     User user = userRepository.findFirstByUsername(ticket.getUsername());
-
+                    String addressSite = site.getCommune().getName() + ", " + site.getDistrict().getName() + ", " + site.getProvince().getName();
                     Map<String, String> parameterMap = new HashMap<>();
-                    parameterMap.put("customerName", customer.getVisitorName());
-                    parameterMap.put("meetingName", ticket.getName());
+                    parameterMap.put("customerName", customer.getVisitorName() != null ? customer.getVisitorName() : "Updating...");
+                    parameterMap.put("meetingName", ticket.getName() != null ? ticket.getName() : "Updating...");
                     parameterMap.put("dateTime", date);
                     parameterMap.put("startTime", startTime);
                     parameterMap.put("endTime", endTime);
-                    parameterMap.put("address", site.getAddress());
+                    String address = site.getAddress() != null ? site.getAddress() + ", " + addressSite : addressSite;
+                    parameterMap.put("address", address != null ? address : "Updating...");
                     String roomName = room != null ? room.getName() : "Updating....";
                     parameterMap.put("roomName", roomName);
                     parameterMap.put("staffName", user.getFirstName() + " " + user.getLastName());
-                    parameterMap.put("staffPhone", user.getPhoneNumber());
-                    parameterMap.put("staffEmail", user.getEmail());
+                    parameterMap.put("staffPhone", user.getPhoneNumber() != null ? user.getPhoneNumber() : "Updating....");
+                    parameterMap.put("staffEmail", user.getEmail() != null ? user.getEmail() : "Updating....");
                     parameterMap.put("checkInCode", o.getCheckInCode());
                     String replacedTemplate = emailUtils.replaceEmailParameters(template.getBody(), parameterMap);
 
