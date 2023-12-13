@@ -117,7 +117,9 @@ public interface ITicketController {
     @Data
     class CheckRoom {
         private String roomId;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         private LocalDateTime startTime;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_PATTERN)
         private LocalDateTime endTime;
     }
 
