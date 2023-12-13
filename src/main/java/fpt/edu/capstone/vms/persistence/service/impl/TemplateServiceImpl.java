@@ -7,6 +7,7 @@ import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.persistence.entity.AuditLog;
 import fpt.edu.capstone.vms.persistence.entity.Template;
 import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
+import fpt.edu.capstone.vms.persistence.repository.SettingSiteMapRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.repository.TemplateRepository;
 import fpt.edu.capstone.vms.persistence.service.ITemplateService;
@@ -36,11 +37,14 @@ public class TemplateServiceImpl extends GenericServiceImpl<Template, UUID> impl
     private static final String TEMPLATE_TABLE_NAME = "Template";
     private final AuditLogRepository auditLogRepository;
 
-    public TemplateServiceImpl(TemplateRepository templateRepository, SiteRepository siteRepository, ModelMapper mapper, AuditLogRepository auditLogRepository) {
+    private final SettingSiteMapRepository settingSiteMapRepository;
+
+    public TemplateServiceImpl(TemplateRepository templateRepository, SiteRepository siteRepository, ModelMapper mapper, AuditLogRepository auditLogRepository, SettingSiteMapRepository settingSiteMapRepository) {
         this.templateRepository = templateRepository;
         this.siteRepository = siteRepository;
         this.mapper = mapper;
         this.auditLogRepository = auditLogRepository;
+        this.settingSiteMapRepository = settingSiteMapRepository;
         this.init(templateRepository);
     }
 
@@ -57,7 +61,13 @@ public class TemplateServiceImpl extends GenericServiceImpl<Template, UUID> impl
         }
 
         var site = siteRepository.findById(template.getSiteId()).orElse(null);
-        templateRepository.save(template.update(templateInfo));
+        var templateUpdate = templateRepository.save(template.update(templateInfo));
+        if (templateUpdate.getEnable() == false) {
+            var settingSite = settingSiteMapRepository.findByValue(templateUpdate.getId().toString());
+            if (settingSite != null) {
+                settingSiteMapRepository.delete(settingSite);
+            }
+        }
         auditLogRepository.save(new AuditLog(template.getSiteId().toString()
             , site.getOrganizationId().toString()
             , template.getId().toString()
