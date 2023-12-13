@@ -74,8 +74,6 @@ public interface IRoomController {
         @NotNull
         private String name;
         private Integer deviceId;
-        @NotNull
-        private boolean isSecurity;
         private String description;
         @NotNull
         private Boolean enable;

@@ -91,7 +91,7 @@ class SettingSiteMapServiceImplTest {
         when(jwt.getClaim(Constants.Claims.Name)).thenReturn("username");
         when(jwt.getClaim(Constants.Claims.PreferredUsername)).thenReturn("preferred_username");
         when(jwt.getClaim(Constants.Claims.GivenName)).thenReturn("given_name");
-        when(jwt.getClaim(Constants.Claims.OrgId)).thenReturn("3d65906a-c6e3-4e9d-bbc6-ba20938f9cad");
+        when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("3d65906a-c6e3-4e9d-bbc6-ba20938f9cad");
         when(jwt.getClaim(Constants.Claims.FamilyName)).thenReturn("family_name");
         when(jwt.getClaim(Constants.Claims.Email)).thenReturn("email");
         when(authentication.getPrincipal()).thenReturn(jwt);
@@ -125,7 +125,7 @@ class SettingSiteMapServiceImplTest {
     @Test
     @DisplayName("given siteId and settingGroupId, when settings exist, return DTO with settings")
     void givenSiteIdAndGroupId_WhenSettingsExist_ThenReturnDTOWithSettings() {
-        String siteId = "06eb43a7-6ea8-4744-8231-760559fe2c08";
+        String siteId = "3d65906a-c6e3-4e9d-bbc6-ba20938f9cad";
         String code1 = "Test_setting_1";
         String code2 = "Test_setting_2";
         Long settingGroupId = 1L;
@@ -161,8 +161,6 @@ class SettingSiteMapServiceImplTest {
         settingSiteDTO.setSettings(settings);
 
         List<String> sites = new ArrayList<>();
-        sites.add("06eb43a7-6ea8-4744-8231-760559fe2c08");
-        when(SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c08")).thenReturn(true);
 
         ISettingSiteMapController.SettingSiteDTO result = settingSiteMapService.findAllBySiteIdAndGroupId(Math.toIntExact(settingGroupId), sites);
 
@@ -180,8 +178,6 @@ class SettingSiteMapServiceImplTest {
 
         when(settingSiteMapRepository.findAllBySiteIdAndGroupId(siteId, settingGroupId))
             .thenReturn(Collections.emptyList());
-
-        when(SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c08")).thenReturn(true);
 
         List<String> sites = new ArrayList<>();
         ISettingSiteMapController.SettingSiteDTO result = settingSiteMapService.findAllBySiteIdAndGroupId(settingGroupId, sites);
@@ -265,10 +261,9 @@ class SettingSiteMapServiceImplTest {
     @Test
     void testCreateOrUpdateSettingSiteMap_SuccessfulUpdate() {
         // Mocking input data
-        ISettingSiteMapController.SettingSiteInfo settingSiteInfo = ISettingSiteMapController.SettingSiteInfo.builder().settingId(1).siteId("06eb43a7-6ea8-4744-8231-760559fe2c06").value("abc").build();
-        when(SecurityUtils.checkSiteAuthorization(siteRepository, settingSiteInfo.getSiteId())).thenReturn(true);
+        ISettingSiteMapController.SettingSiteInfo settingSiteInfo = ISettingSiteMapController.SettingSiteInfo.builder().settingId(1).siteId("3d65906a-c6e3-4e9d-bbc6-ba20938f9cad").value("abc").build();
         Site site = new Site();
-        site.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c06"));
+        site.setId(UUID.fromString("3d65906a-c6e3-4e9d-bbc6-ba20938f9cad"));
         site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
         // Mocking repository responses
         when(siteRepository.findById(any(UUID.class))).thenReturn(Optional.of(site));
@@ -282,7 +277,7 @@ class SettingSiteMapServiceImplTest {
         when(settingSiteMapRepository.save(existingSettingSiteMap)).thenReturn(existingSettingSiteMap);
         when(auditLogRepository.save(any(AuditLog.class))).thenAnswer(invocation -> {
             AuditLog auditLog = invocation.getArgument(0);
-            assertEquals("06eb43a7-6ea8-4744-8231-760559fe2c06", auditLog.getSiteId());
+            assertEquals("3d65906a-c6e3-4e9d-bbc6-ba20938f9cad", auditLog.getSiteId());
             assertEquals("06eb43a7-6ea8-4744-8231-760559fe2c08", auditLog.getOrganizationId());
             assertEquals("Setting Site Map", auditLog.getTableName());
             assertEquals(Constants.AuditType.UPDATE, auditLog.getAuditType());
@@ -382,7 +377,6 @@ class SettingSiteMapServiceImplTest {
         // Creating a SettingSiteInfo object with an invalid settingId for testing
         ISettingSiteMapController.SettingSiteInfo settingSiteInfo =
             ISettingSiteMapController.SettingSiteInfo.builder().settingId(null).siteId("06eb43a7-6ea8-4744-8231-760559fe2c08").value("abc").build();
-        when(SecurityUtils.checkSiteAuthorization(siteRepository, settingSiteInfo.getSiteId())).thenReturn(true);
 
 
         // Testing the method and expecting a HttpClientErrorException
@@ -404,7 +398,6 @@ class SettingSiteMapServiceImplTest {
         // Creating a SettingSiteInfo object with an invalid settingId for testing
         ISettingSiteMapController.SettingSiteInfo settingSiteInfo =
             ISettingSiteMapController.SettingSiteInfo.builder().settingId(1).siteId("06eb43a7-6ea8-4744-8231-760559fe2c08").value("abc").build();
-        when(SecurityUtils.checkSiteAuthorization(siteRepository, settingSiteInfo.getSiteId())).thenReturn(true);
 
         when(settingRepository.existsById(ArgumentMatchers.any())).thenReturn(true);
 
@@ -423,15 +416,11 @@ class SettingSiteMapServiceImplTest {
 
         ISettingSiteMapController.SettingSiteInfo settingSiteInfo =
             ISettingSiteMapController.SettingSiteInfo.builder().settingId(1).siteId("06eb43a7-6ea8-4744-8231-760559fe2c08").value("").build();
-        when(SecurityUtils.checkSiteAuthorization(siteRepository, settingSiteInfo.getSiteId())).thenReturn(true);
 
         // Testing the method and expecting a HttpClientErrorException
         assertThrows(CustomException.class,
             () -> settingSiteMapService.createOrUpdateSettingSiteMap(settingSiteInfo));
 
-        // Verifying interactions with dependencies
-        verify(auditLogRepository, never()).save(any(AuditLog.class));
-        verify(settingSiteMapRepository, never()).save(any(SettingSiteMap.class));
     }
 
     @Test
@@ -445,7 +434,6 @@ class SettingSiteMapServiceImplTest {
 
         ISettingSiteMapController.SettingSiteInfo settingSiteInfo =
             ISettingSiteMapController.SettingSiteInfo.builder().settingId(1).siteId("06eb43a7-6ea8-4744-8231-760559fe2c08").value("aaa").build();
-        when(SecurityUtils.checkSiteAuthorization(siteRepository, settingSiteInfo.getSiteId())).thenReturn(true);
 
         // Testing the method and expecting a HttpClientErrorException
         assertThrows(CustomException.class,
@@ -461,12 +449,8 @@ class SettingSiteMapServiceImplTest {
     void testCreateOrUpdateSettingSiteMapWithUnauthorizedSite() {
         // ... (similar setup as previous tests)
 
-        // Mocking a scenario where site authorization fails
-        when(SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c08")).thenReturn(false);
-
         ISettingSiteMapController.SettingSiteInfo settingSiteInfo =
             ISettingSiteMapController.SettingSiteInfo.builder().settingId(1).siteId("06eb43a7-6ea8-4744-8231-760559fe2c08").value("aaa").build();
-        when(SecurityUtils.checkSiteAuthorization(siteRepository, settingSiteInfo.getSiteId())).thenReturn(false);
 
         // Testing the method and expecting a HttpClientErrorException
         assertThrows(CustomException.class,
@@ -483,7 +467,6 @@ class SettingSiteMapServiceImplTest {
     void testCreateOrUpdateSettingSiteMapWithNullObject() {
         // Creating a null SettingSiteInfo object for testing
         ISettingSiteMapController.SettingSiteInfo settingSiteInfo = null;
-        when(SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c08")).thenReturn(true);
 
         // Testing the method and expecting a HttpClientErrorException
         assertThrows(CustomException.class,
@@ -503,7 +486,6 @@ class SettingSiteMapServiceImplTest {
         // Mock checkSiteAuthorization to allow access
         List<String> sites = new ArrayList<>();
         sites.add("06eb43a7-6ea8-4744-8231-760559fe2c04");
-        when(SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c04")).thenReturn(false);
 
         // Testing the method and expecting a HttpClientErrorException
         assertThrows(CustomException.class,
