@@ -110,4 +110,6 @@ public interface TicketRepository extends GenericRepository<Ticket, UUID> {
                         @Param("lastUpdatedBy") @Nullable String lastUpdatedBy,
                         @Param("bookmark") @Nullable Boolean bookmark,
                         @Param("keyword") @Nullable String keyword);
+
+    boolean existsByRoomId(UUID roomId);
 }

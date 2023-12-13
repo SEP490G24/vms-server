@@ -10,6 +10,7 @@ import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
 import fpt.edu.capstone.vms.persistence.repository.DeviceRepository;
 import fpt.edu.capstone.vms.persistence.repository.RoomRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
+import fpt.edu.capstone.vms.persistence.repository.TicketRepository;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeAll;
@@ -65,6 +66,7 @@ class RoomServiceImplTest {
     SecurityContext securityContext;
     Authentication authentication;
     DeviceRepository deviceRepository;
+    TicketRepository ticketRepository;
 
     @BeforeAll
     public void init() {
@@ -76,8 +78,9 @@ class RoomServiceImplTest {
         securityContext = mock(SecurityContext.class);
         authentication = mock(Authentication.class);
         deviceRepository = mock(DeviceRepository.class);
+        ticketRepository = mock(TicketRepository.class);
         mapper = mock(ModelMapper.class);
-        roomService = new RoomServiceImpl(roomRepository, new ModelMapper(), auditLogRepository, siteRepository, deviceRepository);
+        roomService = new RoomServiceImpl(roomRepository, new ModelMapper(), auditLogRepository, siteRepository, deviceRepository, ticketRepository);
     }
 
     @Test
@@ -192,6 +195,7 @@ class RoomServiceImplTest {
         UUID roomId = UUID.fromString("63139e5c-3d0b-46d3-8167-fe59cf46d3d5");
         Room roomInfo = new Room();
         roomInfo.setSiteId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+        roomInfo.setEnable(true);
         Room existingRoom = new Room();
         existingRoom.setSiteId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
         when(roomRepository.findById(roomId)).thenReturn(Optional.of(existingRoom));

@@ -61,6 +61,11 @@ public class DeviceServiceImpl extends GenericServiceImpl<Device, Integer> imple
         if (!SecurityUtils.checkSiteAuthorization(siteRepository, device.getSiteId().toString())) {
             throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
         }
+        if (!deviceUpdate.getEnable()) {
+            if (roomRepository.existsByDeviceId(device.getId())) {
+                throw new CustomException(ErrorApp.DEVICE_CAN_NOT_DISABLE);
+            }
+        }
         var updateDevice = deviceRepository.save(device.update(deviceUpdate));
         auditLogRepository.save(new AuditLog(device.getSiteId().toString()
             , site.getOrganizationId().toString()

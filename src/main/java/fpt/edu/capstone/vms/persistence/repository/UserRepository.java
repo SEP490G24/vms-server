@@ -35,4 +35,6 @@ public interface UserRepository extends GenericRepository<User, String>, UserRep
 
     @Query("SELECT u FROM User u WHERE u.role LIKE %:role%")
     List<User> findByRole(@Param("role") String role);
+
+    boolean existsByDepartmentId(UUID departmentId);
 }

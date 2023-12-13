@@ -10,6 +10,7 @@ import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
 import fpt.edu.capstone.vms.persistence.repository.DeviceRepository;
 import fpt.edu.capstone.vms.persistence.repository.RoomRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
+import fpt.edu.capstone.vms.persistence.repository.TicketRepository;
 import fpt.edu.capstone.vms.persistence.service.IRoomService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import fpt.edu.capstone.vms.util.PageableUtils;
@@ -37,14 +38,16 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
     private final AuditLogRepository auditLogRepository;
     private final SiteRepository siteRepository;
     private final DeviceRepository deviceRepository;
+    private final TicketRepository ticketRepository;
 
 
-    public RoomServiceImpl(RoomRepository roomRepository, ModelMapper mapper, AuditLogRepository auditLogRepository, SiteRepository siteRepository, DeviceRepository deviceRepository) {
+    public RoomServiceImpl(RoomRepository roomRepository, ModelMapper mapper, AuditLogRepository auditLogRepository, SiteRepository siteRepository, DeviceRepository deviceRepository, TicketRepository ticketRepository) {
         this.roomRepository = roomRepository;
         this.mapper = mapper;
         this.auditLogRepository = auditLogRepository;
         this.siteRepository = siteRepository;
         this.deviceRepository = deviceRepository;
+        this.ticketRepository = ticketRepository;
         this.init(roomRepository);
     }
 
@@ -71,6 +74,11 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
             }
             if (device.getDeviceType().equals(Constants.DeviceType.SCAN_CARD)) {
                 throw new CustomException(ErrorApp.DEVICE_TYPE_SCAN_CARD);
+            }
+        }
+        if (!roomInfo.getEnable()) {
+            if (ticketRepository.existsByRoomId(room.getId())) {
+                throw new CustomException(ErrorApp.ROOM_CAN_NOT_DISABLE);
             }
         }
         var updateRoom = roomRepository.save(room.update(roomInfo));

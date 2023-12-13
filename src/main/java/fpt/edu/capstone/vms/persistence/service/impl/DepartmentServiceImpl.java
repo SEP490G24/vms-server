@@ -9,6 +9,7 @@ import fpt.edu.capstone.vms.persistence.entity.Department;
 import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
 import fpt.edu.capstone.vms.persistence.repository.DepartmentRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
+import fpt.edu.capstone.vms.persistence.repository.UserRepository;
 import fpt.edu.capstone.vms.persistence.service.IDepartmentService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import fpt.edu.capstone.vms.util.PageableUtils;
@@ -42,14 +43,16 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
     private final ModelMapper mapper;
     private final SiteRepository siteRepository;
     private final AuditLogRepository auditLogRepository;
+    private final UserRepository userRepository;
     private static final String DEPARTMENT_TABLE_NAME = "Department";
 
 
-    public DepartmentServiceImpl(DepartmentRepository departmentRepository, ModelMapper mapper, SiteRepository siteRepository, AuditLogRepository auditLogRepository) {
+    public DepartmentServiceImpl(DepartmentRepository departmentRepository, ModelMapper mapper, SiteRepository siteRepository, AuditLogRepository auditLogRepository, UserRepository userRepository) {
         this.departmentRepository = departmentRepository;
         this.mapper = mapper;
         this.siteRepository = siteRepository;
         this.auditLogRepository = auditLogRepository;
+        this.userRepository = userRepository;
         this.init(departmentRepository);
     }
 
@@ -72,6 +75,11 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
             throw new CustomException(DEPARTMENT_NOT_FOUND);
         var site = siteRepository.findById(department.getSiteId()).orElse(null);
 
+        if (!updateDepartmentInfo.getEnable()) {
+            if (userRepository.existsByDepartmentId(id)) {
+                throw new CustomException(ErrorApp.DEPARTMENT_CAN_NOT_DISABLE);
+            }
+        }
         var departmentUpdate = departmentRepository.save(department.update(updateDepartmentInfo));
         auditLogRepository.save(new AuditLog(site.getId().toString()
             , site.getOrganizationId().toString()
