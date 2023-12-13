@@ -40,6 +40,7 @@ public enum ErrorApp {
     SITE_CODE_NULL(113, I18n.getMessage("msg.site.code.null")),
     SITE_ID_NULL(152, I18n.getMessage("msg.site.id.null")),
     SITE_NOT_USE_CARD(168, I18n.getMessage("msg.site.not.use.card")),
+    SITE_PLEASE_CREATE_SITE(189, I18n.getMessage("msg.site.please.create.site")),
 
     //user
     USER_NOT_PERMISSION(403, I18n.getMessage("msg.user.not.permission")),
