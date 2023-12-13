@@ -345,6 +345,19 @@ public class TicketController implements ITicketController {
     }
 
     @Override
+    public ResponseEntity<?> checkRoom(CheckRoom checkRoom) {
+        try {
+            if (ticketService.isRoomBooked(UUID.fromString(checkRoom.getRoomId()), checkRoom.getStartTime(), checkRoom.getEndTime())) {
+                return ResponseUtils.getResponseEntityStatus(ErrorApp.ROOM_HAVE_TICKET_IN_THIS_TIME, HttpStatus.INTERNAL_SERVER_ERROR);
+            } else {
+                return ResponseUtils.getResponseEntityStatus(ErrorApp.SUCCESS, HttpStatus.OK);
+            }
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Override
     public ResponseEntity<?> viewDetailTicket(UUID ticketId) {
         try {
             TicketFilterDTO ticketFilterDTO = ticketService.findByTicket(ticketId);
