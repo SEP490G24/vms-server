@@ -127,7 +127,6 @@ public class TicketController implements ITicketController {
                 }.getType());
                 List<TicketFilterDTO> ticketsToRemove = new ArrayList<>();
                 ticketFilterPageDTOS.forEach(o -> {
-                    o.setCustomerCount(countCustomer(o.getId()));
                     if (!o.getUsername().equals(SecurityUtils.loginUsername())) {
                         if (o.getStatus().equals(Constants.StatusTicket.DRAFT)) {
                             ticketsToRemove.add(o);
@@ -140,7 +139,7 @@ public class TicketController implements ITicketController {
                     }
                 });
                 ticketFilterPageDTOS.removeAll(ticketsToRemove);
-                return ResponseEntity.ok(ticketEntities);
+                return ResponseEntity.ok(ticketFilterPageDTOS);
             } else {
                 var ticketEntityPageable = ticketService.filterAllBySite(
                     pageable,
@@ -221,8 +220,9 @@ public class TicketController implements ITicketController {
 
                 List<TicketFilterDTO> ticketFilterPageDTOS = mapper.map(ticketEntityPageable.getContent(), new TypeToken<List<TicketFilterDTO>>() {
                 }.getType());
-
-
+                ticketFilterPageDTOS.forEach(o -> {
+                    o.setCustomerCount(countCustomer(o.getId()));
+                });
                 return ResponseEntity.ok(new PageImpl(ticketFilterPageDTOS, pageable, ticketEntityPageable.getTotalElements()));
             }
         }
