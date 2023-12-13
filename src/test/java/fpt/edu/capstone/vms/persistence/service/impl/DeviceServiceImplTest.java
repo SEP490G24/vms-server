@@ -139,6 +139,7 @@ class DeviceServiceImplTest {
         Integer deviceId = 1;
         Device device = new Device();
         device.setSiteId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
+        device.setEnable(true);
         Device existingDevice = new Device();
         existingDevice.setSiteId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
         when(deviceRepository.findById(deviceId)).thenReturn(Optional.of(existingDevice));

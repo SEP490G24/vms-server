@@ -9,6 +9,7 @@ import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
 import fpt.edu.capstone.vms.persistence.repository.DepartmentRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
+import fpt.edu.capstone.vms.persistence.repository.UserRepository;
 import fpt.edu.capstone.vms.util.SecurityUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -67,6 +68,9 @@ class DepartmentServiceImplTest {
     SecurityContext securityContext;
     Authentication authentication;
 
+    @Mock
+    private UserRepository userRepository;
+
 
     @BeforeEach
     void setUp() {
@@ -74,7 +78,7 @@ class DepartmentServiceImplTest {
         securityContext = mock(SecurityContext.class);
         authentication = mock(Authentication.class);
         mapper = mock(ModelMapper.class);
-        departmentService = new DepartmentServiceImpl(departmentRepository, mapper, siteRepository, auditLogRepository);
+        departmentService = new DepartmentServiceImpl(departmentRepository, mapper, siteRepository, auditLogRepository, userRepository);
         Jwt jwt = mock(Jwt.class);
 
         when(jwt.getClaim(Constants.Claims.SiteId)).thenReturn("06eb43a7-6ea8-4744-8231-760559fe2c08");
@@ -100,31 +104,6 @@ class DepartmentServiceImplTest {
 
         assertThrows(CustomException.class, () -> departmentService.createDepartment(departmentInfo));
     }
-
-//    @Test
-//    @DisplayName("given incomplete data, when department with existing siteId, then exception is thrown")
-//    void givenDepartment_WhenSaveWithExistingCode_ThenThrowException() {
-//        // Arrange
-//        IDepartmentController.CreateDepartmentInfo departmentInfo = new IDepartmentController.CreateDepartmentInfo();
-//        departmentInfo.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
-//        departmentInfo.setCode("existing_department_code");
-//        // Mock SecurityUtils.checkSiteAuthorization to allow access
-//        when(SecurityUtils.checkSiteAuthorization(siteRepository, "06eb43a7-6ea8-4744-8231-760559fe2c08")).thenReturn(true);
-//
-//        Site site = new Site();
-//        site.setOrganizationId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
-//        site.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
-//
-//        when(siteRepository.findById(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08")))
-//            .thenReturn(Optional.of(site)); // Adjust based on your actual Site entity
-//
-//        // Mock departmentRepository behavior
-//        when(departmentRepository.existsByCodeAndSiteId(departmentInfo.getCode(), UUID.fromString(departmentInfo.getSiteId()))).thenReturn(true);
-//
-//        // Act and Assert
-//        assertThrows(CustomException.class, () -> departmentService.createDepartment(departmentInfo));
-//
-//    }
 
     @Test
     @DisplayName("given incomplete data, when department with null object, then exception is thrown")

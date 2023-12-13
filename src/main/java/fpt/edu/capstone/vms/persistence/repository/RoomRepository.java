@@ -57,4 +57,6 @@ public interface RoomRepository extends GenericRepository<Room, UUID> {
     List<Room> findAllBySiteIdAndEnableIsTrue(UUID siteId);
 
     boolean existsByCodeAndSiteId(String code, UUID siteId);
+
+    boolean existsByDeviceId(Integer deviceId);
 }

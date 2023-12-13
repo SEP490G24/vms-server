@@ -32,6 +32,7 @@ public enum ErrorApp {
     DEPARTMENT_DUPLICATE(108, I18n.getMessage("msg.department.duplicate.code")),
     DEPARTMENT_NOT_FOUND(109, I18n.getMessage("msg.department.not.found")),
     DEPARTMENT_CAN_NOT_DELETE(180, I18n.getMessage("msg.department.can.not.delete")),
+    DEPARTMENT_CAN_NOT_DISABLE(181, I18n.getMessage("msg.department.can.not.disable")),
     //site
     SITE_NOT_NULL(110, I18n.getMessage("msg.entity.site.null")),
     SITE_NOT_FOUND(111, I18n.getMessage("msg.site.not.found")),
@@ -53,6 +54,7 @@ public enum ErrorApp {
     DEVICE_TYPE_SCAN_CARD(153, I18n.getMessage("msg.device.type.scan.card")),
     DEVICE_DUPLICATE(108, I18n.getMessage("msg.device.duplicate.code")),
     DEVICE_ERROR_IN_PROCESS_DELETE(177, I18n.getMessage("msg.device.error.in.process.delete")),
+    DEVICE_CAN_NOT_DISABLE(182, I18n.getMessage("msg.device.can.not.disable")),
 
     //organization
     ORGANIZATION_NOT_FOUND(113, I18n.getMessage("msg.organization.not.found")),
@@ -69,6 +71,7 @@ public enum ErrorApp {
     ROOM_HAVE_TICKET_IN_THIS_TIME(142, I18n.getMessage("msg.room.have.ticket.in.this.time")),
     ROOM_DUPLICATE(108, I18n.getMessage("msg.room.duplicate.code")),
     ROOM_ERROR_IN_PROCESS_DELETE(178, I18n.getMessage("msg.room.error.in.process.delete")),
+    ROOM_CAN_NOT_DISABLE(182, I18n.getMessage("msg.room.can.not.disable")),
 
     //setting group
     SETTING_GROUP_NOT_FOUND(121, I18n.getMessage("msg.setting.group.not.found")),

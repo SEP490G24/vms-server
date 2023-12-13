@@ -179,7 +179,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
                 room = roomRepository.findById(ticketInfo.getRoomId()).orElse(null);
             }
 
-            if (ticketInfo.getOldCustomers() == null && ticketInfo.getOldCustomers().isEmpty() && ticketInfo.getNewCustomers() == null && ticketInfo.getNewCustomers().isEmpty()) {
+            if (ticketInfo.getOldCustomers().isEmpty() && ticketInfo.getNewCustomers() == null) {
                 throw new CustomException(ErrorApp.CUSTOMER_NOT_EMPTY_WHEN_CREATE_TICKET);
             }
 
@@ -595,9 +595,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         Ticket oldValue = ticket;
         ticketRepository.save(ticket.update(ticketMap));
 
-        if (ticketInfo.getOldCustomers() != null && !ticketInfo.getOldCustomers().isEmpty()) {
-            checkOldCustomers(ticketInfo.getOldCustomers().stream().map((customerInfo -> customerInfo.getId().toString())).collect(Collectors.toList()), ticket, room, ticketInfo.isDraft(), customerTicketMaps);
-        }
+        checkOldCustomers(ticketInfo.getOldCustomers().stream().map((customerInfo -> customerInfo.getId().toString())).collect(Collectors.toList()), ticket, room, ticketInfo.isDraft(), customerTicketMaps);
 
         if (ticketInfo.getNewCustomers() != null && !ticketInfo.getNewCustomers().isEmpty()) {
             checkNewCustomers(ticketInfo.getNewCustomers(), ticket, room, ticketInfo.isDraft());
