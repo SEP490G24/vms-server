@@ -14,4 +14,6 @@ public interface SettingSiteMapRepository extends GenericRepository<SettingSiteM
     List<SettingSiteMap> findAllBySettingSiteMapPk_SiteId(UUID siteId);
 
     SettingSiteMap findBySettingSiteMapPk_SiteIdAndSettingSiteMapPk_SettingId(UUID siteId, Long settingId);
+
+    SettingSiteMap findByValue(String value);
 }

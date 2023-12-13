@@ -6,6 +6,7 @@ import fpt.edu.capstone.vms.exception.CustomException;
 import fpt.edu.capstone.vms.persistence.entity.Site;
 import fpt.edu.capstone.vms.persistence.entity.Template;
 import fpt.edu.capstone.vms.persistence.repository.AuditLogRepository;
+import fpt.edu.capstone.vms.persistence.repository.SettingSiteMapRepository;
 import fpt.edu.capstone.vms.persistence.repository.SiteRepository;
 import fpt.edu.capstone.vms.persistence.repository.TemplateRepository;
 import fpt.edu.capstone.vms.util.SecurityUtils;
@@ -59,6 +60,7 @@ class TemplateServiceImplTest {
     AuditLogRepository auditLogRepository;
     SecurityContext securityContext;
     Authentication authentication;
+    SettingSiteMapRepository settingSiteMapRepository;
 
     @BeforeAll
     public void init() {
@@ -69,7 +71,8 @@ class TemplateServiceImplTest {
         securityContext = mock(SecurityContext.class);
         authentication = mock(Authentication.class);
         siteRepository = mock(SiteRepository.class);
-        templateService = new TemplateServiceImpl(templateRepository, siteRepository, new ModelMapper(), auditLogRepository);
+        settingSiteMapRepository = mock(SettingSiteMapRepository.class);
+        templateService = new TemplateServiceImpl(templateRepository, siteRepository, new ModelMapper(), auditLogRepository, settingSiteMapRepository);
     }
 
     @Test
@@ -198,6 +201,7 @@ class TemplateServiceImplTest {
         existingTemplate.setSiteId(UUID.fromString("63139e5c-3d0b-46d3-8167-fe59cf46d3d5"));
         existingTemplate.setId(UUID.fromString("63139e5c-3d0b-46d3-8167-fe59cf46d3d5"));
         templateInfo.setSiteId(UUID.fromString("63139e5c-3d0b-46d3-8167-fe59cf46d3d5"));
+        existingTemplate.setEnable(true);
         when(templateRepository.findById(templateId)).thenReturn(Optional.of(existingTemplate));
         when(templateRepository.save(any(Template.class))).thenAnswer(invocation -> invocation.getArgument(0));
 

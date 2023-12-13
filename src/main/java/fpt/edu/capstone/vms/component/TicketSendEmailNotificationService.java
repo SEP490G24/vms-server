@@ -68,7 +68,10 @@ public class TicketSendEmailNotificationService {
                     var template = templateRepository.findById(UUID.fromString(settingUtils.getOrDefault(Constants.SettingCode.TICKET_TEMPLATE_UPCOMING_EMAIL))).orElse(null);
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
                     Site site = siteRepository.findById(UUID.fromString(ticket.getSiteId())).orElse(null);
-                    Room room = roomRepository.findById(ticket.getRoomId()).orElse(null);
+                    Room room = null;
+                    if (ticket.getRoomId() != null) {
+                        room = roomRepository.findById(ticket.getRoomId()).orElse(null);
+                    }
                     String date = ticket.getStartTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
                     String startTime = ticket.getStartTime().format(formatter);
                     String endTime = ticket.getEndTime().format(formatter);
