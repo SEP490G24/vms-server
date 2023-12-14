@@ -125,11 +125,6 @@ public class UserServiceImpl implements IUserService {
                     }
                     addDepartmentToListFilter(departmentIds, departments, o);
                 });
-                if (departments.isEmpty()) {
-                    siteRepository.findAllByOrganizationId(UUID.fromString(SecurityUtils.getOrgId())).forEach(o -> {
-                        addDepartmentToListFilter(departmentIds, departments, o.getId().toString());
-                    });
-                }
             }
 
         } else {
