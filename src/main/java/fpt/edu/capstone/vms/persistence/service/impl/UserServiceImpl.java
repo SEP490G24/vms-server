@@ -146,7 +146,7 @@ public class UserServiceImpl implements IUserService {
      * @param siteId        The `siteId` parameter is a String representing the ID of a site.
      */
     private void addDepartmentToListFilter(List<String> departmentIds, List<UUID> departments, String siteId) {
-        if (departmentIds == null) {
+        if (departmentIds == null || departmentIds.isEmpty()) {
             var _departments = departmentRepository.findAllBySiteId(UUID.fromString(siteId));
             if (!_departments.isEmpty()) {
                 _departments.forEach(a -> {
