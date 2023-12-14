@@ -140,6 +140,7 @@ class DeviceServiceImplTest {
         Device device = new Device();
         device.setSiteId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
         device.setEnable(true);
+        device.setMacIp("E8:DB:84:ED:6E:EA");
         Device existingDevice = new Device();
         existingDevice.setSiteId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c08"));
         when(deviceRepository.findById(deviceId)).thenReturn(Optional.of(existingDevice));
