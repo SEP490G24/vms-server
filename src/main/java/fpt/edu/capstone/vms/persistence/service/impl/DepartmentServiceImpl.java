@@ -112,6 +112,9 @@ public class DepartmentServiceImpl extends GenericServiceImpl<Department, UUID> 
         if (!SecurityUtils.checkSiteAuthorization(siteRepository, department.getSiteId().toString())) {
             throw new CustomException(USER_NOT_PERMISSION);
         }
+        if (userRepository.existsByDepartmentId(id)) {
+            throw new CustomException(ErrorApp.DEPARTMENT_IS_USING_CAN_NOT_DELETE);
+        }
         var site = siteRepository.findById(department.getSiteId()).orElse(null);
         auditLogRepository.save(new AuditLog(site.getId().toString()
             , site.getOrganizationId().toString()

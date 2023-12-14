@@ -44,7 +44,6 @@ public class SiteServiceImpl extends GenericServiceImpl<Site, UUID> implements I
     private final SettingRepository settingRepository;
     private final AuditLogRepository auditLogRepository;
     private final ModelMapper mapper;
-
     private static final String SITE_TABLE_NAME = "Site";
     private static final String SITE_SETTING_MAP_TABLE_NAME = "SettingSiteMap";
 

@@ -67,4 +67,6 @@ public interface DeviceRepository extends GenericRepository<Device, Integer> {
     List<Device> findAllWithNotUseInSite(@Param("siteIds") Collection<UUID> siteIds, Constants.DeviceType deviceType);
 
     boolean existsByCodeAndSiteId(String code, UUID siteId);
+
+    boolean existsByMacIpAndSiteId(String macIp, UUID siteId);
 }

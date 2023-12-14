@@ -27,12 +27,15 @@ public enum ErrorApp {
     TEMPLATE_NOT_FOUND(107, I18n.getMessage("msg.template.not.found")),
     TEMPLATE_DUPLICATE(108, I18n.getMessage("msg.template.duplicate.code")),
     TEMPLATE_ERROR_IN_PROCESS_DELETE(179, I18n.getMessage("msg.template.error.in.process.delete")),
+    TEMPLATE_IS_USING_CAN_NOT_DELETE(180, I18n.getMessage("msg.template.is.using.can.not.delete")),
 
     //department
     DEPARTMENT_DUPLICATE(108, I18n.getMessage("msg.department.duplicate.code")),
     DEPARTMENT_NOT_FOUND(109, I18n.getMessage("msg.department.not.found")),
     DEPARTMENT_CAN_NOT_DELETE(180, I18n.getMessage("msg.department.can.not.delete")),
     DEPARTMENT_CAN_NOT_DISABLE(181, I18n.getMessage("msg.department.can.not.disable")),
+    DEPARTMENT_IS_USING_CAN_NOT_DELETE(182, I18n.getMessage("msg.department.is.using.can.not.delete")),
+
     //site
     SITE_NOT_NULL(110, I18n.getMessage("msg.entity.site.null")),
     SITE_NOT_FOUND(111, I18n.getMessage("msg.site.not.found")),
@@ -56,6 +59,10 @@ public enum ErrorApp {
     DEVICE_DUPLICATE(108, I18n.getMessage("msg.device.duplicate.code")),
     DEVICE_ERROR_IN_PROCESS_DELETE(177, I18n.getMessage("msg.device.error.in.process.delete")),
     DEVICE_CAN_NOT_DISABLE(182, I18n.getMessage("msg.device.can.not.disable")),
+    DEVICE_MAC_IP_IS_EXIST_IN_THIS_SITE(183, I18n.getMessage("msg.device.mac.ip.is.exist.in.this.site")),
+    DEVICE_NOT_BELONG_SITE(184, I18n.getMessage("msg.device.not.belong.site")),
+    DEVICE_IS_USING_CAN_NOT_DELETE(185, I18n.getMessage("msg.device.is.using.can.not.delete")),
+    DEVICE_IS_EXIST_IN_ROOM(186, I18n.getMessage("msg.device.is.exist.in.room")),
 
     //organization
     ORGANIZATION_NOT_FOUND(113, I18n.getMessage("msg.organization.not.found")),
@@ -73,6 +80,8 @@ public enum ErrorApp {
     ROOM_DUPLICATE(108, I18n.getMessage("msg.room.duplicate.code")),
     ROOM_ERROR_IN_PROCESS_DELETE(178, I18n.getMessage("msg.room.error.in.process.delete")),
     ROOM_CAN_NOT_DISABLE(182, I18n.getMessage("msg.room.can.not.disable")),
+    ROOM_NOT_BELONG_SITE(184, I18n.getMessage("msg.room.not.belong.site")),
+    ROOM_CAN_NOT_DELETE(185, I18n.getMessage("msg.room.can.not.delete")),
 
     //setting group
     SETTING_GROUP_NOT_FOUND(121, I18n.getMessage("msg.setting.group.not.found")),

@@ -59,7 +59,12 @@ public class DeviceServiceImpl extends GenericServiceImpl<Device, Integer> imple
             throw new CustomException(ErrorApp.SITE_NOT_NULL);
         }
         if (!SecurityUtils.checkSiteAuthorization(siteRepository, device.getSiteId().toString())) {
-            throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
+            throw new CustomException(ErrorApp.DEVICE_NOT_BELONG_SITE);
+        }
+        if (!deviceUpdate.getMacIp().equals(device.getMacIp())) {
+            if (deviceRepository.existsByMacIpAndSiteId(deviceUpdate.getMacIp(), device.getSiteId())) {
+                throw new CustomException(ErrorApp.DEVICE_MAC_IP_IS_EXIST_IN_THIS_SITE);
+            }
         }
         if (!deviceUpdate.getEnable()) {
             if (roomRepository.existsByDeviceId(device.getId())) {
@@ -88,6 +93,11 @@ public class DeviceServiceImpl extends GenericServiceImpl<Device, Integer> imple
             }
         } else {
             deviceDto.setSiteId(UUID.fromString(SecurityUtils.getSiteId()));
+        }
+        if (deviceDto.getMacIp() != null) {
+            if (deviceRepository.existsByMacIpAndSiteId(deviceDto.getMacIp(), deviceDto.getSiteId())) {
+                throw new CustomException(ErrorApp.DEVICE_MAC_IP_IS_EXIST_IN_THIS_SITE);
+            }
         }
         var site = siteRepository.findById(deviceDto.getSiteId()).orElse(null);
         if (ObjectUtils.isEmpty(site)) {
@@ -163,6 +173,9 @@ public class DeviceServiceImpl extends GenericServiceImpl<Device, Integer> imple
         }
         if (!SecurityUtils.checkSiteAuthorization(siteRepository, device.getSiteId().toString())) {
             throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
+        }
+        if (roomRepository.existsByDeviceId(device.getId())) {
+            throw new CustomException(ErrorApp.DEVICE_IS_USING_CAN_NOT_DELETE);
         }
         var site = siteRepository.findById(device.getSiteId()).orElse(null);
         auditLogRepository.save(new AuditLog(site.getId().toString()
