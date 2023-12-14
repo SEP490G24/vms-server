@@ -66,6 +66,13 @@ public class DeviceServiceImpl extends GenericServiceImpl<Device, Integer> imple
                 throw new CustomException(ErrorApp.DEVICE_MAC_IP_IS_EXIST_IN_THIS_SITE);
             }
         }
+        if (device.getDeviceType().equals(Constants.DeviceType.DOOR)) {
+            if (deviceUpdate.getDeviceType().equals(Constants.DeviceType.SCAN_CARD)) {
+                if (roomRepository.existsByDeviceId(device.getId())) {
+                    throw new CustomException(ErrorApp.DEVICE_CAN_NOT_CHANGE_TYPE);
+                }
+            }
+        }
         if (!deviceUpdate.getEnable()) {
             if (roomRepository.existsByDeviceId(device.getId())) {
                 throw new CustomException(ErrorApp.DEVICE_CAN_NOT_DISABLE);

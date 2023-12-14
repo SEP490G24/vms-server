@@ -63,6 +63,7 @@ public enum ErrorApp {
     DEVICE_NOT_BELONG_SITE(184, I18n.getMessage("msg.device.not.belong.site")),
     DEVICE_IS_USING_CAN_NOT_DELETE(185, I18n.getMessage("msg.device.is.using.can.not.delete")),
     DEVICE_IS_EXIST_IN_ROOM(186, I18n.getMessage("msg.device.is.exist.in.room")),
+    DEVICE_CAN_NOT_CHANGE_TYPE(187, I18n.getMessage("msg.device.can.not.change.type")),
 
     //organization
     ORGANIZATION_NOT_FOUND(113, I18n.getMessage("msg.organization.not.found")),
