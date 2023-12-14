@@ -62,7 +62,7 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
             throw new CustomException(ErrorApp.SITE_NOT_FOUND);
         }
         if (!SecurityUtils.checkSiteAuthorization(siteRepository, room.getSiteId().toString())) {
-            throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
+            throw new CustomException(ErrorApp.ROOM_NOT_BELONG_SITE);
         }
         if (roomInfo.getDeviceId() != null) {
             var device = deviceRepository.findById(roomInfo.getDeviceId()).orElse(null);
@@ -70,7 +70,10 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
                 throw new CustomException(ErrorApp.DEVICE_NOT_FOUND);
             }
             if (!SecurityUtils.checkSiteAuthorization(siteRepository, device.getSiteId().toString())) {
-                throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
+                throw new CustomException(ErrorApp.DEVICE_NOT_BELONG_SITE);
+            }
+            if (!device.getSiteId().equals(room.getSiteId())) {
+                throw new CustomException(ErrorApp.DEVICE_NOT_BELONG_SITE);
             }
             if (device.getDeviceType().equals(Constants.DeviceType.SCAN_CARD)) {
                 throw new CustomException(ErrorApp.DEVICE_TYPE_SCAN_CARD);
@@ -129,6 +132,9 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
             }
             if (device.getDeviceType().equals(Constants.DeviceType.SCAN_CARD)) {
                 throw new CustomException(ErrorApp.DEVICE_TYPE_SCAN_CARD);
+            }
+            if (!device.getSiteId().equals(roomDto.getSiteId())) {
+                throw new CustomException(ErrorApp.DEVICE_NOT_BELONG_SITE);
             }
         }
 
@@ -206,6 +212,9 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
         }
         if (!SecurityUtils.checkSiteAuthorization(siteRepository, room.getSiteId().toString())) {
             throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
+        }
+        if (ticketRepository.existsByRoomId(room.getId())) {
+            throw new CustomException(ErrorApp.ROOM_CAN_NOT_DELETE);
         }
         var site = siteRepository.findById(room.getSiteId()).orElse(null);
         auditLogRepository.save(new AuditLog(site.getId().toString()

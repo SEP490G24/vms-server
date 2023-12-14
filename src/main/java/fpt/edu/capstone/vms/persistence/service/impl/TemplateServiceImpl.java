@@ -173,6 +173,9 @@ public class TemplateServiceImpl extends GenericServiceImpl<Template, UUID> impl
         if (!SecurityUtils.checkSiteAuthorization(siteRepository, template.getSiteId().toString())) {
             throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
         }
+        if (settingSiteMapRepository.findByValue(template.getId().toString()) != null) {
+            throw new CustomException(ErrorApp.TEMPLATE_IS_USING_CAN_NOT_DELETE);
+        }
         var site = siteRepository.findById(template.getSiteId()).orElse(null);
         auditLogRepository.save(new AuditLog(site.getId().toString()
             , site.getOrganizationId().toString()
