@@ -85,6 +85,7 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
         }
 
         if (roomInfo.getDeviceId() == null) {
+            room.setDeviceId(null);
             room.setSecurity(false);
         }
 
