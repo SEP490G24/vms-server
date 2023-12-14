@@ -78,6 +78,9 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
             if (device.getDeviceType().equals(Constants.DeviceType.SCAN_CARD)) {
                 throw new CustomException(ErrorApp.DEVICE_TYPE_SCAN_CARD);
             }
+            if (roomRepository.existsByDeviceId(device.getId())) {
+                throw new CustomException(ErrorApp.DEVICE_IS_EXIST_IN_ROOM);
+            }
             room.setSecurity(true);
         }
 
@@ -135,6 +138,9 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
             }
             if (!device.getSiteId().equals(roomDto.getSiteId())) {
                 throw new CustomException(ErrorApp.DEVICE_NOT_BELONG_SITE);
+            }
+            if (roomRepository.existsByDeviceId(device.getId())) {
+                throw new CustomException(ErrorApp.DEVICE_IS_EXIST_IN_ROOM);
             }
         }
 
