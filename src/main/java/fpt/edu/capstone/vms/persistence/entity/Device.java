@@ -95,6 +95,9 @@ public class Device extends AbstractBaseEntity<Integer> {
         if (device.getDeviceType() != null) {
             this.deviceType = device.getDeviceType();
         }
+        if (device.getEnable() != null) {
+            this.enable = device.getEnable();
+        }
         return this;
     }
 
