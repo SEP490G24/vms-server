@@ -103,8 +103,15 @@ public class DeviceController implements IDeviceController {
 
     @Override
     public ResponseEntity<?> findAllWithNotUseInSite(String siteId) {
-        List<String> sites = new ArrayList<>();
-        return ResponseEntity.ok(deviceService.findAllWithNotUseInSite(sites));
+        try {
+            List<String> sites = new ArrayList<>();
+            if (siteId != null) {
+                sites.add(siteId);
+            }
+            return ResponseEntity.ok(deviceService.findAllWithNotUseInSite(sites));
+        } catch (CustomException e) {
+            return ResponseUtils.getResponseEntity(e.getErrorApp(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 
