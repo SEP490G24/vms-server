@@ -108,6 +108,14 @@ public interface ICustomerController {
         private String phoneNumber;
         private Constants.Gender gender;
         private String description;
+
+        private String createdBy;
+
+        private String lastUpdatedBy;
+
+        private LocalDateTime lastUpdatedOn;
+
+        private LocalDateTime createdOn;
     }
 
     @Data
