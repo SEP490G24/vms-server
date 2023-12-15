@@ -144,7 +144,8 @@ public class ModelMapperConfig {
             .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getCustomerEntity().getEmail()), IAccessHistoryController.AccessHistoryResponseDTO::setEmail))
             .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getCustomerEntity().getPhoneNumber()), IAccessHistoryController.AccessHistoryResponseDTO::setPhoneNumber))
             .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getCustomerEntity().getGender()), IAccessHistoryController.AccessHistoryResponseDTO::setGender))
-            .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getCustomerEntity().getDescription()), IAccessHistoryController.AccessHistoryResponseDTO::setDescription));
+            .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getCustomerEntity().getDescription()), IAccessHistoryController.AccessHistoryResponseDTO::setDescription))
+            .addMappings(mapping -> mapping.map((customerTicketMap -> customerTicketMap.getTicketEntity().getSiteId()), IAccessHistoryController.AccessHistoryResponseDTO::setSiteId));
 
         //User => ProfileUser
         modelMapper.createTypeMap(User.class, IUserController.ProfileUser.class)
