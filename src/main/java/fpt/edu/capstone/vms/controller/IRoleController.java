@@ -55,6 +55,12 @@ public interface IRoleController {
     ResponseEntity<?> updatePermission(@PathVariable("id") String id,
                                        @RequestBody UpdateRolePermissionPayload payload);
 
+    @PutMapping("/{id}/permissions")
+    @Operation(summary = "Update permissions")
+    @PreAuthorize("hasRole('r:role:premission:update')")
+    ResponseEntity<?> updatePermissions(@PathVariable("id") String id,
+                                       @RequestBody UpdateRolePermissionsPayload payload);
+
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete role")
     @PreAuthorize("hasRole('r:role:delete')")
@@ -80,6 +86,12 @@ public interface IRoleController {
     @Data
     class UpdateRolePermissionPayload {
         private IPermissionResource.PermissionDto permissionDto;
+        private boolean state;
+    }
+
+    @Data
+    class UpdateRolePermissionsPayload {
+        private List<IPermissionResource.PermissionDto> permissionsDto;
         private boolean state;
     }
 
