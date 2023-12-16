@@ -808,8 +808,8 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         , String keyword) {
 
         List<Sort.Order> sortColum = new ArrayList<>(PageableUtils.converterSort2List(pageable.getSort()));
-        sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.createdOn));
         sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.lastUpdatedOn));
+        sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.createdOn));
         Pageable pageableSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(sortColum));
         return ticketRepository.filter(pageableSort
             , names

@@ -20,10 +20,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class IpRateLimitingFilter extends GenericFilterBean {
 
     private Map<String, IpRequestCounter> ipRequestCounters = new ConcurrentHashMap<>();
-    private final int maxCalls = 10;
-    private final long timeWindowInMillis = 10000; // 10 minutes
-
-    private final long timeBlockUpload = 600000; // 10 minute
+    private final int maxCalls = 30;
+    private final long timeWindowInMillis = 30000; // 10 minutes
     private final String UPLOAD = "/api/v1/file/uploadImage";
     private final String CARD = "/api/v1/card";
     private final String CARD_SCAN = "/api/v1/card/scan";
@@ -49,11 +47,7 @@ public class IpRateLimitingFilter extends GenericFilterBean {
 
                 long currentTime = System.currentTimeMillis();
 
-                if (UPLOAD.equals(requestUri)) {
-                    counter.cleanupOldRequests(currentTime - timeBlockUpload);
-                } else {
-                    counter.cleanupOldRequests(currentTime - timeWindowInMillis);
-                }
+                counter.cleanupOldRequests(currentTime - timeWindowInMillis);
 
                 if (counter.getRequestCount() >= maxCalls) {
                     servletResponse.getWriter().write("Too many requests from this IP address. Please try again later.");
