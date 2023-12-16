@@ -2037,7 +2037,7 @@ class TicketServiceImplTest {
         UUID roomId = UUID.randomUUID();
         Constants.StatusCustomerTicket status = Constants.StatusCustomerTicket.CHECK_IN;
         Constants.Purpose purpose = Constants.Purpose.CONFERENCES;
-        String keyword = "search";
+        String keyword = "SEARCH";
         List<String> sites = new ArrayList<>();
         sites.add("06eb43a7-6ea8-4744-8231-760559fe2c07");
 
