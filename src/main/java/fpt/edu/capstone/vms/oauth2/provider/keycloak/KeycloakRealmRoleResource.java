@@ -238,6 +238,16 @@ public class KeycloakRealmRoleResource implements IRoleResource {
     }
 
     @Override
+    public RoleDto updatePermissions(String roleCode, List<IPermissionResource.PermissionDto> permissionDto, boolean state) {
+        var roleUpdate = this.rolesResource.get(roleCode);
+        if (state)
+            roleUpdate.addComposites(Collections.singletonList(mapper.map(permissionDto, RoleRepresentation.class)));
+        else
+            roleUpdate.deleteComposites(Collections.singletonList(mapper.map(permissionDto, RoleRepresentation.class)));
+        return mapper.map(roleUpdate, RoleDto.class);
+    }
+
+    @Override
     public void delete(String roleCode) {
         this.rolesResource.deleteRole(roleCode);
     }

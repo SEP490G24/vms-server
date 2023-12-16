@@ -62,6 +62,7 @@ public interface IRoleResource {
      * @param state         state permission for role.
      */
     RoleDto updatePermission(String id, IPermissionResource.PermissionDto permissionDto, boolean state);
+    RoleDto updatePermissions(String id, List<IPermissionResource.PermissionDto> permissionDto, boolean state);
 
     /**
      * Delete role (Keycloak: role is realm role)

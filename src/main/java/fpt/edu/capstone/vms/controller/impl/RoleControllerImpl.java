@@ -64,6 +64,11 @@ public class RoleControllerImpl implements IRoleController {
     }
 
     @Override
+    public ResponseEntity<?> updatePermissions(String id, UpdateRolePermissionsPayload payload) {
+        return ResponseEntity.ok(roleService.updatePermissions(id, payload.getPermissionsDto(), payload.isState()));
+    }
+
+    @Override
     public ResponseEntity<?> delete(String id) {
         roleService.delete(id);
         return ResponseEntity.ok().build();
