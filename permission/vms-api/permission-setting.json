@@ -193,18 +193,6 @@
         "description" : "r:access-history:detail"
       }
     },
-    "r:setting-site:detail" : {
-      "vi" : {
-        "name" : "detail",
-        "feature" : "setting-site",
-        "description" : "r:setting-site:detail"
-      },
-      "en" : {
-        "name" : "detail",
-        "feature" : "setting-site",
-        "description" : "r:setting-site:detail"
-      }
-    },
     "r:role:delete" : {
       "vi" : {
         "name" : "delete",
@@ -349,18 +337,6 @@
         "description" : "r:audit-log:export"
       }
     },
-    "r:customer:check" : {
-      "vi" : {
-        "name" : "check",
-        "feature" : "customer",
-        "description" : "r:customer:check"
-      },
-      "en" : {
-        "name" : "check",
-        "feature" : "customer",
-        "description" : "r:customer:check"
-      }
-    },
     "r:role:premission:update" : {
       "vi" : {
         "name" : "premission",
@@ -455,18 +431,6 @@
         "name" : "detail",
         "feature" : "device",
         "description" : "r:device:detail"
-      }
-    },
-    "r:setting-site:delete" : {
-      "vi" : {
-        "name" : "delete",
-        "feature" : "setting-site",
-        "description" : "r:setting-site:delete"
-      },
-      "en" : {
-        "name" : "delete",
-        "feature" : "setting-site",
-        "description" : "r:setting-site:delete"
       }
     },
     "r:department:update" : {

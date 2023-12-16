@@ -6,10 +6,7 @@ import fpt.edu.capstone.vms.keycloak.sync.models.roles.RoleAttributes;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -50,6 +47,7 @@ public final class KeycloakRoleMapper {
     private static Map<String, List<String>> generateAttributes(Map<String, KeycloakRoleAttribute> roleDetailMap) {
         Map<String, List<String>> attributes = new HashMap<>();
         attributes.put(RoleAttributes.GROUP.getValue(), Collections.singletonList(roleDetailMap.get(LanguageCode.VN.getValue()).getFeature()));
+        attributes.put(RoleAttributes.SCOPE.getValue(), Arrays.asList("system", "organization", "site"));
         Stream.of(LanguageCode.values()).forEach(languageCode -> {
             attributes.put(RoleAttributes.FEATURE.getValue() + ":" + languageCode.getValue(), Collections.singletonList(roleDetailMap.get(languageCode.getValue()).getFeature()));
             attributes.put(RoleAttributes.NAME.getValue() + ":" + languageCode.getValue(), Collections.singletonList(roleDetailMap.get(languageCode.getValue()).getName()));
