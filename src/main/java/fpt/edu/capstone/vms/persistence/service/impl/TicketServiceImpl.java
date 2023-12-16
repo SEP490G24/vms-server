@@ -1050,7 +1050,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             , roomId
             , Constants.StatusCustomerTicket.CHECK_IN
             , purpose
-            , keyword);
+            , keyword != null ? keyword.toUpperCase() : null);
 
         return customerTicketMaps;
     }

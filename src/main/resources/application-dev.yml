@@ -94,10 +94,10 @@ logging:
 
 azure:
   account:
-    name: vmspersonalstorage
-    key: gGRLKUt4IX9QHFUNg8gqgDm0gDWcc7tkkKoinx6qM+1XG+pEp7zVEG3Kx1yIMGtlhMFJeBI/E8RN+AStXDXDnQ==
+    name: vmscloudstorage
+    key: Q97Yd3eQ5DgpV9JQ6uj83R5nUtdH5jMY0JPKXmm9Z6wo3L69PCR2e/FDl05I12jYEFhYLpx2GH57+ASt+LF42w==
   container:
-    name: vms-storage
+    name: vms-file-storage
 
 schedule:
   cleaningImage:
