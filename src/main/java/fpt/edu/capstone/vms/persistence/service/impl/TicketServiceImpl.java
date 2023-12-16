@@ -903,11 +903,14 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
     @Override
     public ITicketController.TicketByQRCodeResponseDTO findByQRCode(String checkInCode) {
         CustomerTicketMap customerTicketMap = customerTicketMapRepository.findByCheckInCodeIgnoreCase(checkInCode);
-        if(customerTicketMap == null){
+        if (customerTicketMap == null) {
             throw new CustomException(ErrorApp.QRCODE_NOT_FOUND);
         }
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, customerTicketMap.getTicketEntity().getSiteId())) {
+            throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
+        }
         List<String> sites = new ArrayList<>();
-        List<String> siteIds = SecurityUtils.getListSiteToString(siteRepository,sites);
+        List<String> siteIds = SecurityUtils.getListSiteToString(siteRepository, sites);
         if (!siteIds.contains(customerTicketMap.getTicketEntity().getSiteId())) {
             throw new CustomException(ErrorApp.QRCODE_NOT_FOUND);
         }
@@ -926,6 +929,9 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         }
         if (customerTicketMap.getTicketEntity().getStatus().equals(Constants.StatusTicket.DRAFT)) {
             throw new CustomException(ErrorApp.TICKET_IS_DRAFT_CAN_NOT_DO_CHECK);
+        }
+        if (!SecurityUtils.checkSiteAuthorization(siteRepository, customerTicketMap.getTicketEntity().getSiteId())) {
+            throw new CustomException(ErrorApp.USER_NOT_PERMISSION);
         }
         if (checkInPayload.getStatus().equals(Constants.StatusCustomerTicket.CHECK_IN)) {
             if (customerTicketMap.getStatus().equals(Constants.StatusCustomerTicket.CHECK_IN)) {

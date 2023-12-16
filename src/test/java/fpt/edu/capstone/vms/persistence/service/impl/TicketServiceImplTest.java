@@ -1590,7 +1590,7 @@ class TicketServiceImplTest {
         String checkInCode = "ABC3AD";
         CustomerTicketMap customerTicketMap = new CustomerTicketMap();
         Ticket ticketEntity = new Ticket();
-        ticketEntity.setSiteId("site2"); // A different site ID
+        ticketEntity.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c07"); // A different site ID
         ticketEntity.setEndTime(LocalDateTime.now().plusHours(1));
 
         customerTicketMap.setTicketEntity(ticketEntity);
@@ -1635,7 +1635,7 @@ class TicketServiceImplTest {
         Ticket ticket = new Ticket();
         ticket.setStartTime(LocalDateTime.now().minusHours(2));
         ticket.setEndTime(LocalDateTime.now().plusMinutes(1));
-        ticket.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c08");
+        ticket.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c07");
         ticket.setStatus(Constants.StatusTicket.PENDING);
         customerTicketMap.setTicketEntity(ticket);
         when(ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId())).thenReturn(Optional.of(ticket));
@@ -1646,7 +1646,7 @@ class TicketServiceImplTest {
         when(auditLogRepository.save(any(AuditLog.class))).thenAnswer(invocation -> {
             AuditLog auditLog = invocation.getArgument(0);
             // Kiểm tra giá trị của auditLog nếu cần
-            assertEquals("06eb43a7-6ea8-4744-8231-760559fe2c08", auditLog.getSiteId());
+            assertEquals("06eb43a7-6ea8-4744-8231-760559fe2c07", auditLog.getSiteId());
             assertEquals("06eb43a7-6ea8-4744-8231-760559fe2c08", auditLog.getOrganizationId());
             assertEquals(customerTicketMap.getId().toString(), auditLog.getPrimaryKey());
             assertEquals("CustomerTicketMap", auditLog.getTableName());
@@ -1845,8 +1845,8 @@ class TicketServiceImplTest {
         Ticket ticket = new Ticket();
         ticket.setStartTime(LocalDateTime.now().minusMinutes(1));
         ticket.setEndTime(LocalDateTime.now().plusMinutes(1));
-        ticket.setId(customerTicketMap.getCustomerTicketMapPk().getTicketId());
-        ticket.setSiteId(siteId);
+        ticket.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c07"));
+        ticket.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c07");
         ticket.setStatus(Constants.StatusTicket.PENDING);
         when(ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId())).thenReturn(java.util.Optional.of(ticket));
 
@@ -1899,8 +1899,8 @@ class TicketServiceImplTest {
         Ticket ticket = new Ticket();
         ticket.setStartTime(LocalDateTime.now().minusMinutes(1));
         ticket.setEndTime(LocalDateTime.now().plusMinutes(1));
-        ticket.setId(customerTicketMap.getCustomerTicketMapPk().getTicketId());
-        ticket.setSiteId(siteId);
+        ticket.setId(UUID.fromString("06eb43a7-6ea8-4744-8231-760559fe2c07"));
+        ticket.setSiteId("06eb43a7-6ea8-4744-8231-760559fe2c07");
         ticket.setStatus(Constants.StatusTicket.PENDING);
         when(ticketRepository.findById(customerTicketMap.getCustomerTicketMapPk().getTicketId())).thenReturn(java.util.Optional.of(ticket));
 
