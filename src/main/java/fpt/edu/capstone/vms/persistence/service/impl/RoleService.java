@@ -64,6 +64,11 @@ public class RoleService implements IRoleService {
     }
 
     @Override
+    public IRoleResource.RoleDto updatePermissions(String id,List<IPermissionResource.PermissionDto> permissionDto, boolean state) {
+        return roleResource.updatePermissions(id, permissionDto, state);
+    }
+
+    @Override
     public void delete(String id) {
         List<User> users =  userRepository.findByRole(id);
         if(users.isEmpty()){

@@ -25,6 +25,7 @@ public interface IRoleService {
     IRoleResource.RoleDto update(String id, IRoleResource.RoleDto dto) throws NotFoundException;
 
     IRoleResource.RoleDto updatePermission(String id, IPermissionResource.PermissionDto permissionDto, boolean state);
+    IRoleResource.RoleDto updatePermissions(String id, List<IPermissionResource.PermissionDto> permissionDto, boolean state);
 
     void delete(String id);
 
