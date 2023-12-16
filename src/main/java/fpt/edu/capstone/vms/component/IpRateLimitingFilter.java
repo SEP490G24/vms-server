@@ -20,9 +20,13 @@ import java.util.concurrent.ConcurrentHashMap;
 public class IpRateLimitingFilter extends GenericFilterBean {
 
     private Map<String, IpRequestCounter> ipRequestCounters = new ConcurrentHashMap<>();
-    private final int maxCalls = 5;
-    private final long timeWindowInMillis = 600000; // 10 minutes
+    private final int maxCalls = 10;
+    private final long timeWindowInMillis = 10000; // 10 minutes
 
+    private final long timeBlockUpload = 600000; // 10 minute
+    private final String UPLOAD = "/api/v1/file/uploadImage";
+    private final String CARD = "/api/v1/card";
+    private final String CARD_SCAN = "/api/v1/card/scan";
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
@@ -30,7 +34,7 @@ public class IpRateLimitingFilter extends GenericFilterBean {
         HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
         String requestUri = httpRequest.getRequestURI();
 
-        if ("/api/v1/file/uploadImage".equals(requestUri)) {
+        if (UPLOAD.equals(requestUri) || CARD.equals(requestUri) || CARD_SCAN.equals(requestUri)) {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
             if (authentication != null && authentication.getDetails() instanceof WebAuthenticationDetails) {
@@ -45,10 +49,14 @@ public class IpRateLimitingFilter extends GenericFilterBean {
 
                 long currentTime = System.currentTimeMillis();
 
-                counter.cleanupOldRequests(currentTime - timeWindowInMillis);
+                if (UPLOAD.equals(requestUri)) {
+                    counter.cleanupOldRequests(currentTime - timeBlockUpload);
+                } else {
+                    counter.cleanupOldRequests(currentTime - timeWindowInMillis);
+                }
 
                 if (counter.getRequestCount() >= maxCalls) {
-                    servletResponse.getWriter().write("Ip is block 10 minutes.");
+                    servletResponse.getWriter().write("Too many requests from this IP address. Please try again later.");
                     return;
                 }
 
