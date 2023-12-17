@@ -64,7 +64,7 @@ public class RoomServiceImpl extends GenericServiceImpl<Room, UUID> implements I
         if (!SecurityUtils.checkSiteAuthorization(siteRepository, room.getSiteId().toString())) {
             throw new CustomException(ErrorApp.ROOM_NOT_BELONG_SITE);
         }
-        if (roomInfo.getDeviceId() != null) {
+        if (roomInfo.getDeviceId() != null && roomInfo.getDeviceId() != room.getDeviceId()) {
             var device = deviceRepository.findById(roomInfo.getDeviceId()).orElse(null);
             if (ObjectUtils.isEmpty(device)) {
                 throw new CustomException(ErrorApp.DEVICE_NOT_FOUND);
