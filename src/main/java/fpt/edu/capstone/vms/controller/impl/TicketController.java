@@ -138,7 +138,9 @@ public class TicketController implements ITicketController {
                         }
                     }
                 });
-                ticketFilterPageDTOS.removeAll(ticketsToRemove);
+                if (!ticketsToRemove.isEmpty()) {
+                    ticketFilterPageDTOS.removeAll(ticketsToRemove);
+                }
                 return ResponseEntity.ok(ticketFilterPageDTOS);
             } else {
                 var ticketEntityPageable = ticketService.filterAllBySite(
@@ -175,7 +177,9 @@ public class TicketController implements ITicketController {
                         }
                     }
                 });
-                ticketFilterPageDTOS.removeAll(ticketsToRemove);
+                if (!ticketsToRemove.isEmpty()) {
+                    ticketFilterPageDTOS.removeAll(ticketsToRemove);
+                }
                 long remainingElements = ticketFilterPageDTOS.size();
                 return ResponseEntity.ok(new PageImpl(ticketFilterPageDTOS, pageable, ticketsToRemove.isEmpty() ? ticketEntityPageable.getTotalElements() : remainingElements));
             }
@@ -319,7 +323,9 @@ public class TicketController implements ITicketController {
                 }
             }
         });
-        ticketFilterDTOS.removeAll(ticketsToRemove);
+        if (!ticketsToRemove.isEmpty()) {
+            ticketFilterDTOS.removeAll(ticketsToRemove);
+        }
         TicketByRoomResponse ticketByRoomResponse = new TicketByRoomResponse();
         ticketByRoomResponse.setRooms(ticketByRoomResponseDTO.getRooms());
         ticketByRoomResponse.setTickets(ticketFilterDTOS);
