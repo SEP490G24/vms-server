@@ -77,6 +77,12 @@ public class SettingServiceImpl extends GenericServiceImpl<Setting, Long> implem
                                 .stream().map(template -> Option.builder().label(template.getName()).value(template.getId()).build())));
                 }
             }
+            if (setting.getType().equals(Constants.SettingType.INPUT)) {
+                switch (setting.getCode()) {
+                    case Constants.SettingCode.MAIL_PASSWORD:
+                        setting.setDefaultValue("");
+                }
+            }
         });
         return settings;
     }
