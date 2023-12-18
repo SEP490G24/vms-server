@@ -76,7 +76,7 @@ public class SettingController implements ISettingController {
         }
 
         return groupId == null ?
-            ResponseEntity.ok(settingService.findAll()) : ResponseEntity.ok(settingService.findAllByGroupIdAndSiteId(groupId, _siteId));
+            ResponseEntity.ok(null) : ResponseEntity.ok(settingService.findAllByGroupIdAndSiteId(groupId, _siteId));
     }
 
     /**
