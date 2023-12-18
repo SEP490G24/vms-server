@@ -22,6 +22,7 @@ public enum ErrorApp {
     FILE_INVALID_IMAGE_EXTENSION(106, I18n.getMessage("msg.file.invalid.image.extension")),
     FILE_OVER_SIZE(107, I18n.getMessage("msg.file.over.size")),
     FILE_NOT_FOUND(108, I18n.getMessage("msg.file.not.found")),
+    FILE_UPLOAD_FAILED(109, I18n.getMessage("msg.file.upload.failed")),
 
     //template
     TEMPLATE_NOT_FOUND(107, I18n.getMessage("msg.template.not.found")),

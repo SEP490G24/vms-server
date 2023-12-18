@@ -14,18 +14,17 @@ import fpt.edu.capstone.vms.persistence.repository.FileRepository;
 import fpt.edu.capstone.vms.persistence.service.IFileService;
 import fpt.edu.capstone.vms.persistence.service.generic.GenericServiceImpl;
 import lombok.extern.slf4j.Slf4j;
-import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -82,32 +81,22 @@ public class FileServiceImpl extends GenericServiceImpl<File, UUID> implements I
             throw new CustomException(ErrorApp.FILE_INVALID_IMAGE_EXTENSION);
         }
 
+        String timestamp = new SimpleDateFormat("yyyyMMddHHmm").format(new Date());
+
         // generate url for image
-        String relativeFileName = UUID.randomUUID().toString() + "." + extension;
+        String relativeFileName = timestamp + "_" + UUID.randomUUID().toString() + "." + extension;
         try {
             long fileSizeInMB = file.getSize() / (1024 * 1024);
 
-            if (fileSizeInMB > 10) {
+            if (fileSizeInMB > 3) {
                 throw new CustomException(ErrorApp.FILE_OVER_SIZE);
-            }
-
-            ByteArrayOutputStream thumbnailOutputStream = new ByteArrayOutputStream();
-            if (fileSizeInMB > 1) {
-                Thumbnails.of(file.getInputStream())
-                    .size(1920, 1080)
-                    .outputQuality(0.9)
-                    .toOutputStream(thumbnailOutputStream);
-            } else {
-                Thumbnails.of(file.getInputStream())
-                    .size(1920, 1080)
-                    .toOutputStream(thumbnailOutputStream);
             }
 
             String blobEndpoint = String.format("https://%s.blob.core.windows.net", accountName);
             String blobUri = String.format("%s/%s/%s", blobEndpoint, containerName, relativeFileName);
             BlobClient blobClient = getBlobClient(relativeFileName);
-            try (InputStream thumbnailImageStream = new ByteArrayInputStream(thumbnailOutputStream.toByteArray())) {
-                blobClient.upload(thumbnailImageStream, thumbnailOutputStream.size());
+            try (InputStream imageStream = file.getInputStream()) {
+                blobClient.upload(imageStream, file.getSize());
             }
             File image = new File();
             image.setDescription("Set avatar");
@@ -123,7 +112,7 @@ public class FileServiceImpl extends GenericServiceImpl<File, UUID> implements I
             BlobClient blobClient = getBlobClient(relativeFileName);
             blobClient.deleteIfExists();
             e.printStackTrace();
-            throw new RuntimeException();
+            throw new CustomException(ErrorApp.FILE_UPLOAD_FAILED);
         }
     }
 
@@ -156,7 +145,7 @@ public class FileServiceImpl extends GenericServiceImpl<File, UUID> implements I
     }
 
     public boolean isValidImageExtension(String extension) {
-        List<String> validExtensions = Arrays.asList("jpg", "jpeg", "png", "gif");
+        List<String> validExtensions = Arrays.asList("jpg", "jpeg", "png", "gif", "bmp", "webp", "svg");
         return validExtensions.contains(extension.toLowerCase());
     }
 }
