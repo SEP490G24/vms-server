@@ -3,7 +3,6 @@ package fpt.edu.capstone.vms.controller.impl;
 
 import fpt.edu.capstone.vms.controller.IUserController;
 import fpt.edu.capstone.vms.exception.CustomException;
-import fpt.edu.capstone.vms.exception.HttpClientResponse;
 import fpt.edu.capstone.vms.exception.NotFoundException;
 import fpt.edu.capstone.vms.oauth2.IUserResource;
 import fpt.edu.capstone.vms.persistence.entity.User;
@@ -16,14 +15,18 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.apache.http.HttpStatus;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @AllArgsConstructor
@@ -36,8 +39,9 @@ public class UserController implements IUserController {
 
     @Override
     public ResponseEntity<?> filter(UserFilterRequest filter, boolean isPageable, Pageable pageable) {
-        return isPageable ? ResponseEntity.ok(
-            userService.filter(
+
+        if (isPageable) {
+            Page<UserFilterResponse> userFilterResponsePage = userService.filter(
                 pageable,
                 filter.getUsernames(),
                 filter.getRole(),
@@ -49,8 +53,18 @@ public class UserController implements IUserController {
                 filter.getSiteId(),
                 filter.getProvinceId(),
                 filter.getDistrictId(),
-                filter.getCommuneId())) : ResponseEntity.ok(
-            userService.filter(
+                filter.getCommuneId()
+            );
+
+            List<UserFilterResponse> userFilter = mapper.map(userFilterResponsePage.getContent(), new TypeToken<List<UserFilterResponse>>() {
+            }.getType());
+            ;
+            userFilter.removeIf(userFilterResponse -> (SecurityUtils.loginUsername().equals(userFilterResponse.getUsername())));
+            long remainingElements = userFilterResponsePage.getTotalElements() - userFilter.size();
+            return ResponseEntity.ok(new PageImpl(userFilter, pageable, remainingElements));
+
+        } else {
+            List<UserFilterResponse> userFilterResponseList = userService.filter(
                 filter.getUsernames(),
                 filter.getRole(),
                 filter.getCreatedOnStart(),
@@ -61,7 +75,13 @@ public class UserController implements IUserController {
                 filter.getSiteId(),
                 filter.getProvinceId(),
                 filter.getDistrictId(),
-                filter.getCommuneId()));
+                filter.getCommuneId()
+            );
+
+            userFilterResponseList.removeIf(userFilterResponse -> (SecurityUtils.loginUsername().equals(userFilterResponse.getUsername())));
+            return ResponseEntity.ok(userFilterResponseList);
+        }
+
     }
 
     @Override

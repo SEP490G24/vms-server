@@ -64,7 +64,6 @@ public class UserServiceImpl implements IUserService {
         List<UUID> departments = getListDepartments(siteIds, departmentIds);
         List<Sort.Order> sortColum = new ArrayList<>(PageableUtils.converterSort2List(pageable.getSort()));
         sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.createdOn));
-        sortColum.add(new Sort.Order(Sort.Direction.DESC, Constants.lastUpdatedOn));
         Pageable pageableSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(sortColum));
         return userRepository.filter(
             pageableSort,
