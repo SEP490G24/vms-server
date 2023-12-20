@@ -129,8 +129,8 @@ public class OrganizationServiceImpl extends GenericServiceImpl<Organization, UU
         attributes.put("org_id", List.of(organization.getId().toString()));
         attributes.put("name", List.of("ADMIN"));
         roleDto.setAttributes(attributes);
-        List<IPermissionResource.PermissionDto> permissionsApi = permissionService.findAllOrgByModuleId("6652b814-1563-4a75-9824-a8274112ce31");
-        List<IPermissionResource.PermissionDto> permissionsScreen = permissionService.findAllOrgByModuleId("e21afc28-1413-4076-a46e-04f23257b85b");
+        List<IPermissionResource.PermissionDto> permissionsApi = permissionService.findAllOrgByModuleId("283bb3f5-5528-405d-b244-f00bc81b63ea");
+        List<IPermissionResource.PermissionDto> permissionsScreen = permissionService.findAllOrgByModuleId("249794cf-838e-4cec-8b8b-dd79fe1fc575");
         Set<IPermissionResource.PermissionDto> permissionsSet = new HashSet<>();
         permissionsSet.addAll(permissionsApi);
         permissionsSet.addAll(permissionsScreen);
