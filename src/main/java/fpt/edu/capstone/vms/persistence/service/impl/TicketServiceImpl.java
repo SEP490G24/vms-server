@@ -135,9 +135,9 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
         LocalDateTime startTime = ticketInfo.getStartTime();
         LocalDateTime endTime = ticketInfo.getEndTime();
 
-//        if (startTime.isBefore(LocalDateTime.now())) {
-//            throw new CustomException(ErrorApp.TICKET_START_TIME_MUST_GREATER_THEM_CURRENT_TIME);
-//        }
+        if (startTime.isBefore(LocalDateTime.now())) {
+            throw new CustomException(ErrorApp.TICKET_START_TIME_MUST_GREATER_THEM_CURRENT_TIME);
+        }
 
         //check time
         checkTimeForTicket(startTime, endTime);
@@ -1097,7 +1097,7 @@ public class TicketServiceImpl extends GenericServiceImpl<Ticket, UUID> implemen
             rooms = roomRepository.filter(null, SecurityUtils.getListSiteToUUID(siteRepository, sites), null, null, null, null, null);
         } else {
             tickets = filterAllBySite(names, null, null, null, status, purpose, createdOnStart, createdOnEnd, startTimeStart, startTimeEnd, endTimeStart, endTimeEnd, SecurityUtils.loginUsername(), null, null, keyword);
-            rooms = roomRepository.filter(null, null, null, null, null, null, SecurityUtils.loginUsername());
+            rooms = roomRepository.filter(null, SecurityUtils.getListSiteToUUID(siteRepository, sites), null, null, null, null, null);
         }
         ITicketController.TicketByRoomResponseDTO ticketByRoomResponseDTO = new ITicketController.TicketByRoomResponseDTO();
         ticketByRoomResponseDTO.setTickets(tickets);
