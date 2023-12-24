@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class IpRateLimitingFilter extends GenericFilterBean {
 
     private Map<String, IpRequestCounter> ipRequestCounters = new ConcurrentHashMap<>();
-    private final int maxCalls = 30;
+    private final int maxCalls = 10;
     private final long timeWindowInMillis = 30000; // 10 minutes
     private final String UPLOAD = "/api/v1/file/uploadImage";
     private final String CARD = "/api/v1/card";
