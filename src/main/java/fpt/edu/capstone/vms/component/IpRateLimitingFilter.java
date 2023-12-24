@@ -6,6 +6,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
@@ -17,6 +18,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
+@Slf4j
 public class IpRateLimitingFilter extends GenericFilterBean {
 
     private Map<String, IpRequestCounter> ipRequestCounters = new ConcurrentHashMap<>();
@@ -53,7 +55,7 @@ public class IpRateLimitingFilter extends GenericFilterBean {
                     servletResponse.getWriter().write("Too many requests from this IP address. Please try again later.");
                     return;
                 }
-
+                log.info("Request count for IP address {} : {}", clientIp, counter.getRequestCount());
                 counter.incrementRequestCount(currentTime);
             }
         }
