@@ -60,7 +60,7 @@ public class UserController implements IUserController {
             }.getType());
             ;
             userFilter.removeIf(userFilterResponse -> (SecurityUtils.loginUsername().equals(userFilterResponse.getUsername())));
-            long remainingElements = userFilterResponsePage.getTotalElements() - userFilter.size();
+            long remainingElements = userFilterResponsePage.getTotalElements() - 1;
             return ResponseEntity.ok(new PageImpl(userFilter, pageable, remainingElements));
 
         } else {
